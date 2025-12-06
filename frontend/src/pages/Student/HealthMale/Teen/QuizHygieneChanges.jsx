@@ -1,162 +1,173 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const QuizHygieneChanges = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-2";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "During puberty, which is correct?",
+      text: "Why do you need to change clothes more often in puberty?",
       options: [
         {
-          id: "a",
-          text: "Use perfume instead",
-          emoji: "🌸",
-          description: "Perfume only covers smell, doesn't solve hygiene issues",
+          id: "b",
+          text: "To look cool",
+          emoji: "😎",
+          description: "Style is good, but hygiene is key.",
           isCorrect: false
         },
         {
-          id: "b",
-          text: "Bathe twice if needed",
-          emoji: "🛁",
-          description: "Puberty causes more sweating, so bathing twice daily helps",
+          id: "a",
+          text: "Sweat and bacteria build up",
+          emoji: "🦠",
+          description: "Clothes trap sweat and can smell.",
           isCorrect: true
         },
         {
           id: "c",
-          text: "Ignore sweat completely",
-          emoji: "😅",
-          description: "Ignoring sweat leads to body odor and skin problems",
+          text: "Because parents say so",
+          emoji: "👪",
+          description: "It's for your own health and smell.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "What happens to skin during puberty?",
+      text: "What is the best way to prevent foot odor?",
       options: [
         {
+          id: "c",
+          text: "Wear shoes without socks",
+          emoji: "👟",
+          description: "That makes it worse!",
+          isCorrect: false
+        },
+        {
           id: "a",
-          text: "Gets more oily and prone to acne",
-          emoji: "🧴",
-          description: "Hormone changes cause oilier skin during puberty",
+          text: "Change socks daily",
+          emoji: "🧦",
+          description: "Clean socks keep feet dry.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "No changes at all",
-          emoji: "😊",
-          description: "Puberty brings many skin changes",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Becomes completely dry",
-          emoji: "🏜️",
-          description: "Puberty usually makes skin oilier, not drier",
+          text: "Spray perfume on shoes",
+          emoji: "💨",
+          description: "Masking the smell doesn't fix the bacteria.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Best way to handle puberty body odor?",
+      text: "When should you brush your teeth?",
       options: [
         {
-          id: "a",
-          text: "Daily deodorant + clean clothes",
-          emoji: "🧼",
-          description: "Regular hygiene prevents body odor during puberty",
-          isCorrect: true
-        },
-        {
           id: "b",
-          text: "Ignore it completely",
-          emoji: "🤷",
-          description: "Proper hygiene is essential during puberty",
+          text: "Once a week",
+          emoji: "📅",
+          description: "Yuck! Daily is needed.",
           isCorrect: false
         },
         {
+          id: "a",
+          text: "Twice a day",
+          emoji: "🪥",
+          description: "Morning and night keeps teeth bright.",
+          isCorrect: true
+        },
+        {
           id: "c",
-          text: "Strong perfume only",
-          emoji: "🌺",
-          description: "Perfume covers but doesn't solve the root cause",
+          text: "Only when eating candy",
+          emoji: "🍬",
+          description: "Food sticks to teeth every meal.",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "During puberty, how often should you change clothes?",
+      text: "Is it okay to share a razor?",
       options: [
         {
-          id: "a",
-          text: "Only when visibly dirty",
-          emoji: "👀",
-          description: "Sweat and bacteria can make clothes smelly even if clean-looking",
+          id: "c",
+          text: "Yes, with friends",
+          emoji: "🤝",
+          description: "Never share razors!",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Once a week is enough",
-          emoji: "📅",
-          description: "Daily clothing changes are important during puberty",
+          text: "If you wash it",
+          emoji: "🚿",
+          description: "It's still risky for infections.",
           isCorrect: false
         },
         {
-          id: "c",
-          text: "Daily and after sweating",
-          emoji: "👕",
-          description: "Clean clothes prevent bacteria growth and odor",
+          id: "a",
+          text: "No, never",
+          emoji: "🚫",
+          description: "Sharing razors spreads germs and blood.",
           isCorrect: true
         }
       ]
     },
     {
       id: 5,
-      text: "What's the best way to handle acne during puberty?",
+      text: "What causes acne?",
       options: [
         {
-          id: "a",
-          text: "Gentle face washing and moisturizing",
-          emoji: "🧴",
-          description: "Proper skin care routine helps manage puberty acne",
-          isCorrect: true
-        },
-        {
           id: "b",
-          text: "Pop all pimples immediately",
-          emoji: "💥",
-          description: "Popping pimples can cause scarring and infection",
+          text: "Eating chocolate",
+          emoji: "🍫",
+          description: "Diet plays a role, but it's mostly oils.",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Use adult-strength products",
-          emoji: "🧴",
-          description: "Teen skin needs gentle, age-appropriate products",
+          text: "Being dirty",
+          emoji: "💩",
+          description: "It's not just dirt, it's inside your skin.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Clogged pores and oil",
+          emoji: "🧴",
+          description: "Oil gets trapped and causes pimples.",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -167,10 +178,8 @@ const QuizHygieneChanges = () => {
     }, 1500);
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   const handleNext = () => {
-    navigate("/student/health-male/teen/reflex-smart-hygiene");
+    navigate("/student/health-male/teens/reflex-smart-hygiene");
   };
 
   return (
@@ -180,33 +189,33 @@ const QuizHygieneChanges = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
-      gameId="health-male-teen-2"
+      score={coins}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={10}
-      currentLevel={2}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {questions[currentQuestion].text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

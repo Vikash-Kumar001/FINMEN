@@ -47,19 +47,20 @@ const QuizOnTeenHabits = () => {
       id: 2,
       text: "What is a benefit of regular exercise for teens?",
       options: [
-        {
-          id: "a",
-          text: "Improved mood and energy levels",
-          emoji: "😊",
-          description: "Physical activity releases endorphins that boost mood",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Increased need for sleep",
           emoji: "😴",
           description: "Exercise actually improves sleep quality",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Improved mood and energy levels",
+          emoji: "😊",
+          description: "Physical activity releases endorphins that boost mood",
+          isCorrect: true
         },
         {
           id: "c",
@@ -101,13 +102,7 @@ const QuizOnTeenHabits = () => {
       id: 4,
       text: "How does consistent study time benefit academic performance?",
       options: [
-        {
-          id: "a",
-          text: "Builds knowledge retention and reduces stress",
-          emoji: "📚",
-          description: "Regular study habits improve learning outcomes",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Eliminates the need for exams",
@@ -121,7 +116,14 @@ const QuizOnTeenHabits = () => {
           emoji: "🎮",
           description: "This is a side effect, not the primary benefit",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Builds knowledge retention and reduces stress",
+          emoji: "📚",
+          description: "Regular study habits improve learning outcomes",
+          isCorrect: true
+        },
       ]
     },
     {

@@ -6,9 +6,14 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const ClinicVisitSimulation = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [score, setScore] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+
+  // Hardcode rewards
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
 
   const scenarios = [
     {
@@ -24,17 +29,17 @@ const ClinicVisitSimulation = () => {
         },
         {
           id: "b",
-          text: "Panic and leave",
-          emoji: "😰",
-          description: "Staying calm and waiting is usually best",
-          isCorrect: false
-        },
-        {
-          id: "c",
           text: "Wait calmly and read",
           emoji: "📖",
           description: "Staying calm makes the visit more productive",
           isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Panic and leave",
+          emoji: "😰",
+          description: "Staying calm and waiting is usually best",
+          isCorrect: false
         }
       ]
     },
@@ -43,18 +48,18 @@ const ClinicVisitSimulation = () => {
       text: "The nurse calls your name. How do you respond when they ask about your symptoms?",
       options: [
         {
-          id: "b",
-          text: "Give vague answers",
-          emoji: "🤷",
-          description: "Specific details help doctors provide better care",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Be detailed and honest",
           emoji: "💬",
           description: "Clear communication leads to accurate diagnosis",
           isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Give vague answers",
+          emoji: "🤷",
+          description: "Specific details help doctors provide better care",
+          isCorrect: false
         },
         {
           id: "c",
@@ -70,13 +75,6 @@ const ClinicVisitSimulation = () => {
       text: "Doctor explains treatment options. What's the best way to respond?",
       options: [
         {
-          id: "c",
-          text: "Ask questions about options",
-          emoji: "❓",
-          description: "Understanding options helps make informed decisions",
-          isCorrect: true
-        },
-        {
           id: "a",
           text: "Agree to everything immediately",
           emoji: "✅",
@@ -89,6 +87,13 @@ const ClinicVisitSimulation = () => {
           emoji: "❌",
           description: "Discussing options leads to better outcomes",
           isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ask questions about options",
+          emoji: "❓",
+          description: "Understanding options helps make informed decisions",
+          isCorrect: true
         }
       ]
     },
@@ -124,6 +129,13 @@ const ClinicVisitSimulation = () => {
       text: "How should you prepare for your next follow-up appointment?",
       options: [
         {
+          id: "a",
+          text: "Cancel if feeling better",
+          emoji: "✅",
+          description: "Follow-up appointments monitor progress",
+          isCorrect: false
+        },
+        {
           id: "b",
           text: "Note any questions or concerns",
           emoji: "📝",
@@ -136,27 +148,22 @@ const ClinicVisitSimulation = () => {
           emoji: "📅",
           description: "Being prepared helps maximize appointment time",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Cancel if feeling better",
-          emoji: "✅",
-          description: "Follow-up appointments monitor progress",
-          isCorrect: false
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentScenario().options.find(opt => opt.id === optionId);
+    if (gameFinished) return;
+
+    const currentScenario = scenarios[currentStep];
+    const selectedOption = currentScenario.options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { step: currentStep, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentStep < scenarios.length - 1) {
@@ -164,14 +171,14 @@ const ClinicVisitSimulation = () => {
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 1000);
   };
-
-  const getCurrentScenario = () => scenarios[currentStep];
 
   const handleNext = () => {
     navigate("/student/health-male/teens/reflex-teen-safety");
   };
+
+  const currentScenario = scenarios[currentStep];
 
   return (
     <GameShell
@@ -180,11 +187,13 @@ const ClinicVisitSimulation = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={score}
       gameId="health-male-teen-78"
       gameType="health-male"
-      totalLevels={80}
-      currentLevel={78}
+      maxScore={scenarios.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
@@ -194,7 +203,7 @@ const ClinicVisitSimulation = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Step {currentStep + 1}/{scenarios.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+            <span className="text-yellow-400 font-bold">Score: {score}</span>
           </div>
 
           <div className="text-center mb-6">
@@ -202,22 +211,22 @@ const ClinicVisitSimulation = () => {
             <h3 className="text-2xl font-bold text-white mb-2">Clinic Visit Simulator</h3>
           </div>
 
-          <p className="text-white text-lg mb-6">
-            {getCurrentScenario().text}
+          <p className="text-white text-lg mb-6 font-medium">
+            {currentScenario.text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentScenario().options.map(option => (
+            {currentScenario.options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left border border-white/10"
               >
                 <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
+                  <div className="text-3xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <p className="text-white/90 text-sm">{option.description}</p>
                   </div>
                 </div>
               </button>

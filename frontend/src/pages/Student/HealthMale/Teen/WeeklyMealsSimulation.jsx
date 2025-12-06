@@ -1,77 +1,187 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const WeeklyMealsSimulation = () => {
   const navigate = useNavigate();
-  const [currentDay, setCurrentDay] = useState(0);
-  const [mealPlan, setMealPlan] = useState({});
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-18";
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [coins, setCoins] = useState(0);
+  const [currentScenario, setCurrentScenario] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [lastChoice, setLastChoice] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const days = [
-    { id: 1, name: "Monday", icon: "📅" },
-    { id: 2, name: "Tuesday", icon: "📆" },
-    { id: 3, name: "Wednesday", icon: "🗓️" },
-    { id: 4, name: "Thursday", icon: "📅" },
-    { id: 5, name: "Friday", icon: "📆" }
-  ];
-
-  const mealOptions = [
+  const scenarios = [
     {
-      id: "fastfood",
-      text: "Only fast food",
-      emoji: "🍔",
-      description: "Pizza, burgers, fries every day - quick but not nutritious",
-      isHealthy: false
+      id: 1,
+      day: "Monday Breakfast",
+      situation: "Start the week right!",
+      options: [
+        {
+          id: "a",
+          text: "Eggs & Toast",
+          emoji: "🍳",
+          description: "Protein and carbs.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Skip it",
+          emoji: "🏃",
+          description: "Bad start.",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "Just coffee",
+          emoji: "☕",
+          description: "Not enough fuel.",
+          isCorrect: false
+        }
+      ]
     },
     {
-      id: "balanced",
-      text: "Balanced menu",
-      emoji: "🥗",
-      description: "Mix of proteins, veggies, grains - healthy and delicious",
-      isHealthy: true
+      id: 2,
+      day: "Tuesday Lunch",
+      situation: "School cafeteria choices.",
+      options: [
+        {
+          id: "c",
+          text: "Vending machine snacks",
+          emoji: "🍫",
+          description: "Not a meal.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Sandwich & Fruit",
+          emoji: "🥪",
+          description: "Balanced and tasty.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Fried Chicken only",
+          emoji: "🍗",
+          description: "Too greasy.",
+          isCorrect: false
+        }
+      ]
     },
     {
-      id: "skip",
-      text: "Skip meals",
-      emoji: "❌",
-      description: "No breakfast, lunch, or dinner - bad for growing bodies",
-      isHealthy: false
+      id: 3,
+      day: "Wednesday Snack",
+      situation: "Mid-day hunger.",
+      options: [
+        {
+          id: "b",
+          text: "Cookies",
+          emoji: "🍪",
+          description: "Sugar rush.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Yogurt",
+          emoji: "🥣",
+          description: "Calcium and protein.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Soda",
+          emoji: "🥤",
+          description: "Empty calories.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      day: "Thursday Dinner",
+      situation: "Family meal time.",
+      options: [
+        {
+          id: "c",
+          text: "Eat in room alone",
+          emoji: "🚪",
+          description: "Social eating is better.",
+          isCorrect: false
+        },
+       
+        {
+          id: "b",
+          text: "Order Pizza",
+          emoji: "🍕",
+          description: "Not the healthiest habit.",
+          isCorrect: false
+        },
+         {
+          id: "a",
+          text: "Grilled Fish & Veggies",
+          emoji: "🐟",
+          description: "Perfect dinner.",
+          isCorrect: true
+        },
+      ]
+    },
+    {
+      id: 5,
+      day: "Friday Treat",
+      situation: "End of the week celebration.",
+      options: [
+        {
+          id: "a",
+          text: "Small Ice Cream",
+          emoji: "🍦",
+          description: "Moderation is key!",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Binge eat everything",
+          emoji: "🤢",
+          description: "Don't overdo it.",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "Starve to save calories",
+          emoji: "🤐",
+          description: "Never starve yourself.",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleMealChoice = (mealId) => {
-    const selectedMeal = mealOptions.find(meal => meal.id === mealId);
-    const isHealthy = selectedMeal.isHealthy;
+  const handleChoice = (optionId) => {
+    const selectedOption = scenarios[currentScenario].options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
 
-    setMealPlan({ ...mealPlan, [currentDay]: mealId });
-    setLastChoice(selectedMeal);
-
-    if (isHealthy) {
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
-    setShowFeedback(true);
-
     setTimeout(() => {
-      setShowFeedback(false);
-
-      if (currentDay < days.length - 1) {
-        setCurrentDay(prev => prev + 1);
+      if (currentScenario < scenarios.length - 1) {
+        setCurrentScenario(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 2000);
+    }, 1500);
   };
-
-  const getCurrentDay = () => days[currentDay];
-  const healthyDays = Object.values(mealPlan).filter(mealId =>
-    mealOptions.find(meal => meal.id === mealId)?.isHealthy
-  ).length;
 
   const handleNext = () => {
     navigate("/student/health-male/teens/reflex-smart-drink");
@@ -79,67 +189,42 @@ const WeeklyMealsSimulation = () => {
 
   return (
     <GameShell
-      title="Simulation: Weekly Meals"
-      subtitle={`Day ${currentDay + 1} of ${days.length}`}
+      title="Weekly Meals Simulation"
+      subtitle={`Day: ${scenarios[currentScenario].day}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={healthyDays * 5}
-      gameId="health-male-teen-18"
+      score={coins}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={18}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={scenarios.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 18/100</span>
-            <span className="text-yellow-400 font-bold">Coins: {healthyDays * 5}</span>
+            <span className="text-white/80">Step {currentScenario + 1}/{scenarios.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
 
-          <div className="text-center mb-6">
-            <div className="text-4xl mb-2">{getCurrentDay().icon}</div>
-            <h3 className="text-white text-2xl font-bold mb-2">
-              {getCurrentDay().name} Meal Planning
-            </h3>
-            <p className="text-white/80">
-              You're planning meals for a busy school week. Choose wisely!
-            </p>
-          </div>
+          <h3 className="text-2xl font-bold text-white mb-2">{scenarios[currentScenario].day}</h3>
+          <p className="text-white text-lg mb-6">
+            {scenarios[currentScenario].situation}
+          </p>
 
-          {showFeedback && lastChoice && (
-            <div className={`text-center mb-6 p-4 rounded-xl ${
-              lastChoice.isHealthy
-                ? 'bg-green-500/20 border border-green-500/30'
-                : 'bg-red-500/20 border border-red-500/30'
-            }`}>
-              <div className="text-2xl mb-2">
-                {lastChoice.isHealthy ? '✅' : '❌'}
-              </div>
-              <p className={`font-bold ${
-                lastChoice.isHealthy ? 'text-green-400' : 'text-red-400'
-              }`}>
-                {lastChoice.isHealthy ? 'Great Choice!' : 'Not the Best Option'}
-              </p>
-              <p className="text-white/90 text-sm mt-1">
-                {lastChoice.description}
-              </p>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            {mealOptions.map(option => (
+          <div className="grid grid-cols-1 gap-4">
+            {scenarios[currentScenario].options.map(option => (
               <button
                 key={option.id}
-                onClick={() => handleMealChoice(option.id)}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                onClick={() => handleChoice(option.id)}
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
-                  <div className="text-3xl mr-4">{option.emoji}</div>
+                  <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
                     <p className="text-white/90">{option.description}</p>
@@ -148,35 +233,6 @@ const WeeklyMealsSimulation = () => {
               </button>
             ))}
           </div>
-
-          {Object.keys(mealPlan).length > 0 && (
-            <div className="mt-6">
-              <h4 className="text-white font-bold mb-3">Your Weekly Plan:</h4>
-              <div className="grid grid-cols-1 gap-2">
-                {days.map(day => {
-                  const mealId = mealPlan[day.id - 1];
-                  const meal = mealId ? mealOptions.find(m => m.id === mealId) : null;
-
-                  return (
-                    <div key={day.id} className="flex items-center justify-between bg-white/10 rounded-lg p-3">
-                      <div className="flex items-center">
-                        <span className="text-xl mr-3">{day.icon}</span>
-                        <span className="text-white font-medium">{day.name}:</span>
-                      </div>
-                      {meal ? (
-                        <div className="flex items-center">
-                          <span className="text-xl mr-2">{meal.emoji}</span>
-                          <span className="text-white/90">{meal.text}</span>
-                        </div>
-                      ) : (
-                        <span className="text-white/50">Not planned</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </GameShell>

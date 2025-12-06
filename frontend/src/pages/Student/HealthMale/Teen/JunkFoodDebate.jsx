@@ -1,226 +1,231 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const JunkFoodDebate = () => {
   const navigate = useNavigate();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const location = useLocation();
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-16";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [coins, setCoins] = useState(0);
+  const [currentStage, setCurrentStage] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const questions = [
+  const stages = [
     {
       id: 1,
-      text: "Friend says: 'Junk food is okay every day!' What do you think?",
+      title: "The Craving",
+      question: "Is it okay to eat junk food sometimes?",
       options: [
         {
-          id: "b",
-          text: "Completely agree",
-          emoji: "👍",
-          description: "Daily junk food isn't healthy for growing bodies",
-          isCorrect: false
-        },
-        {
           id: "a",
-          text: "Sometimes okay, but not daily",
-          emoji: "🤔",
-          description: "Moderation is key - treats are fine occasionally",
+          text: "Yes, in moderation",
+          emoji: "⚖️",
+          description: "Treats are fine occasionally.",
           isCorrect: true
         },
         {
+          id: "b",
+          text: "No, never ever",
+          emoji: "🚫",
+          description: "Too strict can lead to binges.",
+          isCorrect: false
+        },
+        {
           id: "c",
-          text: "Never eat junk food",
-          emoji: "❌",
-          description: "Being too strict can make healthy eating harder",
+          text: "Yes, every day",
+          emoji: "🍔",
+          description: "That's unhealthy.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Parent says: 'No junk food ever!' How do you respond?",
+      title: "Peer Pressure",
+      question: "Friends are eating pizza. What do you do?",
       options: [
         {
-          id: "c",
-          text: "Argue and demand junk food",
-          emoji: "😠",
-          description: "Communication and compromise work better",
+          id: "b",
+          text: "Eat 10 slices",
+          emoji: "🍕",
+          description: "Overeating makes you sluggish.",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Suggest healthy alternatives",
-          emoji: "💡",
-          description: "Finding balance helps everyone eat better",
+          text: "Have 1-2 slices & salad",
+          emoji: "🥗",
+          description: "Balance is key.",
           isCorrect: true
         },
         {
-          id: "b",
-          text: "Hide and eat junk food secretly",
-          emoji: "🤫",
-          description: "Honesty about food choices is important",
+          id: "c",
+          text: "Sit and starve",
+          emoji: "🤐",
+          description: "You can enjoy food socially.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "At party: 'Everyone eats chips and soda!' What's your choice?",
+      title: "Energy Levels",
+      question: "Does junk food give you good energy?",
       options: [
         {
-          id: "a",
-          text: "Choose veggies and water instead",
-          emoji: "🥕",
-          description: "You can make healthy choices even at parties",
-          isCorrect: true
+          id: "c",
+          text: "Yes, forever",
+          emoji: "🔋",
+          description: "No, it's short-lived.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Eat everything to fit in",
-          emoji: "👥",
-          description: "True friends respect your healthy choices",
+          text: "It makes you super strong",
+          emoji: "💪",
+          description: "It usually makes you tired.",
           isCorrect: false
         },
         {
-          id: "c",
-          text: "Leave party early",
-          emoji: "🚪",
-          description: "You can stay and make healthy choices",
-          isCorrect: false
+          id: "a",
+          text: "No, it causes a crash",
+          emoji: "📉",
+          description: "Sugar highs are followed by lows.",
+          isCorrect: true
         }
       ]
     },
     {
       id: 4,
-      text: "Teacher asks: 'Is fast food completely bad?' Your response?",
+      title: "Cost",
+      question: "Is junk food cheaper than home cooking?",
       options: [
         {
           id: "b",
-          text: "Yes, always avoid it",
-          emoji: "🚫",
-          description: "Fast food can be convenient but should be limited",
+          text: "Always cheaper",
+          emoji: "💸",
+          description: "Not always, and health costs add up.",
           isCorrect: false
         },
         {
           id: "a",
-          text: "It's okay sometimes, choose wisely",
-          emoji: "⚖️",
-          description: "Balance and making smart choices is the key",
+          text: "Home cooking saves money",
+          emoji: "🏠",
+          description: "Buying ingredients is usually cheaper.",
           isCorrect: true
         },
         {
           id: "c",
-          text: "No, eat it whenever",
-          emoji: "🍔",
-          description: "Regular fast food isn't good for health",
+          text: "They cost the same",
+          emoji: "🤷",
+          description: "Eating out is usually pricier.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "Friend says: 'Healthy food tastes boring!' What do you say?",
+      title: "Future Health",
+      question: "What happens if you only eat junk?",
       options: [
         {
           id: "c",
-          text: "Agree, keep eating junk",
-          emoji: "😔",
-          description: "Healthy food can be delicious with right preparation",
+          text: "You become a superhero",
+          emoji: "🦸",
+          description: "Unlikely.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Nothing changes",
+          emoji: "😐",
+          description: "Your body will suffer.",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Show tasty healthy options",
-          emoji: "😋",
-          description: "Many healthy foods taste great when prepared well",
+          text: "Health problems later",
+          emoji: "🏥",
+          description: "Heart issues, diabetes, etc.",
           isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Force them to eat healthy",
-          emoji: "👊",
-          description: "People choose healthy eating when they understand benefits",
-          isCorrect: false
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
-    if (isCorrect) {
+  const handleOptionSelect = (option) => {
+    if (option.isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+
+      setTimeout(() => {
+        if (currentStage < stages.length - 1) {
+          setCurrentStage(prev => prev + 1);
+        } else {
+          setGameFinished(true);
+        }
+      }, 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-male/teens/diet-change-journal");
   };
 
+  const currentS = stages[currentStage];
+
   return (
     <GameShell
-      title="Debate: Junk Food in Moderation?"
-      subtitle={`Debate ${currentQuestion + 1} of ${questions.length}`}
+      title="Junk Food Debate"
+      subtitle={`Topic ${currentStage + 1} of ${stages.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length * 10}
-      gameId="health-male-teen-16"
+      score={coins}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={16}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={stages.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 16/100</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length * 10}</span>
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-white mb-2">{currentS.title}</h3>
+            <p className="text-white/90 text-lg">{currentS.question}</p>
           </div>
 
-          <div className="text-center mb-6">
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 rounded-xl mb-4">
-              <p className="font-bold">💬 Debate Topic</p>
-            </div>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {currentS.options.map((option) => (
               <button
                 key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                onClick={() => handleOptionSelect(option)}
+                className="bg-white/10 hover:bg-white/20 p-6 rounded-xl border border-white/20 transition-all transform hover:scale-105 flex flex-col items-center gap-4 group"
               >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+                <div className="text-6xl group-hover:scale-110 transition-transform">
+                  {option.emoji}
                 </div>
+                <div className="text-white font-bold text-xl text-center">
+                  {option.text}
+                </div>
+                <p className="text-white/70 text-sm text-center">{option.description}</p>
               </button>
             ))}
           </div>

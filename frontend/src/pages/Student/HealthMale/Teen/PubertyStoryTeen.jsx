@@ -1,162 +1,170 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PubertyStoryTeen = () => {
   const navigate = useNavigate();
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-21";
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "You notice you're sweating more than usual and your voice sounds different. What's happening?",
+      text: "You notice your voice cracking when you talk. What's happening?",
       options: [
         {
-          id: "a",
-          text: "This is puberty",
-          emoji: "🌱",
-          description: "Puberty brings many body changes like sweating more and voice changes",
-          isCorrect: true
-        },
-        {
           id: "b",
-          text: "Something's wrong with me",
-          emoji: "😰",
-          description: "These are normal signs of growing up",
+          text: "You are losing your voice",
+          emoji: "😶",
+          description: "It's not gone, just changing.",
           isCorrect: false
         },
         {
+          id: "a",
+          text: "Your voice box is growing",
+          emoji: "🗣️",
+          description: "It's a normal part of puberty.",
+          isCorrect: true
+        },
+        {
           id: "c",
-          text: "I need to see a doctor",
-          emoji: "🏥",
-          description: "These are normal changes that happen to all teens",
+          text: "You shouted too much",
+          emoji: "📢",
+          description: "Even quiet teens get voice cracks.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Your mood swings from happy to upset quickly. How do you handle this?",
+      text: "You feel angry for no reason sometimes. Is this normal?",
       options: [
         {
+          id: "c",
+          text: "No, you are bad",
+          emoji: "😈",
+          description: "Emotions don't make you bad.",
+          isCorrect: false
+        },
+        {
           id: "a",
-          text: "Understand it's normal puberty",
-          emoji: "🧠",
-          description: "Mood changes are common during puberty due to hormones",
+          text: "Yes, it's hormones",
+          emoji: "🧪",
+          description: "Hormones can cause mood swings.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Get angry at everyone",
-          emoji: "😠",
-          description: "Learning to manage emotions is part of growing up",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Hide feelings completely",
-          emoji: "😶",
-          description: "It's okay to express emotions during puberty",
+          text: "You need more sleep only",
+          emoji: "😴",
+          description: "Sleep helps, but hormones are the cause.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Friends tease you about your changing voice. What do you do?",
+      text: "You are growing taller very fast. What do you need?",
       options: [
         {
-          id: "a",
-          text: "Explain it's normal puberty",
-          emoji: "💪",
-          description: "Being confident about puberty changes helps others understand",
-          isCorrect: true
-        },
-        {
           id: "b",
-          text: "Stop talking to avoid embarrassment",
-          emoji: "🤐",
-          description: "Voice changes are temporary and normal for all teens",
+          text: "Less food",
+          emoji: "🍽️",
+          description: "You need fuel to grow!",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Tease them back",
-          emoji: "😏",
-          description: "Everyone goes through puberty changes",
+          text: "More coffee",
+          emoji: "☕",
+          description: "Caffeine can stunt growth.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Healthy food and sleep",
+          emoji: "🥗",
+          description: "Your body needs resources to build.",
+          isCorrect: true
         }
       ]
     },
     {
       id: 4,
-      text: "You feel self-conscious about body changes. What's the best approach?",
+      text: "You start sweating more. What should you do?",
       options: [
         {
-          id: "a",
-          text: "Compare yourself to others",
-          emoji: "👥",
-          description: "Everyone develops at their own pace during puberty",
+          id: "c",
+          text: "Stop exercising",
+          emoji: "🛑",
+          description: "Exercise is good for you.",
           isCorrect: false
         },
         {
-          id: "b",
-          text: "Talk to a trusted adult",
-          emoji: "👨‍👦",
-          description: "Adults can share their own experiences and reassure you",
+          id: "a",
+          text: "Use deodorant",
+          emoji: "🧴",
+          description: "Hygiene helps manage sweat.",
           isCorrect: true
         },
         {
-          id: "c",
-          text: "Wear baggy clothes to hide",
-          emoji: "👕",
-          description: "It's okay to be comfortable with your changing body",
+          id: "b",
+          text: "Wear heavy clothes",
+          emoji: "🧥",
+          description: "That makes you sweat more.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "You're growing taller but feel awkward. How do you feel about this?",
+      text: "You see hair growing on your face. Should you shave?",
       options: [
         {
-          id: "a",
-          text: "Accept it's part of growing",
-          emoji: "🌱",
-          description: "Puberty growth is temporary and means you're developing well",
-          isCorrect: true
-        },
-        {
           id: "b",
-          text: "Hate the changes",
-          emoji: "😖",
-          description: "Your body is growing exactly as it should",
+          text: "You must shave daily",
+          emoji: "🪒",
+          description: "Only if you want to.",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Wish it would stop",
-          emoji: "⏸️",
-          description: "Growth is a natural part of becoming an adult",
+          text: "Pluck it out",
+          emoji: "🤏",
+          description: "That hurts and isn't efficient.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "It's your choice",
+          emoji: "🧔",
+          description: "Shave or grow it, it's up to you.",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -167,46 +175,44 @@ const PubertyStoryTeen = () => {
     }, 1500);
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   const handleNext = () => {
     navigate("/student/health-male/teens/quiz-puberty-teen");
   };
 
   return (
     <GameShell
-      title="Puberty Story (Teen)"
-      subtitle={`Scenario ${currentQuestion + 1} of ${questions.length}`}
+      title="Puberty Story"
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length * 5}
-      gameId="health-male-teen-21"
+      score={coins}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={21}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 21/100</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length * 5}</span>
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {questions[currentQuestion].text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

@@ -1,184 +1,284 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 5;
 
 const ReflexHygieneAlert = () => {
   const navigate = useNavigate();
-  const [coins, setCoins] = useState(0);
-  const [currentRound, setCurrentRound] = useState(1);
-  const [gameState, setGameState] = useState('waiting');
-  const [reactionTime, setReactionTime] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(false);
-  const startTimeRef = useRef(0);
-  const timerRef = useRef(null);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const location = useLocation();
 
-  const scenarios = [
-    { action: "Fresh Clothes", emoji: "👕", isCorrect: true },
-    { action: "Dirty Clothes", emoji: "👚", isCorrect: false },
-    { action: "Clean Towel", emoji: "🧺", isCorrect: true },
-    { action: "Used Towel", emoji: "💧", isCorrect: false },
-    { action: "Brush Teeth", emoji: "🪥", isCorrect: true },
-    { action: "Skip Brushing", emoji: "🦷", isCorrect: false },
-    { action: "Wash Face", emoji: "🧼", isCorrect: true },
-    { action: "Skip Washing", emoji: "😴", isCorrect: false }
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-9";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
+
+  const questions = [
+    {
+      id: 1,
+      question: "You see a dirty shirt on the floor. What do you do?",
+      correctAnswer: "Wash It",
+      options: [
+        { text: "Wash It", isCorrect: true, emoji: "🧺" },
+        { text: "Wear It", isCorrect: false, emoji: "👕" },
+        { text: "Hide It", isCorrect: false, emoji: "🙈" },
+        { text: "Give to Friend", isCorrect: false, emoji: "🎁" }
+      ]
+    },
+    {
+      id: 2,
+      question: "You are sweating a lot. What is the best action?",
+      correctAnswer: "Shower",
+      options: [
+        { text: "Air Dry", isCorrect: false, emoji: "🌬️" },
+        { text: "Shower", isCorrect: true, emoji: "🚿" },
+        { text: "Use Fan", isCorrect: false, emoji: "🌀" },
+        { text: "Wipe with Towel", isCorrect: false, emoji: "🧖" }
+      ]
+    },
+    {
+      id: 3,
+      question: "Your nails are getting too long. What now?",
+      correctAnswer: "Clip Them",
+      options: [
+        { text: "Bite Them", isCorrect: false, emoji: "😬" },
+        { text: "Break Them", isCorrect: false, emoji: "🔨" },
+        { text: "Clip Them", isCorrect: true, emoji: "✂️" },
+        { text: "Paint over dirt", isCorrect: false, emoji: "💅" }
+      ]
+    },
+    {
+      id: 4,
+      question: "You have bad breath before a meeting. Quick fix?",
+      correctAnswer: "Brush",
+      options: [
+        { text: "Stay Quiet", isCorrect: false, emoji: "🤐" },
+        { text: "Eat Mint", isCorrect: false, emoji: "🍬" },
+        { text: "Drink Water", isCorrect: false, emoji: "💧" },
+        { text: "Brush", isCorrect: true, emoji: "🪥" }
+      ]
+    },
+    {
+      id: 5,
+      question: "Your hair is messy and tangled. What do you do?",
+      correctAnswer: "Comb It",
+      options: [
+        { text: "Hide It", isCorrect: false, emoji: "🧢" },
+        { text: "Comb It", isCorrect: true, emoji: "💈" },
+        { text: "Cut It", isCorrect: false, emoji: "✂️" },
+        { text: "Gel it down", isCorrect: false, emoji: "🧴" }
+      ]
+    }
   ];
 
-  const [currentScenario, setCurrentScenario] = useState(null);
+  // Update ref when currentRound changes
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
 
-  const handleChoice = (selectedOption) => {
-    const endTime = Date.now();
-    const time = endTime - startTimeRef.current;
-    setReactionTime(time);
-
-    const isCorrect = selectedOption.isCorrect;
-    setGameState(isCorrect ? 'success' : 'fail');
-
-    if (isCorrect) {
-      setCoins(prev => prev + 3);
-      showCorrectAnswerFeedback(3, true);
-      setShowCoinFeedback(true);
-      setTimeout(() => setShowCoinFeedback(false), 1500);
+  // Reset timer when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
+  }, [currentRound, gameState]);
+
+  // Handle time up - move to next question or show results
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
+    resetFeedback();
+
+    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
 
     setTimeout(() => {
-      if (currentRound < 5) {
-        setCurrentRound(prev => prev + 1);
-        setGameState('waiting');
-        setTimeout(() => startRound(), 500);
+      if (isLastQuestion) {
+        setGameState("finished");
       } else {
-        setGameFinished(true);
+        setCurrentRound((prev) => prev + 1);
       }
-    }, isCorrect ? 1500 : 1000);
+    }, 1000);
+  }, []);
+
+  // Timer effect - countdown from 5 seconds for each question
+  useEffect(() => {
+    if (gameState !== "playing") {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+
+    // Check if game should be finished
+    if (currentRoundRef.current > TOTAL_ROUNDS) {
+      setGameState("finished");
+      return;
+    }
+
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // Start countdown timer
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          // Time's up for this round
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          handleTimeUp();
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    resetFeedback();
   };
 
-  const startRound = () => {
-    // Randomly select a scenario pair (correct and incorrect)
-    const randomIndex = Math.floor(Math.random() * 4); // 0-3 for 4 pairs
-    const scenarioPair = [
-      scenarios[randomIndex * 2],     // Correct option
-      scenarios[randomIndex * 2 + 1]  // Incorrect option
-    ];
-    setCurrentScenario(scenarioPair);
-    setGameState('showing');
+  const handleAnswer = (option) => {
+    if (gameState !== "playing" || answered || currentRound > TOTAL_ROUNDS) return;
 
-    const randomDelay = Math.random() * 2000 + 1000;
+    // Clear the timer immediately when user answers
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
 
-    timerRef.current = setTimeout(() => {
-      setGameState('ready');
-      startTimeRef.current = Date.now();
-    }, randomDelay);
+    setAnswered(true);
+    resetFeedback();
+
+    if (option.isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    // Move to next round or show results after a short delay
+    setTimeout(() => {
+      if (currentRound >= TOTAL_ROUNDS) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+      }
+    }, 500);
   };
 
   const handleNext = () => {
     navigate("/student/health-male/teens/hygiene-pro-badge");
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (currentRound === 1 && gameState === 'waiting') {
-        startRound();
-      }
-    }, 100);
-
-    return () => {
-      clearTimeout(timer);
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Hygiene Alert"
-      subtitle={`Round ${currentRound}/5`}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Spot the hygienic choice!` : "Spot the hygienic choice!"}
       onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
-      gameId="health-male-teen-9"
+      nextEnabled={gameState === "finished"}
+      showGameOver={gameState === "finished"}
+      score={score}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={10}
-      currentLevel={9}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={TOTAL_ROUNDS}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 relative">
-          {showCoinFeedback && (
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-              <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                +3
-              </div>
-            </div>
-          )}
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Round {currentRound}/5</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">
-              {gameState === 'waiting' && '⏳'}
-              {gameState === 'showing' && '🚨'}
-              {gameState === 'ready' && '⚡'}
-              {gameState === 'success' && '👕'}
-              {gameState === 'fail' && '👚'}
-            </div>
-            <p className="text-white/90 text-lg">
-              {gameState === 'waiting' && 'Hygiene alert incoming...'}
-              {gameState === 'showing' && 'Watch for the hygiene signal...'}
-              {gameState === 'ready' && 'QUICK! Choose the fresh option!'}
-              {gameState === 'success' && `Fresh choice! (${reactionTime}ms)`}
-              {gameState === 'fail' && 'Too slow! Always choose fresh clothes!'}
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">🚨</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Spot the hygienic choice quickly!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
           </div>
+        )}
 
-          {gameState === 'ready' && currentScenario && (
-            <div className="grid grid-cols-2 gap-4">
-              {currentScenario.map((scenario, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleChoice(scenario)}
-                  className={`p-6 rounded-xl border-2 transition-all transform hover:scale-105 ${
-                    scenario.isCorrect
-                      ? 'bg-green-100/20 border-green-500 text-white hover:bg-green-200/20'
-                      : 'bg-red-100/20 border-red-500 text-white hover:bg-red-200/20'
-                  }`}
-                >
-                  <div className="text-4xl mb-2">{scenario.emoji}</div>
-                  <div className="font-bold text-lg">{scenario.action}</div>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {gameState === 'success' && currentScenario && (
-            <div className="text-center space-y-4">
-              <div className="text-green-400">
-                <div className="text-6xl">{currentScenario.find(s => s.isCorrect)?.emoji}</div>
-                <h3 className="text-xl font-bold text-white">Fresh Choice!</h3>
-                <p className="text-white/90">Reaction time: {reactionTime}ms</p>
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            {/* Status Bar with Timer */}
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
-              <div className="flex justify-center gap-2">
-                <span className="text-yellow-500 text-2xl">+3</span>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
               </div>
             </div>
-          )}
 
-          {gameState === 'fail' && currentScenario && (
-            <div className="text-center space-y-4">
-              <div className="text-red-400">
-                <div className="text-6xl">{currentScenario.find(s => !s.isCorrect)?.emoji}</div>
-                <h3 className="text-xl font-bold text-white">Too Slow!</h3>
-                <p className="text-white/90">Remember: Always choose fresh hygiene!</p>
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <div className="text-4xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
+                  </button>
+                ))}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

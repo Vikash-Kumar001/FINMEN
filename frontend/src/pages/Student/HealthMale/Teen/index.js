@@ -34,17 +34,17 @@ import TeenRoutineSimulation from "./TeenRoutineSimulation";
 import ReflexHealthyTeen from "./ReflexHealthyTeen";
 import PubertySmartTeenBadge from "./PubertySmartTeenBadge";
 
-// New Reproductive Health Games (31-40)
+// New Puberty Health & Shaving Games (31-40)
 import PubertyHealthStoryTeen from "./PubertyHealthStoryTeen";
-import QuizMaleReproductiveBasicsTeen from "./QuizMaleReproductiveBasicsTeen";
-import ReflexAwarenessTeen from "./ReflexAwarenessTeen";
-import ReproductiveMatchPuzzleTeen from "./ReproductiveMatchPuzzleTeen";
-import NocturnalEmissionStoryTeen from "./NocturnalEmissionStoryTeen";
-import ReproductiveHealthDebateTeen from "./ReproductiveHealthDebateTeen";
-import PubertyAwarenessJournal from "./PubertyAwarenessJournal";
-import RespectBoundariesSimulation from "./RespectBoundariesSimulation";
-import ReflexHealthChoiceTeen from "./ReflexHealthChoiceTeen";
-import ReproHealthAwareTeenBadge from "./ReproHealthAwareTeenBadge";
+import QuizPubertyHealthTeen from "./QuizPubertyHealthTeen";
+import ReflexPubertyHealthTeen from "./ReflexPubertyHealthTeen";
+import PubertyHealthPuzzleTeen from "./PubertyHealthPuzzleTeen";
+import ShavingStoryTeen from "./ShavingStoryTeen";
+import ShavingDebateTeen from "./ShavingDebateTeen";
+import TeenHygieneJournal from "./TeenHygieneJournal";
+import TeenShavingSimulation from "./TeenShavingSimulation";
+import ReflexShavingTeen from "./ReflexShavingTeen";
+import ShavingProBadgeTeen from "./ShavingProBadgeTeen";
 
 // New Hygiene Games (41-50)
 import SweatControlStory from "./SweatControlStory";
@@ -155,17 +155,17 @@ const teenHealthMaleGames = {
   'reflex-healthy-teen': ReflexHealthyTeen,
   'puberty-smart-teen-badge': PubertySmartTeenBadge,
 
-  // New Reproductive Health Games (31-40)
+  // New Puberty Health & Shaving Games (31-40)
   'puberty-health-story-teen': PubertyHealthStoryTeen,
-  'quiz-male-reproductive-basics-teen': QuizMaleReproductiveBasicsTeen,
-  'reflex-awareness-teen': ReflexAwarenessTeen,
-  'reproductive-match-puzzle-teen': ReproductiveMatchPuzzleTeen,
-  'nocturnal-emission-story-teen': NocturnalEmissionStoryTeen,
-  'reproductive-health-debate-teen': ReproductiveHealthDebateTeen,
-  'puberty-awareness-journal': PubertyAwarenessJournal,
-  'respect-boundaries-simulation': RespectBoundariesSimulation,
-  'reflex-health-choice-teen': ReflexHealthChoiceTeen,
-  'repro-health-aware-teen-badge': ReproHealthAwareTeenBadge,
+  'quiz-puberty-health-teen': QuizPubertyHealthTeen,
+  'reflex-puberty-health-teen': ReflexPubertyHealthTeen,
+  'puberty-health-puzzle-teen': PubertyHealthPuzzleTeen,
+  'shaving-story-teen': ShavingStoryTeen,
+  'shaving-debate-teen': ShavingDebateTeen,
+  'teen-hygiene-journal': TeenHygieneJournal,
+  'teen-shaving-simulation': TeenShavingSimulation,
+  'reflex-shaving-teen': ReflexShavingTeen,
+  'shaving-pro-badge-teen': ShavingProBadgeTeen,
 
   // New Hygiene Games (41-50)
   'sweat-control-story': SweatControlStory,

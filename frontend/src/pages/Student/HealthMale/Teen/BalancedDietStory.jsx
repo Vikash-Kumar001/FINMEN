@@ -1,147 +1,159 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BalancedDietStory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-11";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "You're at a party and see only burgers and pizza. What do you do?",
+      text: "You're hungry after school. What's the best snack?",
       options: [
         {
-          id: "a",
-          text: "Look for balanced options",
-          emoji: "🥗",
-          description: "Mix of proteins, veggies, and grains keeps you healthy",
-          isCorrect: true
-        },
-        {
           id: "b",
-          text: "Eat only junk food",
-          emoji: "🍔",
-          description: "Party food should be balanced with healthy choices too",
+          text: "Bag of chips",
+          emoji: "🍟",
+          description: "Empty calories won't help you grow.",
           isCorrect: false
         },
         {
+          id: "a",
+          text: "Apple and nuts",
+          emoji: "🍎",
+          description: "Fiber and protein for energy!",
+          isCorrect: true
+        },
+        {
           id: "c",
-          text: "Skip eating completely",
-          emoji: "❌",
-          description: "Your body needs regular nutrition even at parties",
+          text: "Candy bar",
+          emoji: "🍫",
+          description: "Sugar crash coming soon.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Mom made dal and rice for dinner. You want only rice. What should you do?",
+      text: "Your friends are eating fast food. What do you do?",
       options: [
         {
-          id: "a",
-          text: "Eat only rice",
-          emoji: "🍚",
-          description: "Rice alone lacks protein and nutrients",
+          id: "c",
+          text: "Eat only fries",
+          emoji: "🍟",
+          description: "Still not very nutritious.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Order a grilled chicken wrap",
+          emoji: "🌯",
+          description: "A healthier choice with protein.",
+          isCorrect: true
         },
         {
           id: "b",
-          text: "Ask for something else",
-          emoji: "🤷",
-          description: "Home food can be made nutritious with simple additions",
+          text: "Get the biggest burger",
+          emoji: "🍔",
+          description: "Too much grease and salt.",
           isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Add dal and veggies",
-          emoji: "🍛",
-          description: "Complete meal with protein, carbs, and vitamins",
-          isCorrect: true
         }
       ]
     },
     {
       id: 3,
-      text: "Your school lunch has bread and fruit. What makes it balanced?",
+      text: "Why is protein important for teens?",
       options: [
         {
-          id: "a",
-          text: "Add protein like eggs or cheese",
-          emoji: "🥚",
-          description: "Protein + carbs + fruit = complete nutrition",
-          isCorrect: true
-        },
-        {
           id: "b",
-          text: "Add only more bread",
-          emoji: "🍞",
-          description: "Too many carbs without protein isn't balanced",
+          text: "It tastes good",
+          emoji: "😋",
+          description: "True, but not the main reason.",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Eat only the fruit",
-          emoji: "🍎",
-          description: "Missing protein and complex carbs for energy",
+          text: "It makes you sleep",
+          emoji: "😴",
+          description: "Carbs might, but not protein.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Builds muscles and height",
+          emoji: "💪",
+          description: "Essential for your growth spurt.",
+          isCorrect: true
         }
       ]
     },
     {
       id: 4,
-      text: "You're growing taller and need energy. What's the best food choice?",
+      text: "You're thirsty. What should you drink?",
       options: [
         {
-          id: "a",
-          text: "Only sugary drinks and snacks",
-          emoji: "🥤",
-          description: "Sugar gives quick energy but no lasting nutrition",
+          id: "c",
+          text: "Energy drink",
+          emoji: "⚡",
+          description: "Too much caffeine and sugar.",
           isCorrect: false
         },
         {
-          id: "b",
-          text: "Mix of roti, dal, veggies, and milk",
-          emoji: "🥘",
-          description: "Complete nutrition supports growth and energy",
+          id: "a",
+          text: "Water",
+          emoji: "💧",
+          description: "The best hydration for your body.",
           isCorrect: true
         },
         {
-          id: "c",
-          text: "Skip meals to save time",
-          emoji: "⏰",
-          description: "Regular meals are important for growing bodies",
+          id: "b",
+          text: "Soda",
+          emoji: "🥤",
+          description: "Just liquid sugar.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "Friends order only fast food. You want to eat healthy. What do you suggest?",
+      text: "What should be on half your plate?",
       options: [
         {
-          id: "a",
-          text: "Order only fast food too",
-          emoji: "🍟",
-          description: "Peer pressure shouldn't affect your health choices",
-          isCorrect: false
-        },
-        {
           id: "b",
-          text: "Don't eat with friends",
-          emoji: "😔",
-          description: "You can eat healthy while being social",
+          text: "Rice",
+          emoji: "🍚",
+          description: "Rice is good, but veggies are key.",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Suggest balanced meal options",
-          emoji: "🥗",
-          description: "Healthy choices can influence friends positively",
+          text: "Meat",
+          emoji: "🥩",
+          description: "Protein is important, but not half the plate.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Fruits and Vegetables",
+          emoji: "🥦",
+          description: "Vitamins and minerals galore!",
           isCorrect: true
         }
       ]
@@ -149,14 +161,13 @@ const BalancedDietStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -167,8 +178,6 @@ const BalancedDietStory = () => {
     }, 1500);
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   const handleNext = () => {
     navigate("/student/health-male/teens/quiz-nutrition-teen");
   };
@@ -176,37 +185,37 @@ const BalancedDietStory = () => {
   return (
     <GameShell
       title="Balanced Diet Story"
-      subtitle={`Decision ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length * 5}
-      gameId="health-male-teen-11"
+      score={coins}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={11}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 11/100</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length * 5}</span>
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {questions[currentQuestion].text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

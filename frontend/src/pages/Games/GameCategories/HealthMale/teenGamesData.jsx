@@ -16,7 +16,7 @@ import buildIds from "../buildGameIds";
 
 export const healthMaleGameIdsTeen = buildIds("health-male", "teen");
 
-export const getHealthMaleTeenGames = (gameCompletionStatus)=> {
+export const getHealthMaleTeenGames = (gameCompletionStatus) => {
     const healthMaleGamesTeens = [
         {
             id: 'health-male-teen-1',
@@ -454,8 +454,8 @@ export const getHealthMaleTeenGames = (gameCompletionStatus)=> {
         },
         {
             id: 'health-male-teen-32',
-            title: 'Quiz on Male Reproductive Basics',
-            description: 'Which organ produces sperm? (a) Testes, (b) Lungs, (c) Heart). Correct = Testes.',
+            title: 'Quiz on Puberty Health',
+            description: 'Test your knowledge on puberty health and hygiene!',
             icon: <Brain className="w-6 h-6" />,
             difficulty: 'Easy',
             duration: '4 min',
@@ -463,13 +463,13 @@ export const getHealthMaleTeenGames = (gameCompletionStatus)=> {
             xp: 10,
             completed: gameCompletionStatus['health-male-teen-32'] || false,
             isSpecial: true,
-            path: '/student/health-male/teens/quiz-male-reproductive-basics-teen',
+            path: '/student/health-male/teens/quiz-puberty-health-teen',
             index: 31
         },
         {
             id: 'health-male-teen-33',
-            title: 'Reflex Awareness',
-            description: 'Tap ✅ for "Reproductive Health = Normal," ❌ for "Reproductive Health = Shame."',
+            title: 'Reflex Puberty Health',
+            description: 'Quick! React to puberty health scenarios!',
             icon: <Zap className="w-6 h-6" />,
             difficulty: 'Medium',
             duration: '3 min',
@@ -477,13 +477,13 @@ export const getHealthMaleTeenGames = (gameCompletionStatus)=> {
             xp: 10,
             completed: gameCompletionStatus['health-male-teen-33'] || false,
             isSpecial: true,
-            path: '/student/health-male/teens/reflex-awareness-teen',
+            path: '/student/health-male/teens/reflex-puberty-health-teen',
             index: 32
         },
         {
             id: 'health-male-teen-34',
-            title: 'Puzzle: Reproductive Match',
-            description: 'Match "Testes → Sperm, Penis → Transfer, Hormones → Changes."',
+            title: 'Puzzle: Puberty Health',
+            description: 'Match health concepts with their meanings!',
             icon: <Target className="w-6 h-6" />,
             difficulty: 'Medium',
             duration: '5 min',
@@ -491,13 +491,13 @@ export const getHealthMaleTeenGames = (gameCompletionStatus)=> {
             xp: 10,
             completed: gameCompletionStatus['health-male-teen-34'] || false,
             isSpecial: true,
-            path: '/student/health-male/teens/reproductive-match-puzzle-teen',
+            path: '/student/health-male/teens/puberty-health-puzzle-teen',
             index: 33
         },
         {
             id: 'health-male-teen-35',
-            title: 'Nocturnal Emission Story',
-            description: 'A boy has a wet dream. Is it dangerous? → No, it\'s natural.',
+            title: 'Shaving Story',
+            description: 'Learn the basics of shaving safely!',
             icon: <Shield className="w-6 h-6" />,
             difficulty: 'Easy',
             duration: '4 min',
@@ -505,13 +505,13 @@ export const getHealthMaleTeenGames = (gameCompletionStatus)=> {
             xp: 10,
             completed: gameCompletionStatus['health-male-teen-35'] || false,
             isSpecial: true,
-            path: '/student/health-male/teens/nocturnal-emission-story-teen',
+            path: '/student/health-male/teens/shaving-story-teen',
             index: 34
         },
         {
             id: 'health-male-teen-36',
-            title: 'Debate: Talking About Reproductive Health',
-            description: 'Should reproductive health be taught openly? → Yes, responsibly.',
+            title: 'Debate: Shaving',
+            description: 'Debate common myths and facts about shaving!',
             icon: <MessageCircle className="w-6 h-6" />,
             difficulty: 'Medium',
             duration: '5 min',
@@ -519,13 +519,13 @@ export const getHealthMaleTeenGames = (gameCompletionStatus)=> {
             xp: 10,
             completed: gameCompletionStatus['health-male-teen-36'] || false,
             isSpecial: true,
-            path: '/student/health-male/teens/reproductive-health-debate-teen',
+            path: '/student/health-male/teens/shaving-debate-teen',
             index: 35
         },
         {
             id: 'health-male-teen-37',
-            title: 'Journal of Puberty Awareness',
-            description: 'Write: "One fact I learned about reproductive health is ___."',
+            title: 'Journal of Teen Hygiene',
+            description: 'Reflect on your personal hygiene habits.',
             icon: <BookOpen className="w-6 h-6" />,
             difficulty: 'Easy',
             duration: '5 min',
@@ -533,13 +533,13 @@ export const getHealthMaleTeenGames = (gameCompletionStatus)=> {
             xp: 10,
             completed: gameCompletionStatus['health-male-teen-37'] || false,
             isSpecial: true,
-            path: '/student/health-male/teens/puberty-awareness-journal',
+            path: '/student/health-male/teens/teen-hygiene-journal',
             index: 36
         },
         {
             id: 'health-male-teen-38',
-            title: 'Simulation: Respect Boundaries',
-            description: 'Teen is pressured by peers to share private jokes. Should he? → No.',
+            title: 'Simulation: Teen Shaving',
+            description: 'Simulate the shaving process step-by-step!',
             icon: <Smartphone className="w-6 h-6" />,
             difficulty: 'Medium',
             duration: '4 min',
@@ -547,13 +547,13 @@ export const getHealthMaleTeenGames = (gameCompletionStatus)=> {
             xp: 10,
             completed: gameCompletionStatus['health-male-teen-38'] || false,
             isSpecial: true,
-            path: '/student/health-male/teens/respect-boundaries-simulation',
+            path: '/student/health-male/teens/teen-shaving-simulation',
             index: 37
         },
         {
             id: 'health-male-teen-39',
-            title: 'Reflex Health Choice',
-            description: 'Tap 🏥 for "Seek Doctor if Concerned," ❌ for "Ignore Issues."',
+            title: 'Reflex Shaving',
+            description: 'Quick decisions for a safe shave!',
             icon: <Shield className="w-6 h-6" />,
             difficulty: 'Medium',
             duration: '3 min',
@@ -561,13 +561,13 @@ export const getHealthMaleTeenGames = (gameCompletionStatus)=> {
             xp: 10,
             completed: gameCompletionStatus['health-male-teen-39'] || false,
             isSpecial: true,
-            path: '/student/health-male/teens/reflex-health-choice-teen',
+            path: '/student/health-male/teens/reflex-shaving-teen',
             index: 38
         },
         {
             id: 'health-male-teen-40',
-            title: 'Badge: Repro Health Aware',
-            description: 'Complete 5 reproductive health learning tasks to earn your badge.',
+            title: 'Badge: Shaving Pro',
+            description: 'Earn your badge by mastering shaving knowledge!',
             icon: <Badge className="w-6 h-6" />,
             difficulty: 'Medium',
             duration: '5 min',
@@ -575,7 +575,7 @@ export const getHealthMaleTeenGames = (gameCompletionStatus)=> {
             xp: 10,
             completed: gameCompletionStatus['health-male-teen-40'] || false,
             isSpecial: true,
-            path: '/student/health-male/teens/repro-health-aware-teen-badge',
+            path: '/student/health-male/teens/shaving-pro-badge-teen',
             index: 39
         },
         {
@@ -713,6 +713,10 @@ export const getHealthMaleTeenGames = (gameCompletionStatus)=> {
             duration: '5 min',
             coins: 5,
             xp: 10,
+            completed: gameCompletionStatus['health-male-teen-50'] || false,
+            isSpecial: true,
+            path: '/student/health-male/teens/hygiene-pro-badge-50',
+            index: 49
         },
         {
             id: 'health-male-teen-51',

@@ -5,12 +5,17 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const HabitBuilderPuzzle = () => {
   const navigate = useNavigate();
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [currentPuzzle, setCurrentPuzzle] = useState(0);
   const [selectedMatch, setSelectedMatch] = useState(null);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+
+  // Hardcode rewards
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const TOTAL_LEVELS = 5;
 
   const puzzles = [
     {
@@ -66,15 +71,15 @@ const HabitBuilderPuzzle = () => {
   ];
 
   const handleMatch = (matchId) => {
+    if (gameFinished) return;
+
     const currentPuzzleData = puzzles[currentPuzzle];
     const match = currentPuzzleData.matches.find(m => m.id === matchId);
     setSelectedMatch(matchId);
 
     if (match.correct) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setShowCoinFeedback(currentPuzzleData.id);
-      setTimeout(() => setShowCoinFeedback(null), 1500);
     }
 
     setTimeout(() => {
@@ -94,15 +99,17 @@ const HabitBuilderPuzzle = () => {
   return (
     <GameShell
       title="Puzzle: Habit Builder"
-      subtitle={`Puzzle ${currentPuzzle + 1}/5: ${puzzles[currentPuzzle].item}`}
+      subtitle={`Puzzle ${currentPuzzle + 1}/${TOTAL_LEVELS}: ${puzzles[currentPuzzle].item}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="health-male-teen-94"
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={94}
+      maxScore={TOTAL_LEVELS}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
@@ -111,8 +118,8 @@ const HabitBuilderPuzzle = () => {
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/5: {puzzles[currentPuzzle].item}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-white/80">Puzzle {currentPuzzle + 1}/{TOTAL_LEVELS}: {puzzles[currentPuzzle].item}</span>
+            <span className="text-yellow-400 font-bold">Score: {score}</span>
           </div>
 
           <p className="text-white text-lg mb-6 text-center">
@@ -121,13 +128,6 @@ const HabitBuilderPuzzle = () => {
 
           <div className="grid grid-cols-1 gap-6">
             <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-              {showCoinFeedback === puzzles[currentPuzzle].id && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                    +1
-                  </div>
-                </div>
-              )}
               <div className="flex items-center justify-center mb-4">
                 <div className="text-4xl mr-3">{puzzles[currentPuzzle].emoji}</div>
                 <div className="text-white text-xl font-bold">{puzzles[currentPuzzle].item}</div>
@@ -144,15 +144,14 @@ const HabitBuilderPuzzle = () => {
                       key={match.id}
                       onClick={() => handleMatch(match.id)}
                       disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${
-                        !selectedMatch
+                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${!selectedMatch
                           ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
                           : isCorrect
-                          ? 'bg-green-100/20 border-green-500 text-white'
-                          : isWrong
-                          ? 'bg-red-100/20 border-red-500 text-white'
-                          : 'bg-gray-100/20 border-gray-500 text-white'
-                      }`}
+                            ? 'bg-green-100/20 border-green-500 text-white'
+                            : isWrong
+                              ? 'bg-red-100/20 border-red-500 text-white'
+                              : 'bg-gray-100/20 border-gray-500 text-white'
+                        }`}
                     >
                       {isCorrect && (
                         <div className="absolute -top-2 -right-2 text-2xl">✅</div>

@@ -1,119 +1,244 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { Award, Heart, Brain, Shield, Star, Smile } from "lucide-react";
 
 const EmotionSmartTeenBadge = () => {
   const navigate = useNavigate();
-  const [completedTasks, setCompletedTasks] = useState([]);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const tasks = [
-    { id: 1, text: "Recognize stress triggers", emoji: "🎯", completed: false },
-    { id: 2, text: "Practice relaxation techniques", emoji: "🧘", completed: false },
-    { id: 3, text: "Express emotions healthily", emoji: "💬", completed: false },
-    { id: 4, text: "Seek support when needed", emoji: "🤝", completed: false },
-    { id: 5, text: "Build emotional resilience", emoji: "💪", completed: false }
+  // Hardcode rewards
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const questions = [
+    {
+      id: 1,
+      text: "What is emotional intelligence?",
+      icon: <Brain className="w-12 h-12 text-purple-400" />,
+      options: [
+        {
+          id: "b",
+          text: "Being smart at math",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Understanding & managing emotions",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Ignoring emotions",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "Why is empathy important?",
+      icon: <Heart className="w-12 h-12 text-red-400" />,
+      options: [
+        {
+          id: "a",
+          text: "Connects us to others",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Makes you weak",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Wastes time",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "How to handle rejection?",
+      icon: <Shield className="w-12 h-12 text-blue-400" />,
+      options: [
+        {
+          id: "b",
+          text: "Seek revenge",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Give up forever",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Accept and move on",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "What is a healthy boundary?",
+      icon: <Star className="w-12 h-12 text-yellow-400" />,
+      options: [
+        {
+          id: "a",
+          text: "Saying no when needed",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Always saying yes",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Never talking to anyone",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "Self-care includes...",
+      icon: <Smile className="w-12 h-12 text-green-400" />,
+      options: [
+        {
+          id: "b",
+          text: "Working 24/7",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Rest and hobbies",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Eating junk food only",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleTaskComplete = (taskId) => {
-    if (!completedTasks.includes(taskId)) {
-      setCompletedTasks(prev => [...prev, taskId]);
-      showCorrectAnswerFeedback(2, true);
-    }
-  };
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    setAnswered(true);
+    resetFeedback();
 
-  useEffect(() => {
-    if (completedTasks.length === tasks.length && !gameFinished) {
-      setGameFinished(true);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  }, [completedTasks, gameFinished]);
+
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      } else {
+        setGameFinished(true);
+      }
+    }, 1500);
+  };
 
   const handleNext = () => {
     navigate("/games/health-male/teens");
   };
 
+  const currentQ = questions[currentQuestion];
+
   return (
     <GameShell
       title="Badge: Emotion Smart Teen"
-      subtitle={`Complete ${completedTasks.length} of ${tasks.length} emotional health scenarios`}
+      subtitle={!gameFinished ? `Question ${currentQuestion + 1} of ${questions.length}` : "Badge Earned!"}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={completedTasks.length * 2}
+      score={score}
       gameId="health-male-teen-60"
       gameType="health-male"
-      totalLevels={60}
-      currentLevel={60}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🏆</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Emotion Smart Challenge</h3>
-            <p className="text-white/90">
-              Handle 5 emotional health scenarios to earn your badge.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            {tasks.map((task) => {
-              const isCompleted = completedTasks.includes(task.id);
-
-              return (
-                <button
-                  key={task.id}
-                  onClick={() => handleTaskComplete(task.id)}
-                  disabled={isCompleted}
-                  className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${
-                    isCompleted
-                      ? 'bg-green-100/20 border-green-500 text-white'
-                      : 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className={`text-3xl mr-4 ${isCompleted ? 'opacity-100' : 'opacity-60'}`}>
-                        {task.emoji}
-                      </div>
-                      <div className="text-left">
-                        <h3 className={`font-bold text-lg ${isCompleted ? 'text-green-300' : 'text-white'}`}>
-                          {isCompleted ? '✅ ' : '☐ '}{task.text}
-                        </h3>
-                      </div>
-                    </div>
-                    {isCompleted && (
-                      <div className="text-2xl">🎉</div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-8xl mb-4">🏆</div>
-                <h3 className="text-3xl font-bold text-white mb-2">Emotion Smart Teen Badge Earned!</h3>
-                <p className="text-white/90 mb-4 text-lg">
-                  Congratulations! You've mastered all emotional health scenarios and earned the Emotion Smart Teen Badge!
-                </p>
-                <div className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-full p-4 inline-block mb-4">
-                  <div className="text-white font-bold text-xl">EMOTION SMART TEEN</div>
-                </div>
-                <p className="text-white/80">
-                  You completed all 5 emotional health scenarios perfectly! You're emotionally intelligent! ✨
-                </p>
-              </div>
+        {!gameFinished ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <div className="flex justify-between items-center mb-6">
+              <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+              <span className="text-yellow-400 font-bold">Score: {score}</span>
             </div>
-          )}
-        </div>
+
+            <div className="flex flex-col items-center mb-8">
+              <div className="mb-4 p-4 bg-white/10 rounded-full">
+                {currentQ.icon}
+              </div>
+              <h3 className="text-2xl font-bold text-white text-center mb-2">
+                {currentQ.text}
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              {currentQ.options.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.isCorrect)}
+                  disabled={answered}
+                  className={`p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 text-left ${answered
+                      ? option.isCorrect
+                        ? "bg-green-500/50 border-2 border-green-400 text-white"
+                        : "bg-white/10 opacity-50 text-white"
+                      : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-lg"
+                    }`}
+                >
+                  {option.text}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="mb-6 inline-block p-6 bg-yellow-400/20 rounded-full">
+              <Award className="w-24 h-24 text-yellow-400" />
+            </div>
+
+            <h3 className="text-3xl font-bold text-white mb-4">Emotion Smart Teen Badge Earned!</h3>
+            <p className="text-xl text-white/90 mb-6">
+              You scored {score} out of {questions.length}!
+            </p>
+
+            <div className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-full py-3 px-8 inline-block mb-8 shadow-lg">
+              <span className="text-white font-bold text-xl tracking-wider">EMOTION SMART TEEN</span>
+            </div>
+
+            <p className="text-white/80 mb-8 max-w-md mx-auto">
+              You've mastered the basics of emotional intelligence. Keep practicing empathy and self-care!
+            </p>
+
+            <button
+              onClick={handleNext}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all transform hover:scale-105"
+            >
+              Back to Menu
+            </button>
+          </div>
+        )}
       </div>
     </GameShell>
   );

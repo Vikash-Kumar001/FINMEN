@@ -1,56 +1,49 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SelfCareJournal = () => {
   const navigate = useNavigate();
-  const [answer, setAnswer] = useState("");
-  const [currentPrompt, setCurrentPrompt] = useState(0);
-  const [responses, setResponses] = useState([]);
+  const location = useLocation();
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-7";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
+  const [journalEntry, setJournalEntry] = useState("");
+  const [coins, setCoins] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const prompts = [
-    {
-      id: 1,
-      title: "Daily Hygiene Routine",
-      text: "One hygiene routine I started as a teen is ___."
-    },
-    {
-      id: 2,
-      title: "Personal Care Discovery",
-      text: "The first time I learned about ___ hygiene was ___."
-    },
-    {
-      id: 3,
-      title: "Hygiene Challenges",
-      text: "A hygiene challenge I faced as a teen was ___."
-    },
-    {
-      id: 4,
-      title: "Hygiene Success Story",
-      text: "One hygiene habit that makes me feel confident is ___."
-    },
-    {
-      id: 5,
-      title: "Future Hygiene Goals",
-      text: "In the future, I want to improve my ___ hygiene routine."
-    }
+  const journalPrompts = [
+    "One hygiene routine I started as a teen is...",
+    "When I feel fresh and clean, I feel...",
+    "My favorite self-care activity is...",
+    "I take care of my body because...",
+    "Confidence to me means..."
   ];
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (answer.trim()) {
-      setResponses([...responses, { prompt: currentPrompt, answer }]);
-      setAnswer("");
+  const handleJournalSubmit = () => {
+    if (journalEntry.trim().length >= 5) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      setJournalEntry(""); // Clear for next prompt
 
-      if (currentPrompt < prompts.length - 1) {
-        setCurrentPrompt(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-        showCorrectAnswerFeedback(5, true);
-      }
+      setTimeout(() => {
+        if (currentPromptIndex < journalPrompts.length - 1) {
+          setCurrentPromptIndex(prev => prev + 1);
+        } else {
+          setGameFinished(true);
+        }
+      }, 1500);
     }
   };
 
@@ -58,94 +51,98 @@ const SelfCareJournal = () => {
     navigate("/student/health-male/teens/daily-routine-simulation");
   };
 
+  const currentPrompt = journalPrompts[currentPromptIndex];
+  const wordCount = journalEntry.trim().split(/\s+/).filter(word => word.length > 0).length;
+  const isLongEnough = wordCount >= 5;
+
   return (
     <GameShell
       title="Journal of Self-Care"
-      subtitle={`Prompt ${currentPrompt + 1} of ${prompts.length}`}
+      subtitle={`Entry ${currentPromptIndex + 1} of ${journalPrompts.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={responses.length * 1}
-      gameId="health-male-teen-7"
+      score={coins}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={10}
-      currentLevel={7}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={journalPrompts.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="text-center mb-6">
-            <div className="text-5xl mb-4">📖</div>
-            <h3 className="text-2xl font-bold text-white mb-2">{prompts[currentPrompt].title}</h3>
+            <div className="text-6xl mb-4">📓</div>
+            <h3 className="text-2xl font-bold text-white mb-2">My Self-Care Journal</h3>
             <p className="text-white/90 mb-4">
-              {prompts[currentPrompt].text}
+              Reflect on your growth and habits.
             </p>
-            <div className="flex justify-center gap-2 mb-4">
-              {prompts.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-3 h-3 rounded-full ${
-                    index <= currentPrompt ? 'bg-green-500' : 'bg-white/30'
-                  }`}
-                />
-              ))}
-            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-white font-medium mb-2">
-                Your response:
-              </label>
-              <textarea
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder="Write your thoughts here..."
-                className="w-full p-4 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:border-white/50 resize-none"
-                rows={4}
-                maxLength={200}
-              />
-              <div className="text-right text-white/60 text-sm mt-1">
-                {answer.length}/200 characters
+          {!gameFinished ? (
+            <>
+              <div className="bg-white/10 rounded-xl p-4 mb-6">
+                <div className="text-center mb-4">
+                  <div className="text-2xl mb-2">💭</div>
+                  <p className="text-white font-medium text-lg">{currentPrompt}</p>
+                </div>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={!answer.trim()}
-              className={`w-full py-3 px-6 rounded-xl font-bold transition-all ${
-                answer.trim()
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white'
-                  : 'bg-gray-500 text-gray-300 cursor-not-allowed'
-              }`}
-            >
-              {currentPrompt < prompts.length - 1 ? 'Next Prompt' : 'Complete Journal'}
-            </button>
-          </form>
-
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-6xl mb-2">📝</div>
-                <h3 className="text-2xl font-bold text-white mb-2">Journal Complete!</h3>
-                <p className="text-white/90 mb-4">
-                  Excellent reflection! You've completed all 5 journal prompts about your hygiene journey.
-                </p>
-
-                <div className="space-y-3 mb-4">
-                  {responses.map((response, index) => (
-                    <div key={index} className="bg-white/10 rounded-xl p-3 text-left">
-                      <p className="text-white font-medium mb-1">{prompts[index].title}</p>
-                      <p className="text-white/80 italic">"{response.answer}"</p>
-                    </div>
-                  ))}
+              <div className="space-y-4">
+                <div className="relative">
+                  <textarea
+                    value={journalEntry}
+                    onChange={(e) => setJournalEntry(e.target.value)}
+                    placeholder="Type your reflection here..."
+                    className="w-full h-48 bg-white/10 border border-white/30 rounded-xl p-4 text-white placeholder-white/50 resize-none focus:outline-none focus:border-white/50 transition-all"
+                    maxLength={500}
+                  />
+                  <div className="absolute bottom-3 right-3 text-white/60 text-sm">
+                    {wordCount}/5 words
+                  </div>
                 </div>
 
-                <div className="flex justify-center gap-2">
-                  <span className="text-yellow-500 text-2xl">+{responses.length}</span>
+                <div className="flex justify-between items-center">
+                  <div className="text-white/80">
+                    {isLongEnough ? (
+                      <span className="flex items-center text-green-400">
+                        <span className="text-xl mr-2">✅</span>
+                        Ready to submit.
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <span className="text-xl mr-2">📝</span>
+                        Write at least 5 words...
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={handleJournalSubmit}
+                    disabled={!isLongEnough}
+                    className={`px-6 py-3 rounded-xl font-bold transition-all transform hover:scale-105 ${isLongEnough
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white'
+                      : 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                      }`}
+                  >
+                    Submit Entry ✨
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="text-center space-y-4 mt-8">
+              <div className="text-green-400">
+                <div className="text-8xl mb-4">🌟</div>
+                <h3 className="text-3xl font-bold text-white mb-2">Journal Complete!</h3>
+                <p className="text-white/90 mb-4 text-lg">
+                  Self-reflection is a powerful tool for growth. Keep it up!
+                </p>
+                <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-full p-4 inline-block mb-4">
+                  <div className="text-white font-bold text-xl">SELF-CARE WRITER</div>
                 </div>
               </div>
             </div>

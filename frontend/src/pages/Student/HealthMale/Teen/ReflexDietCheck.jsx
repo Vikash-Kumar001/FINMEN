@@ -1,208 +1,284 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 5;
 
 const ReflexDietCheck = () => {
   const navigate = useNavigate();
-  const [currentRound, setCurrentRound] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [showQuestion, setShowQuestion] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(3);
-  const [roundFinished, setRoundFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const location = useLocation();
 
-  const scenarios = [
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-13";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
+
+  const questions = [
     {
       id: 1,
-      text: "Quick! Choose for lunch:",
-      correctOption: "balanced",
+      question: "You need energy for sports. Pick the best fuel!",
+      correctAnswer: "Banana",
       options: [
-        { id: "balanced", text: "🥗 Balanced Plate", emoji: "🥗", isCorrect: true },
-        { id: "pizza", text: "🍕 Pizza Every Day", emoji: "🍕", isCorrect: false }
+        { text: "Banana", isCorrect: true, emoji: "🍌" },
+        { text: "Candy", isCorrect: false, emoji: "🍬" },
+        { text: "Soda", isCorrect: false, emoji: "🥤" },
+        { text: "Chips", isCorrect: false, emoji: "🍟" }
       ]
     },
     {
       id: 2,
-      text: "Fast food or healthy choice?",
-      correctOption: "healthy",
+      question: "It's lunch time. Pick the balanced meal!",
+      correctAnswer: "Rice & Dal",
       options: [
-        { id: "healthy", text: "🥘 Home Cooked", emoji: "🥘", isCorrect: true },
-        { id: "fastfood", text: "🍔 Fast Food", emoji: "🍔", isCorrect: false }
+        { text: "Burger", isCorrect: false, emoji: "🍔" },
+        { text: "Rice & Dal", isCorrect: true, emoji: "🍛" },
+        { text: "Pizza", isCorrect: false, emoji: "🍕" },
+        { text: "Cake", isCorrect: false, emoji: "🍰" }
       ]
     },
     {
       id: 3,
-      text: "Snack time decision:",
-      correctOption: "fruit",
+      question: "You want stronger bones. Pick the calcium source!",
+      correctAnswer: "Milk",
       options: [
-        { id: "fruit", text: "🍎 Fresh Fruit", emoji: "🍎", isCorrect: true },
-        { id: "chips", text: "🥔 Chips", emoji: "🥔", isCorrect: false }
+        { text: "Cola", isCorrect: false, emoji: "🥤" },
+        { text: "Tea", isCorrect: false, emoji: "☕" },
+        { text: "Milk", isCorrect: true, emoji: "🥛" },
+        { text: "Juice", isCorrect: false, emoji: "🧃" }
       ]
     },
     {
       id: 4,
-      text: "Breakfast choice:",
-      correctOption: "oats",
+      question: "Late night snack. Pick the healthy option!",
+      correctAnswer: "Nuts",
       options: [
-        { id: "oats", text: "🥣 Healthy Oats", emoji: "🥣", isCorrect: true },
-        { id: "cereal", text: "🧈 Sugary Cereal", emoji: "🧈", isCorrect: false }
+        { text: "Cookies", isCorrect: false, emoji: "🍪" },
+        { text: "Ice Cream", isCorrect: false, emoji: "🍦" },
+        { text: "Donut", isCorrect: false, emoji: "🍩" },
+        { text: "Nuts", isCorrect: true, emoji: "🥜" }
       ]
     },
     {
       id: 5,
-      text: "Final choice - dinner:",
-      correctOption: "veggies",
+      question: "You are thirsty. Pick the best hydration!",
+      correctAnswer: "Water",
       options: [
-        { id: "veggies", text: "🥦 Lots of Veggies", emoji: "🥦", isCorrect: true },
-        { id: "fries", text: "🍟 Only Fries", emoji: "🍟", isCorrect: false }
+        { text: "Energy Drink", isCorrect: false, emoji: "⚡" },
+        { text: "Milkshake", isCorrect: false, emoji: "🥤" },
+        { text: "Water", isCorrect: true, emoji: "💧" },
+        { text: "Beer", isCorrect: false, emoji: "🍺" }
       ]
     }
   ];
 
+  // Update ref when currentRound changes
   useEffect(() => {
-    if (showQuestion && timeLeft > 0) {
-      const timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (showQuestion && timeLeft === 0) {
-      handleTimeout();
-    }
-  }, [showQuestion, timeLeft]);
-
-  useEffect(() => {
-    if (currentRound < scenarios.length) {
-      startRound();
-    } else {
-      setGameFinished(true);
-    }
+    currentRoundRef.current = currentRound;
   }, [currentRound]);
 
-  const startRound = () => {
-    setShowQuestion(true);
-    setTimeLeft(3);
-    setRoundFinished(false);
+  // Reset timer when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+  // Handle time up - move to next question or show results
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
+    resetFeedback();
+
+    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
+
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+      }
+    }, 1000);
+  }, []);
+
+  // Timer effect - countdown from 5 seconds for each question
+  useEffect(() => {
+    if (gameState !== "playing") {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+
+    // Check if game should be finished
+    if (currentRoundRef.current > TOTAL_ROUNDS) {
+      setGameState("finished");
+      return;
+    }
+
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // Start countdown timer
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          // Time's up for this round
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          handleTimeUp();
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    resetFeedback();
   };
 
-  const handleChoice = (optionId) => {
-    if (roundFinished) return;
+  const handleAnswer = (option) => {
+    if (gameState !== "playing" || answered || currentRound > TOTAL_ROUNDS) return;
 
-    const currentScenario = scenarios[currentRound];
-    const selectedOption = currentScenario.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
+    // Clear the timer immediately when user answers
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
 
-    if (isCorrect) {
+    setAnswered(true);
+    resetFeedback();
+
+    if (option.isCorrect) {
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, {
-      round: currentRound,
-      optionId,
-      isCorrect,
-      timeLeft
-    }]);
-
-    setRoundFinished(true);
-    setShowQuestion(false);
-
+    // Move to next round or show results after a short delay
     setTimeout(() => {
-      if (currentRound < scenarios.length - 1) {
-        setCurrentRound(prev => prev + 1);
+      if (currentRound >= TOTAL_ROUNDS) {
+        setGameState("finished");
       } else {
-        setGameFinished(true);
+        setCurrentRound((prev) => prev + 1);
       }
-    }, 1500);
+    }, 500);
   };
-
-  const handleTimeout = () => {
-    setChoices([...choices, {
-      round: currentRound,
-      optionId: null,
-      isCorrect: false,
-      timeLeft: 0
-    }]);
-
-    setRoundFinished(true);
-    setShowQuestion(false);
-
-    setTimeout(() => {
-      if (currentRound < scenarios.length - 1) {
-        setCurrentRound(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
-  };
-
-  const getCurrentScenario = () => scenarios[currentRound];
 
   const handleNext = () => {
     navigate("/student/health-male/teens/nutrient-match-puzzle");
   };
 
-  const correctAnswers = choices.filter(c => c.isCorrect).length;
-  const totalCoins = correctAnswers * 3;
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Diet Check"
-      subtitle={`Round ${currentRound + 1} of ${scenarios.length}`}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Pick the healthy choice!` : "Pick the healthy choice!"}
       onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={totalCoins}
-      gameId="health-male-teen-13"
+      nextEnabled={gameState === "finished"}
+      showGameOver={gameState === "finished"}
+      score={score}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={13}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={TOTAL_ROUNDS}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 13/100</span>
-            <span className="text-yellow-400 font-bold">Coins: {totalCoins}</span>
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">🥗</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Choose the healthiest food quickly!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
           </div>
+        )}
 
-          {!showQuestion ? (
-            <div className="text-center">
-              <p className="text-white text-lg mb-4">Get ready for the next challenge!</p>
-              <p className="text-white/80">Quick! Tap the healthy choice when it appears!</p>
-            </div>
-          ) : (
-            <>
-              <div className="text-center mb-6">
-                <p className="text-white text-lg mb-2">{getCurrentScenario().text}</p>
-                <div className="text-4xl font-bold text-yellow-400 mb-2">
-                  {timeLeft}
-                </div>
-                <p className="text-white/80">seconds left!</p>
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            {/* Status Bar with Timer */}
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                {getCurrentScenario().options.map(option => (
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.id)}
-                    className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-center ${
-                      option.isCorrect
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
-                        : 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
-                    } text-white`}
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <div className="text-3xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-lg">{option.text}</h3>
+                    <div className="text-4xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>
-            </>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

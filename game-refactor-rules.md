@@ -106,6 +106,7 @@ const totalXp = 10;
     *   `handleNext`: Navigate to menu if finished.
 8.  **Apply Styling:** Wrap in `GameShell` and apply Tailwind classes.
 9.  **Verify Timer (Reflex only):** Ensure `useEffect` depends on `currentRound`.
+10. **Remove the unused variable in new refactore code mostly gameData and location** First check if there is being used or not if not then remove it
 
 ## 5. Common Pitfalls to Avoid
 *   **Forgot `currentRound` dependency:** Causes timer to stop working after Q1 in Reflex games.

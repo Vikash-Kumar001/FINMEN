@@ -39,7 +39,7 @@
 - Cultural context awareness
 - Local financial instruments integration
 - Indian education system alignment
-- Multi-tenant architecture for schools & colleges
+- Multi-tenant architecture for schools
 
 </td>
 <td width="50%">
@@ -57,7 +57,7 @@
 <td width="50%">
 
 ### 🎮 **Advanced Gamification**
-- 1000+ unique daily challenges
+- 2200+ educational games across multiple categories
 - Real-time leaderboards
 - XP and HealCoins reward system
 - Multi-tier progression system
@@ -188,13 +188,12 @@ graph TB
 
 </details>
 
-### 🏫 **School & College Management**
+### 🏫 **School Management**
 
 <details>
 <summary><strong>📚 Multi-Tenant Educational Institution Platform</strong></summary>
 
 - **School Management**: Complete school administration system
-- **College Management**: College-specific features and workflows
 - **Class Management**: Class creation and student assignment
 - **Timetable Management**: Schedule and timetable creation
 - **Fee Management**: Fee structure and payment tracking
@@ -243,12 +242,6 @@ graph TB
 <details>
 <summary><strong>🎮 Multi-Layered Engagement Framework</strong></summary>
 
-#### **1000+ Daily Challenges:**
-- **Unique Challenge Pool**: 1000 distinct challenges covering all aspects
-- **Daily Selection**: 10 different challenges shown each day
-- **No Repetition**: Challenges don't repeat until all 1000 are completed
-- **Auto-Reset**: Cycle restarts after completing all challenges
-
 #### **Reward Economy:**
 - **HealCoins**: Virtual currency earned through activities
 - **XP System**: Experience points for level progression
@@ -296,14 +289,14 @@ graph TB
 - **Personalization**: AI-driven content recommendations and learning paths
 - **Real-time Updates**: Live notifications and progress tracking
 - **Profile Management**: Comprehensive profile editing with avatar upload
-- **1000+ Educational Games**: Access to all game categories
+- **2200+ Educational Games**: Access to all game categories
 - **Journal System**: Personal journaling and reflection
 - **Assignment Tracking**: View and submit assignments
 - **Career Portal**: Job openings and application tracking
 - **Subscription Management**: Manage premium subscriptions
 - **Wallet & Rewards**: Track coins, XP, and redeem rewards
 
-### 👨‍🏫 **Educator Portal**
+### 👨‍🏫 **Teacher Portal**
 - **Class Analytics**: Aggregated wellness and learning insights
 - **Student Management**: Student progress monitoring and support
 - **Resource Library**: Educational materials and curriculum tools
@@ -336,12 +329,6 @@ graph TB
 - **Subscription Management**: Plan upgrades and billing
 - **Real-time Updates**: Live notifications of child activities
 
-### 🏪 **Seller Dashboard**
-- **Product Management**: Add/edit/delete items with pricing
-- **Voucher Redemption**: QR code validation and approval
-- **Sales Analytics**: Revenue tracking and commission management
-- **Real-time Updates**: Live sales and redemption notifications
-
 ### 🏢 **CSR/Sponsor Dashboard**
 - **Impact Metrics**: Students benefitted and value funded
 - **Regional Analysis**: Geographic impact distribution
@@ -358,7 +345,7 @@ graph TB
 
 ## 🎮 Comprehensive Game Ecosystem
 
-### **Game Categories (1000+ Games)**
+### **Game Categories (2200+ Games)**
 
 The platform features an extensive collection of educational games organized into multiple categories, each with age-appropriate content for **Kids (8-15)** and **Teens (16-25)**:
 
@@ -366,7 +353,7 @@ The platform features an extensive collection of educational games organized int
 - **Privacy & Security**: Password sharing, privacy settings, OTP fraud prevention
 - **Cyberbullying & Respect**: Anti-bullying reflexes, empathy building, upstander simulation
 - **AI & Future Tech**: AI jobs debate, deepfake detection, digital reputation
-- **Career Planning**: College applications, entrepreneurship, career puzzles
+- **Career Planning**: Entrepreneurship, career puzzles, professional development
 - **Digital Wellness**: Screen time management, digital detox, sleep hygiene
 
 #### **2. Brain (Cognitive Development)**
@@ -425,7 +412,7 @@ The platform features an extensive collection of educational games organized int
 - Water and energy conservation
 
 ### **Game Features:**
-- **1000+ Unique Games**: Comprehensive library covering all learning domains
+- **2200+ Unique Games**: Comprehensive library covering all learning domains
 - **Age-Appropriate Content**: Separate modules for Kids and Teens
 - **Real-time Scoring**: Live XP and coin updates via Socket.IO
 - **Progress Tracking**: Detailed completion analytics and achievements
@@ -533,10 +520,10 @@ CLOUDINARY_API_SECRET=your_api_secret
 AIML_SERVICE_URL=http://localhost:5001
 
 # CORS Configuration
-CLIENT_URL=http://localhost:3000,http://localhost:5173
+CLIENT_URL=http://localhost:3000
 
 # Socket.IO Configuration
-SOCKET_CORS_ORIGIN=http://localhost:3000,http://localhost:5173
+SOCKET_CORS_ORIGIN=http://localhost:3000
 ```
 
 </details>
@@ -721,10 +708,6 @@ wise-student/
 │   │   │   │   └── Sustainability/ # Sustainability games
 │   │   │   ├── School/           # School pages (35+ pages)
 │   │   │   │   └── ...           # School management pages
-│   │   │   ├── College/          # College-specific pages
-│   │   │   │   ├── AlumniNetwork.jsx
-│   │   │   │   ├── PlacementOfficerDashboard.jsx
-│   │   │   │   └── ...           # College management pages
 │   │   │   ├── CSR/              # CSR dashboard pages
 │   │   │   │   ├── CSRDashboard.jsx
 │   │   │   │   ├── CSRCampaigns.jsx
@@ -733,7 +716,6 @@ wise-student/
 │   │   │   │   ├── ParentDashboard.jsx
 │   │   │   │   ├── ChildProgress.jsx
 │   │   │   │   └── ...           # Parent management pages
-│   │   │   └── Seller/           # Seller dashboard
 │   │   ├── services/             # API service layers
 │   │   │   ├── authService.js    # Authentication API
 │   │   │   ├── gameService.js    # Game API
@@ -794,14 +776,10 @@ wise-student/
 - **Educator**: Student management, progress tracking, redemption approval
 - **Admin**: Platform management, user approval, system configuration
 - **Parent**: Child progress monitoring, subscription management
-- **Seller**: Product management, voucher redemption, sales analytics
 - **CSR/Sponsor**: Impact tracking, report generation, regional analysis
 
 ### **Educational Institution Roles:**
 - **School Admin/Teacher/Student/Parent**: School-specific management
-- **College Admin/HOD/Faculty/Student/Parent**: College-specific features
-- **Placement Officer**: Job placement and career guidance
-- **Alumni**: Network and mentorship features
 
 ---
 
@@ -862,7 +840,7 @@ python app.py
 ```
 
 ### **6. Access the Application**
-- **Frontend**: http://localhost:5173 (Vite default port)
+- **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5000
 - **AI/ML Service**: http://localhost:5001
 
@@ -911,44 +889,76 @@ npm test
 
 <div align="center">
 
+#### 🎯 **Project Leadership**
+
+<table>
+<tr>
+<td align="center" colspan="1">
+<img src="https://github.com/Vikash-Kumar001.png" width="120px;" alt="Vikash Kumar"/><br />
+<sub><b>Vikash Kumar</b></sub><br />
+<sub><b>Team Leader & Full Stack Architect</b></sub><br />
+<sub>📍 Wazirabad, Gurgaon, India</sub><br />
+<a href="https://github.com/Vikash-Kumar001" target="_blank">
+  <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub"/>
+</a>
+<a href="https://www.linkedin.com/in/vikash-kumar-2068b9219/" target="_blank">
+  <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white" alt="LinkedIn"/>
+</a>
+</td>
+</tr>
+</table>
+
+<p align="center">
+  <em>This project is developed under the technical leadership and guidance of <b>Vikash Kumar</b></em>
+</p>
+
+---
+
+#### 💻 **Development Team**
+
 <table>
 <tr>
 <td align="center">
-<img src="https://github.com/vikash-kumar.png" width="100px;" alt="Vikash Kumar"/><br />
-<sub><b>Vikash Kumar</b></sub><br />
-<sub>Backend Architect</sub>
-</td>
-<td align="center">
-<img src="https://github.com/tilak-devi.png" width="100px;" alt="Tilak Devi"/><br />
-<sub><b>Tilak Devi</b></sub><br />
-<sub>Backend Developer</sub>
-</td>
-<td align="center">
-<img src="https://github.com/shobhit-dwivedi.png" width="100px;" alt="Shobhit Dwivedi"/><br />
-<sub><b>Shobhit Dwivedi</b></sub><br />
-<sub>Frontend Developer</sub>
-</td>
-<td align="center">
 <img src="https://github.com/mardavsj.png" width="100px;" alt="Mardav Jadaun"/><br />
 <sub><b>Mardav Jadaun</b></sub><br />
-<sub>ML/AI Developer</sub>
+<sub>ML/AI Developer</sub><br />
+<a href="https://github.com/mardavsj" target="_blank">
+  <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub" height="18"/>
+</a>
+</td>
+<td align="center">
+<img src="https://github.com/Tilak630Devi.png" width="100px;" alt="Tilak Devi"/><br />
+<sub><b>Tilak Devi</b></sub><br />
+<sub>AI/ML Engineer</sub><br />
+<a href="https://github.com/Tilak630Devi" target="_blank">
+  <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub" height="18"/>
+</a>
+</td>
+<td align="center">
+<img src="https://github.com/Poorvi-tech.png" width="100px;" alt="Poorvi Sahu"/><br />
+<sub><b>Poorvi Sahu</b></sub><br />
+<sub>Full Stack Developer</sub><br />
+<a href="https://github.com/Poorvi-tech" target="_blank">
+  <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub" height="18"/>
+</a>
 </td>
 </tr>
 <tr>
 <td align="center">
-<img src="https://github.com/Poorvi-tech.png" width="100px;" alt="Poorvi Sahu"/><br />
-<sub><b>Poorvi Sahu</b></sub><br />
-<sub>Full Stack Developer</sub>
-</td>
-<td align="center">
 <img src="https://github.com/ridham1906.png" width="100px;" alt="Ridham"/><br />
 <sub><b>Ridham</b></sub><br />
-<sub>Full Stack Developer</sub>
+<sub>Full Stack Developer</sub><br />
+<a href="https://github.com/ridham1906" target="_blank">
+  <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub" height="18"/>
+</a>
 </td>
 <td align="center">
 <img src="https://github.com/TanishaSaini0116.png" width="100px;" alt="Tanisha Saini"/><br />
 <sub><b>Tanisha Saini</b></sub><br />
-<sub>Developer</sub>
+<sub>Developer</sub><br />
+<a href="https://github.com/TanishaSaini0116" target="_blank">
+  <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub" height="18"/>
+</a>
 </td>
 </tr>
 </table>

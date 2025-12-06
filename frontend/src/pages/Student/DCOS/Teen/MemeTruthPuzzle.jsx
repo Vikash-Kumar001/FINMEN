@@ -62,22 +62,22 @@ const MemeTruthPuzzle = () => {
     { id: 5, name: "Viral Message", emoji: "📢", description: "Widely shared content" }
   ];
 
-  // Categories - varied options (no shuffling logic)
+  // Categories - varied options with different outcomes
   const rightItems = [
-    { id: 1, name: "Verify Before Sharing", emoji: "🔍", description: "Check facts first" },
-    { id: 2, name: "Joke", emoji: "😄", description: "Entertainment, not fact" },
-    { id: 3, name: "Fact", emoji: "✅", description: "Verified information" },
-    { id: 4, name: "Trustworthy", emoji: "✅", description: "Reliable source" },
-    { id: 5, name: "Verify Before Sharing", emoji: "🔍", description: "Check facts first" }
+    { id: 1, name: "Entertainment", emoji: "😄", description: "For fun, not facts" },
+    { id: 2, name: "Verify First", emoji: "🔍", description: "Check credibility before sharing" },
+    { id: 3, name: "Trusted Source", emoji: "✅", description: "Reliable information provider" },
+    { id: 4, name: "Fact-Based", emoji: "📚", description: "Contains verified information" },
+    { id: 5, name: "Caution Required", emoji: "⚠️", description: "May contain misinformation" }
   ];
 
-  // Correct matches - varied positions for correct answers (no shuffling logic)
+  // Correct matches - varied positions for different outcomes
   const correctMatches = [
-    { leftId: 1, rightId: 2 }, // Meme → Joke (position 2)
-    { leftId: 2, rightId: 3 }, // News → Fact (position 3)
-    { leftId: 3, rightId: 1 }, // Social Media Post → Verify Before Sharing (position 1)
-    { leftId: 4, rightId: 4 }, // Official News Site → Trustworthy (position 4)
-    { leftId: 5, rightId: 5 }  // Viral Message → Verify Before Sharing (position 5)
+    { leftId: 1, rightId: 1 }, // Meme → Entertainment (position 1)
+    { leftId: 2, rightId: 4 }, // News → Fact-Based (position 4)
+    { leftId: 3, rightId: 2 }, // Social Media Post → Verify First (position 2)
+    { leftId: 4, rightId: 3 }, // Official News Site → Trusted Source (position 3)
+    { leftId: 5, rightId: 5 }  // Viral Message → Caution Required (position 5)
   ];
 
   // Check if a right item is already matched

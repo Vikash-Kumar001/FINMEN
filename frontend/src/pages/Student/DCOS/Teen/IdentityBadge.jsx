@@ -29,23 +29,19 @@ const IdentityBadge = () => {
       question: "What should you share on social media?",
       options: [
         { 
-          text: "Posted a positive achievement", 
-          emoji: "🎉", 
-          isCorrect: true
-        },
-        { 
           text: "Share only negative things", 
-          emoji: "😞", 
           isCorrect: false
         },
         { 
+          text: "Posted a positive achievement", 
+          isCorrect: true
+        },
+        { 
           text: "Share everything", 
-          emoji: "📤", 
           isCorrect: false
         },
         { 
           text: "Don't share anything", 
-          emoji: "🚫", 
           isCorrect: false
         }
       ]
@@ -56,23 +52,19 @@ const IdentityBadge = () => {
       question: "What kind of messages should you share?",
       options: [
         { 
-          text: "Shared an encouraging message", 
-          emoji: "💪", 
-          isCorrect: true
-        },
-        { 
           text: "Share discouraging messages", 
-          emoji: "😞", 
           isCorrect: false
         },
         { 
           text: "Share mean comments", 
-          emoji: "😡", 
           isCorrect: false
         },
         { 
+          text: "Shared an encouraging message", 
+          isCorrect: true
+        },
+        { 
           text: "Share negative thoughts", 
-          emoji: "😐", 
           isCorrect: false
         }
       ]
@@ -83,23 +75,19 @@ const IdentityBadge = () => {
       question: "What should you do with negative content?",
       options: [
         { 
-          text: "Avoided posting negative content", 
-          emoji: "🚫", 
-          isCorrect: true
-        },
-        { 
           text: "Post negative content regularly", 
-          emoji: "😞", 
           isCorrect: false
         },
         { 
+          text: "Avoided posting negative content", 
+          isCorrect: true
+        },
+        { 
           text: "Share complaints publicly", 
-          emoji: "😡", 
           isCorrect: false
         },
         { 
           text: "Post mean comments", 
-          emoji: "💬", 
           isCorrect: false
         }
       ]
@@ -110,23 +98,19 @@ const IdentityBadge = () => {
       question: "How should you build your online presence?",
       options: [
         { 
-          text: "Built a respectful online presence", 
-          emoji: "🌟", 
-          isCorrect: true
-        },
-        { 
           text: "Build a negative presence", 
-          emoji: "😞", 
           isCorrect: false
         },
         { 
+          text: "Built a respectful online presence", 
+          isCorrect: true
+        },
+        { 
           text: "Post disrespectful content", 
-          emoji: "😡", 
           isCorrect: false
         },
         { 
           text: "Ignore your online presence", 
-          emoji: "🙈", 
           isCorrect: false
         }
       ]
@@ -137,23 +121,19 @@ const IdentityBadge = () => {
       question: "How can you help others build positive identity?",
       options: [
         { 
-          text: "Helped others build positive identity", 
-          emoji: "🤝", 
-          isCorrect: true
-        },
-        { 
           text: "Discourage others", 
-          emoji: "😞", 
           isCorrect: false
         },
         { 
           text: "Share negative comments about others", 
-          emoji: "😡", 
           isCorrect: false
         },
         { 
+          text: "Helped others build positive identity", 
+          isCorrect: true
+        },
+        { 
           text: "Ignore others' identity", 
-          emoji: "😐", 
           isCorrect: false
         }
       ]
@@ -247,7 +227,6 @@ const IdentityBadge = () => {
                     } ${answered ? "cursor-not-allowed" : ""}`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{option.emoji}</span>
                       <span className="text-white font-semibold">{option.text}</span>
                     </div>
                   </button>

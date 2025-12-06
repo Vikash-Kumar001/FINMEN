@@ -39,10 +39,9 @@ const OTPScamReflex = () => {
       question: "A message says 'Share OTP to continue'. What should you do?",
       correctAnswer: "Ignore Scam Request",
       options: [
-        { text: "Share OTP Immediately", isCorrect: false, emoji: "📤" },
-        { text: "Ignore Scam Request", isCorrect: true, emoji: "🚫" },
-        { text: "Ask Why First", isCorrect: false, emoji: "❓" },
-        { text: "Forward to Friends", isCorrect: false, emoji: "👥" }
+        { text: "Share OTP Immediately", isCorrect: false },
+        { text: "Ignore Scam Request", isCorrect: true },
+        { text: "Ask Why First", isCorrect: false }
       ]
     },
     {
@@ -50,10 +49,9 @@ const OTPScamReflex = () => {
       question: "A message says 'Your OTP is 123456. Don't share it.'. What should you do?",
       correctAnswer: "Keep OTP Private",
       options: [
-        { text: "Share with Friends", isCorrect: false, emoji: "👥" },
-        { text: "Keep OTP Private", isCorrect: true, emoji: "🔒" },
-        { text: "Post Online", isCorrect: false, emoji: "🌐" },
-        { text: "Forward Message", isCorrect: false, emoji: "➡️" }
+        { text: "Share with Friends", isCorrect: false },
+        { text: "Keep OTP Private", isCorrect: true },
+        { text: "Post Online", isCorrect: false }
       ]
     },
     {
@@ -61,10 +59,9 @@ const OTPScamReflex = () => {
       question: "A message says 'Send OTP to verify account'. What should you do?",
       correctAnswer: "Ignore Scam Request",
       options: [
-        { text: "Send OTP Quickly", isCorrect: false, emoji: "⚡" },
-        { text: "Ignore Scam Request", isCorrect: true, emoji: "🚫" },
-        { text: "Ask for More Info", isCorrect: false, emoji: "❓" },
-        { text: "Share with Family", isCorrect: false, emoji: "👨‍👩‍👧" }
+        { text: "Send OTP Quickly", isCorrect: false },
+        { text: "Ask for More Info", isCorrect: false },
+        { text: "Ignore Scam Request", isCorrect: true }
       ]
     },
     {
@@ -72,10 +69,9 @@ const OTPScamReflex = () => {
       question: "A message says 'OTP received. Keep it private.'. What should you do?",
       correctAnswer: "Keep OTP Private",
       options: [
-        { text: "Share with Others", isCorrect: false, emoji: "👥" },
-        { text: "Keep OTP Private", isCorrect: true, emoji: "🔒" },
-        { text: "Post Online", isCorrect: false, emoji: "🌐" },
-        { text: "Forward Message", isCorrect: false, emoji: "➡️" }
+        { text: "Share with Others", isCorrect: false },
+        { text: "Post Online", isCorrect: false },
+        { text: "Keep OTP Private", isCorrect: true }
       ]
     },
     {
@@ -83,10 +79,9 @@ const OTPScamReflex = () => {
       question: "A message says 'Forward OTP to complete transaction'. What should you do?",
       correctAnswer: "Ignore Scam Request",
       options: [
-        { text: "Forward OTP", isCorrect: false, emoji: "➡️" },
-        { text: "Ignore Scam Request", isCorrect: true, emoji: "🚫" },
-        { text: "Ask Why First", isCorrect: false, emoji: "❓" },
-        { text: "Share with Bank", isCorrect: false, emoji: "🏦" }
+        { text: "Forward OTP", isCorrect: false },
+        { text: "Share with Bank", isCorrect: false },
+        { text: "Ignore Scam Request", isCorrect: true }
       ]
     }
   ];
@@ -240,7 +235,7 @@ const OTPScamReflex = () => {
                     disabled={answered}
                     className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                    {option.text}
                   </button>
                 ))}
               </div>

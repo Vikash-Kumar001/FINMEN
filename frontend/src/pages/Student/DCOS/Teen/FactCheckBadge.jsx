@@ -29,14 +29,14 @@ const FactCheckBadge = () => {
       question: "What should you do before sharing a viral post?",
       options: [
         { 
-          text: "Verified a viral post before sharing", 
-          emoji: "✅", 
-          isCorrect: true
-        },
-        { 
           text: "Share immediately without checking", 
           emoji: "📤", 
           isCorrect: false
+        },
+        { 
+          text: "Verified a viral post before sharing", 
+          emoji: "✅", 
+          isCorrect: true
         },
         { 
           text: "Share if it looks interesting", 
@@ -56,11 +56,6 @@ const FactCheckBadge = () => {
       question: "What should you do when you see a suspicious video?",
       options: [
         { 
-          text: "Identified a deepfake video", 
-          emoji: "🎥", 
-          isCorrect: true
-        },
-        { 
           text: "Share it immediately", 
           emoji: "📤", 
           isCorrect: false
@@ -69,6 +64,11 @@ const FactCheckBadge = () => {
           text: "Believe it without checking", 
           emoji: "😐", 
           isCorrect: false
+        },
+        { 
+          text: "Identified a deepfake video", 
+          emoji: "🎥", 
+          isCorrect: true
         },
         { 
           text: "Ignore it completely", 
@@ -83,11 +83,6 @@ const FactCheckBadge = () => {
       question: "What should you do with chain messages?",
       options: [
         { 
-          text: "Ignored a chain message", 
-          emoji: "🚫", 
-          isCorrect: true
-        },
-        { 
           text: "Forward it to everyone", 
           emoji: "📤", 
           isCorrect: false
@@ -101,6 +96,11 @@ const FactCheckBadge = () => {
           text: "Share it to be safe", 
           emoji: "🔒", 
           isCorrect: false
+        },
+        { 
+          text: "Ignored a chain message", 
+          emoji: "🚫", 
+          isCorrect: true
         }
       ]
     },
@@ -110,11 +110,6 @@ const FactCheckBadge = () => {
       question: "How should you verify news?",
       options: [
         { 
-          text: "Checked official sources for news", 
-          emoji: "📰", 
-          isCorrect: true
-        },
-        { 
           text: "Believe social media posts", 
           emoji: "📱", 
           isCorrect: false
@@ -123,6 +118,11 @@ const FactCheckBadge = () => {
           text: "Trust random blogs", 
           emoji: "🌐", 
           isCorrect: false
+        },
+        { 
+          text: "Checked official sources for news", 
+          emoji: "📰", 
+          isCorrect: true
         },
         { 
           text: "Believe everything you read", 
@@ -137,11 +137,6 @@ const FactCheckBadge = () => {
       question: "What should you do when you spot fake news?",
       options: [
         { 
-          text: "Spotted and reported fake news", 
-          emoji: "🔍", 
-          isCorrect: true
-        },
-        { 
           text: "Share it anyway", 
           emoji: "📤", 
           isCorrect: false
@@ -155,6 +150,11 @@ const FactCheckBadge = () => {
           text: "Share it to warn others", 
           emoji: "⚠️", 
           isCorrect: false
+        },
+        { 
+          text: "Spotted and reported fake news", 
+          emoji: "🔍", 
+          isCorrect: true
         }
       ]
     }

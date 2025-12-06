@@ -29,23 +29,20 @@ const ConsentStory = () => {
       text: "A friend posts your picture without asking. What should you do?",
       options: [
         { 
-          id: "ignore", 
-          text: "Ignore it - it's just a photo", 
-          emoji: "😐", 
-          description: "Let it stay and don't say anything",
-          isCorrect: false
-        },
-        { 
           id: "ask-remove", 
           text: "Ask them to remove it", 
-          emoji: "💬", 
           description: "Politely request them to take it down",
           isCorrect: true
         },
         { 
+          id: "ignore", 
+          text: "Ignore it - it's just a photo", 
+          description: "Let it stay and don't say anything",
+          isCorrect: false
+        },
+        { 
           id: "post-theirs", 
           text: "Post their photo too", 
-          emoji: "📤", 
           description: "Post their photo in retaliation",
           isCorrect: false
         }
@@ -58,23 +55,20 @@ const ConsentStory = () => {
         { 
           id: "leave", 
           text: "Leave it as is", 
-          emoji: "😐", 
           description: "Don't do anything about it",
+          isCorrect: false
+        },
+        { 
+          id: "tag-bad", 
+          text: "Tag them in something bad", 
+          description: "Tag them in something negative in return",
           isCorrect: false
         },
         { 
           id: "ask-remove-tag", 
           text: "Ask them to remove the tag", 
-          emoji: "💬", 
           description: "Request them to untag you",
           isCorrect: true
-        },
-        { 
-          id: "tag-bad", 
-          text: "Tag them in something bad", 
-          emoji: "😡", 
-          description: "Tag them in something negative in return",
-          isCorrect: false
         }
       ]
     },
@@ -85,23 +79,20 @@ const ConsentStory = () => {
         { 
           id: "okay-friend", 
           text: "It's okay, they're a friend", 
-          emoji: "🤷", 
           description: "Accept it since they're your friend",
+          isCorrect: false
+        },
+        { 
+          id: "share-theirs", 
+          text: "Share their number too", 
+          description: "Share their phone number in response",
           isCorrect: false
         },
         { 
           id: "ask-remove-immediate", 
           text: "Ask them to remove it immediately", 
-          emoji: "🚨", 
           description: "Urgently request them to remove your phone number",
           isCorrect: true
-        },
-        { 
-          id: "share-theirs", 
-          text: "Share their number too", 
-          emoji: "📤", 
-          description: "Share their phone number in response",
-          isCorrect: false
         }
       ]
     },
@@ -110,23 +101,20 @@ const ConsentStory = () => {
       text: "Someone posts a video of you without your consent. What's your response?",
       options: [
         { 
-          id: "let-stay", 
-          text: "Let it stay", 
-          emoji: "😐", 
-          description: "Allow the video to remain online",
-          isCorrect: false
-        },
-        { 
           id: "request-takedown", 
           text: "Request them to take it down", 
-          emoji: "💬", 
           description: "Ask them to remove the video",
           isCorrect: true
         },
         { 
+          id: "let-stay", 
+          text: "Let it stay", 
+          description: "Allow the video to remain online",
+          isCorrect: false
+        },
+        { 
           id: "report-without-ask", 
           text: "Report it without asking", 
-          emoji: "🚫", 
           description: "Report it to the platform immediately",
           isCorrect: false
         }
@@ -139,23 +127,20 @@ const ConsentStory = () => {
         { 
           id: "fine-share", 
           text: "It's fine, stories are meant to be shared", 
-          emoji: "🤷", 
           description: "Accept it as normal sharing",
+          isCorrect: false
+        },
+        { 
+          id: "share-theirs", 
+          text: "Share their story too", 
+          description: "Share their personal story in return",
           isCorrect: false
         },
         { 
           id: "politely-remove", 
           text: "Politely ask them to remove it", 
-          emoji: "💬", 
           description: "Kindly request them to take it down",
           isCorrect: true
-        },
-        { 
-          id: "share-theirs", 
-          text: "Share their story too", 
-          emoji: "📤", 
-          description: "Share their personal story in return",
-          isCorrect: false
         }
       ]
     }
@@ -244,7 +229,6 @@ const ConsentStory = () => {
                     onClick={() => handleChoice(option.id)}
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
                     <p className="text-white/90">{option.description}</p>
                   </button>

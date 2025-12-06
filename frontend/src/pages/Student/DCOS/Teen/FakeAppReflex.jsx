@@ -39,8 +39,8 @@ const FakeAppReflex = () => {
       question: "An app asks for contacts & camera access. What should you do?",
       correctAnswer: "Ignore Suspicious Request",
       options: [
-        { text: "Allow All Permissions", isCorrect: false, emoji: "✅" },
         { text: "Ignore Suspicious Request", isCorrect: true, emoji: "🚫" },
+        { text: "Allow All Permissions", isCorrect: false, emoji: "✅" },
         { text: "Ask Friends First", isCorrect: false, emoji: "👥" },
         { text: "Allow Camera Only", isCorrect: false, emoji: "📷" }
       ]
@@ -51,9 +51,9 @@ const FakeAppReflex = () => {
       correctAnswer: "Allow Camera Permission",
       options: [
         { text: "Deny All Permissions", isCorrect: false, emoji: "🚫" },
+        { text: "Report as Scam", isCorrect: false, emoji: "📢" },
         { text: "Allow Camera Permission", isCorrect: true, emoji: "📷" },
-        { text: "Ignore Request", isCorrect: false, emoji: "🙈" },
-        { text: "Report as Scam", isCorrect: false, emoji: "📢" }
+        { text: "Ignore Request", isCorrect: false, emoji: "🙈" }
       ]
     },
     {
@@ -62,9 +62,9 @@ const FakeAppReflex = () => {
       correctAnswer: "Deny Unnecessary Permissions",
       options: [
         { text: "Allow All Permissions", isCorrect: false, emoji: "✅" },
+        { text: "Share with Friends", isCorrect: false, emoji: "👥" },
         { text: "Deny Unnecessary Permissions", isCorrect: true, emoji: "🚫" },
-        { text: "Allow Location Only", isCorrect: false, emoji: "📍" },
-        { text: "Share with Friends", isCorrect: false, emoji: "👥" }
+        { text: "Allow Location Only", isCorrect: false, emoji: "📍" }
       ]
     },
     {
@@ -72,8 +72,8 @@ const FakeAppReflex = () => {
       question: "A photo editor needs photo access. What should you do?",
       correctAnswer: "Allow Photo Access",
       options: [
-        { text: "Deny All Permissions", isCorrect: false, emoji: "🚫" },
         { text: "Allow Photo Access", isCorrect: true, emoji: "🖼️" },
+        { text: "Deny All Permissions", isCorrect: false, emoji: "🚫" },
         { text: "Ignore Request", isCorrect: false, emoji: "🙈" },
         { text: "Report as Scam", isCorrect: false, emoji: "📢" }
       ]
@@ -84,9 +84,9 @@ const FakeAppReflex = () => {
       correctAnswer: "Deny Unnecessary Permission",
       options: [
         { text: "Allow Permission", isCorrect: false, emoji: "✅" },
-        { text: "Deny Unnecessary Permission", isCorrect: true, emoji: "🚫" },
         { text: "Ask Why First", isCorrect: false, emoji: "❓" },
-        { text: "Allow Contacts Only", isCorrect: false, emoji: "👥" }
+        { text: "Allow Contacts Only", isCorrect: false, emoji: "👥" },
+        { text: "Deny Unnecessary Permission", isCorrect: true, emoji: "🚫" }
       ]
     }
   ];

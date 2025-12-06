@@ -58,18 +58,18 @@ const DataQuiz = () => {
       text: "Which is private information?",
       options: [
         { 
-          id: "a", 
-          text: "Phone number", 
-          emoji: "📱", 
-          description: "Phone numbers are private information that should be kept secure",
-          isCorrect: true
-        },
-        { 
           id: "b", 
           text: "Hobby", 
           emoji: "🎨", 
           description: "Hobbies are generally safe to share publicly",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Phone number", 
+          emoji: "📱", 
+          description: "Phone numbers are private information that should be kept secure",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -85,13 +85,6 @@ const DataQuiz = () => {
       text: "Which should you keep private?",
       options: [
         { 
-          id: "a", 
-          text: "Home address", 
-          emoji: "🏠", 
-          description: "Home addresses are private information that should never be shared publicly",
-          isCorrect: true
-        },
-        { 
           id: "b", 
           text: "Favorite food", 
           emoji: "🍕", 
@@ -104,6 +97,13 @@ const DataQuiz = () => {
           emoji: "🎬", 
           description: "Favorite movies are generally safe to share publicly",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Home address", 
+          emoji: "🏠", 
+          description: "Home addresses are private information that should never be shared publicly",
+          isCorrect: true
         }
       ]
     },
@@ -112,18 +112,18 @@ const DataQuiz = () => {
       text: "Which is sensitive information?",
       options: [
         { 
-          id: "a", 
-          text: "Bank account number", 
-          emoji: "🏦", 
-          description: "Bank account numbers are highly sensitive and must be kept private",
-          isCorrect: true
-        },
-        { 
           id: "b", 
           text: "Favorite sport", 
           emoji: "⚽", 
           description: "Favorite sports are generally safe to share publicly",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Bank account number", 
+          emoji: "🏦", 
+          description: "Bank account numbers are highly sensitive and must be kept private",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -166,13 +166,6 @@ const DataQuiz = () => {
       text: "Which is personal information?",
       options: [
         { 
-          id: "a", 
-          text: "Email password", 
-          emoji: "🔐", 
-          description: "Email passwords are highly sensitive personal information that must be kept private",
-          isCorrect: true
-        },
-        { 
           id: "b", 
           text: "Favorite subject", 
           emoji: "📖", 
@@ -185,6 +178,13 @@ const DataQuiz = () => {
           emoji: "🐱", 
           description: "Favorite animals are generally safe to share publicly",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Email password", 
+          emoji: "🔐", 
+          description: "Email passwords are highly sensitive personal information that must be kept private",
+          isCorrect: true
         }
       ]
     }

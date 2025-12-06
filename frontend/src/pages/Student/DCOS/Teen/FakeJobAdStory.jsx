@@ -29,18 +29,18 @@ const FakeJobAdStory = () => {
       text: "A job ad says 'Pay ₹5000 for a guaranteed job.' What should you do?",
       options: [
         { 
-          id: "pay-opportunity", 
-          text: "Pay the money - it's a good opportunity", 
-          emoji: "💰", 
-          description: "Pay to secure this job opportunity",
-          isCorrect: false
-        },
-        { 
           id: "scam-real", 
           text: "It's a scam - real jobs don't ask for payment", 
           emoji: "🚫", 
           description: "Recognize this is a scam and avoid it",
           isCorrect: true
+        },
+        { 
+          id: "pay-opportunity", 
+          text: "Pay the money - it's a good opportunity", 
+          emoji: "💰", 
+          description: "Pay to secure this job opportunity",
+          isCorrect: false
         },
         { 
           id: "ask-info", 
@@ -56,10 +56,10 @@ const FakeJobAdStory = () => {
       text: "An ad promises 'Easy money job - just pay ₹3000 to start.' What's your response?",
       options: [
         { 
-          id: "pay-start-job", 
-          text: "Pay to get started", 
-          emoji: "💰", 
-          description: "Pay the money to begin the job",
+          id: "ask-info", 
+          text: "Ask for more information first", 
+          emoji: "❓", 
+          description: "Request more details before deciding",
           isCorrect: false
         },
         { 
@@ -70,10 +70,10 @@ const FakeJobAdStory = () => {
           isCorrect: true
         },
         { 
-          id: "forward-friends", 
-          text: "Forward to friends", 
-          emoji: "➡️", 
-          description: "Share the opportunity with friends",
+          id: "pay-start-job", 
+          text: "Pay to get started", 
+          emoji: "💰", 
+          description: "Pay the money to begin the job",
           isCorrect: false
         }
       ]
@@ -82,6 +82,13 @@ const FakeJobAdStory = () => {
       id: 3,
       text: "A job posting asks you to pay ₹2000 as 'application fee.' What do you do?",
       options: [
+        { 
+          id: "check-legitimate", 
+          text: "Check if it's legitimate first", 
+          emoji: "🔍", 
+          description: "Verify the company before making payment",
+          isCorrect: false
+        },
         { 
           id: "pay-apply", 
           text: "Pay the fee to apply", 
@@ -95,13 +102,6 @@ const FakeJobAdStory = () => {
           emoji: "🚫", 
           description: "Understand that legitimate jobs don't charge application fees",
           isCorrect: true
-        },
-        { 
-          id: "check-legitimate", 
-          text: "Check if it's legitimate first", 
-          emoji: "🔍", 
-          description: "Verify the company before making payment",
-          isCorrect: false
         }
       ]
     },
@@ -109,6 +109,13 @@ const FakeJobAdStory = () => {
       id: 4,
       text: "An ad promises 'Guaranteed job if you pay ₹5000.' What should you do?",
       options: [
+        { 
+          id: "ask-company-info", 
+          text: "Ask for company details", 
+          emoji: "❓", 
+          description: "Request information about the company",
+          isCorrect: false
+        },
         { 
           id: "pay-guarantee", 
           text: "Pay for guaranteed job", 
@@ -122,13 +129,6 @@ const FakeJobAdStory = () => {
           emoji: "🚫", 
           description: "Recognize that no legitimate job can be guaranteed",
           isCorrect: true
-        },
-        { 
-          id: "ask-company-info", 
-          text: "Ask for company details", 
-          emoji: "❓", 
-          description: "Request information about the company",
-          isCorrect: false
         }
       ]
     },
@@ -136,13 +136,6 @@ const FakeJobAdStory = () => {
       id: 5,
       text: "A post offers 'Work from home - pay ₹4000 to get started.' What's the right action?",
       options: [
-        { 
-          id: "pay-start-work", 
-          text: "Pay to start working", 
-          emoji: "💰", 
-          description: "Pay the money to begin working from home",
-          isCorrect: false
-        },
         { 
           id: "scam-jobs-pay", 
           text: "It's a scam - real jobs pay you, not the other way", 
@@ -155,6 +148,13 @@ const FakeJobAdStory = () => {
           text: "Share with others", 
           emoji: "📤", 
           description: "Share the opportunity with others",
+          isCorrect: false
+        },
+        { 
+          id: "pay-start-work", 
+          text: "Pay to start working", 
+          emoji: "💰", 
+          description: "Pay the money to begin working from home",
           isCorrect: false
         }
       ]

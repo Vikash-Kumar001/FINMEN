@@ -29,18 +29,18 @@ const FakeJobScamStory = () => {
       text: "A post says 'Pay ₹5000 for a guaranteed job.' What should you do?",
       options: [
         { 
-          id: "scam", 
-          text: "It's a scam - real jobs don't ask for payment", 
-          emoji: "🚫", 
-          description: "Recognize this is a scam and don't pay",
-          isCorrect: true
-        },
-        { 
           id: "pay", 
           text: "Pay the money - it's a good deal", 
           emoji: "💰", 
           description: "Pay the money to get the guaranteed job",
           isCorrect: false
+        },
+        { 
+          id: "scam", 
+          text: "It's a scam - real jobs don't ask for payment", 
+          emoji: "🚫", 
+          description: "Recognize this is a scam and don't pay",
+          isCorrect: true
         },
         { 
           id: "ask-details", 
@@ -63,18 +63,18 @@ const FakeJobScamStory = () => {
           isCorrect: false
         },
         { 
-          id: "scam-ignore", 
-          text: "It's a scam - ignore it", 
-          emoji: "🚫", 
-          description: "Recognize it's a scam and ignore the offer",
-          isCorrect: true
-        },
-        { 
           id: "forward", 
           text: "Forward to friends", 
           emoji: "➡️", 
           description: "Share the opportunity with friends",
           isCorrect: false
+        },
+        { 
+          id: "scam-ignore", 
+          text: "It's a scam - ignore it", 
+          emoji: "🚫", 
+          description: "Recognize it's a scam and ignore the offer",
+          isCorrect: true
         }
       ]
     },
@@ -92,8 +92,8 @@ const FakeJobScamStory = () => {
         { 
           id: "check-legit", 
           text: "Check if it's legitimate first", 
-          emoji: "❓", 
-          description: "Verify if the job is legitimate",
+          emoji: "🔍", 
+          description: "Verify the company before paying",
           isCorrect: false
         },
         { 
@@ -102,13 +102,6 @@ const FakeJobScamStory = () => {
           emoji: "🚫", 
           description: "Recognize legitimate jobs don't charge application fees",
           isCorrect: true
-        },
-        { 
-          id: "check-legit", 
-          text: "Check if it's legitimate first", 
-          emoji: "🔍", 
-          description: "Verify the company before paying",
-          isCorrect: false
         }
       ]
     },
@@ -117,18 +110,18 @@ const FakeJobScamStory = () => {
       text: "An ad promises 'Guaranteed job if you pay ₹5000.' What should you do?",
       options: [
         { 
-          id: "scam-guaranteed", 
-          text: "It's a scam - no job is guaranteed", 
-          emoji: "🚫", 
-          description: "Understand that no legitimate job can be guaranteed",
-          isCorrect: true
-        },
-        { 
           id: "pay-guaranteed", 
           text: "Pay for guaranteed job", 
           emoji: "💰", 
           description: "Pay to secure the guaranteed position",
           isCorrect: false
+        },
+        { 
+          id: "scam-guaranteed", 
+          text: "It's a scam - no job is guaranteed", 
+          emoji: "🚫", 
+          description: "Understand that no legitimate job can be guaranteed",
+          isCorrect: true
         },
         { 
           id: "ask-company", 
@@ -151,18 +144,18 @@ const FakeJobScamStory = () => {
           isCorrect: false
         },
         { 
-          id: "scam-pay", 
-          text: "It's a scam - real jobs pay you, not the other way", 
-          emoji: "🚫", 
-          description: "Recognize that legitimate jobs pay you, not vice versa",
-          isCorrect: true
-        },
-        { 
           id: "share", 
           text: "Share with others", 
           emoji: "📤", 
           description: "Share the opportunity with others",
           isCorrect: false
+        },
+        { 
+          id: "scam-pay", 
+          text: "It's a scam - real jobs pay you, not the other way", 
+          emoji: "🚫", 
+          description: "Recognize that legitimate jobs pay you, not vice versa",
+          isCorrect: true
         }
       ]
     }

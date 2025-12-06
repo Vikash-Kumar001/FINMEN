@@ -29,23 +29,20 @@ const DigitalDetoxSimulation = () => {
         { 
           id: "park", 
           text: "Go to the park and play sports", 
-          emoji: "🏞️", 
           description: "Spend time outdoors and active",
           isCorrect: true
         },
         { 
           id: "screen-binge", 
           text: "Screen binge - watch shows all day", 
-          emoji: "📺", 
           description: "Spend all day watching screens",
           isCorrect: false
         },
         { 
           id: "book", 
           text: "Read a book offline", 
-          emoji: "📚", 
           description: "Read without screens",
-          isCorrect: true
+          isCorrect: false
         }
       ]
     },
@@ -56,22 +53,19 @@ const DigitalDetoxSimulation = () => {
         { 
           id: "scroll", 
           text: "Scroll social media", 
-          emoji: "📱", 
           description: "Spend time on social media",
+          isCorrect: false
+        },
+        { 
+          id: "hobby", 
+          text: "Do a hobby offline", 
+          description: "Engage in offline activities",
           isCorrect: false
         },
         { 
           id: "walk", 
           text: "Go for a walk outside", 
-          emoji: "🚶", 
           description: "Take a walk outdoors",
-          isCorrect: true
-        },
-        { 
-          id: "hobby", 
-          text: "Do a hobby offline", 
-          emoji: "🎨", 
-          description: "Engage in offline activities",
           isCorrect: true
         }
       ]
@@ -83,16 +77,20 @@ const DigitalDetoxSimulation = () => {
         { 
           id: "games", 
           text: "Play video games for hours", 
-          emoji: "🎮", 
           description: "Spend hours gaming",
           isCorrect: false
         },
         { 
           id: "crafts", 
           text: "Read or do crafts", 
-          emoji: "✂️", 
           description: "Creative offline activities",
           isCorrect: true
+        },
+        { 
+          id: "tv", 
+          text: "Watch TV for a short time", 
+          description: "Limited screen time with breaks",
+          isCorrect: false
         }
       ]
     },
@@ -103,23 +101,20 @@ const DigitalDetoxSimulation = () => {
         { 
           id: "check-phone", 
           text: "Check phone and scroll", 
-          emoji: "📱", 
           description: "Use your phone",
           isCorrect: false
         },
         { 
           id: "walk-stretch", 
           text: "Take a walk or stretch", 
-          emoji: "🧘", 
           description: "Physical activity break",
           isCorrect: true
         },
         { 
           id: "snack", 
           text: "Have a snack and relax", 
-          emoji: "🍎", 
           description: "Take a healthy break",
-          isCorrect: true
+          isCorrect: false
         }
       ]
     },
@@ -130,22 +125,19 @@ const DigitalDetoxSimulation = () => {
         { 
           id: "binge-watch", 
           text: "Binge watch shows", 
-          emoji: "📺", 
           description: "Watch shows all day",
+          isCorrect: false
+        },
+        { 
+          id: "read-relax", 
+          text: "Read books and relax", 
+          description: "Enjoy offline reading",
           isCorrect: false
         },
         { 
           id: "adventure", 
           text: "Go on an outdoor adventure", 
-          emoji: "🏔️", 
           description: "Explore outdoors",
-          isCorrect: true
-        },
-        { 
-          id: "read-relax", 
-          text: "Read books and relax", 
-          emoji: "📖", 
-          description: "Enjoy offline reading",
           isCorrect: true
         }
       ]
@@ -225,7 +217,6 @@ const DigitalDetoxSimulation = () => {
                     className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
                     <div className="flex flex-col items-center justify-center text-center">
-                      <div className="text-3xl mb-3">{option.emoji}</div>
                       <h3 className="font-bold text-lg mb-2">{option.text}</h3>
                       <p className="text-white/90 text-sm">{option.description}</p>
                     </div>

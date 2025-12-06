@@ -28,23 +28,20 @@ const ScamDebate = () => {
       text: "Are all online offers safe?",
       options: [
         { 
-          id: "yes-online", 
-          text: "Yes - if it's online, it's safe", 
-          emoji: "✅", 
-          description: "Online offers are always safe",
-          isCorrect: false
-        },
-        { 
           id: "no-scams", 
           text: "No - many online offers are scams", 
-          emoji: "❌", 
           description: "Many online offers are scams, always be cautious",
           isCorrect: true
         },
         { 
+          id: "yes-online", 
+          text: "Yes - if it's online, it's safe", 
+          description: "Online offers are always safe",
+          isCorrect: false
+        },
+        { 
           id: "maybe", 
           text: "Maybe - depends on the website", 
-          emoji: "🤔", 
           description: "It depends on which website the offer is on",
           isCorrect: false
         }
@@ -57,23 +54,20 @@ const ScamDebate = () => {
         { 
           id: "yes-deals", 
           text: "Yes - online deals are always good", 
-          emoji: "✅", 
           description: "Online deals are always trustworthy",
+          isCorrect: false
+        },
+        { 
+          id: "sometimes", 
+          text: "Sometimes - if the price is good", 
+          description: "Trust deals if the price seems good",
           isCorrect: false
         },
         { 
           id: "no-verify", 
           text: "No - verify before trusting", 
-          emoji: "❌", 
           description: "Always verify online deals before trusting them",
           isCorrect: true
-        },
-        { 
-          id: "sometimes", 
-          text: "Sometimes - if the price is good", 
-          emoji: "💰", 
-          description: "Trust deals if the price seems good",
-          isCorrect: false
         }
       ]
     },
@@ -84,23 +78,20 @@ const ScamDebate = () => {
         { 
           id: "yes-links", 
           text: "Yes - links are usually safe", 
-          emoji: "✅", 
           description: "Most online links are safe to click",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe - if they look legitimate", 
+          description: "Click if the link looks legitimate",
           isCorrect: false
         },
         { 
           id: "no-scam-links", 
           text: "No - many links are scams", 
-          emoji: "❌", 
           description: "Many links are scams, be very careful",
           isCorrect: true
-        },
-        { 
-          id: "maybe", 
-          text: "Maybe - if they look legitimate", 
-          emoji: "🔗", 
-          description: "Click if the link looks legitimate",
-          isCorrect: false
         }
       ]
     },
@@ -109,23 +100,20 @@ const ScamDebate = () => {
       text: "Should we share personal info for online offers?",
       options: [
         { 
-          id: "yes-ask", 
-          text: "Yes - if they ask, it's okay", 
-          emoji: "✅", 
-          description: "It's okay to share if they ask for it",
-          isCorrect: false
-        },
-        { 
           id: "no-careful", 
           text: "No - be very careful with personal info", 
-          emoji: "❌", 
           description: "Never share personal information for online offers",
           isCorrect: true
         },
         { 
+          id: "yes-ask", 
+          text: "Yes - if they ask, it's okay", 
+          description: "It's okay to share if they ask for it",
+          isCorrect: false
+        },
+        { 
           id: "sometimes", 
           text: "Sometimes - if it's a trusted site", 
-          emoji: "🤔", 
           description: "Share only on trusted websites",
           isCorrect: false
         }
@@ -138,23 +126,20 @@ const ScamDebate = () => {
         { 
           id: "yes-jobs", 
           text: "Yes - online jobs are real", 
-          emoji: "✅", 
           description: "All online job offers are legitimate",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe - if they pay well", 
+          description: "Trust if the pay seems good",
           isCorrect: false
         },
         { 
           id: "no-verify-jobs", 
           text: "No - many are scams, verify first", 
-          emoji: "❌", 
           description: "Many online job offers are scams, always verify first",
           isCorrect: true
-        },
-        { 
-          id: "maybe", 
-          text: "Maybe - if they pay well", 
-          emoji: "💰", 
-          description: "Trust if the pay seems good",
-          isCorrect: false
         }
       ]
     }
@@ -231,7 +216,6 @@ const ScamDebate = () => {
                     onClick={() => handleChoice(option.id)}
                     className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
                     <p className="text-white/90 text-sm">{option.description}</p>
                   </button>

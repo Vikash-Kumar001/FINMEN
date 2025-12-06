@@ -212,7 +212,7 @@ const teenDcosGames = {
   'truth-journal2': TruthJournal2,
   'viral-post-story': ViralPostStory,
   'wellbeing-badge': WellbeingBadge,
-  'whats-app-debate': WhatsAppDebate,
+  'whatsapp-debate': WhatsAppDebate,
   'ai-in-exams': AIInExams,
 };
 

@@ -31,21 +31,18 @@ const StoryOfPositivity = () => {
         { 
           id: "no-impact", 
           text: "No impact - just a post", 
-          emoji: "😐", 
           description: "Posts don't really make a difference",
           isCorrect: false
         },
         { 
           id: "respect-positive", 
           text: "Respect - positive posts build good reputation", 
-          emoji: "🌟", 
           description: "Positive posts help build a good online reputation",
           isCorrect: true
         },
         { 
           id: "mixed-reactions", 
           text: "Mixed reactions", 
-          emoji: "🤷", 
           description: "People react differently to positive posts",
           isCorrect: false
         }
@@ -58,23 +55,20 @@ const StoryOfPositivity = () => {
         { 
           id: "nothing-special", 
           text: "Nothing special", 
-          emoji: "😐", 
           description: "Supportive comments don't have much impact",
+          isCorrect: false
+        },
+        { 
+          id: "some-notice", 
+          text: "Some people notice", 
+          description: "A few people might see it",
           isCorrect: false
         },
         { 
           id: "gains-respect", 
           text: "Gains respect and positive reputation", 
-          emoji: "🌟", 
           description: "Supportive behavior builds positive reputation",
           isCorrect: true
-        },
-        { 
-          id: "some-notice", 
-          text: "Some people notice", 
-          emoji: "👀", 
-          description: "A few people might see it",
-          isCorrect: false
         }
       ]
     },
@@ -85,21 +79,18 @@ const StoryOfPositivity = () => {
         { 
           id: "just-post", 
           text: "Just another post", 
-          emoji: "📱", 
           description: "It's just a regular social media post",
           isCorrect: false
         },
         { 
           id: "builds-identity", 
           text: "Builds positive identity and respect", 
-          emoji: "🌟", 
           description: "Positive celebration builds good reputation",
           isCorrect: true
         },
         { 
           id: "gets-likes", 
           text: "Gets some likes", 
-          emoji: "👍", 
           description: "People might like the post",
           isCorrect: false
         }
@@ -112,23 +103,20 @@ const StoryOfPositivity = () => {
         { 
           id: "minimal-impact", 
           text: "Minimal impact", 
-          emoji: "😐", 
           description: "Sharing stories doesn't have much effect",
+          isCorrect: false
+        },
+        { 
+          id: "people-see", 
+          text: "People might see it", 
+          description: "Some people might view the story",
           isCorrect: false
         },
         { 
           id: "earns-respect", 
           text: "Earns respect and builds positive reputation", 
-          emoji: "🌟", 
           description: "Sharing positive stories builds good reputation",
           isCorrect: true
-        },
-        { 
-          id: "people-see", 
-          text: "People might see it", 
-          emoji: "👁️", 
-          description: "Some people might view the story",
-          isCorrect: false
         }
       ]
     },
@@ -139,23 +127,20 @@ const StoryOfPositivity = () => {
         { 
           id: "no-real-impact", 
           text: "No real impact", 
-          emoji: "😐", 
           description: "Consistent positive posts don't matter much",
+          isCorrect: false
+        },
+        { 
+          id: "some-appreciate", 
+          text: "Some people appreciate it", 
+          description: "A few people might appreciate the positivity",
           isCorrect: false
         },
         { 
           id: "strong-reputation", 
           text: "Builds strong positive reputation and respect", 
-          emoji: "🌟", 
           description: "Consistent positivity builds a strong positive reputation",
           isCorrect: true
-        },
-        { 
-          id: "some-appreciate", 
-          text: "Some people appreciate it", 
-          emoji: "🙏", 
-          description: "A few people might appreciate the positivity",
-          isCorrect: false
         }
       ]
     }
@@ -244,7 +229,6 @@ const StoryOfPositivity = () => {
                     onClick={() => handleChoice(option.id)}
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
                     <p className="text-white/90">{option.description}</p>
                   </button>

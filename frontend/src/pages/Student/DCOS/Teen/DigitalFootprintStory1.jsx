@@ -29,23 +29,20 @@ const DigitalFootprintStory1 = () => {
       text: "An old photo you posted years ago gets shared again. What's the impact?",
       options: [
         { 
-          id: "disappears", 
-          text: "It disappears after a while", 
-          emoji: "⏰", 
-          description: "Old posts automatically get removed over time",
-          isCorrect: false
-        },
-        { 
           id: "stays-forever", 
           text: "It stays forever online", 
-          emoji: "♾️", 
           description: "Digital content remains online permanently",
           isCorrect: true
         },
         { 
+          id: "disappears", 
+          text: "It disappears after a while", 
+          description: "Old posts automatically get removed over time",
+          isCorrect: false
+        },
+        { 
           id: "brief-impact", 
           text: "It only affects you briefly", 
-          emoji: "⏳", 
           description: "The impact is temporary and short-lived",
           isCorrect: false
         }
@@ -58,23 +55,20 @@ const DigitalFootprintStory1 = () => {
         { 
           id: "completely-gone", 
           text: "It's completely gone", 
-          emoji: "✅", 
           description: "Once deleted, it's permanently removed",
+          isCorrect: false
+        },
+        { 
+          id: "only-you", 
+          text: "Only you can't see it", 
+          description: "You can't see it but others can",
           isCorrect: false
         },
         { 
           id: "still-shared", 
           text: "It can still be shared and seen", 
-          emoji: "♾️", 
           description: "Saved content can be shared even after deletion",
           isCorrect: true
-        },
-        { 
-          id: "only-you", 
-          text: "Only you can't see it", 
-          emoji: "👁️", 
-          description: "You can't see it but others can",
-          isCorrect: false
         }
       ]
     },
@@ -85,21 +79,18 @@ const DigitalFootprintStory1 = () => {
         { 
           id: "old-disappear", 
           text: "Old comments disappear", 
-          emoji: "⏰", 
           description: "Old comments are automatically removed",
           isCorrect: false
         },
         { 
           id: "stays-forever-digital", 
           text: "Digital content stays forever", 
-          emoji: "♾️", 
           description: "Everything you post online remains accessible",
           isCorrect: true
         },
         { 
           id: "recent-matter", 
           text: "Only recent posts matter", 
-          emoji: "📅", 
           description: "Only recent content is relevant",
           isCorrect: false
         }
@@ -112,21 +103,18 @@ const DigitalFootprintStory1 = () => {
         { 
           id: "control-complete", 
           text: "You can control it completely", 
-          emoji: "🎮", 
           description: "You have full control over shared content",
           isCorrect: false
         },
         { 
           id: "hard-control", 
           text: "Once shared, it's hard to control", 
-          emoji: "♾️", 
           description: "Once content is shared, you lose control over it",
           isCorrect: true
         },
         { 
           id: "only-you-affected", 
           text: "It only affects you", 
-          emoji: "👤", 
           description: "The impact is limited to you only",
           isCorrect: false
         }
@@ -137,23 +125,20 @@ const DigitalFootprintStory1 = () => {
       text: "Everything you post online creates a digital footprint. How long does it last?",
       options: [
         { 
-          id: "few-days", 
-          text: "Only for a few days", 
-          emoji: "📅", 
-          description: "Digital footprints disappear after a few days",
-          isCorrect: false
-        },
-        { 
           id: "forever-online", 
           text: "Forever - it stays online", 
-          emoji: "♾️", 
           description: "Your digital footprint is permanent",
           isCorrect: true
         },
         { 
+          id: "few-days", 
+          text: "Only for a few days", 
+          description: "Digital footprints disappear after a few days",
+          isCorrect: false
+        },
+        { 
           id: "until-delete", 
           text: "Until you delete it", 
-          emoji: "🗑️", 
           description: "It only lasts until you delete it",
           isCorrect: false
         }
@@ -244,7 +229,6 @@ const DigitalFootprintStory1 = () => {
                     onClick={() => handleChoice(option.id)}
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
                     <p className="text-white/90">{option.description}</p>
                   </button>

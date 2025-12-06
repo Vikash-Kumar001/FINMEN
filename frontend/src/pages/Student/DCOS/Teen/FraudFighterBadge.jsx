@@ -29,23 +29,15 @@ const FraudFighterBadge = () => {
       question: "What should you do with suspicious emails?",
       options: [
         { 
+          text: "Click links in suspicious emails", 
+          isCorrect: false
+        },
+        { 
           text: "Ignored a phishing email", 
-          emoji: "📧", 
           isCorrect: true
         },
         { 
-          text: "Click links in suspicious emails", 
-          emoji: "🔗", 
-          isCorrect: false
-        },
-        { 
           text: "Reply to suspicious emails", 
-          emoji: "✉️", 
-          isCorrect: false
-        },
-        { 
-          text: "Share personal info in emails", 
-          emoji: "📤", 
           isCorrect: false
         }
       ]
@@ -56,24 +48,16 @@ const FraudFighterBadge = () => {
       question: "What should you do when someone asks for your OTP?",
       options: [
         { 
-          text: "Refused to share OTP", 
-          emoji: "🔐", 
-          isCorrect: true
-        },
-        { 
           text: "Share OTP if they claim to be from bank", 
-          emoji: "🏦", 
           isCorrect: false
         },
         { 
           text: "Share OTP with friends", 
-          emoji: "👥", 
           isCorrect: false
         },
         { 
-          text: "Share OTP if they seem trustworthy", 
-          emoji: "😊", 
-          isCorrect: false
+          text: "Refused to share OTP", 
+          isCorrect: true
         }
       ]
     },
@@ -83,23 +67,15 @@ const FraudFighterBadge = () => {
       question: "What should you do with job offers that seem too good?",
       options: [
         { 
+          text: "Apply immediately", 
+          isCorrect: false
+        },
+        { 
           text: "Avoided a fake job scam", 
-          emoji: "💼", 
           isCorrect: true
         },
         { 
-          text: "Apply immediately", 
-          emoji: "✅", 
-          isCorrect: false
-        },
-        { 
           text: "Pay money to get the job", 
-          emoji: "💰", 
-          isCorrect: false
-        },
-        { 
-          text: "Share personal details immediately", 
-          emoji: "📤", 
           isCorrect: false
         }
       ]
@@ -110,23 +86,15 @@ const FraudFighterBadge = () => {
       question: "What should you do with suspicious pop-ups?",
       options: [
         { 
+          text: "Click on suspicious pop-ups", 
+          isCorrect: false
+        },
+        { 
           text: "Ignored a scam pop-up", 
-          emoji: "🚫", 
           isCorrect: true
         },
         { 
-          text: "Click on suspicious pop-ups", 
-          emoji: "🖱️", 
-          isCorrect: false
-        },
-        { 
           text: "Enter information in pop-ups", 
-          emoji: "⌨️", 
-          isCorrect: false
-        },
-        { 
-          text: "Call numbers in pop-ups", 
-          emoji: "📞", 
           isCorrect: false
         }
       ]
@@ -137,24 +105,16 @@ const FraudFighterBadge = () => {
       question: "What should you do before sharing personal information?",
       options: [
         { 
-          text: "Verified before sharing information", 
-          emoji: "✅", 
-          isCorrect: true
-        },
-        { 
           text: "Share information immediately", 
-          emoji: "📤", 
           isCorrect: false
         },
         { 
           text: "Share if they seem friendly", 
-          emoji: "😊", 
           isCorrect: false
         },
         { 
-          text: "Share if they offer something", 
-          emoji: "🎁", 
-          isCorrect: false
+          text: "Verified before sharing information", 
+          isCorrect: true
         }
       ]
     }
@@ -247,7 +207,6 @@ const FraudFighterBadge = () => {
                     } ${answered ? "cursor-not-allowed" : ""}`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{option.emoji}</span>
                       <span className="text-white font-semibold">{option.text}</span>
                     </div>
                   </button>

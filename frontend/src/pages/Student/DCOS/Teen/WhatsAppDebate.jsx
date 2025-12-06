@@ -28,23 +28,20 @@ const WhatsAppDebate = () => {
       text: "Should we trust all forwards?",
       options: [
         { 
-          id: "yes-forwarded", 
-          text: "Yes - if it's forwarded, it's true", 
-          emoji: "✅", 
-          description: "Forwarded messages are usually true",
-          isCorrect: false
-        },
-        { 
           id: "no-verify", 
           text: "No - always verify forwards", 
-          emoji: "❌", 
           description: "Always verify forwarded messages before trusting them",
           isCorrect: true
         },
         { 
+          id: "yes-forwarded", 
+          text: "Yes - if it's forwarded, it's true", 
+          description: "Forwarded messages are usually true",
+          isCorrect: false
+        },
+        { 
           id: "maybe", 
           text: "Maybe - depends on who forwarded it", 
-          emoji: "🤔", 
           description: "It depends on who sent the forward",
           isCorrect: false
         }
@@ -57,23 +54,20 @@ const WhatsAppDebate = () => {
         { 
           id: "yes-friends", 
           text: "Yes - friends wouldn't lie", 
-          emoji: "✅", 
           description: "Friends are trustworthy, so their forwards are safe",
+          isCorrect: false
+        },
+        { 
+          id: "sometimes", 
+          text: "Sometimes - if it's from close friends", 
+          description: "Only trust forwards from close friends",
           isCorrect: false
         },
         { 
           id: "no-verify-friends", 
           text: "No - verify even from friends", 
-          emoji: "❌", 
           description: "Always verify messages, even from friends",
           isCorrect: true
-        },
-        { 
-          id: "sometimes", 
-          text: "Sometimes - if it's from close friends", 
-          emoji: "🤝", 
-          description: "Only trust forwards from close friends",
-          isCorrect: false
         }
       ]
     },
@@ -82,24 +76,21 @@ const WhatsAppDebate = () => {
       text: "Should we forward messages asking us to share?",
       options: [
         { 
-          id: "yes-share", 
-          text: "Yes - if they ask, we should", 
-          emoji: "✅", 
-          description: "If someone asks to share, we should forward it",
+          id: "maybe", 
+          text: "Maybe - if it seems important", 
+          description: "Share if the message seems important",
           isCorrect: false
         },
         { 
           id: "no-verify-first", 
           text: "No - verify before sharing", 
-          emoji: "❌", 
           description: "Always verify messages before sharing them",
           isCorrect: true
         },
         { 
-          id: "maybe", 
-          text: "Maybe - if it seems important", 
-          emoji: "🤔", 
-          description: "Share if the message seems important",
+          id: "yes-share", 
+          text: "Yes - if they ask, we should", 
+          description: "If someone asks to share, we should forward it",
           isCorrect: false
         }
       ]
@@ -111,23 +102,20 @@ const WhatsAppDebate = () => {
         { 
           id: "yes-viral", 
           text: "Yes - viral means verified", 
-          emoji: "✅", 
           description: "Viral messages are always verified and true",
+          isCorrect: false
+        },
+        { 
+          id: "sometimes", 
+          text: "Sometimes - if many people share it", 
+          description: "If many people share it, it's probably true",
           isCorrect: false
         },
         { 
           id: "no-viral", 
           text: "No - viral doesn't mean true", 
-          emoji: "❌", 
           description: "Viral messages can be false, always verify",
           isCorrect: true
-        },
-        { 
-          id: "sometimes", 
-          text: "Sometimes - if many people share it", 
-          emoji: "👥", 
-          description: "If many people share it, it's probably true",
-          isCorrect: false
         }
       ]
     },
@@ -138,23 +126,20 @@ const WhatsAppDebate = () => {
         { 
           id: "yes-help", 
           text: "Yes - it might help people", 
-          emoji: "✅", 
           description: "Forward health advice to help others",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe - if it seems helpful", 
+          description: "Share if the health advice seems helpful",
           isCorrect: false
         },
         { 
           id: "no-doctors", 
           text: "No - verify with doctors first", 
-          emoji: "❌", 
           description: "Always verify health advice with doctors before sharing",
           isCorrect: true
-        },
-        { 
-          id: "maybe", 
-          text: "Maybe - if it seems helpful", 
-          emoji: "💊", 
-          description: "Share if the health advice seems helpful",
-          isCorrect: false
         }
       ]
     }
@@ -231,7 +216,6 @@ const WhatsAppDebate = () => {
                     onClick={() => handleChoice(option.id)}
                     className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
                     <p className="text-white/90 text-sm">{option.description}</p>
                   </button>

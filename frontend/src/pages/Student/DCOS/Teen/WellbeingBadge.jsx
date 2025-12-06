@@ -29,14 +29,14 @@ const WellbeingBadge = () => {
       question: "What should you do to maintain digital wellbeing?",
       options: [
         { 
-          text: "Limit screen time today", 
-          emoji: "⏰", 
-          isCorrect: true
-        },
-        { 
           text: "Spend all day on screens", 
           emoji: "📱", 
           isCorrect: false
+        },
+        { 
+          text: "Limit screen time today", 
+          emoji: "⏰", 
+          isCorrect: true
         },
         { 
           text: "Never take breaks", 
@@ -56,11 +56,6 @@ const WellbeingBadge = () => {
       question: "How should you manage your phone before sleep?",
       options: [
         { 
-          text: "Got good sleep (turned off phone at 10 PM)", 
-          emoji: "🌙", 
-          isCorrect: true
-        },
-        { 
           text: "Use phone until late night", 
           emoji: "📱", 
           isCorrect: false
@@ -69,6 +64,11 @@ const WellbeingBadge = () => {
           text: "Keep phone on all night", 
           emoji: "🌃", 
           isCorrect: false
+        },
+        { 
+          text: "Got good sleep (turned off phone at 10 PM)", 
+          emoji: "🌙", 
+          isCorrect: true
         },
         { 
           text: "Check phone during sleep", 
@@ -83,14 +83,14 @@ const WellbeingBadge = () => {
       question: "What helps maintain digital wellbeing?",
       options: [
         { 
-          text: "Did offline activities", 
-          emoji: "🏃", 
-          isCorrect: true
-        },
-        { 
           text: "Only use screens all day", 
           emoji: "📺", 
           isCorrect: false
+        },
+        { 
+          text: "Did offline activities", 
+          emoji: "🏃", 
+          isCorrect: true
         },
         { 
           text: "Never go outside", 
@@ -110,11 +110,6 @@ const WellbeingBadge = () => {
       question: "What's the key to digital wellbeing?",
       options: [
         { 
-          text: "Balanced tech with other activities", 
-          emoji: "⚖️", 
-          isCorrect: true
-        },
-        { 
           text: "Only use technology", 
           emoji: "📱", 
           isCorrect: false
@@ -123,6 +118,11 @@ const WellbeingBadge = () => {
           text: "Never use technology", 
           emoji: "🚫", 
           isCorrect: false
+        },
+        { 
+          text: "Balanced tech with other activities", 
+          emoji: "⚖️", 
+          isCorrect: true
         },
         { 
           text: "Use tech without breaks", 
@@ -137,11 +137,6 @@ const WellbeingBadge = () => {
       question: "What should be your priority?",
       options: [
         { 
-          text: "Prioritized health and wellbeing", 
-          emoji: "💚", 
-          isCorrect: true
-        },
-        { 
           text: "Prioritize only technology", 
           emoji: "📱", 
           isCorrect: false
@@ -150,6 +145,11 @@ const WellbeingBadge = () => {
           text: "Ignore health completely", 
           emoji: "😴", 
           isCorrect: false
+        },
+        { 
+          text: "Prioritized health and wellbeing", 
+          emoji: "💚", 
+          isCorrect: true
         },
         { 
           text: "Health doesn't matter", 

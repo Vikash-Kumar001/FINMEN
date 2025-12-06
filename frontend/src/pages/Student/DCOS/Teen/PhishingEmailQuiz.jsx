@@ -58,23 +58,20 @@ const PhishingEmailQuiz = () => {
       text: "An email says 'Click link to win lottery.' Is it safe?",
       options: [
         { 
-          id: "a", 
-          text: "Yes - click the link", 
-          emoji: "✅", 
-          description: "Lottery win emails are common phishing scams - never click the link",
-          isCorrect: false
-        },
-        { 
           id: "b", 
           text: "No - it's a phishing scam", 
-          emoji: "🚫", 
           description: "Emails promising lottery wins are phishing scams designed to steal your information",
           isCorrect: true
         },
         { 
+          id: "a", 
+          text: "Yes - click the link", 
+          description: "Lottery win emails are common phishing scams - never click the link",
+          isCorrect: false
+        },
+        { 
           id: "c", 
           text: "Maybe - check first", 
-          emoji: "🤔", 
           description: "Lottery win emails are always scams - don't click or check anything",
           isCorrect: false
         }
@@ -87,23 +84,20 @@ const PhishingEmailQuiz = () => {
         { 
           id: "a", 
           text: "Yes - click to verify", 
-          emoji: "✅", 
           description: "Account verification emails can be phishing scams - go to official site directly",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Check the sender first", 
+          description: "Even if sender looks legitimate, go to official site directly to be safe",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "No - it's phishing, go to official site", 
-          emoji: "🚫", 
           description: "Never click links in verification emails - go to the official website directly",
           isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Check the sender first", 
-          emoji: "👀", 
-          description: "Even if sender looks legitimate, go to official site directly to be safe",
-          isCorrect: false
         }
       ]
     },
@@ -114,23 +108,20 @@ const PhishingEmailQuiz = () => {
         { 
           id: "a", 
           text: "Yes - provide the info", 
-          emoji: "✅", 
           description: "Never provide personal information to unsolicited prize emails",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ask for more details", 
+          description: "Don't engage with suspicious prize emails - delete them",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "No - it's a phishing scam", 
-          emoji: "🚫", 
           description: "Emails asking for personal information to claim prizes are phishing scams",
           isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Ask for more details", 
-          emoji: "❓", 
-          description: "Don't engage with suspicious prize emails - delete them",
-          isCorrect: false
         }
       ]
     },
@@ -139,23 +130,20 @@ const PhishingEmailQuiz = () => {
       text: "An email says 'Urgent: Update your password now!' Is it safe?",
       options: [
         { 
-          id: "a", 
-          text: "Yes - click and update", 
-          emoji: "✅", 
-          description: "Urgent password update emails are often phishing scams",
-          isCorrect: false
-        },
-        { 
           id: "b", 
           text: "No - go to official website directly", 
-          emoji: "🚫", 
           description: "Never click links in password update emails - go to official website directly",
           isCorrect: true
         },
         { 
+          id: "a", 
+          text: "Yes - click and update", 
+          description: "Urgent password update emails are often phishing scams",
+          isCorrect: false
+        },
+        { 
           id: "c", 
           text: "Check the email address first", 
-          emoji: "📧", 
           description: "Even if email looks legitimate, go to official site directly to be safe",
           isCorrect: false
         }
@@ -168,23 +156,20 @@ const PhishingEmailQuiz = () => {
         { 
           id: "a", 
           text: "Yes - click for free gift", 
-          emoji: "✅", 
           description: "Free gift card offers in emails are phishing scams",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Forward to friends first", 
+          description: "Never forward suspicious emails - delete them immediately",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "No - it's a phishing scam", 
-          emoji: "🚫", 
           description: "Emails offering free gift cards are phishing scams designed to steal your information",
           isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Forward to friends first", 
-          emoji: "➡️", 
-          description: "Never forward suspicious emails - delete them immediately",
-          isCorrect: false
         }
       ]
     }
@@ -290,7 +275,6 @@ const PhishingEmailQuiz = () => {
                     className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
                   >
                     <div className="flex items-center">
-                      <div className="text-2xl md:text-3xl mr-3 md:mr-4">{option.emoji}</div>
                       <div>
                         <h3 className="font-bold text-base md:text-xl mb-1">{option.text}</h3>
                         <p className="text-white/90 text-xs md:text-sm">{option.description}</p>

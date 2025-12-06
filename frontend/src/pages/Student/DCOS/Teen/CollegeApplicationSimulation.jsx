@@ -27,23 +27,20 @@ const CollegeApplicationSimulation = () => {
       text: "College checks social media. Which profile is better?",
       options: [
         { 
-          id: "clean", 
-          text: "Clean and respectful posts", 
-          emoji: "✅", 
-          description: "Professional and positive content",
-          isCorrect: true
-        },
-        { 
           id: "rude", 
           text: "Rude and offensive content", 
-          emoji: "❌", 
           description: "Negative and inappropriate posts",
           isCorrect: false
         },
         { 
+          id: "clean", 
+          text: "Clean and respectful posts", 
+          description: "Professional and positive content",
+          isCorrect: true
+        },
+        { 
           id: "inappropriate", 
           text: "Inappropriate jokes and memes", 
-          emoji: "❌", 
           description: "Unprofessional content",
           isCorrect: false
         }
@@ -54,25 +51,22 @@ const CollegeApplicationSimulation = () => {
       text: "Which social media profile would impress colleges?",
       options: [
         { 
-          id: "professional", 
-          text: "Professional and positive content", 
-          emoji: "✅", 
-          description: "Mature and respectful posts",
-          isCorrect: true
-        },
-        { 
           id: "negative", 
           text: "Negative and complaining posts", 
-          emoji: "❌", 
           description: "Complaining and negative",
           isCorrect: false
         },
         { 
           id: "controversial", 
           text: "Controversial and argumentative", 
-          emoji: "❌", 
           description: "Argumentative content",
           isCorrect: false
+        },
+        { 
+          id: "professional", 
+          text: "Professional and positive content", 
+          description: "Mature and respectful posts",
+          isCorrect: true
         }
       ]
     },
@@ -81,23 +75,20 @@ const CollegeApplicationSimulation = () => {
       text: "What kind of profile helps college applications?",
       options: [
         { 
-          id: "respectful", 
-          text: "Respectful and achievement-focused", 
-          emoji: "✅", 
-          description: "Shows maturity and accomplishments",
-          isCorrect: true
-        },
-        { 
           id: "insulting", 
           text: "Insulting and disrespectful", 
-          emoji: "❌", 
           description: "Disrespectful behavior",
           isCorrect: false
         },
         { 
+          id: "respectful", 
+          text: "Respectful and achievement-focused", 
+          description: "Shows maturity and accomplishments",
+          isCorrect: true
+        },
+        { 
           id: "immature", 
           text: "Unprofessional and immature", 
-          emoji: "❌", 
           description: "Immature content",
           isCorrect: false
         }
@@ -108,23 +99,20 @@ const CollegeApplicationSimulation = () => {
       text: "Which profile shows good character to colleges?",
       options: [
         { 
-          id: "positive", 
-          text: "Positive and supportive posts", 
-          emoji: "✅", 
-          description: "Shows kindness and support",
-          isCorrect: true
-        },
-        { 
           id: "mean", 
           text: "Mean and hurtful comments", 
-          emoji: "❌", 
           description: "Hurtful behavior",
           isCorrect: false
         },
         { 
+          id: "positive", 
+          text: "Positive and supportive posts", 
+          description: "Shows kindness and support",
+          isCorrect: true
+        },
+        { 
           id: "offensive", 
           text: "Inappropriate and offensive", 
-          emoji: "❌", 
           description: "Offensive content",
           isCorrect: false
         }
@@ -135,25 +123,22 @@ const CollegeApplicationSimulation = () => {
       text: "What profile would colleges prefer to see?",
       options: [
         { 
-          id: "mature", 
-          text: "Clean, respectful, and mature", 
-          emoji: "✅", 
-          description: "Professional and mature presence",
-          isCorrect: true
-        },
-        { 
           id: "immature2", 
           text: "Rude, negative, and immature", 
-          emoji: "❌", 
           description: "Unprofessional behavior",
           isCorrect: false
         },
         { 
           id: "unprofessional", 
           text: "Controversial and unprofessional", 
-          emoji: "❌", 
           description: "Unprofessional content",
           isCorrect: false
+        },
+        { 
+          id: "mature", 
+          text: "Clean, respectful, and mature", 
+          description: "Professional and mature presence",
+          isCorrect: true
         }
       ]
     }
@@ -232,7 +217,6 @@ const CollegeApplicationSimulation = () => {
                     className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
                     <div className="flex flex-col items-center justify-center text-center">
-                      <div className="text-3xl mb-3">{option.emoji}</div>
                       <h3 className="font-bold text-lg mb-2">{option.text}</h3>
                       <p className="text-white/90 text-sm">{option.description}</p>
                     </div>

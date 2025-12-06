@@ -62,22 +62,22 @@ const BankingSafetyPuzzle = () => {
     { id: 5, name: "Official Bank Website", emoji: "🏛️", description: "Verified bank website" }
   ];
 
-  // Categories - shuffled order to make it harder
+  // Categories - logical security classifications
   const rightItems = [
-    { id: 1, name: "Scam", emoji: "🚫", description: "Fraudulent and dangerous" },
-    { id: 2, name: "Private", emoji: "🔒", description: "Never share with anyone" },
-    { id: 3, name: "Safe", emoji: "✅", description: "Secure and trustworthy" },
-    { id: 4, name: "Private", emoji: "🔒", description: "Never share with anyone" },
-    { id: 5, name: "Safe", emoji: "✅", description: "Secure and trustworthy" }
+    { id: 1, name: "Confidential", emoji: "🔒", description: "Sensitive information requiring protection" },
+    { id: 2, name: "Verified Platform", emoji: "✅", description: "Authenticated and secure service" },
+    { id: 3, name: "Security Threat", emoji: "⚠️", description: "Potential danger to financial safety" },
+    { id: 4, name: "Authentication", emoji: "🔑", description: "Verification mechanism for access" },
+    { id: 5, name: "Trusted Service", emoji: "🏦", description: "Legitimate banking channel" }
   ];
 
-  // Correct matches
+  // Correct matches - logical pairings based on security functions
   const correctMatches = [
-    { leftId: 1, rightId: 2 }, // OTP → Private
-    { leftId: 2, rightId: 3 }, // Bank App → Safe
-    { leftId: 3, rightId: 1 }, // Fake Link → Scam
-    { leftId: 4, rightId: 4 }, // Bank Password → Private
-    { leftId: 5, rightId: 5 }  // Official Bank Website → Safe
+    { leftId: 1, rightId: 4 }, // OTP → Authentication (position 4)
+    { leftId: 2, rightId: 2 }, // Bank App → Verified Platform (position 2)
+    { leftId: 3, rightId: 3 }, // Fake Link → Security Threat (position 3)
+    { leftId: 4, rightId: 1 }, // Bank Password → Confidential (position 1)
+    { leftId: 5, rightId: 5 }  // Official Bank Website → Trusted Service (position 5)
   ];
 
   // Check if a right item is already matched

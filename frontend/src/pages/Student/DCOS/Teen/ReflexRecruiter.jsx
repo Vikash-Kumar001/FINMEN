@@ -39,10 +39,10 @@ const ReflexRecruiter = () => {
       question: "A post says 'This job is so boring, I hate it'. What should a recruiter do?",
       correctAnswer: "Reject Negative Post",
       options: [
-        { text: "Accept Candidate", isCorrect: false, emoji: "✅" },
-        { text: "Reject Negative Post", isCorrect: true, emoji: "❌" },
-        { text: "Like It", isCorrect: false, emoji: "👍" },
-        { text: "Share It", isCorrect: false, emoji: "📤" }
+        { text: "Accept Candidate", isCorrect: false },
+        { text: "Reject Negative Post", isCorrect: true },
+        { text: "Like It", isCorrect: false },
+        { text: "Share It", isCorrect: false }
       ]
     },
     {
@@ -50,10 +50,10 @@ const ReflexRecruiter = () => {
       question: "A post says 'Completed a challenging project today!'. What should a recruiter do?",
       correctAnswer: "Accept Positive Post",
       options: [
-        { text: "Reject Candidate", isCorrect: false, emoji: "❌" },
-        { text: "Accept Positive Post", isCorrect: true, emoji: "✅" },
-        { text: "Ignore It", isCorrect: false, emoji: "🙈" },
-        { text: "Report It", isCorrect: false, emoji: "📢" }
+        { text: "Reject Candidate", isCorrect: false },
+        { text: "Ignore It", isCorrect: false },
+        { text: "Accept Positive Post", isCorrect: true },
+        { text: "Report It", isCorrect: false }
       ]
     },
     {
@@ -61,10 +61,10 @@ const ReflexRecruiter = () => {
       question: "A post says 'My boss is so annoying'. What should a recruiter do?",
       correctAnswer: "Reject Negative Post",
       options: [
-        { text: "Accept Candidate", isCorrect: false, emoji: "✅" },
-        { text: "Reject Negative Post", isCorrect: true, emoji: "❌" },
-        { text: "Like It", isCorrect: false, emoji: "👍" },
-        { text: "Share It", isCorrect: false, emoji: "📤" }
+        { text: "Accept Candidate", isCorrect: false },
+        { text: "Reject Negative Post", isCorrect: true },
+        { text: "Like It", isCorrect: false },
+        { text: "Share It", isCorrect: false }
       ]
     },
     {
@@ -72,10 +72,10 @@ const ReflexRecruiter = () => {
       question: "A post says 'Learned something new and exciting'. What should a recruiter do?",
       correctAnswer: "Accept Positive Post",
       options: [
-        { text: "Reject Candidate", isCorrect: false, emoji: "❌" },
-        { text: "Accept Positive Post", isCorrect: true, emoji: "✅" },
-        { text: "Ignore It", isCorrect: false, emoji: "🙈" },
-        { text: "Report It", isCorrect: false, emoji: "📢" }
+        { text: "Reject Candidate", isCorrect: false },
+        { text: "Accept Positive Post", isCorrect: true },
+        { text: "Ignore It", isCorrect: false },
+        { text: "Report It", isCorrect: false }
       ]
     },
     {
@@ -83,10 +83,10 @@ const ReflexRecruiter = () => {
       question: "A post says 'Work is so stupid, I don't care'. What should a recruiter do?",
       correctAnswer: "Reject Negative Post",
       options: [
-        { text: "Accept Candidate", isCorrect: false, emoji: "✅" },
-        { text: "Reject Negative Post", isCorrect: true, emoji: "❌" },
-        { text: "Like It", isCorrect: false, emoji: "👍" },
-        { text: "Share It", isCorrect: false, emoji: "📤" }
+        { text: "Accept Candidate", isCorrect: false },
+        { text: "Reject Negative Post", isCorrect: true },
+        { text: "Like It", isCorrect: false },
+        { text: "Share It", isCorrect: false }
       ]
     }
   ];
@@ -240,7 +240,7 @@ const ReflexRecruiter = () => {
                     disabled={answered}
                     className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                    {option.text}
                   </button>
                 ))}
               </div>

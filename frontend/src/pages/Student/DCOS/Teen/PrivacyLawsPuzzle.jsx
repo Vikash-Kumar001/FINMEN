@@ -57,21 +57,27 @@ const PrivacyLawsPuzzle = () => {
   const leftItems = [
     { id: 1, name: "GDPR", emoji: "🌍", description: "General Data Protection Regulation" },
     { id: 2, name: "IT Act", emoji: "📜", description: "Information Technology Act" },
-    { id: 3, name: "COPPA", emoji: "🛡️", description: "Children's Online Privacy Protection Act" }
+    { id: 3, name: "COPPA", emoji: "🛡️", description: "Children's Online Privacy Protection Act" },
+    { id: 4, name: "CCPA", emoji: "🏛️", description: "California Consumer Privacy Act" },
+    { id: 5, name: "PIPEDA", emoji: "🇨🇦", description: "Personal Information Protection and Electronic Documents Act" }
   ];
 
   // Regions/Protection - shuffled order to make it harder
   const rightItems = [
     { id: 1, name: "India", emoji: "🇮🇳", description: "Protects data in India" },
     { id: 2, name: "Europe", emoji: "🇪🇺", description: "Protects data in Europe" },
-    { id: 3, name: "Kids", emoji: "👶", description: "Protects children's privacy" }
+    { id: 3, name: "Kids", emoji: "👶", description: "Protects children's privacy" },
+    { id: 4, name: "California", emoji: "🇺🇸", description: "Protects consumers in California" },
+    { id: 5, name: "Canada", emoji: "🍁", description: "Protects personal information in Canada" }
   ];
 
   // Correct matches
   const correctMatches = [
     { leftId: 1, rightId: 2 }, // GDPR → Europe
     { leftId: 2, rightId: 1 }, // IT Act → India
-    { leftId: 3, rightId: 3 }  // COPPA → Kids
+    { leftId: 3, rightId: 3 }, // COPPA → Kids
+    { leftId: 4, rightId: 4 }, // CCPA → California
+    { leftId: 5, rightId: 5 }  // PIPEDA → Canada
   ];
 
   // Check if a right item is already matched

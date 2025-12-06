@@ -39,10 +39,9 @@ const ReflexAdTrap = () => {
       question: "A pop-up says 'You won lottery! Click to claim!'. What should you do?",
       correctAnswer: "Close Scam Pop-up",
       options: [
-        { text: "Click to Claim", isCorrect: false, emoji: "🎉" },
-        { text: "Close Scam Pop-up", isCorrect: true, emoji: "🚫" },
-        { text: "Share with Friends", isCorrect: false, emoji: "👥" },
-        { text: "Take Screenshot", isCorrect: false, emoji: "📸" }
+        { text: "Close Scam Pop-up", isCorrect: true },
+        { text: "Click to Claim", isCorrect: false },
+        { text: "Share with Friends", isCorrect: false }
       ]
     },
     {
@@ -50,10 +49,9 @@ const ReflexAdTrap = () => {
       question: "A notification says 'App update available'. What should you do?",
       correctAnswer: "Check Legitimate Update",
       options: [
-        { text: "Ignore It", isCorrect: false, emoji: "🙈" },
-        { text: "Check Legitimate Update", isCorrect: true, emoji: "🔄" },
-        { text: "Report as Scam", isCorrect: false, emoji: "📢" },
-        { text: "Delete Notification", isCorrect: false, emoji: "🗑️" }
+        { text: "Ignore It", isCorrect: false },
+        { text: "Delete Notification", isCorrect: false },
+        { text: "Check Legitimate Update", isCorrect: true }
       ]
     },
     {
@@ -61,10 +59,9 @@ const ReflexAdTrap = () => {
       question: "A pop-up says 'Congratulations! You're a winner!'. What should you do?",
       correctAnswer: "Close Scam Pop-up",
       options: [
-        { text: "Claim Prize", isCorrect: false, emoji: "🏆" },
-        { text: "Close Scam Pop-up", isCorrect: true, emoji: "🚫" },
-        { text: "Share Online", isCorrect: false, emoji: "🌐" },
-        { text: "Click to See", isCorrect: false, emoji: "👀" }
+        { text: "Claim Prize", isCorrect: false },
+        { text: "Close Scam Pop-up", isCorrect: true },
+        { text: "Click to See", isCorrect: false }
       ]
     },
     {
@@ -72,10 +69,9 @@ const ReflexAdTrap = () => {
       question: "A notification says 'System notification: Battery low'. What should you do?",
       correctAnswer: "Check System Notification",
       options: [
-        { text: "Ignore It", isCorrect: false, emoji: "🙈" },
-        { text: "Check System Notification", isCorrect: true, emoji: "🔋" },
-        { text: "Report as Scam", isCorrect: false, emoji: "📢" },
-        { text: "Delete Notification", isCorrect: false, emoji: "🗑️" }
+        { text: "Check System Notification", isCorrect: true },
+        { text: "Ignore It", isCorrect: false },
+        { text: "Delete Notification", isCorrect: false }
       ]
     },
     {
@@ -83,10 +79,9 @@ const ReflexAdTrap = () => {
       question: "A pop-up says 'Claim your prize now! Click here!'. What should you do?",
       correctAnswer: "Close Scam Pop-up",
       options: [
-        { text: "Click to Claim", isCorrect: false, emoji: "🎁" },
-        { text: "Close Scam Pop-up", isCorrect: true, emoji: "🚫" },
-        { text: "Share with Friends", isCorrect: false, emoji: "👥" },
-        { text: "Take Screenshot", isCorrect: false, emoji: "📸" }
+        { text: "Click to Claim", isCorrect: false },
+        { text: "Take Screenshot", isCorrect: false },
+        { text: "Close Scam Pop-up", isCorrect: true }
       ]
     }
   ];
@@ -240,7 +235,7 @@ const ReflexAdTrap = () => {
                     disabled={answered}
                     className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                    {option.text}
                   </button>
                 ))}
               </div>

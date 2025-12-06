@@ -28,23 +28,20 @@ const DebateStage1 = () => {
       text: "Does online identity matter for success?",
       options: [
         { 
-          id: "yes-opportunities", 
-          text: "Yes - it affects opportunities", 
-          emoji: "✅", 
-          description: "Your online identity directly impacts your opportunities",
-          isCorrect: true
-        },
-        { 
           id: "no-matter", 
           text: "No - it doesn't matter", 
-          emoji: "❌", 
           description: "Online identity has no impact on success",
           isCorrect: false
         },
         { 
+          id: "yes-opportunities", 
+          text: "Yes - it affects opportunities", 
+          description: "Your online identity directly impacts your opportunities",
+          isCorrect: true
+        },
+        { 
           id: "maybe", 
           text: "Maybe - only for some careers", 
-          emoji: "🤔", 
           description: "It only matters for certain types of careers",
           isCorrect: false
         }
@@ -55,25 +52,22 @@ const DebateStage1 = () => {
       text: "Is your online presence important for your future?",
       options: [
         { 
-          id: "yes-check", 
-          text: "Yes - employers and colleges check", 
-          emoji: "✅", 
-          description: "Employers and colleges check your online presence",
-          isCorrect: true
-        },
-        { 
           id: "no-skills", 
           text: "No - only skills matter", 
-          emoji: "❌", 
           description: "Only your skills matter, not your online presence",
           isCorrect: false
         },
         { 
           id: "sometimes", 
           text: "Sometimes - depends on the field", 
-          emoji: "💼", 
           description: "It depends on what field you're in",
           isCorrect: false
+        },
+        { 
+          id: "yes-check", 
+          text: "Yes - employers and colleges check", 
+          description: "Employers and colleges check your online presence",
+          isCorrect: true
         }
       ]
     },
@@ -82,23 +76,20 @@ const DebateStage1 = () => {
       text: "Can your digital footprint impact your career?",
       options: [
         { 
-          id: "yes-help-hurt", 
-          text: "Yes - it can help or hurt", 
-          emoji: "✅", 
-          description: "Your digital footprint can positively or negatively impact your career",
-          isCorrect: true
-        },
-        { 
           id: "no-separate", 
           text: "No - online doesn't affect real life", 
-          emoji: "❌", 
           description: "Online presence is separate from real life",
           isCorrect: false
         },
         { 
+          id: "yes-help-hurt", 
+          text: "Yes - it can help or hurt", 
+          description: "Your digital footprint can positively or negatively impact your career",
+          isCorrect: true
+        },
+        { 
           id: "maybe", 
           text: "Maybe - only if it's negative", 
-          emoji: "🤷", 
           description: "Only negative online content matters",
           isCorrect: false
         }
@@ -109,23 +100,20 @@ const DebateStage1 = () => {
       text: "Does your online reputation matter for success?",
       options: [
         { 
-          id: "yes-identity", 
-          text: "Yes - it's part of your identity", 
-          emoji: "✅", 
-          description: "Online reputation is part of your overall identity",
-          isCorrect: true
-        },
-        { 
           id: "no-separate-success", 
           text: "No - it's separate from success", 
-          emoji: "❌", 
           description: "Online reputation is separate from real-world success",
           isCorrect: false
         },
         { 
+          id: "yes-identity", 
+          text: "Yes - it's part of your identity", 
+          description: "Online reputation is part of your overall identity",
+          isCorrect: true
+        },
+        { 
           id: "maybe", 
           text: "Maybe - only for public figures", 
-          emoji: "⭐", 
           description: "Only matters if you're a public figure",
           isCorrect: false
         }
@@ -136,25 +124,22 @@ const DebateStage1 = () => {
       text: "Is building a positive online identity important?",
       options: [
         { 
-          id: "yes-doors", 
-          text: "Yes - it opens doors", 
-          emoji: "✅", 
-          description: "A positive online identity opens opportunities",
-          isCorrect: true
-        },
-        { 
           id: "no-necessary", 
           text: "No - not necessary", 
-          emoji: "❌", 
           description: "Building a positive online identity is not necessary",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe - only if you want to be famous", 
-          emoji: "🌟", 
           description: "Only important if you want to be famous",
           isCorrect: false
+        },
+        { 
+          id: "yes-doors", 
+          text: "Yes - it opens doors", 
+          description: "A positive online identity opens opportunities",
+          isCorrect: true
         }
       ]
     }
@@ -231,7 +216,6 @@ const DebateStage1 = () => {
                     onClick={() => handleChoice(option.id)}
                     className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
                     <p className="text-white/90 text-sm">{option.description}</p>
                   </button>

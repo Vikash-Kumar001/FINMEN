@@ -29,14 +29,14 @@ const CourageBadge = () => {
       question: "What should you do when you see cyberbullying?",
       options: [
         { 
-          text: "Block and report cyberbullying", 
-          emoji: "🚫", 
-          isCorrect: true
-        },
-        { 
           text: "Ignore it and do nothing", 
           emoji: "😐", 
           isCorrect: false
+        },
+        { 
+          text: "Block and report cyberbullying", 
+          emoji: "🚫", 
+          isCorrect: true
         },
         { 
           text: "Join in to fit in", 
@@ -56,14 +56,14 @@ const CourageBadge = () => {
       question: "What should you do if asked to join a trolling group?",
       options: [
         { 
-          text: "Refuse to join trolling group", 
-          emoji: "🛡️", 
-          isCorrect: true
-        },
-        { 
           text: "Join to be part of the group", 
           emoji: "👥", 
           isCorrect: false
+        },
+        { 
+          text: "Refuse to join trolling group", 
+          emoji: "🛡️", 
+          isCorrect: true
         },
         { 
           text: "Join but don't participate", 
@@ -83,11 +83,6 @@ const CourageBadge = () => {
       question: "What should you do when you see a gossip chain?",
       options: [
         { 
-          text: "Stop a gossip chain", 
-          emoji: "✋", 
-          isCorrect: true
-        },
-        { 
           text: "Forward it to others", 
           emoji: "📤", 
           isCorrect: false
@@ -96,6 +91,11 @@ const CourageBadge = () => {
           text: "Add more details to it", 
           emoji: "➕", 
           isCorrect: false
+        },
+        { 
+          text: "Stop a gossip chain", 
+          emoji: "✋", 
+          isCorrect: true
         },
         { 
           text: "Just watch it spread", 
@@ -110,14 +110,14 @@ const CourageBadge = () => {
       question: "What should you do when someone is being discriminated against?",
       options: [
         { 
-          text: "Defend someone being discriminated against", 
-          emoji: "🏳️‍🌈", 
-          isCorrect: true
-        },
-        { 
           text: "Stay silent", 
           emoji: "😶", 
           isCorrect: false
+        },
+        { 
+          text: "Defend someone being discriminated against", 
+          emoji: "🏳️‍🌈", 
+          isCorrect: true
         },
         { 
           text: "Join the discrimination", 
@@ -137,11 +137,6 @@ const CourageBadge = () => {
       question: "What does it mean to be an upstander?",
       options: [
         { 
-          text: "Stand up as an upstander", 
-          emoji: "💪", 
-          isCorrect: true
-        },
-        { 
           text: "Stay neutral and do nothing", 
           emoji: "😐", 
           isCorrect: false
@@ -155,6 +150,11 @@ const CourageBadge = () => {
           text: "Join the bullies", 
           emoji: "😞", 
           isCorrect: false
+        },
+        { 
+          text: "Stand up as an upstander", 
+          emoji: "💪", 
+          isCorrect: true
         }
       ]
     }

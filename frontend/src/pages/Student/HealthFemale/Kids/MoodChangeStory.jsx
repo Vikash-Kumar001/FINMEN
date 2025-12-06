@@ -1,126 +1,167 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const MoodChangeStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-87";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "You feel happy one moment and sad the next. Is this part of growing up?",
+      text: "You feel happy one minute, then sad the next.",
       options: [
         {
           id: "a",
-          text: "Yes, mood changes are normal during development",
-          emoji: "✅",
-          description: "Exactly! Hormonal changes during development can cause mood swings. This is completely normal.",
-          isCorrect: true
+          text: "Think you are broken",
+          emoji: "🤯",
+          description: "You are not broken.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "No, you should always feel the same",
-          emoji: "❌",
-          description: "It's natural for moods to fluctuate, especially during development. Constant emotions aren't realistic or healthy.",
+          text: "Know it's normal growing up feelings",
+          emoji: "😌",
+          description: "Correct! Moods change as you grow.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Yell at everyone",
+          emoji: "🤬",
+          description: "Try to stay calm.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "What might cause mood changes during development?",
+      text: "You feel like crying for no big reason.",
       options: [
         {
           id: "a",
-          text: "Hormonal changes and brain development",
-          emoji: "🧬",
-          description: "Correct! Hormonal fluctuations and brain development during puberty can affect emotions and mood regulation.",
-          isCorrect: true
+          text: "Hold it in tight",
+          emoji: "🤐",
+          description: "Letting it out helps.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Eating too much sugar",
-          emoji: "🍬",
-          description: "While diet can affect energy levels, mood changes during development are primarily due to biological factors.",
+          text: "Find a quiet place and let it out",
+          emoji: "😢",
+          description: "Yes! Crying is okay.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Cry in class loudly",
+          emoji: "🏫",
+          description: "Try to find a private spot.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "How can you manage mood changes during development?",
+      text: "You feel angry about a small thing.",
       options: [
         {
           id: "a",
-          text: "Talk to trusted adults and practice self-care",
-          emoji: "💬",
-          description: "Perfect! Communication and self-care strategies like exercise, sleep, and relaxation can help manage mood changes.",
+          text: "Take a deep breath and count to 10",
+          emoji: "🧘‍♀️",
+          description: "Correct! Calm down first.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Ignore your feelings and pretend nothing is happening",
-          emoji: "🤐",
-          description: "Ignoring emotions can lead to increased stress. It's healthier to acknowledge and address your feelings.",
+          text: "Throw toys",
+          emoji: "🧸",
+          description: "Don't break things.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Hit someone",
+          emoji: "👊",
+          description: "Never hit.",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "When should you talk to an adult about mood changes?",
+      text: "You feel confused about changing feelings.",
       options: [
         {
           id: "a",
-          text: "Only if you feel extremely sad or anxious for long periods",
-          emoji: "😔",
-          description: "While persistent extreme moods warrant attention, it's always okay to talk to trusted adults about any concerns.",
-          isCorrect: false
+          text: "Talk to a parent or teacher",
+          emoji: "🗣️",
+          description: "Yes! Sharing helps.",
+          isCorrect: true
         },
         {
           id: "b",
-          text: "Whenever you have questions or concerns about your feelings",
-          emoji: "😊",
-          description: "Great choice! It's always okay to talk to trusted adults about your feelings, whether they're mild or intense.",
-          isCorrect: true
+          text: "Keep it a secret",
+          emoji: "🤫",
+          description: "Do not keep feelings secret.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ask a stranger",
+          emoji: "❓",
+          description: "Ask someone you trust.",
+          isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "Your friend seems moody lately. What's the best approach?",
+      text: "Are feelings good or bad?",
       options: [
         {
           id: "a",
-          text: "Avoid them because they're difficult to be around",
-          emoji: "🚶‍♀️",
-          description: "Everyone goes through mood changes. Being supportive rather than avoiding someone is usually more helpful.",
+          text: "Only happy is good",
+          emoji: "🙂",
+          description: "All feelings are okay.",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Be patient and offer support if they want to talk",
-          emoji: "🤗",
-          description: "Good understanding! Being patient and offering support without judgment helps friends feel understood and cared for.",
+          text: "All feelings are okay to feel",
+          emoji: "🌈",
+          description: "Correct! Feelings are natural.",
           isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Feelings are scary",
+          emoji: "👻",
+          description: "Don't be scared of feelings.",
+          isCorrect: false
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +169,19 @@ const MoodChangeStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +191,15 @@ const MoodChangeStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-28"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={30}
-      currentLevel={28}
+      totalLevels={5}
+      currentLevel={87}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +207,52 @@ const MoodChangeStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

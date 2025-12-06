@@ -1,118 +1,158 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const VaccineStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-71";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Doctor says you need a vaccine shot. Should you take it?",
+      text: "It is time for your shot (vaccine) at the doctor's.",
       options: [
         {
           id: "a",
-          text: "Yes, vaccines protect me from serious diseases",
-          emoji: "💉",
-          description: "Exactly! Vaccines help your body build immunity to prevent serious diseases. They're safe and effective.",
-          isCorrect: true
+          text: "Run out of the office",
+          emoji: "🏃‍♀️",
+          description: "You need the shot to stay healthy.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "No, I'm scared of needles",
-          emoji: "😨",
-          description: "While it's normal to feel scared, vaccines are important for your health. The brief discomfort protects you from serious diseases.",
+          text: "Be brave and hold still",
+          emoji: "🦸‍♀️",
+          description: "Correct! It only hurts for a second.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Kick the doctor",
+          emoji: "🦶",
+          description: "Never hurt the doctor.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Your friend says vaccines are dangerous. What do you do?",
+      text: "Why do we get vaccines?",
       options: [
         {
           id: "a",
-          text: "Trust medical experts and get vaccinated",
-          emoji: "👩‍⚕️",
-          description: "Great choice! Medical experts and scientists have thoroughly tested vaccines. Trusting reliable sources is important for your health.",
-          isCorrect: true
+          text: "To get candy",
+          emoji: "🍬",
+          description: "That's a nice treat, but not the reason.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Believe your friend and skip vaccines",
-          emoji: "👥",
-          description: "It's important to verify health information from reliable sources like doctors, not just friends. Vaccines are proven safe and effective.",
+          text: "To teach our body to fight germs",
+          emoji: "🦠",
+          description: "Yes! They make us strong against sickness.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Because it's fun",
+          emoji: "🎉",
+          description: "Shots usually aren't fun.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "You feel slightly unwell after a vaccine. What should you do?",
+      text: "After the shot, your arm might feel sore.",
       options: [
         {
-          id: "a",
-          text: "Rest and inform your parents - mild side effects are normal",
-          emoji: "😴",
-          description: "Perfect! Mild side effects like slight fever or soreness are normal and show your body is building immunity. Rest and inform your parents.",
+          id: "b",
+          text: "Put a cool cloth on it and rest",
+          emoji: "🧊",
+          description: "Correct! That helps the soreness.",
           isCorrect: true
         },
         {
-          id: "b",
-          text: "Panic and never get another vaccine",
-          emoji: "😱",
-          description: "Mild side effects are normal and temporary. Serious reactions are extremely rare. Don't let minor discomfort prevent important protection.",
+          id: "a",
+          text: "Cry all day",
+          emoji: "😭",
+          description: "It will feel better soon.",
+          isCorrect: false
+        },
+       
+        {
+          id: "c",
+          text: "Hit it",
+          emoji: "👊",
+          description: "That will make it hurt more.",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "Parents forget to take you for a scheduled vaccine. What's best?",
+      text: "A friend says vaccines are scary.",
       options: [
         {
           id: "a",
-          text: "Remind parents about the appointment",
-          emoji: "📅",
-          description: "Wonderful! Keeping track of health appointments shows responsibility. Vaccines work best when given on schedule.",
-          isCorrect: true
+          text: "Agree and get scared",
+          emoji: "😨",
+          description: "Don't be scared.",
+          isCorrect: false
+        },
+       
+        {
+          id: "c",
+          text: "scare them more",
+          emoji: "👻",
+          description: "That is not kind.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Forget about it and hope for the best",
-          emoji: "🤷",
-          description: "Vaccines are most effective when given on schedule. It's important to follow the recommended vaccination timeline for full protection.",
-          isCorrect: false
-        }
+          text: "Tell them vaccines are like superhero shields",
+          emoji: "🛡️",
+          description: "Yes! They protect us.",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 5,
-      text: "New vaccine is available for a disease in your area. Should you get it?",
+      text: "The doctor gives you a sticker after.",
       options: [
         {
           id: "a",
-          text: "Yes, if recommended by health authorities",
-          emoji: "✅",
-          description: "Excellent! New vaccines that are recommended by health authorities have been thoroughly tested and approved for safety and effectiveness.",
+          text: "Say 'Thank You'",
+          emoji: "🙏",
+          description: "Correct! Manners are important.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "No, wait to see if others get sick first",
-          emoji: "⏳",
-          description: "Waiting could put you at risk. Vaccines are developed and tested to be safe and effective before being recommended. Protection is better than waiting.",
+          text: "Throw it away",
+          emoji: "🗑️",
+          description: "You earned that sticker!",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Eat it",
+          emoji: "😋",
+          description: "Stickers are not food.",
           isCorrect: false
         }
       ]
@@ -120,7 +160,10 @@ const VaccineStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +171,19 @@ const VaccineStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +193,15 @@ const VaccineStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-71"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={80}
-      currentLevel={71}
+      totalLevels={5}
+      currentLevel={61}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +209,52 @@ const VaccineStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

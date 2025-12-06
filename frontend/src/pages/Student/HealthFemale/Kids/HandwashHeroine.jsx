@@ -1,15 +1,18 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const HandwashHeroine = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-1"; // Match key in index.js
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
@@ -23,17 +26,17 @@ const HandwashHeroine = () => {
       options: [
         {
           id: "a",
-          text: "Wash hands with soap",
-          emoji: "🧼",
-          description: "Great choice! Clean hands keep germs away from your food.",
-          isCorrect: true
-        },
-        {
-          id: "b",
           text: "Wipe hands on clothes",
           emoji: "👕",
           description: "Your clothes aren't clean! Always use soap and water.",
           isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Wash hands with soap",
+          emoji: "🧼",
+          description: "Great choice! Clean hands keep germs away from your food.",
+          isCorrect: true
         },
         {
           id: "c",
@@ -50,24 +53,24 @@ const HandwashHeroine = () => {
       options: [
         {
           id: "a",
-          text: "Wash hands with soap",
-          emoji: "🐾",
-          description: "Perfect! This keeps both you and your pet healthy!",
-          isCorrect: true
-        },
-        {
-          id: "b",
           text: "Wipe hands on pants",
           emoji: "👖",
           description: "That won't clean your hands properly!",
           isCorrect: false
         },
         {
-          id: "c",
+          id: "b",
           text: "Lick hands clean",
           emoji: "👅",
           description: "No! That's not how we clean our hands!",
           isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Wash hands with soap",
+          emoji: "🐾",
+          description: "Perfect! This keeps both you and your pet healthy!",
+          isCorrect: true
         }
       ]
     },
@@ -77,17 +80,17 @@ const HandwashHeroine = () => {
       options: [
         {
           id: "a",
-          text: "5 seconds quickly",
-          emoji: "⚡",
-          description: "Too fast! You need more time to clean all the germs.",
-          isCorrect: false
-        },
-        {
-          id: "b",
           text: "20 seconds, sing happy birthday",
           emoji: "🎵",
           description: "Perfect! This gives soap enough time to work.",
           isCorrect: true
+        },
+        {
+          id: "b",
+          text: "5 seconds quickly",
+          emoji: "⚡",
+          description: "Too fast! You need more time to clean all the germs.",
+          isCorrect: false
         },
         {
           id: "c",
@@ -104,17 +107,17 @@ const HandwashHeroine = () => {
       options: [
         {
           id: "a",
-          text: "Wash hands with soap",
-          emoji: "🚽",
-          description: "Yes! This keeps you and others healthy!",
-          isCorrect: true
-        },
-        {
-          id: "b",
           text: "Just skip it this time",
           emoji: "🏃‍♀️",
           description: "Washing is important every time!",
           isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Wash hands with soap",
+          emoji: "🚽",
+          description: "Yes! This keeps you and others healthy!",
+          isCorrect: true
         },
         {
           id: "c",
@@ -138,29 +141,32 @@ const HandwashHeroine = () => {
         },
         {
           id: "b",
-          text: "Wash with soap and water",
-          emoji: "🧽",
-          description: "Perfect! Soap helps remove all the dirt and germs!",
-          isCorrect: true
-        },
-        {
-          id: "c",
           text: "Blow on them",
           emoji: "💨",
           description: "That won't clean your hands at all!",
           isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Wash with soap and water",
+          emoji: "🧽",
+          description: "Perfect! Soap helps remove all the dirt and germs!",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    // Prevent multiple clicks if feedback is already showing
+    if (choices.some(c => c.question === currentQuestion)) return;
+
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + coinsPerLevel);
+      showCorrectAnswerFeedback(coinsPerLevel, true);
     }
 
     setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
@@ -171,14 +177,14 @@ const HandwashHeroine = () => {
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000); // Slightly longer delay for reading feedback
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
+  const currentQ = questions[currentQuestion];
 
   return (
     <GameShell
@@ -188,61 +194,69 @@ const HandwashHeroine = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-1"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={10}
-      currentLevel={1}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <div className="text-right">
+              <span className="text-yellow-400 font-bold block">Coins: {coins}/{totalCoins}</span>
+            </div>
           </div>
-          
+
           <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+            {currentQ.text}
           </h2>
 
           <div className="space-y-3">
-            {getCurrentQuestion().options.map((option) => {
-              const isSelected = choices.some(c => 
-                c.question === currentQuestion && c.optionId === option.id
-              );
+            {currentQ.options.map((option) => {
+              const feedback = choices.find(c => c.question === currentQuestion);
+              const isSelected = feedback?.optionId === option.id;
               const isCorrect = option.isCorrect;
-              const showFeedback = choices.some(c => c.question === currentQuestion);
-              
+              const showFeedback = !!feedback;
+
+              let buttonStyle = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-transparent";
+
+              if (showFeedback) {
+                if (isCorrect) {
+                  // Correct answer always green
+                  buttonStyle = "bg-green-500 border-green-400";
+                } else if (isSelected && !isCorrect) {
+                  // Wrong selection red
+                  buttonStyle = "bg-red-500 border-red-400";
+                } else {
+                  // Others dimmed
+                  buttonStyle = "bg-white/10 opacity-50";
+                }
+              }
+
               return (
                 <button
                   key={option.id}
                   onClick={() => handleChoice(option.id)}
                   disabled={showFeedback}
-                  className={`w-full p-4 rounded-xl text-left transition-all ${
-                    showFeedback
-                      ? isCorrect
-                        ? 'bg-green-500/20 border-2 border-green-400'
-                        : isSelected
-                        ? 'bg-red-500/20 border-2 border-red-400'
-                        : 'bg-white/5 border border-white/10'
-                      : isSelected
-                      ? 'bg-blue-500/20 border-2 border-blue-400'
-                      : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                  }`}
+                  className={`w-full p-4 rounded-xl text-left transition-all border-2 text-white shadow-lg ${buttonStyle}`}
                 >
                   <div className="flex items-center">
                     <span className="text-2xl mr-3">{option.emoji}</span>
-                    <span className="text-white/90">{option.text}</span>
+                    <span className="font-medium">{option.text}</span>
                   </div>
-                  {showFeedback && isSelected && (
-                    <p className="mt-2 text-sm text-white/70">{option.description}</p>
+                  {showFeedback && (isSelected || isCorrect) && (
+                    <p className="mt-2 text-sm text-white/90 bg-black/20 p-2 rounded-lg">
+                      {option.description}
+                    </p>
                   )}
                 </button>
               );

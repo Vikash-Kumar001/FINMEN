@@ -1,118 +1,157 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const FeelingsStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-51";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "You feel sad when your doll breaks. Is this normal?",
+      text: "You see a friend crying.",
       options: [
         {
-          id: "a",
-          text: "Yes, feeling sad about broken things is normal",
-          emoji: "😊",
-          description: "Exactly! It's normal to feel sad when something we care about gets broken. All feelings are valid.",
+          id: "b",
+          text: "Ask if she is okay",
+          emoji: "🤝",
+          description: "Correct! That is kind.",
           isCorrect: true
         },
         {
-          id: "b",
-          text: "No, you should never feel sad about things",
-          emoji: "😐",
-          description: "That's not right. Feeling sad about broken things is a natural human emotion. It's okay to feel sad sometimes.",
+          id: "a",
+          text: "Laugh at her",
+          emoji: "😆",
+          description: "That is mean.",
+          isCorrect: false
+        },
+
+        {
+          id: "c",
+          text: "Run away",
+          emoji: "🏃‍♀️",
+          description: "Try to help.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Your friend gets a new toy and you feel jealous. What should you do?",
+      text: "You feel really happy today!",
       options: [
         {
           id: "a",
-          text: "Feel the jealousy but be happy for your friend",
-          emoji: "😌",
-          description: "Great choice! It's normal to feel jealous sometimes, but being happy for friends shows emotional maturity.",
-          isCorrect: true
+          text: "Frown",
+          emoji: "☹️",
+          description: "If you're happy, smile!",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Take your friend's toy to feel better",
-          emoji: "😠",
-          description: "That's not a good solution. Taking someone else's things won't help your feelings and might hurt your friendship.",
+          text: "Smile and play",
+          emoji: "😄",
+          description: "Yes! Enjoy your day.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Hide",
+          emoji: "🙈",
+          description: "Share your happiness.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "You feel angry when someone cuts in line. Is this okay?",
+      text: "Someone took your toy without asking.",
       options: [
         {
           id: "a",
-          text: "Yes, feeling angry is normal but you should express it calmly",
-          emoji: "🧘",
-          description: "Perfect! Feeling angry is normal, but it's important to express it in healthy ways like talking calmly.",
-          isCorrect: true
+          text: "Hit them",
+          emoji: "👊",
+          description: "Never hit.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "No, you should never feel angry",
-          emoji: "🤐",
-          description: "That's not realistic. Everyone feels angry sometimes. The key is learning how to manage those feelings properly.",
+          text: "Use your words: 'Please give it back'",
+          emoji: "🗣️",
+          description: "Correct! Use words first.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Cry silently",
+          emoji: "😢",
+          description: "Speak up for yourself.",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "You're excited about a school trip. Is it good to share this feeling?",
+      text: "It's your birthday!",
       options: [
         {
           id: "a",
-          text: "Yes, sharing positive feelings helps spread joy",
-          emoji: "😄",
-          description: "Wonderful! Sharing positive feelings can make others happy too and strengthen your relationships.",
+          text: "Feel excited",
+          emoji: "🎉",
+          description: "Yes! Birthdays are fun.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "No, keep your feelings to yourself",
-          emoji: "🤫",
-          description: "Actually, sharing positive feelings can bring people closer together and create a more joyful environment.",
+          text: "Feel angry",
+          emoji: "😠",
+          description: "Why be angry?",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Sleep all day",
+          emoji: "😴",
+          description: "Celebrate!",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "You feel nervous before a test. What's the best approach?",
+      text: "Is it okay to tell someone you are sad?",
       options: [
         {
           id: "a",
-          text: "Acknowledge the nervousness and prepare well",
-          emoji: "📚",
-          description: "Excellent! Recognizing your feelings and taking positive action is the best way to handle nervousness.",
-          isCorrect: true
+          text: "No, keep it secret",
+          emoji: "🤫",
+          description: "Secrets can hurt inside.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Ignore the feeling and hope for the best",
-          emoji: "🤞",
-          description: "Ignoring feelings doesn't make them go away. It's better to acknowledge them and take constructive steps.",
+          text: "Yes, talking helps",
+          emoji: "🗣️",
+          description: "Correct! Friends and family can help.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Only to your pillow",
+          emoji: "🛌",
+          description: "Talk to people too.",
           isCorrect: false
         }
       ]
@@ -120,7 +159,10 @@ const FeelingsStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +170,19 @@ const FeelingsStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +192,15 @@ const FeelingsStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-51"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={60}
-      currentLevel={51}
+      totalLevels={5}
+      currentLevel={92}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +208,52 @@ const FeelingsStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

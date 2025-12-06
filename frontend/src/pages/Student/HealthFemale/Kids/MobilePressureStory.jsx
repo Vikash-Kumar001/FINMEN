@@ -1,118 +1,158 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const MobilePressureStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-68";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Friends force you to use phone secretly. Do you?",
+      text: "Your friend texts you late at night to play a game.",
       options: [
         {
           id: "a",
-          text: "No, I follow rules and talk to adults about phone use",
-          emoji: "📱",
-          description: "Exactly! Following rules and communicating with adults about phone use shows responsibility and respect.",
-          isCorrect: true
+          text: "Play all night",
+          emoji: "🎮",
+          description: "You need sleep!",
+          isCorrect: false
+        },
+       
+        {
+          id: "c",
+          text: "Wake up your parents",
+          emoji: "📢",
+          description: "Just ignore the text.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Yes, I don't want to disappoint friends",
-          emoji: "😈",
-          description: "While you want to be a good friend, following rules and being honest with adults is more important for your safety.",
-          isCorrect: false
-        }
+          text: "Ignore it and sleep",
+          emoji: "😴",
+          description: "Correct! Sleep is important.",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 2,
-      text: "Friends pressure you to share inappropriate content online. What do you do?",
+      text: "A stranger messages you online.",
       options: [
         {
           id: "a",
-          text: "Refuse and explain why it's not okay",
-          emoji: "🙅‍♀️",
-          description: "Great choice! Standing up against inappropriate content protects you and others from potential harm.",
-          isCorrect: true
+          text: "Tell them your name",
+          emoji: "📛",
+          description: "Never share personal info.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Share it to fit in with the group",
-          emoji: "📲",
-          description: "Sharing inappropriate content can get you in trouble and harm others. True friends respect your values.",
+          text: "Block them and tell a parent",
+          emoji: "🚫",
+          description: "Yes! Stay safe online.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Be friends with them",
+          emoji: "🤝",
+          description: "Strangers can be dangerous.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Friends dare you to stay up all night on your phone. How do you respond?",
+      text: "Everyone is posting a mean picture of a classmate.",
       options: [
         {
-          id: "a",
-          text: "Say no and explain you need sleep for school",
-          emoji: "😴",
-          description: "Perfect! Prioritizing your health and responsibilities shows maturity. Good friends understand this.",
+          id: "b",
+          text: "Don't share it and tell a teacher",
+          emoji: "🛑",
+          description: "Correct! Help stop the bullying.",
           isCorrect: true
         },
         {
-          id: "b",
-          text: "Stay up to prove you're part of the group",
-          emoji: "🌙",
-          description: "Lack of sleep affects your health, mood, and school performance. Your wellbeing is more important than proving anything.",
+          id: "a",
+          text: "Share it too",
+          emoji: "📤",
+          description: "Sharing spreads the hurt.",
+          isCorrect: false
+        },
+       
+        {
+          id: "c",
+          text: "Comment a mean emoji",
+          emoji: "😡",
+          description: "Be kind, not mean.",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "Friends pressure you to lie to parents about phone usage. What should you do?",
+      text: "You see a scary video online.",
       options: [
         {
           id: "a",
-          text: "Be honest with parents about phone activities",
-          emoji: "🙋‍♀️",
-          description: "Wonderful! Honesty builds trust with parents and helps create healthy boundaries around technology use.",
-          isCorrect: true
+          text: "Watch it again",
+          emoji: "👀",
+          description: "It might scare you more.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Lie to avoid getting in trouble",
-          emoji: "🤥",
-          description: "Lying breaks down trust and can lead to bigger problems. Being honest, even when it's difficult, is the right choice.",
+          text: "Close it and tell an adult",
+          emoji: "👩‍🦳",
+          description: "Yes! Adults can help you feel safe.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Send it to a friend",
+          emoji: "📲",
+          description: "Don't scare your friends.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "Friends want you to cyberbully someone online. Do you participate?",
+      text: "How much screen time is healthy?",
       options: [
         {
           id: "a",
-          text: "Refuse and report the behavior if needed",
-          emoji: "🛡️",
-          description: "Excellent! Standing against cyberbullying protects others and shows moral courage. Reporting helps stop harmful behavior.",
-          isCorrect: true
+          text: "24 hours a day",
+          emoji: "🧟",
+          description: "That's way too much!",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Join in to avoid being targeted yourself",
-          emoji: "😨",
-          description: "Participating in cyberbullying hurts others and can get you in serious trouble. Being an upstander makes a positive difference.",
+          text: "A balanced amount",
+          emoji: "⚖️",
+          description: "Correct! Balance play and screens.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "None ever",
+          emoji: "📵",
+          description: "A little is okay.",
           isCorrect: false
         }
       ]
@@ -120,7 +160,10 @@ const MobilePressureStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +171,19 @@ const MobilePressureStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +193,15 @@ const MobilePressureStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-68"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={70}
-      currentLevel={68}
+      totalLevels={5}
+      currentLevel={58}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +209,52 @@ const MobilePressureStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

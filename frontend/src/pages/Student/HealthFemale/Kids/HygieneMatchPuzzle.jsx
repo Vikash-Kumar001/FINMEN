@@ -1,93 +1,182 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const HygieneMatchPuzzle = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(null);
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-44";
+
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const puzzles = [
+  const questions = [
     {
       id: 1,
-      item: "Soap",
-      emoji: "🧼",
-      matches: [
-        { id: "bath", text: "For Bath", emoji: "🛁", correct: true },
-        { id: "drink", text: "For Drinking", emoji: "🥤", correct: false },
-        { id: "food", text: "For Food", emoji: "🍎", correct: false }
+      text: "Which item helps you clean between your teeth?",
+      options: [
+        {
+          id: "a",
+          text: "Shoelace",
+          emoji: "👟",
+          description: "That's for shoes, not teeth!",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Dental Floss",
+          emoji: "🧵",
+          description: "Yes! Floss removes stuck food.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Paper clip",
+          emoji: "📎",
+          description: "Ouch! Never use sharp things.",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      item: "Deodorant",
-      emoji: "🧴",
-      matches: [
-        { id: "drink", text: "For Drinking", emoji: "🥤", correct: false },
-        { id: "smell", text: "For Smell", emoji: "🌸", correct: true },
-        { id: "food", text: "For Food", emoji: "🍎", correct: false }
+      text: "Which item keeps your hair tangle-free?",
+      options: [
+        {
+          id: "a",
+          text: "Toothbrush",
+          emoji: "🪥",
+          description: "That's for teeth!",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Comb or Brush",
+          emoji: "💇‍♀️",
+          description: "Correct! Keep your hair neat.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Spoon",
+          emoji: "🥄",
+          description: "Spoons are for eating.",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      item: "Face Wash",
-      emoji: "🧴",
-      matches: [
-        { id: "smell", text: "For Smell", emoji: "🌸", correct: false },
-        { id: "acne", text: "For Acne", emoji: "🧴", correct: true },
-        { id: "drink", text: "For Drinking", emoji: "🥤", correct: false }
+      text: "What do we use to trim nails?",
+      options: [
+        {
+          id: "a",
+          text: "Nail Clippers",
+          emoji: "✂️",
+          description: "Yes! Keep nails short and clean.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Teeth",
+          emoji: "😬",
+          description: "Don't bite your nails! It spreads germs.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Knife",
+          emoji: "🔪",
+          description: "Too dangerous!",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      item: "Toothbrush",
-      emoji: "🪥",
-      matches: [
-        { id: "bath", text: "For Bath", emoji: "🛁", correct: false },
-        { id: "food", text: "For Food", emoji: "🍎", correct: false },
-        { id: "teeth", text: "For Teeth", emoji: "🦷", correct: true }
+      text: "What helps us smell good?",
+      options: [
+        {
+          id: "a",
+          text: "Onions",
+          emoji: "🧅",
+          description: "Onions have a strong smell!",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Deodorant",
+          emoji: "🧴",
+          description: "Correct! It keeps odors away.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Mud",
+          emoji: "🧱",
+          description: "Mud is dirty.",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      item: "Shampoo",
-      emoji: "🧴",
-      matches: [
-        { id: "teeth", text: "For Teeth", emoji: "🦷", correct: false },
-        { id: "bath", text: "For Bath", emoji: "🛁", correct: false },
-        { id: "hair", text: "For Hair", emoji: "💇", correct: true }
+      text: "What do you use to dry off after a shower?",
+      options: [
+        {
+          id: "a",
+          text: "Clean Towel",
+          emoji: "🧖‍♀️",
+          description: "Yes! Dry your skin well.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Dirty Laundry",
+          emoji: "👕",
+          description: "That defeats the purpose of showering!",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Newspaper",
+          emoji: "📰",
+          description: "Not very effective for drying skin.",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleMatch = (matchId) => {
-    const currentPuzzleData = puzzles[currentPuzzle];
-    const match = currentPuzzleData.matches.find(m => m.id === matchId);
-    setSelectedMatch(matchId);
+  const handleChoice = (optionId) => {
+    if (selectedOptionId) return;
 
-    if (match.correct) {
-      showCorrectAnswerFeedback(5, true);
-      setShowCoinFeedback(currentPuzzleData.id);
-      setTimeout(() => setShowCoinFeedback(null), 1500);
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
+
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
 
     setTimeout(() => {
-      if (currentPuzzle < puzzles.length - 1) {
-        setCurrentPuzzle(prev => prev + 1);
-        setSelectedMatch(null);
+      setSelectedOptionId(null);
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
@@ -96,98 +185,74 @@ const HygieneMatchPuzzle = () => {
 
   return (
     <GameShell
-      title="Puzzle: Hygiene Match"
-      subtitle={`Puzzle ${currentPuzzle + 1}/5: ${puzzles[currentPuzzle].item}`}
+      title="Hygiene Match Puzzle"
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={puzzles.slice(0, currentPuzzle + (selectedMatch ? 1 : 0)).filter((_, index) => {
-        if (index < currentPuzzle) return true;
-        if (index === currentPuzzle && selectedMatch) {
-          const puzzle = puzzles[index];
-          const match = puzzle.matches.find(m => m.id === selectedMatch);
-          return match?.correct;
-        }
-        return false;
-      }).length * 5}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      gameId="health-female-kids-44"
+      score={coins}
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={50}
-      currentLevel={44}
+      totalLevels={5}
+      currentLevel={34}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    >
+      maxScore={maxScore}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/5: {puzzles[currentPuzzle].item}</span>
-            <span className="text-yellow-400 font-bold">Coins: {puzzles.slice(0, currentPuzzle + (selectedMatch ? 1 : 0)).filter((_, index) => {
-              if (index < currentPuzzle) return true;
-              if (index === currentPuzzle && selectedMatch) {
-                const puzzle = puzzles[index];
-                const match = puzzle.matches.find(m => m.id === selectedMatch);
-                return match?.correct;
-              }
-              return false;
-            }).length * 5}</span>
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
 
-          <p className="text-white text-lg mb-6 text-center">
-            Match the hygiene item to what it's used for!
-          </p>
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
+          </h2>
 
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-              {showCoinFeedback === puzzles[currentPuzzle].id && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                    +5
+          <div className="grid grid-cols-1 gap-4">
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-4xl mr-3">{puzzles[currentPuzzle].emoji}</div>
-                <div className="text-white text-xl font-bold">{puzzles[currentPuzzle].item}</div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                {puzzles[currentPuzzle].matches.map((match) => {
-                  const isCorrect = selectedMatch === match.id && match.correct;
-                  const isWrong = selectedMatch === match.id && !match.correct;
-
-                  return (
-                    <button
-                      key={match.id}
-                      onClick={() => handleMatch(match.id)}
-                      disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${
-                        !selectedMatch
-                          ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                          : isCorrect
-                          ? 'bg-green-100/20 border-green-500 text-white'
-                          : isWrong
-                          ? 'bg-red-100/20 border-red-500 text-white'
-                          : 'bg-gray-100/20 border-gray-500 text-white'
-                      }`}
-                    >
-                      {isCorrect && (
-                        <div className="absolute -top-2 -right-2 text-2xl">✅</div>
-                      )}
-                      {isWrong && (
-                        <div className="absolute -top-2 -right-2 text-2xl">❌</div>
-                      )}
-                      <div className="text-2xl mb-1">{match.emoji}</div>
-                      <div className="font-medium text-sm">{match.text}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

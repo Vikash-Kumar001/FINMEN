@@ -1,118 +1,158 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const DentistVisitStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-78";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Doctor says: Visit dentist twice a year. Should you?",
+      text: "You are going to the dentist today.",
       options: [
         {
           id: "a",
-          text: "Yes, regular checkups prevent tooth problems",
-          emoji: "😁",
-          description: "Exactly! Regular dental checkups help catch problems early and keep your teeth healthy and strong.",
-          isCorrect: true
+          text: "Hide under the car",
+          emoji: "🚗",
+          description: "You have to go to keep teeth healthy.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "No, I'm scared of the dentist",
-          emoji: "😨",
-          description: "While it's normal to feel nervous, dentists are trained to help you. Regular visits actually make dental care easier and less scary.",
+          text: "Brush your teeth and get ready",
+          emoji: "🪥",
+          description: "Correct! Go with clean teeth.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Eat lots of sticky candy",
+          emoji: "🍬",
+          description: "Candy isn't good before the dentist.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "The dentist finds a small cavity. What should you do?",
+      text: "The dentist chair looks big and special.",
       options: [
         {
           id: "a",
-          text: "Get it treated early to prevent bigger problems",
-          emoji: "🛠️",
-          description: "Great choice! Early treatment prevents cavities from growing and causing more serious problems or pain.",
-          isCorrect: true
+          text: "Climb on it like a jungle gym",
+          emoji: "🐒",
+          description: "Sit quietly.",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "Sleep on the floor",
+          emoji: "😴",
+          description: "Use the chair.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Ignore it since it doesn't hurt yet",
-          emoji: "⏳",
-          description: "Ignoring dental problems usually makes them worse. Small issues are easier and less expensive to fix early.",
-          isCorrect: false
-        }
+          text: "Sit still and open wide",
+          emoji: "😲",
+          description: "Yes! Let the dentist see.",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 3,
-      text: "Dentist recommends fluoride treatment. Should you get it?",
+      text: "The dentist uses a small mirror.",
       options: [
         {
           id: "a",
-          text: "Yes, it strengthens teeth and prevents cavities",
-          emoji: "💪",
-          description: "Perfect! Fluoride treatments help strengthen tooth enamel and prevent cavities. They're safe and effective.",
-          isCorrect: true
+          text: "Bite it",
+          emoji: "😬",
+          description: "Don't bite the tools.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "No, it's unnecessary",
-          emoji: "🙅‍♀️",
-          description: "Fluoride treatments are beneficial for tooth health, especially for children. They help prevent tooth decay and strengthen enamel.",
+          text: "Let them look at your teeth",
+          emoji: "👀",
+          description: "Correct! They are checking for cavities.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Grab it",
+          emoji: "🖐️",
+          description: "Keep your hands down.",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "You feel nervous about your dental visit. What's best?",
+      text: "The dentist finds a small cavity (hole).",
       options: [
         {
-          id: "a",
-          text: "Talk to your parents and dentist about your concerns",
-          emoji: "💬",
-          description: "Wonderful! Communicating your feelings helps adults support you and dentists explain procedures to reduce anxiety.",
+          id: "b",
+          text: "Let them fix it so it stops hurting",
+          emoji: "🛠️",
+          description: "Yes! Fixing it is important.",
           isCorrect: true
         },
         {
-          id: "b",
-          text: "Avoid going to the dentist altogether",
-          emoji: "🏃",
-          description: "Avoiding the dentist can lead to more serious dental problems. Dentists are trained to help patients feel comfortable.",
+          id: "a",
+          text: "Cry loudly",
+          emoji: "😭",
+          description: "The dentist can fix it.",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "Run away with the hole",
+          emoji: "🏃‍♀️",
+          description: "It will get worse if you run.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "After cleaning, dentist says you have healthy teeth. How do you feel?",
+      text: "How do you keep cavities away?",
       options: [
         {
           id: "a",
-          text: "Proud and motivated to keep up good habits",
-          emoji: "😊",
-          description: "Excellent! Feeling proud of your dental health motivates you to continue good brushing, flossing, and eating habits.",
-          isCorrect: true
+          text: "Never brush",
+          emoji: "🙅‍♀️",
+          description: "That causes cavities.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Relieved but don't plan to change habits",
-          emoji: "😌",
-          description: "While relief is natural, maintaining healthy habits is important for continued good dental health.",
+          text: "Brush and floss every day",
+          emoji: "🦷",
+          description: "Correct! Clean teeth are happy teeth.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Drink only soda",
+          emoji: "🥤",
+          description: "Soda is bad for teeth.",
           isCorrect: false
         }
       ]
@@ -120,7 +160,10 @@ const DentistVisitStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +171,19 @@ const DentistVisitStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +193,15 @@ const DentistVisitStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-78"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={80}
-      currentLevel={78}
+      totalLevels={5}
+      currentLevel={68}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +209,52 @@ const DentistVisitStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

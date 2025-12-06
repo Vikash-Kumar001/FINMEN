@@ -1,118 +1,156 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const BullyStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-65";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Older girl pressures you to steal candy. Do you?",
+      text: "A girl at school pushes you every day.",
       options: [
         {
           id: "a",
-          text: "No, stealing is wrong no matter who asks",
-          emoji: "🙅‍♀️",
-          description: "Exactly! Stealing is wrong regardless of who pressures you. Stand up for what's right!",
-          isCorrect: true
+          text: "Push her back",
+          emoji: "👊",
+          description: "That makes you a bully too.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Yes, I don't want to upset her",
-          emoji: "😰",
-          description: "While you might be afraid, stealing is never the right choice. There are better ways to handle this situation.",
+          text: "Tell a teacher or parent",
+          emoji: "👩‍🏫",
+          description: "Yes! Get help from an adult.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Hide in the bathroom",
+          emoji: "🚽",
+          description: "You shouldn't have to hide.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Someone threatens to spread rumors about you if you don't give them money. What do you do?",
+      text: "You see someone being mean to your friend.",
       options: [
         {
           id: "a",
-          text: "Tell a trusted adult immediately",
-          emoji: "👩‍🏫",
-          description: "Great choice! Telling a trusted adult is the best way to stop bullying and keep yourself safe.",
-          isCorrect: true
+          text: "Laugh along",
+          emoji: "😂",
+          description: "That hurts your friend.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Give them the money to avoid trouble",
-          emoji: "💰",
-          description: "Giving in to threats only encourages more bullying. Getting help from adults is the right solution.",
+          text: "Say 'Stop it' or get help",
+          emoji: "✋",
+          description: "Correct! Stand up for others.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Walk away",
+          emoji: "🚶‍♀️",
+          description: "Try to help if you can safely.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "A classmate excludes you and tells others not to be your friend. How do you respond?",
+      text: "Is it tattling to report bullying?",
       options: [
         {
           id: "a",
-          text: "Talk to a counselor or teacher about it",
-          emoji: "💬",
-          description: "Perfect! Adults can help address bullying and support you in building healthy friendships.",
+          text: "No, telling keeps people safe",
+          emoji: "🛡️",
+          description: "Exactly! Reporting safety is good.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Try to win them back by doing what they want",
-          emoji: "🥺",
-          description: "Trying to please bullies rarely works and can make the situation worse. Seek support from adults instead.",
+          text: "Yes, you should be quiet",
+          emoji: "🤐",
+          description: "Never be quiet about safety.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "It depends",
+          emoji: "🤷‍♀️",
+          description: "With bullying, always tell.",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "Someone posts mean comments about you online. What should you do?",
+      text: "Someone sends mean messages online.",
       options: [
         {
           id: "a",
-          text: "Save the evidence and tell a parent or teacher",
-          emoji: "📸",
-          description: "Wonderful! Documenting cyberbullying and telling trusted adults is the best way to address it.",
-          isCorrect: true
+          text: "Reply with mean messages",
+          emoji: "📱",
+          description: "Don't fight fire with fire.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Ignore it and hope it goes away",
-          emoji: "🙈",
-          description: "Ignoring cyberbullying often allows it to continue and get worse. Getting help is important for your wellbeing.",
+          text: "Show an adult and block them",
+          emoji: "🚫",
+          description: "Yes! Cyberbullying is serious.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Delete it and cry",
+          emoji: "😢",
+          description: "Save proof and tell someone.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "You witness someone else being bullied. What's the best action?",
+      text: "What makes a bully stop?",
       options: [
         {
           id: "a",
-          text: "Tell an adult and support the person being bullied",
-          emoji: "🦸‍♀️",
-          description: "Excellent! Standing up to bullying by getting adult help and supporting the victim makes a positive difference.",
-          isCorrect: true
+          text: "Giving them your lunch money",
+          emoji: "💸",
+          description: "That rewards them.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Stay quiet to avoid becoming a target yourself",
-          emoji: "🤫",
-          description: "Staying silent allows bullying to continue. Being an upstander helps create a safer environment for everyone.",
+          text: "Standing tall and getting help",
+          emoji: "💪",
+          description: "Correct! Confidence and support help.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Crying in front of them",
+          emoji: "😭",
+          description: "That might make them continue.",
           isCorrect: false
         }
       ]
@@ -120,7 +158,10 @@ const BullyStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +169,19 @@ const BullyStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +191,15 @@ const BullyStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-65"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={70}
+      totalLevels={5}
       currentLevel={65}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +207,52 @@ const BullyStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

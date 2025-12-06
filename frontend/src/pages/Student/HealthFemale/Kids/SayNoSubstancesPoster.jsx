@@ -1,152 +1,260 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const SayNoSubstancesPoster = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [selectedPoster, setSelectedPoster] = useState(null);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { showAnswerConfetti } = useGameFeedback();
 
-  const posters = [
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-86";
+
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+
+  const questions = [
     {
       id: 1,
-      title: "I Choose Health, Not Drugs",
-      description: "Making healthy choices for a bright future",
-      design: "💪",
-      message: "Saying no to harmful substances is a sign of strength and self-respect!"
+      text: "Which sign means 'No Smoking'?",
+      options: [
+        {
+          id: "a",
+          text: "A smiley face",
+          emoji: "😀",
+          description: "That means happy.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "A cigarette with a red circle and line",
+          emoji: "🚭",
+          description: "Correct! That symbol means NO.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "A thumbs up",
+          emoji: "👍",
+          description: "That means yes or good.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      title: "My Future is Too Bright to Smoke",
-      description: "Protecting your dreams and aspirations",
-      design: "🌟",
-      message: "Your future goals are worth protecting - stay smoke-free and alcohol-free!"
+      text: "What slogan helps you say no?",
+      options: [
+        {
+          id: "a",
+          text: "Be cool, be safe, say NO!",
+          emoji: "😎",
+          description: "Yes! That is a strong message.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Try everything",
+          emoji: "🤷",
+          description: "Some things are dangerous.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Say maybe",
+          emoji: "🤔",
+          description: "Saying NO clearly is better.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      title: "Real Cool Says No",
-      description: "True confidence comes from healthy choices",
-      design: "😎",
-      message: "Being cool means making smart decisions that protect your health and wellbeing!"
+      text: "Who can you draw on your poster as a helper?",
+      options: [
+        {
+          id: "a",
+          text: "A superhero teacher",
+          emoji: "🦸",
+          description: "Teachers help keep you safe.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "A villain",
+          emoji: "🦹",
+          description: "Villains cause trouble.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "A monster",
+          emoji: "👹",
+          description: "Monsters are scary.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      title: "Strong Mind, No Substances",
-      description: "Building mental strength through healthy habits",
-      design: "🧠",
-      message: "A strong, healthy mind is your most powerful asset - protect it from harmful substances!"
+      text: "What image shows healthy lungs?",
+      options: [
+       
+        {
+          id: "b",
+          text: "Black and smoky lungs",
+          emoji: "🖤",
+          description: "Those are sick lungs.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Lungs made of stone",
+          emoji: "🪨",
+          description: "Lungs are not stone.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Pink and happy lungs",
+          emoji: "🩷",
+          description: "Correct! Healthy lungs are pink.",
+          isCorrect: true
+        },
+      ]
+    },
+    {
+      id: 5,
+      text: "The best choice is to be...",
+      options: [
+        
+        {
+          id: "b",
+          text: "Very sleepy",
+          emoji: "😴",
+          description: "Sleep is good, but choose health first.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Drug Free",
+          emoji: "🌟",
+          description: "Yes! Stay clean and strong.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Angry",
+          emoji: "😠",
+          description: "Being angry isn't a choice for health.",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handlePosterSelect = (posterId) => {
-    setSelectedPoster(posterId);
+  const handleChoice = (optionId) => {
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
+
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
     setTimeout(() => {
-      setGameFinished(true);
-      showAnswerConfetti();
-    }, 1500);
+      setSelectedOptionId(null);
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+      } else {
+        setGameFinished(true);
+      }
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
-  const getSelectedPoster = () => posters.find(p => p.id === selectedPoster);
-
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Poster: Say No to Substances"
-        subtitle="Congratulations!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        gameId="health-female-kids-86"
-        gameType="health-female"
-        totalLevels={90}
-        currentLevel={86}
-        showConfetti={true}
-        backPath="/games/health-female/kids"
-      
-      maxScore={90} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="space-y-8">
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-white mb-4">Great Choice!</h2>
-              <p className="text-white/80">
-                You've created an amazing poster about saying no to harmful substances!
-              </p>
-            </div>
-
-            <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl p-6 border border-purple-500/30">
-              <div className="text-center mb-4">
-                <div className="text-6xl mb-4">{getSelectedPoster().design}</div>
-                <h3 className="text-xl font-bold text-white mb-2">{getSelectedPoster().title}</h3>
-                <p className="text-white/80">{getSelectedPoster().message}</p>
-              </div>
-            </div>
-
-            <div className="mt-6 text-center">
-              <p className="text-yellow-400 font-bold text-lg">
-                You've earned your "Say No to Substances" badge!
-              </p>
-            </div>
-          </div>
-        </div>
-      </GameShell>
-    );
-  }
-
   return (
     <GameShell
       title="Poster: Say No to Substances"
-      subtitle="Create your anti-substance poster"
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={coins}
+      gameId={gameId}
+      gameType="health-female"
+      totalLevels={5}
+      currentLevel={86}
+      showConfetti={gameFinished}
+      flashPoints={flashPoints}
       backPath="/games/health-female/kids"
-    >
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={maxScore}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              Create or select a poster that shows "I Choose Health, Not Drugs"
-            </h2>
-            <p className="text-white/80">
-              Choose a design that helps others understand the importance of staying away from harmful substances
-            </p>
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {posters.map(poster => (
-              <div 
-                key={poster.id}
-                onClick={() => handlePosterSelect(poster.id)}
-                className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl p-6 border border-white/20 cursor-pointer transition-all transform hover:scale-105 hover:from-blue-500/30 hover:to-purple-500/30"
-              >
-                <div className="text-center">
-                  <div className="text-5xl mb-4">{poster.design}</div>
-                  <h3 className="text-lg font-bold text-white mb-2">{poster.title}</h3>
-                  <p className="text-white/80 text-sm mb-3">{poster.description}</p>
-                  <p className="text-white/70 text-xs italic">"{poster.message}"</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
+          </h2>
 
-          <div className="mt-8 text-center">
-            <div className="inline-block bg-white/10 rounded-full px-4 py-2">
-              <p className="text-white/80 text-sm">
-                Click on any poster to select it and earn your badge!
-              </p>
-            </div>
+          <div className="grid grid-cols-1 gap-4">
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -1,38 +1,41 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const JunkFoodStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-18";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Your friends buy chips every day at lunch. They offer to share with you. What do you do?",
+      text: "Your friends buy chips every day at lunch. They offer to share. What do you do?",
       options: [
         {
           id: "a",
           text: "Take some chips",
           emoji: "🍟",
-          description: "Chips are tasty but don't give your body the nutrients it needs. It's better to choose healthier snacks.",
+          description: "Chips don't have good nutrients.",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Politely decline and eat your healthy lunch",
+          text: "Eat your healthy lunch",
           emoji: "🍱",
-          description: "Great choice! Bringing your own healthy lunch gives your body the nutrients it needs to grow strong.",
+          description: "Smart! Healthy food fuels your body.",
           isCorrect: true
         }
       ]
@@ -42,19 +45,20 @@ const JunkFoodStory = () => {
       text: "Your friends say healthy food is boring. How do you respond?",
       options: [
         {
-          id: "a",
-          text: "Agree and try to get junk food",
-          emoji: "😞",
-          description: "Healthy food can be delicious! There are many tasty healthy options to try.",
-          isCorrect: false
+          id: "b",
+          text: "Say it gives energy!",
+          emoji: "💪",
+          description: "Perfect! Explain the benefits.",
+          isCorrect: true
         },
         {
-          id: "b",
-          text: "Explain that healthy food gives you energy",
-          emoji: "💪",
-          description: "Perfect! Healthy food gives you energy to play, study, and grow. Plus, there are lots of tasty options!",
-          isCorrect: true
-        }
+          id: "a",
+          text: "Agree and get junk",
+          emoji: "😞",
+          description: "Don't give up! Healthy food is tasty too.",
+          isCorrect: false
+        },
+        
       ]
     },
     {
@@ -63,56 +67,57 @@ const JunkFoodStory = () => {
       options: [
         {
           id: "a",
-          text: "Only eat sweets and chips",
+          text: "Only sweets & chips",
           emoji: "🍰",
-          description: "It's okay to have treats sometimes, but it's better to have a balance with healthy options too.",
+          description: "Too much sugar isn't good.",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Choose a mix of healthy and treat foods",
+          text: "Mix of healthy & treat",
           emoji: "🥗",
-          description: "Excellent! Having a balance of healthy foods with occasional treats is the best approach.",
+          description: "Balance is key!",
           isCorrect: true
         }
       ]
     },
     {
       id: 4,
-      text: "Your friends tease you for bringing healthy snacks. How do you handle it?",
+      text: "Friends tease you for bringing fruit. What do you do?",
       options: [
         {
-          id: "a",
-          text: "Stop bringing healthy snacks",
-          emoji: "😢",
-          description: "It's important to stand by your healthy choices even when others don't understand.",
-          isCorrect: false
+          id: "b",
+          text: "Explain it's delicious",
+          emoji: "😊",
+          description: "Confidence helps you stay healthy.",
+          isCorrect: true
         },
         {
-          id: "b",
-          text: "Explain why you choose healthy snacks",
-          emoji: "😊",
-          description: "Great job! Explaining your choices might even help your friends make healthier decisions too.",
-          isCorrect: true
-        }
+          id: "a",
+          text: "Hide the fruit",
+          emoji: "😢",
+          description: "Be proud of your healthy choice!",
+          isCorrect: false
+        },
+        
       ]
     },
     {
       id: 5,
-      text: "You see a new junk food your friends are trying. What do you do?",
+      text: "You see a new colorful candy everyone is eating. Do you?",
       options: [
         {
           id: "a",
-          text: "Try it just because your friends are",
-          emoji: "-peer-pressure",
-          description: "It's better to make your own healthy choices rather than just following others.",
+          text: "Eat it just to fit in",
+          emoji: "🍭",
+          description: "Make choices for YOU, not others.",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Ask if there's a healthy version or choose something else",
+          text: "Skip or have a tiny bit",
           emoji: "🤔",
-          description: "Smart choice! Looking for healthier alternatives or making your own healthy choice is the best approach.",
+          description: "You're in control of what you eat.",
           isCorrect: true
         }
       ]
@@ -120,7 +125,10 @@ const JunkFoodStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +136,19 @@ const JunkFoodStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +158,15 @@ const JunkFoodStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-18"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={20}
+      totalLevels={5}
       currentLevel={18}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +174,52 @@ const JunkFoodStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

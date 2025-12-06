@@ -441,6 +441,8 @@ const App = () => {
     location.pathname.startsWith("/student/uvls/teen/") ||
     location.pathname.startsWith("/student/health-male/kids/") ||
     location.pathname.startsWith("/student/health-male/teen") ||
+    location.pathname.startsWith("/student/health-female/kids/") ||
+    location.pathname.startsWith("/student/health-female/teen") ||
     location.pathname.startsWith("/student/dcos/kids/") ||
     location.pathname.startsWith("/student/dcos/teen/") ||
     location.pathname.startsWith("/student/dcos/teens/") ||

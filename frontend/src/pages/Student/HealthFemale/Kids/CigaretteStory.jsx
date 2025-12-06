@@ -1,118 +1,157 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const CigaretteStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-81";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "A friend offers you a cigarette. Should you try?",
+      text: "You see someone smoking a cigarette.",
       options: [
         {
           id: "a",
-          text: "No, cigarettes are harmful to my health",
-          emoji: "🙅‍♀️",
-          description: "Exactly! Cigarettes contain harmful chemicals that can damage your lungs and cause serious health problems.",
-          isCorrect: true
+          text: "Stand close and breathe it in",
+          emoji: "🌬️",
+          description: "That smoke is bad for you.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Yes, just one won't hurt",
-          emoji: "🚬",
-          description: "Even one cigarette can be harmful. Nicotine is addictive, and smoking can lead to serious health problems.",
+          text: "Walk away or cover your nose",
+          emoji: "🚶‍♀️",
+          description: "Correct! Keep your lungs clean.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Take the cigarette",
+          emoji: "✋",
+          description: "Don't touch it.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Your older sibling smokes and offers you one. What do you do?",
+      text: "What does smoking do to lungs?",
       options: [
         {
           id: "a",
-          text: "Politely refuse and explain why it's harmful",
-          emoji: "💬",
-          description: "Great choice! Standing up for your health and educating others about risks shows maturity and courage.",
-          isCorrect: true
+          text: "Makes them purple",
+          emoji: "🟣",
+          description: "It doesn't make them purple.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Try it to fit in with family",
-          emoji: "👥",
-          description: "Fitting in isn't worth risking your health. True family members support your healthy choices.",
+          text: "Makes them black and sick",
+          emoji: "🖤",
+          description: "Yes! It hurts your breathing.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Makes them super strong",
+          emoji: "💪",
+          description: "Smoking makes lungs weak.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "You see someone smoking and it smells bad. How do you feel?",
+      text: "Someone offers you a cigarette.",
       options: [
         {
-          id: "a",
-          text: "Glad I don't smoke and avoid the area",
-          emoji: "😊",
-          description: "Perfect! Recognizing the unpleasant effects of smoking reinforces your healthy choice to stay smoke-free.",
+          id: "b",
+          text: "Say 'No way!' and run home",
+          emoji: "🏃‍♀️",
+          description: "Correct! Stay far away.",
           isCorrect: true
         },
         {
-          id: "b",
-          text: "Curious to try it despite the smell",
-          emoji: "🤔",
-          description: "The smell is your body's natural warning. Trust your instincts and avoid harmful substances.",
+          id: "a",
+          text: "Try it once",
+          emoji: "☝️",
+          description: "Even once is dangerous.",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "Put it in your pocket",
+          emoji: "👖",
+          description: "Don't keep it.",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "A friend says smoking helps with stress. What's your response?",
+      text: "Why is smoking bad?",
       options: [
         {
           id: "a",
-          text: "There are healthier ways to manage stress like exercise or talking",
-          emoji: "🧘",
-          description: "Wonderful! Exercise, talking to friends, or deep breathing are much healthier ways to manage stress.",
+          text: "It causes coughs and cancer",
+          emoji: "😷",
+          description: "Yes! It is very harmful.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Believe them and consider trying smoking",
-          emoji: "😌",
-          description: "Smoking actually increases stress over time and creates addiction. There are better stress management techniques.",
+          text: "It makes you look cool",
+          emoji: "😎",
+          description: "Being healthy is cool.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "It tastes like candy",
+          emoji: "🍭",
+          description: "It smells and tastes yucky.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "You learn that smoking can cause cancer. How does this make you feel?",
+      text: "What makes your lungs happy?",
       options: [
         {
           id: "a",
-          text: "Glad I chose not to smoke and committed to staying smoke-free",
-          emoji: "💪",
-          description: "Excellent! Understanding serious health risks reinforces your commitment to making healthy choices.",
-          isCorrect: true
+          text: "Smoke",
+          emoji: "🚬",
+          description: "Smoke hurts lungs.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Think it won't happen to you",
-          emoji: "🤷",
-          description: "Health risks are real for everyone who smokes. It's better to avoid the risk entirely.",
+          text: "Fresh air and running",
+          emoji: "🌳",
+          description: "Correct! Fresh air is best.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Dust",
+          emoji: "🌫️",
+          description: "Dust makes you sneeze.",
           isCorrect: false
         }
       ]
@@ -120,7 +159,10 @@ const CigaretteStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +170,19 @@ const CigaretteStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +192,15 @@ const CigaretteStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-81"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={90}
-      currentLevel={81}
+      totalLevels={5}
+      currentLevel={71}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +208,52 @@ const CigaretteStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

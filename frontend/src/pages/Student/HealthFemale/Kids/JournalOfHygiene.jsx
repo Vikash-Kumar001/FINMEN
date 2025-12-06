@@ -1,30 +1,68 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { PenSquare } from "lucide-react";
 
 const JournalOfHygiene = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [gameStarted, setGameStarted] = useState(false);
-  const [journalEntry, setJournalEntry] = useState('');
-  const [entrySubmitted, setEntrySubmitted] = useState(false);
-  
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setGameStarted(true);
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (journalEntry.trim()) {
-      setEntrySubmitted(true);
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const gameId = "health-female-kids-7";
+
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [entry, setEntry] = useState("");
+  const [showResult, setShowResult] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  const stages = [
+    {
+      question: 'Write: "I promise to wash my hands ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "Brushing my teeth makes me feel ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "Being clean is important because ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "I will take care of my hair by ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "My favorite way to stay fresh is ___."',
+      minLength: 10,
+    },
+  ];
+
+  const handleSubmit = () => {
+    if (showResult) return;
+
+    resetFeedback();
+    const entryText = entry.trim();
+
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+
+      const isLastQuestion = currentStage === stages.length - 1;
+
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setShowResult(true);
+          showAnswerConfetti();
+        } else {
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
+        }
+      }, 1500);
     }
   };
 
@@ -32,95 +70,70 @@ const JournalOfHygiene = () => {
     navigate("/games/health-female/kids");
   };
 
-  if (!gameStarted) {
-    return (
-      <GameShell
-        title="Journal of Hygiene"
-        subtitle="Loading..."
-        backPath="/games/health-female/kids"
-      
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-pulse text-center">
-            <div className="text-6xl mb-4">📝</div>
-            <p className="text-white">Opening your journal...</p>
-          </div>
-        </div>
-      </GameShell>
-    );
-  }
-
   return (
     <GameShell
       title="Journal of Hygiene"
-      subtitle="Share Your Thoughts"
-      onNext={handleNext}
-      nextEnabled={entrySubmitted}
-      nextButtonText="Back to Games"
-      showGameOver={entrySubmitted}
-      score={entrySubmitted ? 5 : 0}
-      gameId="health-female-kids-7"
+      subtitle={!showResult ? `Entry ${currentStage + 1} of ${stages.length}: Reflect on your hygiene!` : "Journal Complete!"}
+      coins={score}
+      currentLevel={currentStage + 1}
+      totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={score}
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={10}
-      currentLevel={7}
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      onNext={handleNext}
+      showConfetti={showResult}
       backPath="/games/health-female/kids"
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <h2 className="text-2xl font-bold text-center mb-6 text-white">
-            My Hygiene Journal
-          </h2>
-          
-          {!entrySubmitted ? (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="bg-amber-50/10 p-6 rounded-xl border border-amber-100/20">
-                <p className="text-lg text-white/90 mb-4">
-                  Complete the sentence:
-                </p>
-                <p className="text-2xl font-bold text-amber-300 mb-6">
-                  "One hygiene habit I like is 
-                  <span className="text-white">________________</span>"
-                </p>
-                <input
-                  type="text"
-                  value={journalEntry}
-                  onChange={(e) => setJournalEntry(e.target.value)}
-                  placeholder="Type your answer here..."
-                  className="w-full p-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                  required
-                />
-              </div>
-              
-              <button
-                type="submit"
-                className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-xl text-lg transition-all transform hover:scale-105"
-              >
-                📝 Submit My Journal Entry
-              </button>
-            </form>
-          ) : (
-            <div className="text-center p-8 bg-gradient-to-br from-amber-500/20 to-orange-600/20 rounded-2xl border border-amber-500/30">
-              <div className="text-6xl mb-4">✨</div>
-              <h3 className="text-2xl font-bold text-amber-300 mb-2">Great Reflection!</h3>
-              <p className="text-white/90 mb-2">You've earned:</p>
-              <div className="inline-flex items-center bg-amber-500/30 px-4 py-2 rounded-full mb-4">
-                <span className="text-yellow-300 font-bold mr-2">+5</span>
-                <span className="text-white">Coins</span>
-              </div>
-              <p className="text-white/80 mt-4">
-                "{journalEntry}" is a wonderful hygiene habit to have!
-              </p>
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <div className="bg-emerald-500/20 p-4 rounded-full inline-block mb-4">
+              <PenSquare className="w-10 h-10 text-emerald-300" />
             </div>
-          )}
-          
-          {!entrySubmitted && (
-            <div className="mt-6 p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
-              <p className="text-blue-300 text-sm">💡 Tip: Think about things like washing hands, brushing teeth, or taking baths.</p>
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
+            </p>
+            <textarea
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your thoughts here..."
+              className="w-full md:w-2/3 h-40 p-4 rounded-xl bg-white/10 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none transition-all"
+              disabled={showResult}
+            />
+            <div className="mt-2 text-white/50 text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
             </div>
-          )}
-        </div>
+            <button
+              onClick={handleSubmit}
+              className={`mt-6 px-8 py-4 rounded-full text-lg font-bold transition-all transform hover:scale-105 shadow-lg ${entry.trim().length >= stages[currentStage].minLength
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white cursor-pointer'
+                  : 'bg-gray-500/50 text-gray-300 cursor-not-allowed opacity-50'
+                }`}
+              disabled={entry.trim().length < stages[currentStage].minLength}
+            >
+              {currentStage === stages.length - 1 ? 'Finish Journal' : 'Save & Continue'}
+            </button>
+          </div>
+        )}
+
+        {showResult && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <div className="text-6xl mb-6">📖</div>
+            <h2 className="text-3xl font-bold mb-4">Journal Updated!</h2>
+            <p className="text-xl mb-6">You've reflected on great hygiene habits.</p>
+            <div className="text-2xl font-bold text-yellow-400 mb-8">Earned {score} Coins!</div>
+            <p className="text-white/60">Come back anytime to write more!</p>
+          </div>
+        )}
       </div>
     </GameShell>
   );

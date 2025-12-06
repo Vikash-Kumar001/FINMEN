@@ -1,396 +1,259 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const SafeGirlBadge = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [completedChallenges, setCompletedChallenges] = useState([]);
-  const [currentChallenge, setCurrentChallenge] = useState(0);
-  const [userAnswer, setUserAnswer] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedback, setFeedback] = useState({ correct: false, message: "" });
-  const [gameFinished, setGameFinished] = useState(false);
-  const { showAnswerConfetti } = useGameFeedback();
 
-  const challenges = [
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-90";
+
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+
+  const questions = [
     {
       id: 1,
-      type: "multipleChoice",
-      question: "What should you do if someone offers you alcohol?",
+      text: "How do you earn the 'Safe Choice' badge?",
       options: [
-        "Accept it to fit in",
-        "Politely refuse and walk away",
-        "Take just a small amount"
-      ],
-      correctAnswer: "Politely refuse and walk away",
-      explanation: "Polite refusal and removing yourself from the situation is the safest response to avoid harmful substances."
+        {
+          id: "a",
+          text: "Try alcohol once",
+          emoji: "🍺",
+          description: "Even once is unsafe.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Say NO to all harmful things",
+          emoji: "🛡️",
+          description: "Correct! That is a safe choice.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Hide in your room",
+          emoji: "🚪",
+          description: "Be confident, not hiding.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      type: "trueFalse",
-      question: "It's okay to try cigarettes just once.",
-      correctAnswer: "false",
-      explanation: "False! Even one cigarette can be harmful and nicotine is highly addictive. It's best to avoid cigarettes entirely."
+      text: "To get the 'Strong Voice' badge...",
+      options: [
+        {
+          id: "a",
+          text: "Speak up if something feels wrong",
+          emoji: "🗣️",
+          description: "Yes! Use your strong voice.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Whisper your secrets",
+          emoji: "🤫",
+          description: "Speak up for safety.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Never talk to adults",
+          emoji: "🤐",
+          description: "Trusted adults help you.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      type: "fillBlank",
-      question: "When faced with peer pressure, I can call a ___ adult for help.",
-      correctAnswer: "trusted",
-      explanation: "Having a trusted adult you can call for help is an important strategy for staying safe in difficult situations."
+      text: "The 'Healthy Body' badge requires...",
+      options: [
+        {
+          id: "a",
+          text: "Eating only candy",
+          emoji: "🍭",
+          description: "Candy isn't healthy food.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Protecting your body from smoke and drugs",
+          emoji: "🫁",
+          description: "Correct! Keep your body clean.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Never bathing",
+          emoji: "🚿",
+          description: "Hygiene is important too.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      type: "scenario",
-      question: "A friend says you're not cool unless you drink. What's the best response?",
+      text: "What unlocks the 'Smart Friend' badge?",
       options: [
-        "Drink to prove you're cool",
-        "Explain that real coolness comes from healthy choices",
-        "Ignore them but feel bad about yourself"
-      ],
-      correctAnswer: "Explain that real coolness comes from healthy choices",
-      explanation: "Educating your friends about healthy choices shows confidence and leadership while staying true to your values."
+        {
+          id: "a",
+          text: "Influencing friends to be safe",
+          emoji: "🤝",
+          description: "Yes! Help friends be safe too.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Daring friends to be bad",
+          emoji: "😈",
+          description: "That is not being a smart friend.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ignoring your friends",
+          emoji: "🤷‍♀️",
+          description: "Friends care about each other.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      type: "dragAndDrop",
-      items: [
-        { id: "exercise", name: "Exercise", correctZone: "healthy" },
-        { id: "cigarettes", name: "Cigarettes", correctZone: "harmful" },
-        { id: "water", name: "Water", correctZone: "healthy" }
-      ],
-      zones: [
-        { id: "healthy", name: "Healthy Choices" },
-        { id: "harmful", name: "Harmful Substances" }
-      ],
-      correctAnswer: 3, // Number of correct matches needed
-      explanation: "Understanding which choices are healthy and which are harmful helps you make better decisions for your wellbeing."
+      text: "You are a 'Permission Pro' if you...",
+      options: [
+        {
+          id: "a",
+          text: "Take things without asking",
+          emoji: "👐",
+          description: "Always ask first.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Ask a parent before taking medicine or going somewhere",
+          emoji: "🙋‍♀️",
+          description: "Correct! Always ask for permission.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Guess if it's okay",
+          emoji: "🤔",
+          description: "Don't guess with safety.",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleMultipleChoice = (selectedOption) => {
-    const challenge = challenges[currentChallenge];
-    const isCorrect = selectedOption === challenge.correctAnswer;
-    
-    setFeedback({
-      correct: isCorrect,
-      message: isCorrect ? "Correct!" : "Not quite right.",
-      explanation: challenge.explanation
-    });
-    
-    setShowFeedback(true);
-    
-    if (isCorrect && !completedChallenges.includes(challenge.id)) {
-      setTimeout(() => {
-        setCompletedChallenges(prev => [...prev, challenge.id]);
-        moveToNextChallenge();
-      }, 2000);
-    } else if (!isCorrect) {
-      setTimeout(() => {
-        setShowFeedback(false);
-      }, 2000);
-    }
-  };
+  const handleChoice = (optionId) => {
+    if (selectedOptionId) return;
 
-  const handleTrueFalse = (answer) => {
-    const challenge = challenges[currentChallenge];
-    const isCorrect = answer === challenge.correctAnswer;
-    
-    setFeedback({
-      correct: isCorrect,
-      message: isCorrect ? "Correct!" : "Not quite right.",
-      explanation: challenge.explanation
-    });
-    
-    setShowFeedback(true);
-    
-    if (isCorrect && !completedChallenges.includes(challenge.id)) {
-      setTimeout(() => {
-        setCompletedChallenges(prev => [...prev, challenge.id]);
-        moveToNextChallenge();
-      }, 2000);
-    } else if (!isCorrect) {
-      setTimeout(() => {
-        setShowFeedback(false);
-      }, 2000);
-    }
-  };
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
 
-  const handleFillBlank = () => {
-    const challenge = challenges[currentChallenge];
-    const isCorrect = userAnswer.trim().toLowerCase() === challenge.correctAnswer.toLowerCase();
-    
-    setFeedback({
-      correct: isCorrect,
-      message: isCorrect ? "Correct!" : "Not quite right.",
-      explanation: challenge.explanation
-    });
-    
-    setShowFeedback(true);
-    
-    if (isCorrect && !completedChallenges.includes(challenge.id)) {
-      setTimeout(() => {
-        setCompletedChallenges(prev => [...prev, challenge.id]);
-        moveToNextChallenge();
-      }, 2000);
-    } else if (!isCorrect) {
-      setTimeout(() => {
-        setShowFeedback(false);
-      }, 2000);
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
 
-  const moveToNextChallenge = () => {
-    setShowFeedback(false);
-    setUserAnswer("");
-    
-    if (currentChallenge < challenges.length - 1) {
-      setCurrentChallenge(prev => prev + 1);
-    } else {
-      // Check if all challenges are completed
-      if (completedChallenges.length + 1 === challenges.length) {
-        setTimeout(() => {
-          setGameFinished(true);
-          showAnswerConfetti();
-        }, 1000);
+    setTimeout(() => {
+      setSelectedOptionId(null);
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+      } else {
+        setGameFinished(true);
       }
-    }
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
-  const getCurrentChallenge = () => challenges[currentChallenge];
-
-  const renderChallenge = () => {
-    const challenge = getCurrentChallenge();
-    
-    switch (challenge.type) {
-      case "multipleChoice":
-        return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-white mb-4">{challenge.question}</h3>
-            <div className="grid grid-cols-1 gap-3">
-              {challenge.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleMultipleChoice(option)}
-                  disabled={showFeedback}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 rounded-xl shadow-lg transition-all transform hover:scale-105 text-left"
-                >
-                  <div className="flex items-center">
-                    <div className="text-lg mr-3">{String.fromCharCode(65 + index)}.</div>
-                    <div>{option}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-        
-      case "dragAndDrop":
-        return (
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-white text-center">Sort these choices into the correct categories:</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white/10 rounded-xl p-4">
-                <h4 className="text-white font-semibold mb-3 text-center">Choices</h4>
-                <div className="space-y-2">
-                  {challenge.items.map(item => (
-                    <div 
-                      key={item.id}
-                      className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-3 rounded-lg text-center"
-                    >
-                      {item.name}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-4">
-                {challenge.zones.map(zone => (
-                  <div key={zone.id} className="bg-white/10 rounded-xl p-4">
-                    <h4 className="text-white font-semibold mb-3 text-center">{zone.name}</h4>
-                    <div className="min-h-[60px] border-2 border-dashed border-white/30 rounded-lg flex items-center justify-center">
-                      <p className="text-white/50 text-sm">Drag items here</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="text-center text-white/80 text-sm">
-              <p>This is a demonstration. In a real game, you would drag items to the correct zones.</p>
-              <button
-                onClick={() => handleMultipleChoice("Correct")}
-                className="mt-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-lg"
-              >
-                Simulate Correct Answer
-              </button>
-            </div>
-          </div>
-        );
-        
-      case "trueFalse":
-        return (
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-white mb-4">{challenge.question}</h3>
-            <div className="flex justify-center space-x-4">
-              <button
-                onClick={() => handleTrueFalse("true")}
-                disabled={showFeedback}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-xl text-xl font-bold shadow-lg transition-all transform hover:scale-105"
-              >
-                True
-              </button>
-              <button
-                onClick={() => handleTrueFalse("false")}
-                disabled={showFeedback}
-                className="bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white px-8 py-4 rounded-xl text-xl font-bold shadow-lg transition-all transform hover:scale-105"
-              >
-                False
-              </button>
-            </div>
-          </div>
-        );
-        
-      case "fillBlank":
-        return (
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-white mb-4">{challenge.question}</h3>
-            <div className="flex justify-center">
-              <input
-                type="text"
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                disabled={showFeedback}
-                className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-lg w-32 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter answer"
-              />
-            </div>
-            <div className="text-center">
-              <button
-                onClick={handleFillBlank}
-                disabled={showFeedback || userAnswer.trim() === ""}
-                className={`px-6 py-3 rounded-xl font-bold text-white transition-all ${
-                  userAnswer.trim() !== ""
-                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105'
-                    : 'bg-gray-500 cursor-not-allowed'
-                }`}
-              >
-                Submit Answer
-              </button>
-            </div>
-          </div>
-        );
-        
-      case "scenario":
-        return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-white mb-4">{challenge.question}</h3>
-            <div className="grid grid-cols-1 gap-3">
-              {challenge.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleMultipleChoice(option)}
-                  disabled={showFeedback}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 rounded-xl shadow-lg transition-all transform hover:scale-105 text-left"
-                >
-                  <div className="flex items-center">
-                    <div className="text-lg mr-3">{String.fromCharCode(65 + index)}.</div>
-                    <div>{option}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-        
-      default:
-        return null;
-    }
-  };
-
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Badge: Safe Girl"
-        subtitle="Congratulations!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        gameId="health-female-kids-90"
-        gameType="health-female"
-        totalLevels={90}
-        currentLevel={90}
-        showConfetti={true}
-        backPath="/games/health-female/kids"
-      
-      maxScore={90} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🏅</div>
-          <h2 className="text-2xl font-bold mb-4">Safe Girl</h2>
-          <p className="text-white/80 mb-6">
-            You've completed all refusal challenges!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-8">
-            You've earned your Safe Girl Badge!
-          </div>
-          <button
-            onClick={handleNext}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full text-lg transition-colors"
-          >
-            Continue Learning
-          </button>
-        </div>
-      </GameShell>
-    );
-  }
-
   return (
     <GameShell
       title="Badge: Safe Girl"
-      subtitle={`Challenge ${currentChallenge + 1} of ${challenges.length} | Completed: ${completedChallenges.length}/${challenges.length}`}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={coins}
+      gameId={gameId}
+      gameType="health-female"
+      totalLevels={5}
+      currentLevel={90}
+      showConfetti={gameFinished}
+      flashPoints={flashPoints}
       backPath="/games/health-female/kids"
-    >
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={maxScore}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-white/80">Progress</span>
-              <span className="text-yellow-400 font-bold">{completedChallenges.length}/{challenges.length} challenges</span>
-            </div>
-            <div className="bg-white/10 rounded-full h-3 w-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500 rounded-full"
-                style={{ width: `${(completedChallenges.length / challenges.length) * 100}%` }}
-              ></div>
-            </div>
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
 
-          {renderChallenge()}
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
+          </h2>
 
-          {showFeedback && (
-            <div className={`p-4 rounded-xl mt-6 ${
-              feedback.correct 
-                ? 'bg-green-500/20 border border-green-500/30' 
-                : 'bg-red-500/20 border border-red-500/30'
-            }`}>
-              <p className={`text-lg font-semibold ${feedback.correct ? 'text-green-300' : 'text-red-300'}`}>
-                {feedback.message}
-              </p>
-              <p className="text-white/90 mt-2">{feedback.explanation}</p>
-            </div>
-          )}
+          <div className="grid grid-cols-1 gap-4">
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </GameShell>

@@ -1,241 +1,294 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell from '../../Finance/GameShell';
-import useGameFeedback from '../../../../hooks/useGameFeedback';
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const HealthyMatchesPuzzle = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [pairs, setPairs] = useState([]);
-  const [flipped, setFlipped] = useState([]);
-  const [matched, setMatched] = useState([]);
-  const [moves, setMoves] = useState(0);
-  const [gameCompleted, setGameCompleted] = useState(false);
-  const [gameStarted, setGameStarted] = useState(false);
-  const { showAnswerConfetti } = useGameFeedback();
 
-  const items = [
-    { id: 'sleep', emoji: '😴', match: 'energy', description: 'Sleep gives you energy' },
-    { id: 'energy', emoji: '⚡', match: 'sleep', description: 'Energy comes from good sleep' },
-    { id: 'food', emoji: '🍎', match: 'strength', description: 'Food gives you strength' },
-    { id: 'strength', emoji: '💪', match: 'food', description: 'Strength comes from good food' },
-    { id: 'play', emoji: '⚽', match: 'fitness', description: 'Play improves fitness' },
-    { id: 'fitness', emoji: '🏃', match: 'play', description: 'Fitness comes from playing' },
-    { id: 'water', emoji: '💧', match: 'hydration', description: 'Water keeps you hydrated' },
-    { id: 'hydration', emoji: '💦', match: 'water', description: 'Hydration comes from drinking water' },
-    { id: 'study', emoji: '📚', match: 'knowledge', description: 'Study builds knowledge' },
-    { id: 'knowledge', emoji: '🧠', match: 'study', description: 'Knowledge comes from studying' }
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-94";
+
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+
+  const questions = [
+    {
+      id: 1,
+      text: "What matches with 'Eating Fruits & Veggies'?",
+      options: [
+        {
+          id: "a",
+          text: "Feeling tired",
+          emoji: "😴",
+          description: "Healthy food gives energy, not tiredness.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Strong, healthy body",
+          emoji: "💪",
+          description: "Correct! Good food builds a strong body.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Gets you sick",
+          emoji: "🤒",
+          description: "Vitamins help fight sickness.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Bad dreams",
+          emoji: "👻",
+          description: "Food doesn't cause bad dreams.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "What is the best match for 'Regular Exercise'?",
+      options: [
+        {
+          id: "a",
+          text: "Strong heart and muscles",
+          emoji: "❤️",
+          description: "Yes! Exercise keeps your heart happy.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Watching TV",
+          emoji: "📺",
+          description: "That is the opposite of exercise.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Eating candy",
+          emoji: "🍬",
+          description: "That is not a match for exercise.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Sleeping all day",
+          emoji: "🛌",
+          description: "Your body needs to move.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "What matches with 'Brushing Teeth'?",
+      options: [
+        {
+          id: "a",
+          text: "Yellow smile",
+          emoji: "😬",
+          description: "Brushing makes teeth white.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Dirty hands",
+          emoji: "👐",
+          description: "That's about washing hands.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "No cavities and fresh breath",
+          emoji: "✨",
+          description: "Correct! Keep those teeth shiny!",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Messy hair",
+          emoji: "🤪",
+          description: "That's about combing hair.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "What matches with 'Getting enough sleep'?",
+      options: [
+        {
+          id: "a",
+          text: "Energy for the day",
+          emoji: "⚡",
+          description: "Yes! Sleep recharges your battery.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Being grumpy",
+          emoji: "😠",
+          description: "Lack of sleep makes you grumpy.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Falling down",
+          emoji: "😵",
+          description: "Sleep helps balance too.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Hungry tummy",
+          emoji: "😋",
+          description: "Sleep isn't about food.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "What matches with 'Washing Hands'?",
+      options: [
+        {
+          id: "a",
+          text: "Dirty clothes",
+          emoji: "👕",
+          description: "That's about laundry.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Germs going away",
+          emoji: "🦠",
+          description: "Correct! Wash those germs away!",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Messy room",
+          emoji: "🧸",
+          description: "That's about cleaning up toys.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Loud noise",
+          emoji: "📢",
+          description: "Washing is quiet.",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  // Shuffle function
-  const shuffle = (array) => {
-    const newArray = [...array];
-    for (let i = newArray.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  const handleChoice = (optionId) => {
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
+
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-    return newArray;
-  };
 
-  // Initialize game
-  useEffect(() => {
-    // Start the game automatically when component mounts
-    const startGame = () => {
-      const shuffledItems = shuffle([...items]);
-      setPairs(shuffledItems);
-      setFlipped([]);
-      setMatched([]);
-      setMoves(0);
-      setGameCompleted(false);
-      setGameStarted(true);
-    };
-    
-    startGame();
-    
-    // Cleanup function
-    return () => {
-      setGameStarted(false);
-    };
-  }, []);
-
-  // Check for matches
-  useEffect(() => {
-    if (flipped.length === 2) {
-      setMoves(prev => prev + 1);
-      const [firstIndex, secondIndex] = flipped;
-      const firstItem = pairs[firstIndex];
-      const secondItem = pairs[secondIndex];
-
-      if (firstItem.match === secondItem.id) {
-        setMatched(prev => [...prev, firstItem.id, secondItem.id]);
-        setFlipped([]);
-        
-        // Check if game is completed
-        if (matched.length + 2 === items.length) {
-          setTimeout(() => {
-            setGameCompleted(true);
-            showAnswerConfetti();
-          }, 500);
-        }
+    setTimeout(() => {
+      setSelectedOptionId(null);
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
       } else {
-        setTimeout(() => {
-          setFlipped([]);
-        }, 1000);
+        setGameFinished(true);
       }
-    }
-  }, [flipped, pairs, matched, items.length]);
-
-  const handleCardClick = (index) => {
-    // Don't allow clicking already matched or flipped cards
-    if (
-      flipped.length === 2 || 
-      flipped.includes(index) || 
-      matched.includes(pairs[index].id) ||
-      gameCompleted
-    ) {
-      return;
-    }
-
-    // Flip the card
-    setFlipped(prev => [...prev, index]);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
-  const resetGame = () => {
-    setGameStarted(false);
-    setGameCompleted(false);
-  };
-
-  if (!gameStarted) {
-    return (
-      <GameShell
-        title="Puzzle: Healthy Matches"
-        subtitle="Loading..."
-        backPath="/games/health-female/kids"
-      
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-pulse text-center">
-            <div className="text-6xl mb-4">🧩</div>
-            <p className="text-white">Preparing your game...</p>
-          </div>
-        </div>
-      </GameShell>
-    );
-  }
-
-  if (gameCompleted) {
-    return (
-      <GameShell
-        title="Puzzle: Healthy Matches"
-        subtitle="Congratulations!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={Math.max(5 - Math.floor(moves / 2), 1)}
-        gameId="health-female-kids-94"
-        gameType="health-female"
-        totalLevels={100}
-        currentLevel={94}
-        showConfetti={true}
-        backPath="/games/health-female/kids"
-      >
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🎉</div>
-          <h2 className="text-2xl font-bold mb-4">You Did It!</h2>
-          <p className="text-white/80 mb-6">
-            You completed the game in {moves} moves!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-8">
-            You earned {Math.max(5 - Math.floor(moves / 2), 1)} coins!
-          </div>
-          <button
-            onClick={resetGame}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full text-lg transition-colors"
-          >
-            Play Again
-          </button>
-        </div>
-      </GameShell>
-    );
-  }
-
   return (
     <GameShell
       title="Puzzle: Healthy Matches"
-      subtitle={`Moves: ${moves} | Matches: ${matched.length / 2} of ${pairs.length / 2}`}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={coins}
+      gameId={gameId}
+      gameType="health-female"
+      totalLevels={5}
+      currentLevel={94}
+      showConfetti={gameFinished}
+      flashPoints={flashPoints}
       backPath="/games/health-female/kids"
-    >
-      <div className="flex flex-col items-center">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 w-full max-w-4xl mx-auto p-4">
-          {pairs.map((item, index) => {
-            const isFlipped = flipped.includes(index) || matched.includes(item.id);
-            const isMatched = matched.includes(item.id);
-            
-            return (
-              <div 
-                key={`${item.id}-${index}`}
-                onClick={() => handleCardClick(index)}
-                className={`aspect-square flex items-center justify-center text-4xl cursor-pointer rounded-2xl transition-all duration-300 transform ${
-                  isFlipped 
-                    ? isMatched 
-                      ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg scale-95' 
-                      : 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg scale-95' 
-                    : 'bg-gradient-to-br from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 shadow-md hover:shadow-lg scale-100'
-                } ${isFlipped ? '' : 'hover:scale-105'}`}
-              >
-                {isFlipped ? (
-                  <div className="text-center p-2 text-white">
-                    <div className="text-4xl mb-2">{item.emoji}</div>
-                    <div className="text-xs font-medium bg-white/20 px-2 py-1 rounded-full">
-                      {item.id === 'sleep' ? 'Sleep' : 
-                       item.id === 'energy' ? 'Energy' :
-                       item.id === 'food' ? 'Food' :
-                       item.id === 'strength' ? 'Strength' :
-                       item.id === 'play' ? 'Play' :
-                       item.id === 'fitness' ? 'Fitness' :
-                       item.id === 'water' ? 'Water' :
-                       item.id === 'hydration' ? 'Hydration' :
-                       item.id === 'study' ? 'Study' : 'Knowledge'}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-4xl bg-white/10 p-4 rounded-xl">
-                    <span className="opacity-70">?</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        
-        {flipped.length === 2 && (
-          <div className="mt-6 p-4 bg-white/10 rounded-lg text-center max-w-md mx-auto">
-            <p className="text-sm text-white/80">
-              {pairs[flipped[0]].id === pairs[flipped[1]].match 
-                ? 'Match found! ' + pairs[flipped[0]].description 
-                : 'Not a match. Try again!'}
-            </p>
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={maxScore}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-        )}
-        
-        <div className="mt-6 flex justify-center space-x-4">
-          <button
-            onClick={resetGame}
-            className="bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-4 rounded transition-colors"
-          >
-            Restart Game
-          </button>
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
+          </h2>
+
+          <div className="grid grid-cols-1 gap-4">
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </GameShell>

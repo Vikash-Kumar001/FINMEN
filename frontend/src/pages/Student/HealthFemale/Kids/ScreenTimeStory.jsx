@@ -1,118 +1,186 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const ScreenTimeStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-95";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Should you use mobile all night or sleep early?",
+      text: "It's bedtime, but your favorite show is on. What should you do?",
       options: [
         {
           id: "a",
-          text: "Sleep early for good health and focus",
-          emoji: "😴",
-          description: "Exactly! Getting enough sleep is essential for your physical and mental health, and helps you focus better during the day.",
-          isCorrect: true
+          text: "Watch it all night",
+          emoji: "📺",
+          description: "You'll be too tired tomorrow.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Use mobile all night for entertainment",
-          emoji: "📱",
-          description: "Using mobile all night can disrupt your sleep cycle and affect your health, mood, and ability to focus the next day.",
+          text: "Turn it off and sleep",
+          emoji: "😴",
+          description: "Correct! Sleep is more important.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Watch with one eye open",
+          emoji: "😜",
+          description: "That doesn't work well.",
           isCorrect: false
-        }
+        },
+        
       ]
     },
     {
       id: 2,
-      text: "Your friends are chatting online late at night. What do you do?",
+      text: "Your eyes hurt from playing tablet games. What does it mean?",
       options: [
-        {
-          id: "a",
-          text: "Join them but set a time limit for yourself",
-          emoji: "⏰",
-          description: "Great choice! Setting boundaries helps you maintain healthy habits while still enjoying social connections.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
-          text: "Stay up all night to keep up with conversations",
-          emoji: "👥",
-          description: "Staying up all night can negatively impact your health and school performance. True friends respect your need for sleep.",
+          text: "Play faster",
+          emoji: "⚡",
+          description: "That hurts more.",
           isCorrect: false
-        }
+        },
+        {
+          id: "c",
+          text: "Rub them hard",
+          emoji: "😣",
+          description: "Don't rub hard!",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Close one eye",
+          emoji: "😉",
+          description: "Both eyes need rest.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Time to take a break",
+          emoji: "🛑",
+          description: "Yes! Your eyes need rest.",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 3,
-      text: "You feel tired during school after using your phone late. What should you change?",
+      text: "Instead of staring at screens all day, you should...",
       options: [
         {
           id: "a",
-          text: "Set a specific time to stop using devices before bed",
-          emoji: "🕘",
-          description: "Perfect! Creating a bedtime routine without screens helps improve sleep quality and energy levels.",
+          text: "Play outside with friends",
+          emoji: "⚽",
+          description: "Correct! Active play is great.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Ignore the tiredness and continue your habits",
-          emoji: "😴",
-          description: "Ignoring the signs of poor sleep habits can lead to ongoing health and academic problems.",
+          text: "Stare at the wall",
+          emoji: "🧱",
+          description: "Go have some fun!",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Sleep all day",
+          emoji: "🛌",
+          description: "Balance sleep and play.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Eat only chips",
+          emoji: "🥔",
+          description: "Healthy food is better.",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "You want to reduce screen time. What's a good strategy?",
+      text: "Why is too much screen time bad before bed?",
       options: [
         {
           id: "a",
-          text: "Replace screen time with reading or outdoor activities",
-          emoji: "📚",
-          description: "Wonderful! Finding healthy alternatives helps you develop a more balanced lifestyle.",
-          isCorrect: true
+          text: "The monsters come out",
+          emoji: "👹",
+          description: "Monsters aren't real.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Just try to use devices less without a plan",
-          emoji: "🤔",
-          description: "Having a specific plan with alternatives is more effective than just trying to reduce usage without a strategy.",
+          text: "It makes your brain too awake",
+          emoji: "💡",
+          description: "Yes! The blue light wakes you up.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "The tablet melts",
+          emoji: "🫠",
+          description: "Tablets don't melt.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "You forget your name",
+          emoji: "❓",
+          description: "You won't forget that.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "You learn that good sleep improves concentration. How does this make you feel?",
+      text: "What is a good screen-time rule?",
       options: [
         {
           id: "a",
-          text: "Motivated to prioritize sleep over late-night screen time",
-          emoji: "💪",
-          description: "Excellent! Understanding the benefits of sleep reinforces your commitment to healthy habits.",
-          isCorrect: true
+          text: "Screens only on weekends",
+          emoji: "🗓️",
+          description: "That's a very strict rule.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Think you can function well without much sleep",
-          emoji: "🤷",
-          description: "Most people need 8-10 hours of sleep for optimal health and performance. Consistent good sleep is important for everyone.",
+          text: "No screens during dinner",
+          emoji: "🍽️",
+          description: "Correct! Talk to your family instead.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Screens in the bath",
+          emoji: "🛁",
+          description: "Water destroys electronics!",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Screens while walking",
+          emoji: "🚶",
+          description: "Watch where you are going!",
           isCorrect: false
         }
       ]
@@ -120,7 +188,10 @@ const ScreenTimeStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +199,19 @@ const ScreenTimeStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +221,15 @@ const ScreenTimeStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-95"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={100}
+      totalLevels={5}
       currentLevel={95}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +237,52 @@ const ScreenTimeStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -1,126 +1,173 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const ReadingStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-98";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Why read daily?",
+      text: "Why is reading every day good for you?",
       options: [
         {
           id: "a",
-          text: "Improves knowledge and mind",
-          emoji: "🧠",
-          description: "Exactly! Reading expands your vocabulary, improves concentration, and enhances critical thinking skills.",
-          isCorrect: true
+          text: "It makes you sleepy",
+          emoji: "😴",
+          description: "Reading wakes up your brain!",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "It's boring and not useful",
-          emoji: "😴",
-          description: "Reading has many benefits for your brain and personal development. Finding the right books can make it enjoyable.",
+          text: "It makes you smarter and more creative",
+          emoji: "🧠",
+          description: "Yes! Books are food for the brain.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "It hurts your eyes",
+          emoji: "🫣",
+          description: "Good lighting makes reading safe.",
           isCorrect: false
-        }
+        },
       ]
     },
     {
       id: 2,
-      text: "Your friend says reading is only for school. What do you think?",
+      text: "What if you find a word you don't know?",
       options: [
         {
           id: "a",
-          text: "Reading for pleasure has many benefits beyond school",
-          emoji: "📚",
-          description: "Great choice! Reading for fun reduces stress, improves empathy, and can be a great source of entertainment.",
-          isCorrect: true
+          text: "Throw the book away",
+          emoji: "🗑️",
+          description: "Never throw books!",
+          isCorrect: false
+        },
+       
+        {
+          id: "c",
+          text: "Skip the whole page",
+          emoji: "⏭️",
+          description: "You might miss important parts.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Agree that reading is only for school assignments",
-          emoji: "📝",
-          description: "Reading has lifelong benefits that extend far beyond school assignments and can be a source of joy and relaxation.",
-          isCorrect: false
-        }
+          text: "Ask an adult or look it up",
+          emoji: "📖",
+          description: "Correct! That's how we learn new words.",
+          isCorrect: true
+        },
+        
       ]
     },
     {
       id: 3,
-      text: "You find a book too difficult to understand. What should you do?",
+      text: "Reading before bed helps you...",
       options: [
         {
           id: "a",
-          text: "Choose a book at your reading level or ask for help",
-          emoji: "📖",
-          description: "Perfect! Starting with books at your level and gradually challenging yourself helps build reading skills.",
-          isCorrect: true
+          text: "Stay awake all night",
+          emoji: "👀",
+          description: "Reading helps you relax.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Give up on reading altogether",
-          emoji: "😔",
-          description: "Giving up prevents you from enjoying the many benefits of reading. There are books for every reading level and interest.",
+          text: "Relax and sleep better",
+          emoji: "🌙",
+          description: "Yes! It calms your mind.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Get a headache",
+          emoji: "🤕",
+          description: "Not if you have a light on.",
           isCorrect: false
-        }
+        },
+       
       ]
     },
     {
       id: 4,
-      text: "How can reading improve your future?",
+      text: "Stories can take you...",
       options: [
         {
-          id: "a",
-          text: "Builds knowledge, vocabulary, and critical thinking skills",
-          emoji: "🌟",
-          description: "Wonderful! These skills are valuable in all areas of life, from academics to career success to personal growth.",
+          id: "b",
+          text: "Anywhere in the universe!",
+          emoji: "🚀",
+          description: "Correct! Imagination has no limits.",
           isCorrect: true
         },
         {
-          id: "b",
-          text: "It won't make a difference in your future",
-          emoji: "🤔",
-          description: "Reading regularly has been shown to improve cognitive abilities, communication skills, and career prospects throughout life.",
+          id: "a",
+          text: "Nowhere",
+          emoji: "🛑",
+          description: "Stories travel everywhere.",
           isCorrect: false
-        }
+        },
+       
+        {
+          id: "c",
+          text: "Only to the store",
+          emoji: "🏪",
+          description: "Much further than that.",
+          isCorrect: false
+        },
+        
       ]
     },
     {
       id: 5,
-      text: "You learn that readers have better focus and memory. How does this make you feel?",
+      text: "Who can be your best friend when you are alone?",
       options: [
         {
           id: "a",
-          text: "Motivated to read more regularly",
-          emoji: "💪",
-          description: "Excellent! Understanding the benefits of reading reinforces your commitment to making it a daily habit.",
+          text: "A good book",
+          emoji: "📘",
+          description: "Yes! Books are great company.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Think it won't affect you personally",
-          emoji: "🤷",
-          description: "Regular reading benefits everyone's brain function. Making it a habit can improve your focus and memory over time.",
+          text: "A loud noise",
+          emoji: "🔊",
+          description: "Noise isn't a friend.",
           isCorrect: false
-        }
+        },
+        {
+          id: "c",
+          text: "A broken toy",
+          emoji: "🧸",
+          description: "Books are better.",
+          isCorrect: false
+        },
+       
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +175,19 @@ const ReadingStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +197,15 @@ const ReadingStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-98"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={100}
+      totalLevels={5}
       currentLevel={98}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +213,52 @@ const ReadingStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

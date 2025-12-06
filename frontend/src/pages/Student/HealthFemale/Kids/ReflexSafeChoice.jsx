@@ -1,241 +1,284 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell from '../../Finance/GameShell';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 5; // 5 seconds per round
 
 const ReflexSafeChoice = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(5);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedback, setFeedback] = useState({ correct: false, message: '' });
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-83";
+
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(1);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(1);
 
   const questions = [
     {
       id: 1,
-      text: "Quick! Tap 🧃 for 'Juice' or ❌ for 'Alcohol'",
-      correctAnswer: '🧃',
-      feedback: {
-        correct: "Great job! Juice is a healthy drink choice!",
-        incorrect: "Remember, alcohol is harmful to your health!"
-      }
+      question: "Which drink is healthy?",
+      options: [
+        { text: "Alcohol", isCorrect: false, emoji: "🍺" },
+        { text: "Soda", isCorrect: false, emoji: "🥤" },
+        { text: "Juice", isCorrect: true, emoji: "🧃" },
+        { text: "Paint", isCorrect: false, emoji: "🎨" }
+      ]
     },
     {
       id: 2,
-      text: "Tap 🍎 for 'Apple' or ❌ for 'Cigarette'",
-      correctAnswer: '🍎',
-      feedback: {
-        correct: "Excellent! Apples are nutritious and healthy!",
-        incorrect: "Cigarettes are harmful to your lungs and health!"
-      }
+      question: "Which is a healthy snack?",
+      options: [
+        { text: "Cigarette", isCorrect: false, emoji: "🚬" },
+        { text: "Candy", isCorrect: false, emoji: "🍬" },
+        { text: "Glue", isCorrect: false, emoji: "🧴" },
+        { text: "Apple", isCorrect: true, emoji: "🍎" },
+      ]
     },
     {
       id: 3,
-      text: "Quick! Tap 🥛 for 'Milk' or ❌ for 'Energy Drink'",
-      correctAnswer: '🥛',
-      feedback: {
-        correct: "Perfect! Milk provides calcium for strong bones!",
-        incorrect: "Energy drinks can be harmful with excessive caffeine!"
-      }
+      question: "Healthy drink for bones?",
+      options: [
+        { text: "Energy Drink", isCorrect: false, emoji: "⚡" },
+        { text: "Milk", isCorrect: true, emoji: "🥛" },
+        { text: "Coffee", isCorrect: false, emoji: "☕" },
+        { text: "Mud", isCorrect: false, emoji: "🟤" }
+      ]
     },
     {
       id: 4,
-      text: "Tap 🥗 for 'Salad' or ❌ for 'Junk Food'",
-      correctAnswer: '🥗',
-      feedback: {
-        correct: "Well done! Salads are packed with vitamins and nutrients!",
-        incorrect: "Junk food lacks nutrition and can harm your health!"
-      }
+      question: "Best food for energy?",
+      options: [
+        { text: "Salad", isCorrect: true, emoji: "🥗" },
+        { text: "Junk Food", isCorrect: false, emoji: "🍔" },
+        { text: "Chips", isCorrect: false, emoji: "🍟" },
+        { text: "Dirt", isCorrect: false, emoji: "🪨" }
+      ]
     },
     {
       id: 5,
-      text: "Quick! Tap 🏃‍♀️ for 'Exercise' or ❌ for 'Drugs'",
-      correctAnswer: '🏃‍♀️',
-      feedback: {
-        correct: "Awesome! Exercise keeps your body and mind healthy!",
-        incorrect: "Drugs are harmful and can cause serious health problems!"
-      }
+      question: "Best for your body?",
+      options: [
+        { text: "Drugs", isCorrect: false, emoji: "💊" },
+        { text: "Exercise", isCorrect: true, emoji: "🏃‍♀️" },
+        { text: "Sitting", isCorrect: false, emoji: "🪑" },
+        { text: "Sleep all day", isCorrect: false, emoji: "😴" }
+      ]
     }
   ];
 
-  // Start the game automatically when component mounts
+  // Update ref when currentRound changes
   useEffect(() => {
-    if (!gameStarted) {
-      startGame();
-    }
-  }, []);
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
 
+  // Reset timer configuration when round changes
   useEffect(() => {
-    if (gameStarted && timeLeft > 0 && !showFeedback) {
-      const timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } 
-  }, [timeLeft, gameStarted, showFeedback]);
-
-  const startGame = () => {
-    setGameStarted(true);
-  };
-
-  const handleAnswer = (answer) => {
-    const currentQ = questions[currentQuestion];
-    const isCorrect = answer === currentQ.correctAnswer;
-    
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-      setFeedback({ correct: true, message: currentQ.feedback.correct });
-    } else {
-      setFeedback({ correct: false, message: currentQ.feedback.incorrect });
+    if (gameState === "playing" && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
+  }, [currentRound, gameState]);
 
-    setShowFeedback(true);
+  // Handle time up
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
+    resetFeedback();
 
     setTimeout(() => {
-      setShowFeedback(false);
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setTimeLeft(5);
+      if (currentRoundRef.current >= TOTAL_ROUNDS) {
+        setGameState("finished");
       } else {
-        setGameFinished(true);
+        setCurrentRound((prev) => prev + 1);
       }
-    }, 2000);
+    }, 1000);
+  }, []);
+
+  // Timer logic - Restart on new round or playing state
+  useEffect(() => {
+    if (gameState !== "playing") {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          handleTimeUp();
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, currentRound, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setScore(0);
+    setCurrentRound(1);
+    setTimeLeft(ROUND_TIME);
+    setAnswered(false);
+    resetFeedback();
+  };
+
+  const handleAnswer = (option) => {
+    if (gameState !== "playing" || answered) return;
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    setAnswered(true);
+    resetFeedback();
+
+    if (option.isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    setTimeout(() => {
+      if (currentRound >= TOTAL_ROUNDS) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+      }
+    }, 1000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
-  // Show loading state while game starts
-  if (!gameStarted) {
-    return (
-      <GameShell
-        title="Reflex Safe Choice"
-      score={coins}
-        subtitle="Loading..."
-        backPath="/games/health-female/kids"
-      
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="flex items-center justify-center min-h-[300px]">
-          <div className="animate-pulse text-center">
-            <div className="text-6xl mb-4">⏱️</div>
-            <p className="text-white">Starting game...</p>
-          </div>
-        </div>
-      </GameShell>
-    );
-  }
-
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Reflex Safe Choice"
-        subtitle="Game Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        
-        gameId="health-female-kids-83"
-        gameType="health-female"
-        totalLevels={90}
-        currentLevel={83}
-        showConfetti={true}
-        backPath="/games/health-female/kids"
-      >
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🎉</div>
-          <h2 className="text-2xl font-bold mb-4">Great Job!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} out of {questions.length} points!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg">
-            Keep making safe and healthy choices!
-          </div>
-        </div>
-      </GameShell>
-    );
-  }
+  const currentQ = questions[currentRound - 1];
 
   return (
     <GameShell
-      title="Reflex Safe Choice"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      title="Reflex: Safe Choice"
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}` : "Safe Choice Blitz!"}
+      coins={score}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={gameState === "finished"}
+      score={score}
+      gameId={gameId}
+      gameType="health-female"
+      maxScore={maxScore}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      showConfetti={gameState === "finished" && score === maxScore}
       backPath="/games/health-female/kids"
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex flex-col items-center justify-center min-h-[300px]">
-            <div className="flex justify-between items-center w-full mb-8">
-              <div className="bg-blue-500/20 px-4 py-2 rounded-full">
-                <span className="text-white font-bold">{timeLeft}s</span>
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-6xl mb-6">🍎</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Safe Choice Blitz!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              You have {ROUND_TIME} seconds to pick the healthy choice!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQ && (
+          <div className="space-y-8">
+            {/* HUD */}
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-lg">
+              <div className="text-white font-bold text-lg">
+                Round: {currentRound}/{TOTAL_ROUNDS}
               </div>
-              <div className="bg-yellow-500/20 px-4 py-2 rounded-full">
-                <span className="text-yellow-400 font-bold">Score: {coins}</span>
+              <div className={`font-mono text-2xl font-bold ${timeLeft <= 2 ? 'text-red-400 animate-pulse' : 'text-yellow-400'}`}>
+                {timeLeft}s
+              </div>
+              <div className="text-white font-bold text-lg">
+                Score: {score}
               </div>
             </div>
-            
-            <div className="text-center mb-10">
-              <div className="text-6xl mb-6 bg-white/10 p-6 rounded-2xl inline-block">
-                <span className="text-white">{getCurrentQuestion().text.split(' ')[0]}</span>
-              </div>
-              <p className="text-xl text-white mt-4">
-                {getCurrentQuestion().text.split(' ').slice(1).join(' ')}
-              </p>
-            </div>
-            
-            {showFeedback ? (
-              <div className={`p-6 rounded-2xl text-center mb-8 w-full max-w-md mx-auto ${
-                feedback.correct 
-                  ? 'bg-green-500/20 border border-green-500/30' 
-                  : 'bg-red-500/20 border border-red-500/30'
-              }`}>
-                <p className={`text-lg ${feedback.correct ? 'text-green-300' : 'text-red-300'}`}>
-                  {feedback.message}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-4 w-full max-w-md mx-auto">
-                {['🧃', '🍎', '🥛', '🥗', '🏃‍♀️', '❌'].map((emoji) => (
+
+            {/* Question Area */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+              <h2 className="text-2xl font-bold text-white mb-8">{currentQ.question}</h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                {currentQ.options.map((option, index) => (
                   <button
-                    key={emoji}
-                    onClick={() => handleAnswer(emoji)}
-                    disabled={showFeedback}
-                    className="bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-4xl p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 active:scale-95 text-white"
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-xl font-bold transition-all transform hover:scale-[1.02] shadow-xl flex items-center justify-start gap-4 ${answered
+                      ? option.isCorrect
+                        ? 'bg-green-500 ring-4 ring-green-300'
+                        : 'bg-white/10 opacity-50'
+                      : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
+                      }`}
                   >
-                    {emoji}
+                    <span className="text-4xl">{option.emoji}</span>
+                    <span className="text-white text-left">{option.text}</span>
                   </button>
                 ))}
               </div>
-            )}
-            
-            <div className="mt-8 w-full max-w-md">
-              <div className="bg-white/10 rounded-full h-3 w-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-1000 ease-linear rounded-full"
-                  style={{ width: `${(timeLeft / 5) * 100}%` }}
-                ></div>
-              </div>
-              <p className="text-center text-white/70 text-sm mt-2">
-                Time remaining: {timeLeft}s
-              </p>
             </div>
           </div>
-        </div>
+        )}
+
+        {gameState === "finished" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-6xl mb-6">🏆</div>
+            <h2 className="text-3xl font-bold text-white mb-4">Blitz Complete!</h2>
+            <p className="text-xl text-white/90 mb-6">You scored {score} out of {TOTAL_ROUNDS}!</p>
+
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={startGame}
+                className="bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-full transition-all"
+              >
+                Play Again
+              </button>
+              <button
+                onClick={handleNext}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-full transition-all shadow-lg"
+              >
+                Next Game
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

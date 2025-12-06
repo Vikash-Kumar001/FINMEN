@@ -1,153 +1,156 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const QuizOnHygiene = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-42";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Which practice best prevents body odor?",
+      text: "How often should you take a bath or shower?",
       options: [
         {
           id: "a",
-          text: "Bathing daily with soap",
-          emoji: "🧼",
-          description: "Correct! Regular bathing with soap removes bacteria that cause body odor.",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Wearing the same clothes multiple days",
-          emoji: "👕",
-          description: "Wearing the same clothes multiple days can trap bacteria and sweat, leading to body odor.",
+          text: "Once a month",
+          emoji: "📅",
+          description: "That's not enough to stay clean.",
           isCorrect: false
         },
         {
+          id: "b",
+          text: "Every day or regularly",
+          emoji: "🚿",
+          description: "Yes! Daily washing keeps you fresh.",
+          isCorrect: true
+        },
+        {
           id: "c",
-          text: "Using perfume to cover smells",
-          emoji: "🌸",
-          description: "Perfume only masks odors temporarily. Proper hygiene is needed to prevent them.",
+          text: "Only when mom says so",
+          emoji: "🗣️",
+          description: "It should be your own healthy habit.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "How often should you wash your hair?",
+      text: "What do you need to wash your hands properly?",
       options: [
         {
           id: "a",
-          text: "2-3 times per week for most hair types",
-          emoji: "💇‍♀️",
-          description: "Exactly! Washing 2-3 times per week keeps hair clean without stripping natural oils.",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Every day",
-          emoji: "🚿",
-          description: "Daily washing can strip hair of natural oils, making it dry and brittle.",
+          text: "Just water",
+          emoji: "💧",
+          description: "Water alone doesn't kill germs.",
           isCorrect: false
         },
         {
+          id: "b",
+          text: "Soap and Water",
+          emoji: "🧼",
+          description: "Correct! Soap fights the germs.",
+          isCorrect: true
+        },
+        {
           id: "c",
-          text: "Once a month",
-          emoji: "📅",
-          description: "Once a month is not frequent enough and can lead to buildup of oils and dirt.",
+          text: "A towel only",
+          emoji: "🧖‍♀️",
+          description: "A towel dries, but doesn't clean.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "What's the best way to keep your teeth healthy?",
+      text: "When should you brush your teeth?",
       options: [
         {
           id: "a",
-          text: "Brush twice daily and floss regularly",
-          emoji: "🦷",
-          description: "Perfect! Brushing twice daily and flossing removes plaque and prevents cavities.",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Brush only when teeth feel dirty",
-          emoji: "😬",
-          description: "Waiting until teeth feel dirty means plaque has already built up, increasing cavity risk.",
+          text: "Before breakfast",
+          emoji: "🌅",
+          description: "Good start, but do it twice a day.",
           isCorrect: false
         },
         {
+          id: "b",
+          text: "Morning and Night",
+          emoji: "🦷",
+          description: "Perfect! Twice a day keeps cavities away.",
+          isCorrect: true
+        },
+        {
           id: "c",
-          text: "Use mouthwash but skip brushing",
-          emoji: "🪥",
-          description: "Mouthwash complements brushing but cannot remove plaque like brushing and flossing can.",
+          text: "Only if you ate candy",
+          emoji: "🍬",
+          description: "You need to brush every day regardless.",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "Why is it important to trim your nails regularly?",
+      text: "Why do we wear clean underwear every day?",
       options: [
         {
           id: "a",
-          text: "Prevents dirt buildup and reduces infection risk",
-          emoji: "💅",
-          description: "Correct! Short, clean nails prevent dirt accumulation and reduce infection risk.",
+          text: "To stop germs and odors",
+          emoji: "🩲",
+          description: "Exactly! It keeps your private parts healthy.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Makes fingers look longer",
-          emoji: "📏",
-          description: "While well-groomed nails look nice, the primary health benefit is preventing dirt buildup.",
+          text: "Because it looks nice",
+          emoji: "👀",
+          description: "Hygiene is the main reason.",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Only for appearance, not health",
-          emoji: "✨",
-          description: "Nail trimming is primarily for health reasons - preventing dirt buildup and infection risk.",
+          text: "We don't need to",
+          emoji: "🚫",
+          description: "You should change it daily!",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "What's the best practice for foot hygiene?",
+      text: "What should you do after using the toilet?",
       options: [
         {
           id: "a",
-          text: "Wash feet daily and keep them dry",
-          emoji: "🦶",
-          description: "Great choice! Daily washing and keeping feet dry prevents odor and fungal infections.",
+          text: "Wash your hands",
+          emoji: "👐",
+          description: "Yes! Always wash hands after the toilet.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Wear the same socks multiple days",
-          emoji: "🧦",
-          description: "Wearing the same socks multiple days traps moisture and bacteria, causing odor and infections.",
+          text: "Run away fast",
+          emoji: "🏃‍♀️",
+          description: "Don't forget to wash up!",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Only wash feet when they look dirty",
-          emoji: "👀",
-          description: "Feet can harbor bacteria even when they don't look dirty. Regular washing is important.",
+          text: "Touch your face",
+          emoji: "🤦‍♀️",
+          description: "Yuck! Wash your hands first.",
           isCorrect: false
         }
       ]
@@ -155,7 +158,10 @@ const QuizOnHygiene = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -163,22 +169,19 @@ const QuizOnHygiene = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -188,16 +191,15 @@ const QuizOnHygiene = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-42"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={50}
+      totalLevels={5}
       currentLevel={42}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -205,32 +207,52 @@ const QuizOnHygiene = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

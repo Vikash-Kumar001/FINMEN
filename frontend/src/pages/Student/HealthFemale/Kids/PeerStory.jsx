@@ -161,7 +161,7 @@ const PeerStory = () => {
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
+
       maxScore={questions.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
@@ -172,7 +172,7 @@ const PeerStory = () => {
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
             <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
-          
+
           <h2 className="text-xl font-semibold text-white mb-6">
             {getCurrentQuestion().text}
           </h2>

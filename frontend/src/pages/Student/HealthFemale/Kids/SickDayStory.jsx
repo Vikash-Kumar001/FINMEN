@@ -1,118 +1,158 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const SickDayStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-75";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "You feel unwell. Should you hide or tell parents?",
+      text: "You wake up feeling hot and tired (fever).",
       options: [
         {
           id: "a",
-          text: "Tell parents - they can help and get medical care if needed",
-          emoji: "👨‍👩‍👧",
-          description: "Exactly! Telling parents when you're unwell helps them take care of you and get medical help if necessary.",
-          isCorrect: true
+          text: "Go to school anyway",
+          emoji: "🏫",
+          description: "You might make others sick.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Hide it - they might get angry or make me go to school",
-          emoji: "🤐",
-          description: "That's not the best choice. Hiding illness can make it worse. Parents want to help you feel better.",
+          text: "Tell a parent and stay home",
+          emoji: "🛌",
+          description: "Correct! Rest helps you heal.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Play outside in the cold",
+          emoji: "❄️",
+          description: "That could make you worse.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "You have a fever. What should you do?",
+      text: "Your doctor gives you medicine.",
       options: [
         {
           id: "a",
-          text: "Rest, drink water, and tell an adult",
-          emoji: "😴",
-          description: "Great choice! Rest and hydration help your body fight illness. Telling an adult ensures you get proper care.",
+          text: "Take it exactly as told",
+          emoji: "💊",
+          description: "Yes! Follow the doctor's rules.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Go to school to avoid missing work",
-          emoji: "📚",
-          description: "Going to school when sick can make you feel worse and spread illness to others. Rest helps recovery.",
+          text: "Hide it under the bed",
+          emoji: "🛏️",
+          description: "Medicine helps you get better.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Give it to your pet",
+          emoji: "🐶",
+          description: "Medicine is only for you.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Your friend has a contagious illness. Should you visit?",
+      text: "You are bored in bed.",
       options: [
         {
           id: "a",
-          text: "Call or text to check on them, but avoid in-person visits",
-          emoji: "📱",
-          description: "Perfect! Staying away prevents spreading illness while still showing care through calls or messages.",
-          isCorrect: true
+          text: "Jump on the bed",
+          emoji: "🤸‍♀️",
+          description: "You need to save energy.",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "Run laps around the house",
+          emoji: "🏃‍♀️",
+          description: "Rest your body.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Visit to show you care about your friend",
-          emoji: "🤗",
-          description: "While caring about friends is important, visiting when they're contagious can make you sick too.",
-          isCorrect: false
-        }
+          text: "Read a book or sleep",
+          emoji: "📚",
+          description: "Correct! Quiet activities are best.",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 4,
-      text: "You're feeling better after being sick. What's best?",
+      text: "You need to throw up.",
       options: [
         {
           id: "a",
-          text: "Wait until fully recovered before returning to normal activities",
-          emoji: "⏳",
-          description: "Wonderful! Returning too soon can relapse your illness and affect others. Full recovery prevents setbacks.",
-          isCorrect: true
+          text: "Do it on the floor",
+          emoji: "🤢",
+          description: "Try to get to a bathroom.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Return immediately to catch up on missed activities",
-          emoji: "🏃",
-          description: "Rushing back can cause a relapse. It's better to fully recover first to protect your health and others.",
+          text: "Go to the bathroom or use a bucket",
+          emoji: "🚽",
+          description: "Yes! Keep things clean.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Hold it in forever",
+          emoji: "🤐",
+          description: "Better to let it out safely.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "You need to take medicine. What should you do?",
+      text: "When can you go back to school?",
       options: [
         {
-          id: "a",
-          text: "Take it exactly as prescribed by doctor or parent",
-          emoji: "💊",
-          description: "Excellent! Following medication instructions ensures effective treatment and prevents complications.",
+          id: "b",
+          text: "When you feel better and doctor says okay",
+          emoji: "😊",
+          description: "Correct! No germs for friends.",
           isCorrect: true
         },
         {
-          id: "b",
-          text: "Take more than prescribed to feel better faster",
-          emoji: "💊💊",
-          description: "Taking more medicine than prescribed can be dangerous. Follow instructions for safe and effective treatment.",
+          id: "a",
+          text: "When you still have a fever",
+          emoji: "🤒",
+          description: "Wait until the fever is gone.",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "Never",
+          emoji: "🛑",
+          description: "You'll go back when well.",
           isCorrect: false
         }
       ]
@@ -120,7 +160,10 @@ const SickDayStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +171,19 @@ const SickDayStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +193,15 @@ const SickDayStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-75"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={80}
-      currentLevel={75}
+      totalLevels={5}
+      currentLevel={65}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +209,52 @@ const SickDayStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

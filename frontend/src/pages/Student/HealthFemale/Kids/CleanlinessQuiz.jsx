@@ -1,15 +1,18 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const CleanlinessQuiz = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-2";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
@@ -131,10 +134,10 @@ const CleanlinessQuiz = () => {
       options: [
         {
           id: "a",
-          text: "Every day",
-          emoji: "👕",
-          description: "Clean clothes help keep you fresh and healthy",
-          isCorrect: true
+          text: "When they stand up by themselves",
+          emoji: "😷",
+          description: "That's way too long to wear the same clothes!",
+          isCorrect: false
         },
         {
           id: "b",
@@ -145,22 +148,24 @@ const CleanlinessQuiz = () => {
         },
         {
           id: "c",
-          text: "When they stand up by themselves",
-          emoji: "😷",
-          description: "That's way too long to wear the same clothes!",
-          isCorrect: false
+          text: "Every day",
+          emoji: "👕",
+          description: "Clean clothes help keep you fresh and healthy",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (choices.some(c => c.question === currentQuestion)) return;
+
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + coinsPerLevel);
+      showCorrectAnswerFeedback(coinsPerLevel, true);
     }
 
     setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
@@ -170,16 +175,15 @@ const CleanlinessQuiz = () => {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
-        showAnswerConfetti();
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
+  const currentQ = questions[currentQuestion];
 
   return (
     <GameShell
@@ -189,85 +193,73 @@ const CleanlinessQuiz = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-2"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={10}
-      currentLevel={2}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/health-female/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
-        {!gameFinished ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div className="flex justify-between items-center mb-6">
-              <div className="bg-blue-500/20 px-4 py-2 rounded-full">
-                <span className="text-white font-medium">Question {currentQuestion + 1}/{questions.length}</span>
-              </div>
-              <div className="bg-yellow-500/20 px-4 py-2 rounded-full">
-                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-              </div>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="flex justify-between items-center mb-6">
+            <div className="bg-blue-500/20 px-4 py-2 rounded-full">
+              <span className="text-white font-medium">Question {currentQuestion + 1}/{questions.length}</span>
             </div>
-            
-            <div className="text-center my-8">
-              <h3 className="text-2xl font-bold text-white mb-6 leading-relaxed">
-                {questions[currentQuestion].text}
-              </h3>
+            <div className="bg-yellow-500/20 px-4 py-2 rounded-full">
+              <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
             </div>
-            
-            <div className="grid grid-cols-1 gap-4 max-w-2xl mx-auto">
-              {questions[currentQuestion].options.map((option) => (
+          </div>
+
+          <div className="text-center my-8">
+            <h3 className="text-2xl font-bold text-white mb-6 leading-relaxed">
+              {currentQ.text}
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 max-w-2xl mx-auto">
+            {currentQ.options.map((option) => {
+              const feedback = choices.find(c => c.question === currentQuestion);
+              const isSelected = feedback?.optionId === option.id;
+              const isCorrect = option.isCorrect;
+              const showFeedback = !!feedback;
+
+              let buttonStyle = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+              if (showFeedback) {
+                if (isCorrect) buttonStyle = "bg-green-500 ring-4 ring-green-300";
+                else if (isSelected) buttonStyle = "bg-red-500 ring-4 ring-red-300";
+                else buttonStyle = "bg-gray-500 opacity-50";
+              }
+
+              return (
                 <button
                   key={option.id}
                   onClick={() => handleChoice(option.id)}
-                  disabled={choices.some(c => c.question === currentQuestion && c.optionId === option.id)}
-                  className={`w-full p-6 rounded-2xl shadow-lg transition-all transform hover:scale-[1.02] text-left ${
-                    choices.some(c => c.question === currentQuestion && c.optionId === option.id && c.isCorrect)
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600'
-                      : choices.some(c => c.question === currentQuestion && c.optionId === option.id && !c.isCorrect)
-                      ? 'bg-gradient-to-r from-red-500 to-pink-600 opacity-80'
-                      : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
-                  }`}
+                  disabled={showFeedback}
+                  className={`w-full p-6 rounded-2xl shadow-lg transition-all transform hover:scale-[1.02] text-left text-white ${buttonStyle}`}
                 >
                   <div className="flex items-center">
                     <span className="text-3xl mr-4">{option.emoji}</span>
                     <div>
-                      <div className="font-medium text-lg text-white">{option.text}</div>
-                      {choices.some(c => c.optionId === option.id) && (
-                        <p className={`text-sm mt-2 font-medium ${
-                          option.isCorrect ? 'text-green-100' : 'text-red-100'
-                        }`}>
+                      <div className="font-medium text-lg">{option.text}</div>
+                      {showFeedback && (isSelected || isCorrect) && (
+                        <p className="text-sm mt-2 font-medium text-white/90 bg-black/20 p-2 rounded">
                           {option.description}
                         </p>
                       )}
                     </div>
                   </div>
                 </button>
-              ))}
-            </div>
-            
-            <div className="mt-8 flex justify-between items-center text-sm text-white/60">
-              <span>Tip: Read each option carefully before choosing!</span>
-              <span>{currentQuestion + 1} of {questions.length}</span>
-            </div>
+              );
+            })}
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <h3 className="text-3xl font-bold text-white mb-6">Quiz Complete! 🎉</h3>
-            <p className="text-xl text-white/90 mb-8">You earned {coins} coins! ✨</p>
-            <button
-              onClick={handleNext}
-              className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
-            >
-              Play Again
-            </button>
-          </div>
-        )}
+        </div>
       </div>
     </GameShell>
   );

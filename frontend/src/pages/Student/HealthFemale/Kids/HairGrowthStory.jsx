@@ -1,126 +1,167 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const HairGrowthStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-84";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "You've noticed hair on your arms and legs. Is this normal?",
+      text: "You notice hair growing under your arms.",
       options: [
         {
           id: "a",
-          text: "Yes, body hair is a normal part of development",
-          emoji: "✅",
-          description: "Exactly! Body hair growth is a natural part of puberty and development for both boys and girls.",
-          isCorrect: true
+          text: "Try to pull it out",
+          emoji: "🤏",
+          description: "Ouch! Don't do that.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "No, you should remove it immediately",
-          emoji: "❌",
-          description: "Body hair is completely normal. Whether or not to remove it is a personal choice, not a medical necessity.",
+          text: "Know it's a normal part of growing up",
+          emoji: "😊",
+          description: "Correct! It happens to everyone.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Hide in your room",
+          emoji: "🚪",
+          description: "No need to hide.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Your friend is worried about facial hair. What should you tell them?",
+      text: "Hair also grows on legs.",
       options: [
         {
           id: "a",
-          text: "Facial hair means something is wrong with them",
-          emoji: "😨",
-          description: "Facial hair is a normal part of development for many people. It doesn't indicate any health problems.",
+          text: "Panic",
+          emoji: "😱",
+          description: "Stay calm, it's normal.",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Some facial hair is normal during development",
-          emoji: "😌",
-          description: "Correct! Light facial hair can appear during puberty and is completely normal for many people.",
+          text: "It's okay, bodies change",
+          emoji: "🦵",
+          description: "Yes! Your body is changing.",
           isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Wear pants forever",
+          emoji: "👖",
+          description: "Wear what you like!",
+          isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "What causes body hair growth during development?",
+      text: "Does growing hair hurt?",
       options: [
         {
           id: "a",
-          text: "Hormonal changes in the body",
-          emoji: "🧬",
-          description: "Perfect! Hormonal changes, especially increases in androgens, trigger body hair growth during puberty.",
-          isCorrect: true
+          text: "Yes, a lot",
+          emoji: "😫",
+          description: "Growing hair doesn't hurt.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Eating too much protein",
-          emoji: "🍗",
-          description: "While protein is important for hair health, it doesn't cause increased body hair growth during development.",
+          text: "No, you don't feel it",
+          emoji: "😌",
+          description: "Correct! It's painless.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Only on Tuesdays",
+          emoji: "📅",
+          description: "It never hurts.",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "How should you care for body hair during development?",
+      text: "Why do we have hair?",
       options: [
         {
           id: "a",
-          text: "Keep the areas clean and decide personal grooming preferences",
-          emoji: "🧼",
-          description: "Great choice! Keeping the skin clean is important, and personal grooming choices are entirely up to individual preference.",
-          isCorrect: true
+          text: "To look like bears",
+          emoji: "🐻",
+          description: "We are not bears.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Remove all body hair as soon as it appears",
-          emoji: "✂️",
-          description: "There's no medical need to remove body hair. It's a personal choice based on comfort and preference.",
+          text: "It protects our skin and keeps us warm",
+          emoji: "🛡️",
+          description: "Yes! Hair has a job.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "To annoy us",
+          emoji: "😤",
+          description: "It's not there to annoy you.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "Your sibling has more body hair than you. Is this normal?",
+      text: "If you have questions about your body...",
       options: [
         {
           id: "a",
-          text: "No, everyone should have the same amount of body hair",
-          emoji: "🤔",
-          description: "People naturally have different amounts and patterns of body hair due to genetics, hormones, and other factors.",
-          isCorrect: false
+          text: "Ask a parent or doctor",
+          emoji: "🗣️",
+          description: "Correct! They can explain.",
+          isCorrect: true
         },
         {
           id: "b",
-          text: "Yes, body hair patterns vary greatly between individuals",
-          emoji: "😊",
-          description: "Good understanding! Body hair patterns vary widely between individuals due to genetics, hormones, and other factors.",
-          isCorrect: true
+          text: "Guess",
+          emoji: "🤔",
+          description: "Better to ask.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ask your pet",
+          emoji: "🐶",
+          description: "Pets don't know body science.",
+          isCorrect: false
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +169,19 @@ const HairGrowthStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +191,15 @@ const HairGrowthStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-25"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={30}
-      currentLevel={25}
+      totalLevels={5}
+      currentLevel={84}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +207,52 @@ const HairGrowthStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

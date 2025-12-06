@@ -1,204 +1,266 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const FriendSecretStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-95";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
-      title: "Friend’s Secret",
-      emoji: "🤫",
-      situation: "Your friend tells you a secret. What do you do?",
-      choices: [
-        { id: 1, text: "Keep it safe and don’t tell anyone", emoji: "🛡️", isCorrect: true },
-        { id: 2, text: "Tell others for fun", emoji: "🗣️", isCorrect: false },
-        { id: 3, text: "Ignore it and forget", emoji: "😐", isCorrect: false }
+      id: 1,
+      text: "Your friend tells you a secret. What do you do?",
+      options: [
+        { 
+          id: "keep", 
+          text: "Keep it safe and don't tell anyone", 
+          emoji: "🛡️", 
+          description: "Respect the secret",
+          isCorrect: true
+        },
+        { 
+          id: "tell", 
+          text: "Tell others for fun", 
+          emoji: "🗣️", 
+          description: "Break the trust",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it and forget", 
+          emoji: "😐", 
+          description: "Don't care",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Homework Secret",
-      emoji: "📚",
-      situation: "Friend shares their homework answers secretly. What should you do?",
-      choices: [
-        { id: 1, text: "Keep it secret and don’t copy", emoji: "🛡️", isCorrect: true },
-        { id: 2, text: "Show it to others", emoji: "🗣️", isCorrect: false },
-        { id: 3, text: "Discard it immediately", emoji: "🗑️", isCorrect: false }
+      id: 2,
+      text: "Friend shares their homework answers secretly. What should you do?",
+      options: [
+        { 
+          id: "keep", 
+          text: "Keep it secret and don't copy", 
+          emoji: "🛡️", 
+          description: "Be honest",
+          isCorrect: true
+        },
+        { 
+          id: "show", 
+          text: "Show it to others", 
+          emoji: "🗣️", 
+          description: "Share it",
+          isCorrect: false
+        },
+        { 
+          id: "discard", 
+          text: "Discard it immediately", 
+          emoji: "🗑️", 
+          description: "Throw it away",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Birthday Surprise",
-      emoji: "🎂",
-      situation: "Friend tells you a surprise plan. Do you share it?",
-      choices: [
-        { id: 1, text: "Keep it secret", emoji: "🤐", isCorrect: true },
-        { id: 2, text: "Tell others to help", emoji: "🗣️", isCorrect: false },
-        { id: 3, text: "Forget the plan", emoji: "😅", isCorrect: false }
+      id: 3,
+      text: "Friend tells you a surprise plan. Do you share it?",
+      options: [
+        { 
+          id: "keep", 
+          text: "Keep it secret", 
+          emoji: "🤐", 
+          description: "Preserve the surprise",
+          isCorrect: true
+        },
+        { 
+          id: "tell", 
+          text: "Tell others to help", 
+          emoji: "🗣️", 
+          description: "Break the secret",
+          isCorrect: false
+        },
+        { 
+          id: "forget", 
+          text: "Forget the plan", 
+          emoji: "😅", 
+          description: "Don't remember",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Lost Toy Secret",
-      emoji: "🧸",
-      situation: "Friend lost a toy and tells you secretly. What do you do?",
-      choices: [
-        { id: 1, text: "Help and keep it secret", emoji: "🤝", isCorrect: true },
-        { id: 2, text: "Tell others to find it", emoji: "🗣️", isCorrect: false },
-        { id: 3, text: "Ignore them", emoji: "😐", isCorrect: false }
+      id: 4,
+      text: "Friend lost a toy and tells you secretly. What do you do?",
+      options: [
+        { 
+          id: "help", 
+          text: "Help and keep it secret", 
+          emoji: "🤝", 
+          description: "Support them quietly",
+          isCorrect: true
+        },
+        { 
+          id: "tell", 
+          text: "Tell others to find it", 
+          emoji: "🗣️", 
+          description: "Break their trust",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore them", 
+          emoji: "😐", 
+          description: "Don't help",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Secret Drawing",
-      emoji: "🎨",
-      situation: "Friend shows you a drawing secretly. Do you show it to others?",
-      choices: [
-        { id: 1, text: "Keep it private", emoji: "🖌️", isCorrect: true },
-        { id: 2, text: "Share for fun", emoji: "🗣️", isCorrect: false },
-        { id: 3, text: "Throw it away", emoji: "🗑️", isCorrect: false }
+      id: 5,
+      text: "Friend shows you a drawing secretly. Do you show it to others?",
+      options: [
+        { 
+          id: "keep", 
+          text: "Keep it private", 
+          emoji: "🖌️", 
+          description: "Respect their privacy",
+          isCorrect: true
+        },
+        { 
+          id: "share", 
+          text: "Share for fun", 
+          emoji: "🗣️", 
+          description: "Break their trust",
+          isCorrect: false
+        },
+        { 
+          id: "throw", 
+          text: "Throw it away", 
+          emoji: "🗑️", 
+          description: "Disrespect them",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
 
-  const handleConfirm = () => {
-    const choice = questions[currentQuestion].choices.find(c => c.id === selectedChoice);
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(prev => prev + 5);
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
-    setShowFeedback(true);
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
   const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-    } else {
-      navigate("/student/moral-values/kids/poster-right-choice"); // replace with next game path
+    // Navigation handled by GameShell
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
     }
+    return null;
   };
 
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    resetFeedback();
-  };
-
-  const selectedChoiceData = questions[currentQuestion].choices.find(c => c.id === selectedChoice);
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
-      title="Friend’s Secret Story"
-      subtitle={`Story ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showFeedback && selectedChoiceData?.isCorrect}
-      showGameOver={showFeedback && selectedChoiceData?.isCorrect && currentQuestion === questions.length - 1}
-      score={coins}
-      gameId="moral-kids-95"
-      gameType="educational"
-      totalLevels={100}
+      title="Friend's Secret Story"
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       currentLevel={95}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
+      totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId={gameId}
+      gameType="moral"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === questions.length}>
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">{questions[currentQuestion].emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{questions[currentQuestion].title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">{questions[currentQuestion].situation}</p>
-            </div>
-
-            <h3 className="text-white font-bold mb-4">What should you do?</h3>
-            
-            <div className="space-y-3 mb-6">
-              {questions[currentQuestion].choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Choice
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData?.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "🤝 Trustworthy Friend!" : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData?.text}</p>
-            
-            {selectedChoiceData?.isCorrect ? (
-              <p className="text-yellow-400 text-2xl font-bold text-center">
-                You earned 5 Coins! 🪙
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
               </p>
-            ) : (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
-
-            <button
-              onClick={handleNext}
-              disabled={!selectedChoiceData?.isCorrect}
-              className={`mt-4 w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoiceData?.isCorrect
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Next Story
-            </button>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

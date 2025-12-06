@@ -1,310 +1,267 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleServiceMatch = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [connections, setConnections] = useState([]);
-  const [selectedStart, setSelectedStart] = useState(null);
-  const [showResult, setShowResult] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-74";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const [currentSet, setCurrentSet] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // 🧩 10 Puzzle Sets (each with 5 pairs)
-  const puzzleSets = [
-    {
-      title: "Service Match",
-      start: [
-        { id: 1, text: "Volunteer", emoji: "🙋" },
-        { id: 2, text: "Doctor", emoji: "🩺" },
-        { id: 3, text: "Soldier", emoji: "🪖" },
-        { id: 4, text: "Teacher", emoji: "📚" },
-        { id: 5, text: "Firefighter", emoji: "🚒" },
-      ],
-      end: [
-        { id: 1, text: "Help", emoji: "🤝" },
-        { id: 2, text: "Care", emoji: "❤️" },
-        { id: 3, text: "Protect", emoji: "🛡️" },
-        { id: 4, text: "Teach", emoji: "👩‍🏫" },
-        { id: 5, text: "Rescue", emoji: "🔥" },
-      ],
-    },
-    {
-      title: "Community Roles",
-      start: [
-        { id: 1, text: "Police", emoji: "👮" },
-        { id: 2, text: "Nurse", emoji: "👩‍⚕️" },
-        { id: 3, text: "Farmer", emoji: "👨‍🌾" },
-        { id: 4, text: "Chef", emoji: "👨‍🍳" },
-        { id: 5, text: "Artist", emoji: "🎨" },
-      ],
-      end: [
-        { id: 1, text: "Law", emoji: "⚖️" },
-        { id: 2, text: "Heal", emoji: "💊" },
-        { id: 3, text: "Grow", emoji: "🌾" },
-        { id: 4, text: "Cook", emoji: "🍲" },
-        { id: 5, text: "Create", emoji: "🖌️" },
-      ],
-    },
-    {
-      title: "Environment Helpers",
-      start: [
-        { id: 1, text: "Gardener", emoji: "🌱" },
-        { id: 2, text: "Recycler", emoji: "♻️" },
-        { id: 3, text: "Cleaner", emoji: "🧹" },
-        { id: 4, text: "Animal Saver", emoji: "🐾" },
-        { id: 5, text: "Tree Planter", emoji: "🌳" },
-      ],
-      end: [
-        { id: 1, text: "Plants", emoji: "🌿" },
-        { id: 2, text: "Reuse", emoji: "🔄" },
-        { id: 3, text: "Neat", emoji: "✨" },
-        { id: 4, text: "Rescue", emoji: "🐕" },
-        { id: 5, text: "Green", emoji: "🍃" },
-      ],
-    },
-    {
-      title: "Kind Acts",
-      start: [
-        { id: 1, text: "Share", emoji: "🤲" },
-        { id: 2, text: "Smile", emoji: "😊" },
-        { id: 3, text: "Help", emoji: "🫶" },
-        { id: 4, text: "Listen", emoji: "👂" },
-        { id: 5, text: "Thank", emoji: "🙏" },
-      ],
-      end: [
-        { id: 1, text: "Food", emoji: "🍎" },
-        { id: 2, text: "Friend", emoji: "🧑‍🤝‍🧑" },
-        { id: 3, text: "Need", emoji: "❤️" },
-        { id: 4, text: "Others", emoji: "🗣️" },
-        { id: 5, text: "Help", emoji: "🎁" },
-      ],
-    },
-    {
-      title: "Good Habits",
-      start: [
-        { id: 1, text: "Wake Up", emoji: "⏰" },
-        { id: 2, text: "Eat Healthy", emoji: "🥗" },
-        { id: 3, text: "Exercise", emoji: "🏃" },
-        { id: 4, text: "Study", emoji: "📖" },
-        { id: 5, text: "Sleep Early", emoji: "🌙" },
-      ],
-      end: [
-        { id: 1, text: "On Time", emoji: "🕒" },
-        { id: 2, text: "Strong", emoji: "💪" },
-        { id: 3, text: "Fit", emoji: "🏅" },
-        { id: 4, text: "Smart", emoji: "🧠" },
-        { id: 5, text: "Fresh", emoji: "🌄" },
-      ],
-    },
-    {
-      title: "Respect & Care",
-      start: [
-        { id: 1, text: "Respect Elders", emoji: "👵" },
-        { id: 2, text: "Care for Animals", emoji: "🐶" },
-        { id: 3, text: "Help Friends", emoji: "🤝" },
-        { id: 4, text: "Obey Parents", emoji: "👨‍👩‍👧" },
-        { id: 5, text: "Be Kind", emoji: "💖" },
-      ],
-      end: [
-        { id: 1, text: "Wisdom", emoji: "📜" },
-        { id: 2, text: "Love", emoji: "❤️" },
-        { id: 3, text: "Trust", emoji: "🤗" },
-        { id: 4, text: "Discipline", emoji: "🎓" },
-        { id: 5, text: "Peace", emoji: "🕊️" },
-      ],
-    },
-    {
-      title: "School Values",
-      start: [
-        { id: 1, text: "Arrive Early", emoji: "🚌" },
-        { id: 2, text: "Complete Homework", emoji: "✏️" },
-        { id: 3, text: "Respect Teachers", emoji: "👩‍🏫" },
-        { id: 4, text: "Play Fair", emoji: "⚽" },
-        { id: 5, text: "Clean Desk", emoji: "🧽" },
-      ],
-      end: [
-        { id: 1, text: "Punctual", emoji: "⏱️" },
-        { id: 2, text: "Prepared", emoji: "📚" },
-        { id: 3, text: "Polite", emoji: "🙇" },
-        { id: 4, text: "Honest", emoji: "🤝" },
-        { id: 5, text: "Neat", emoji: "🧴" },
-      ],
-    },
-    {
-      title: "Helping at Home",
-      start: [
-        { id: 1, text: "Wash Dishes", emoji: "🍽️" },
-        { id: 2, text: "Fold Clothes", emoji: "👕" },
-        { id: 3, text: "Feed Pets", emoji: "🐱" },
-        { id: 4, text: "Water Plants", emoji: "💧" },
-        { id: 5, text: "Clean Room", emoji: "🧹" },
-      ],
-      end: [
-        { id: 1, text: "Tidy", emoji: "✨" },
-        { id: 2, text: "Organized", emoji: "📦" },
-        { id: 3, text: "Healthy", emoji: "🥰" },
-        { id: 4, text: "Green", emoji: "🌿" },
-        { id: 5, text: "Fresh", emoji: "🍃" },
-      ],
-    },
-    {
-      title: "Friendship Values",
-      start: [
-        { id: 1, text: "Listen", emoji: "👂" },
-        { id: 2, text: "Support", emoji: "🫶" },
-        { id: 3, text: "Celebrate", emoji: "🎉" },
-        { id: 4, text: "Forgive", emoji: "🤍" },
-        { id: 5, text: "Encourage", emoji: "🌟" },
-      ],
-      end: [
-        { id: 1, text: "Stories", emoji: "📖" },
-        { id: 2, text: "Hard Times", emoji: "💪" },
-        { id: 3, text: "Success", emoji: "🏆" },
-        { id: 4, text: "Mistakes", emoji: "💬" },
-        { id: 5, text: "Dreams", emoji: "✨" },
-      ],
-    },
-    {
-      title: "World Helpers",
-      start: [
-        { id: 1, text: "Scientist", emoji: "🔬" },
-        { id: 2, text: "Engineer", emoji: "⚙️" },
-        { id: 3, text: "Inventor", emoji: "💡" },
-        { id: 4, text: "Explorer", emoji: "🧭" },
-        { id: 5, text: "Doctor", emoji: "🩺" },
-      ],
-      end: [
-        { id: 1, text: "Discover", emoji: "🌍" },
-        { id: 2, text: "Build", emoji: "🏗️" },
-        { id: 3, text: "Create", emoji: "🧠" },
-        { id: 4, text: "Find", emoji: "🔎" },
-        { id: 5, text: "Heal", emoji: "💊" },
-      ],
-    },
+  // Service roles and their purposes
+  const leftItems = [
+    { id: 1, name: "Volunteer", emoji: "🙋", description: "Helps others willingly" },
+    { id: 2, name: "Doctor", emoji: "🩺", description: "Provides medical care" },
+    { id: 3, name: "Soldier", emoji: "🪖", description: "Protects the country" },
+    { id: 4, name: "Teacher", emoji: "📚", description: "Educates children" },
+    { id: 5, name: "Firefighter", emoji: "🚒", description: "Saves lives from fire" }
   ];
 
-  const currentPuzzle = puzzleSets[currentSet];
+  // Purposes - reordered so correct matches are in different positions
+  const rightItems = [
+    { id: 1, name: "Care", emoji: "❤️", description: "Provides medical attention" },
+    { id: 2, name: "Rescue", emoji: "🔥", description: "Saves from danger" },
+    { id: 3, name: "Help", emoji: "🤝", description: "Assists those in need" },
+    { id: 4, name: "Protect", emoji: "🛡️", description: "Keeps people safe" },
+    { id: 5, name: "Teach", emoji: "👩‍🏫", description: "Shares knowledge" }
+  ];
 
-  const handleStartClick = (startId) => setSelectedStart(startId);
+  // Correct matches (with reordered right items)
+  const correctMatches = [
+    { leftId: 1, rightId: 3 }, // Volunteer → Help
+    { leftId: 2, rightId: 1 }, // Doctor → Care
+    { leftId: 3, rightId: 4 }, // Soldier → Protect
+    { leftId: 4, rightId: 5 }, // Teacher → Teach
+    { leftId: 5, rightId: 2 }  // Firefighter → Rescue
+  ];
 
-  const handleEndClick = (endId) => {
-    if (!selectedStart) return;
-
-    if (connections.find((c) => c.start === selectedStart || c.end === endId)) return;
-
-    const newConnections = [...connections, { start: selectedStart, end: endId }];
-    setConnections(newConnections);
-    setSelectedStart(null);
-
-    if (newConnections.length === 5) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins((prev) => prev + 5);
-      setTimeout(() => {
-        if (currentSet < puzzleSets.length - 1) {
-          setConnections([]);
-          setCurrentSet((prev) => prev + 1);
-        } else {
-          setShowResult(true);
-        }
-      }, 1000);
-    }
+  // Check if a right item is already matched
+  const isRightItemMatched = (itemId) => {
+    return matches.some(match => match.rightId === itemId);
   };
 
-  const handleNext = () => navigate("/student/moral-values/kids/school-cleanup-story");
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    setSelectedLeft(item);
+  };
 
-  const isConnected = (id, type) => connections.some((c) => (type === "start" ? c.start === id : c.end === id));
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    if (isRightItemMatched(item.id)) return;
+    setSelectedRight(item);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
+
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    if (newMatch.isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    if (newMatches.length === leftItems.length) {
+      const correctCount = newMatches.filter(match => match.isCorrect).length;
+      setFinalScore(correctCount);
+      setShowResult(true);
+    }
+
+    setSelectedLeft(null);
+    setSelectedRight(null);
+  };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setMatches([]);
+    setSelectedLeft(null);
+    setSelectedRight(null);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const isItemMatched = (itemId) => {
+    return matches.some(match => match.leftId === itemId);
+  };
+
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.leftId === itemId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
-      title={`Puzzle ${currentSet + 1}: ${currentPuzzle.title}`}
-      subtitle="Connect matching pairs"
-      onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
+      title="Puzzle: Service Match"
       score={coins}
-      gameId="moral-kids-74"
-      gameType="educational"
-      totalLevels={100}
+      subtitle={showResult ? "Game Complete!" : "Match service roles to their purposes"}
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={74}
-      showConfetti={showResult}
+      maxScore={leftItems.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
+    >
+      <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <h3 className="text-white text-xl font-bold mb-4 text-center">
-              {currentPuzzle.title}: Match all pairs
-            </h3>
-
-            <div className="grid grid-cols-2 gap-8">
-              <div className="space-y-3">
-                <h4 className="text-white font-bold text-center mb-3">Left Side</h4>
-                {currentPuzzle.start.map((item) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Service Roles</h3>
+              <div className="space-y-4">
+                {leftItems.map(item => (
                   <button
                     key={item.id}
-                    onClick={() => handleStartClick(item.id)}
-                    disabled={isConnected(item.id, "start")}
-                    className={`w-full border-2 rounded-xl p-6 transition-all ${
-                      isConnected(item.id, "start")
-                        ? "bg-green-500/30 border-green-400"
-                        : selectedStart === item.id
-                        ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                        : "bg-white/20 border-white/40 hover:bg-white/30"
+                    onClick={() => handleLeftSelect(item)}
+                    disabled={isItemMatched(item.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isItemMatched(item.id)
+                        ? getMatchResult(item.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedLeft?.id === item.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
-                    <div className="text-5xl mb-2">{item.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{item.text}</div>
-                  </button>
-                ))}
-              </div>
-
-              <div className="space-y-3">
-                <h4 className="text-white font-bold text-center mb-3">Right Side</h4>
-                {currentPuzzle.end.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleEndClick(item.id)}
-                    disabled={isConnected(item.id, "end")}
-                    className={`w-full border-2 rounded-xl p-6 transition-all ${
-                      isConnected(item.id, "end")
-                        ? "bg-green-500/30 border-green-400"
-                        : "bg-white/20 border-white/40 hover:bg-white/30"
-                    }`}
-                  >
-                    <div className="text-5xl mb-2">{item.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{item.text}</div>
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{item.name}</h4>
+                        <p className="text-white/80 text-sm">{item.description}</p>
+                      </div>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="mt-6 bg-blue-500/20 rounded-lg p-3 text-center text-white/80 text-sm">
-              Connections: {connections.length}/5
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedLeft 
+                    ? `Selected: ${selectedLeft.name}` 
+                    : "Select a role"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedLeft || !selectedRight}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedLeft && selectedRight
+                      ? "bg-gradient-to-r from-yellow-400 to-orange-600 hover:from-yellow-500 hover:to-orange-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Coins: {coins}</p>
+                  <p>Matched: {matches.length}/{leftItems.length}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Purposes</h3>
+              <div className="space-y-4">
+                {rightItems.map(item => {
+                  const isMatched = isRightItemMatched(item.id);
+                  const matchedLeft = matches.find(m => m.rightId === item.id);
+                  const isCorrectMatch = matchedLeft?.isCorrect;
+                  
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleRightSelect(item)}
+                      disabled={isMatched}
+                      className={`w-full p-4 rounded-xl text-left transition-all ${
+                        isMatched
+                          ? isCorrectMatch
+                            ? "bg-green-500/30 border-2 border-green-500"
+                            : "bg-red-500/30 border-2 border-red-500"
+                          : selectedRight?.id === item.id
+                          ? "bg-purple-500/50 border-2 border-purple-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <div className="text-2xl mr-3">{item.emoji}</div>
+                        <div>
+                          <h4 className="font-bold text-white">{item.name}</h4>
+                          <p className="text-white/80 text-sm">{item.description}</p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">🎉 Amazing Work!</h2>
-            <p className="text-white text-center mb-4">
-              You completed all 10 matching puzzles! You truly understand service, kindness, and teamwork.
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              Total Coins Earned: {coins} 🪙
-            </p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {finalScore} out of {leftItems.length} roles!
+                  You understand service!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Service roles help others: doctors care, firefighters rescue, and teachers educate!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {finalScore} out of {leftItems.length} roles correctly.
+                  Remember: Each service role has its special purpose!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to match each role with its correct purpose.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

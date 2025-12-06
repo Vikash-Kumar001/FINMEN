@@ -1,179 +1,130 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const GratitudePoster = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [selectedPoster, setSelectedPoster] = useState(null);
-  const [currentRound, setCurrentRound] = useState(0);
-  const [createdPosters, setCreatedPosters] = useState([]);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-16";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const posterRounds = [
-    [
-      { id: 1, message: "Always Say Thank You", emoji: "🙏", color: "from-pink-400 to-rose-400" },
-      { id: 2, message: "Gratitude is Great", emoji: "💖", color: "from-purple-400 to-pink-400" },
-    ],
-    [
-      { id: 3, message: "Be Thankful Every Day", emoji: "🌞", color: "from-blue-400 to-cyan-400" },
-      { id: 4, message: "Kind Words Shine Bright", emoji: "✨", color: "from-orange-400 to-amber-400" },
-    ],
-    [
-      { id: 5, message: "Spread Positivity", emoji: "🌈", color: "from-green-400 to-emerald-400" },
-      { id: 6, message: "Thanks Bring Smiles", emoji: "😊", color: "from-yellow-400 to-orange-400" },
-    ],
-    [
-      { id: 7, message: "Share Joy, Show Thanks", emoji: "🎉", color: "from-purple-500 to-indigo-400" },
-      { id: 8, message: "Appreciate Small Things", emoji: "🌻", color: "from-lime-400 to-green-400" },
-    ],
-    [
-      { id: 9, message: "Thankful Heart, Happy Life", emoji: "❤️", color: "from-pink-500 to-red-400" },
-      { id: 10, message: "Every Thanks Counts", emoji: "🌟", color: "from-teal-400 to-blue-400" },
-    ],
+  const stages = [
+    {
+      question: 'Choose the best poster for gratitude:',
+      choices: [
+        { text: "Never Say Thank You", design: "😒", correct: false },
+        { text: "Always Say Thank You", design: "🙏", correct: true },
+        { text: "Ignore Helpers", design: "🙄", correct: false },
+      ],
+    },
+    {
+      question: 'Which poster promotes gratitude?',
+      choices: [
+        { text: "Be Thankful Every Day", design: "🌞", correct: true },
+        { text: "Complain About Everything", design: "😤", correct: false },
+        { text: "Take Things for Granted", design: "🤷", correct: false },
+      ],
+    },
+    {
+      question: 'Select the best gratitude poster:',
+      choices: [
+        { text: "Demand More Always", design: "👊", correct: false },
+        { text: "Expect Without Thanks", design: "😐", correct: false },
+        { text: "Kind Words Shine Bright", design: "✨", correct: true },
+      ],
+    },
+    {
+      question: 'Choose the gratitude poster:',
+      choices: [
+        { text: "Thanks Bring Smiles", design: "😊", correct: true },
+        { text: "No Need to Appreciate", design: "😑", correct: false },
+        { text: "Ignore Small Acts", design: "👀", correct: false },
+      ],
+    },
+    {
+      question: 'Which is the best poster for gratitude?',
+      choices: [
+        { text: "Forget to Be Grateful", design: "🤔", correct: false },
+        { text: "Every Thanks Counts", design: "🌟", correct: true },
+        { text: "Don't Appreciate Others", design: "😏", correct: false },
+      ],
+    },
   ];
 
-  const handlePosterSelect = (posterId) => {
-    setSelectedPoster(posterId);
-  };
-
-  const handleCreate = () => {
-    if (selectedPoster) {
+  const handleSelect = (isCorrect) => {
+    if (isCorrect) {
+      const newScore = score + 1;
+      setScore(newScore);
       showCorrectAnswerFeedback(1, true);
-      const poster = posterRounds[currentRound].find(p => p.id === selectedPoster);
-      setCreatedPosters([...createdPosters, poster]);
-      setSelectedPoster(null);
-
-      if (currentRound === posterRounds.length - 1) {
-        setShowResult(true);
-      } else {
-        setCurrentRound(currentRound + 1);
-      }
+    }
+    
+    if (currentStage < stages.length - 1) {
+      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    } else {
+      setTimeout(() => setShowResult(true), 800);
     }
   };
 
-  const handleNext = () => {
-    navigate("/student/moral-values/kids/journal-of-gratitude");
-  };
-
-  const currentOptions = posterRounds[currentRound];
-  const selectedPosterData = currentOptions?.find(p => p.id === selectedPoster);
+  const finalScore = score;
 
   return (
     <GameShell
-      title="Gratitude Poster Series"
-      subtitle="Create 5 Thankful Posters"
-      onNext={handleNext}
-      nextEnabled={showResult}
+      title="Poster: Gratitude"
+      subtitle={showResult ? "Activity Complete!" : `Question ${currentStage + 1} of ${stages.length}`}
+      onNext={null}
+      nextEnabled={false}
       showGameOver={showResult}
-      score={showResult ? 10 : createdPosters.length * 2}
-      gameId="moral-kids-16"
-      gameType="educational"
-      totalLevels={20}
-      currentLevel={16}
-      showConfetti={showResult}
-      backPath="/games/moral-values/kids"
-    
-      maxScore={20} // Max score is total number of questions (all correct)
+      score={finalScore}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
+      currentLevel={currentStage + 1}
+      maxScore={5}
+      showConfetti={showResult && finalScore === 5}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              Poster {currentRound + 1} of 5
-            </h2>
-            <p className="text-white/70 text-center mb-6">
-              Choose a gratitude message for your next poster.
-            </p>
-
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              {currentOptions.map((poster) => (
-                <button
-                  key={poster.id}
-                  onClick={() => handlePosterSelect(poster.id)}
-                  className={`border-3 rounded-xl p-6 transition-all bg-gradient-to-br ${poster.color} ${
-                    selectedPoster === poster.id ? "ring-4 ring-white scale-105" : ""
-                  }`}
-                >
-                  <div className="text-5xl mb-3">{poster.emoji}</div>
-                  <div className="text-white font-bold text-center">
-                    {poster.message}
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {selectedPoster && (
-              <div className="mb-6">
-                <h3 className="text-white text-xl font-bold mb-4 text-center">
-                  Poster Preview
-                </h3>
-                <div
-                  className={`rounded-xl p-8 bg-gradient-to-br ${selectedPosterData.color} min-h-[200px] flex flex-col items-center justify-center border-4 border-white`}
-                >
-                  <div className="text-6xl mb-4">{selectedPosterData.emoji}</div>
-                  <div className="text-white text-3xl font-bold text-center">
-                    {selectedPosterData.message}
-                  </div>
-                </div>
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {stages[currentStage].question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {stages[currentStage].choices.map((choice, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSelect(choice.correct)}
+                    className="p-6 rounded-2xl text-center transition-all transform hover:scale-105 bg-white/10 hover:bg-white/20 border border-white/20"
+                  >
+                    <div className="text-5xl mb-3">{choice.design}</div>
+                    <h4 className="font-bold text-white text-lg">{choice.text}</h4>
+                  </button>
+                ))}
               </div>
-            )}
-
-            <button
-              onClick={handleCreate}
-              disabled={!selectedPoster}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedPoster
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              {currentRound < 4 ? "Create Poster! 🎨" : "Finish All Posters 🏆"}
-            </button>
-
-            <p className="text-center text-white/70 mt-4">
-              Posters Created: {createdPosters.length}/5
-            </p>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-6 text-center">
-              🏆 Gratitude Hero Badge Earned!
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-              {createdPosters.map((poster) => (
-                <div
-                  key={poster.id}
-                  className={`rounded-xl p-6 bg-gradient-to-br ${poster.color} border-4 border-white flex flex-col items-center justify-center`}
-                >
-                  <div className="text-5xl mb-2">{poster.emoji}</div>
-                  <div className="text-white font-bold text-center">
-                    {poster.message}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-xl p-6 text-center">
-              <div className="text-5xl mb-2">🏅</div>
-              <p className="text-white text-2xl font-bold">
-                Gratitude Hero Badge!
-              </p>
-              <p className="text-white/80 text-sm mt-2">
-                You created all 5 gratitude posters — wonderful job spreading positivity!
-              </p>
+              
+              <div className="mt-6 text-center text-white/80">
+                <p>Score: {score}/{stages.length}</p>
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

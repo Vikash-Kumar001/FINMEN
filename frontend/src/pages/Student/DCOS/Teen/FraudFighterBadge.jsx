@@ -39,6 +39,10 @@ const FraudFighterBadge = () => {
         { 
           text: "Reply to suspicious emails", 
           isCorrect: false
+        },
+        { 
+          text: "Forward to others", 
+          isCorrect: false
         }
       ]
     },
@@ -58,6 +62,10 @@ const FraudFighterBadge = () => {
         { 
           text: "Refused to share OTP", 
           isCorrect: true
+        },
+        { 
+          text: "Save OTP in notes", 
+          isCorrect: false
         }
       ]
     },
@@ -76,6 +84,10 @@ const FraudFighterBadge = () => {
         },
         { 
           text: "Pay money to get the job", 
+          isCorrect: false
+        },
+        { 
+          text: "Share with friends", 
           isCorrect: false
         }
       ]
@@ -96,6 +108,10 @@ const FraudFighterBadge = () => {
         { 
           text: "Enter information in pop-ups", 
           isCorrect: false
+        },
+        { 
+          text: "Take screenshot first", 
+          isCorrect: false
         }
       ]
     },
@@ -115,6 +131,10 @@ const FraudFighterBadge = () => {
         { 
           text: "Verified before sharing information", 
           isCorrect: true
+        },
+        { 
+          text: "Share if they ask nicely", 
+          isCorrect: false
         }
       ]
     }

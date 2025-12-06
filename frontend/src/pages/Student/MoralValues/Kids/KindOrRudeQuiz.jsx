@@ -1,200 +1,281 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const KindOrRudeQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-22";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
-      text: "Which is kind? (a) Helping (b) Pushing (c) Teasing)",
-      emoji: "🤝",
-      choices: [
-        { id: 1, text: "Helping", emoji: "🤗", isCorrect: true },
-        { id: 2, text: "Pushing", emoji: "😡", isCorrect: false },
-        { id: 3, text: "Teasing", emoji: "😏", isCorrect: false },
-      ],
+      id: 1,
+      text: "Which is kind?",
+      options: [
+        { 
+          id: "a", 
+          text: "Pushing", 
+          emoji: "😡", 
+          description: "Using physical force in a harmful way",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Teasing", 
+          emoji: "😏", 
+          description: "Making fun of others in a mean way",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Helping", 
+          emoji: "🤗", 
+          description: "Assisting others with care and compassion",
+          isCorrect: true
+        }
+      ]
     },
     {
-      text: "Which is kind? (a) Sharing toys (b) Taking toys by force (c) Ignoring a friend)",
-      emoji: "🧸",
-      choices: [
-        { id: 1, text: "Sharing toys", emoji: "🤝", isCorrect: true },
-        { id: 2, text: "Taking toys by force", emoji: "😡", isCorrect: false },
-        { id: 3, text: "Ignoring a friend", emoji: "🙈", isCorrect: false },
-      ],
+      id: 2,
+      text: "Which is kind?",
+      options: [
+        { 
+          id: "a", 
+          text: "Sharing toys", 
+          emoji: "🤝", 
+          description: "Letting others enjoy what you have",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Taking toys by force", 
+          emoji: "😡", 
+          description: "Using aggression to get what you want",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignoring a friend", 
+          emoji: "🙈", 
+          description: "Not paying attention to someone who needs you",
+          isCorrect: false
+        }
+      ]
     },
     {
-      text: "Which is kind? (a) Saying thank you (b) Yelling at others (c) Gossiping)",
-      emoji: "📝",
-      choices: [
-        { id: 1, text: "Saying thank you", emoji: "🙏", isCorrect: true },
-        { id: 2, text: "Yelling at others", emoji: "😤", isCorrect: false },
-        { id: 3, text: "Gossiping", emoji: "🗣️", isCorrect: false },
-      ],
+      id: 3,
+      text: "Which is kind?",
+      options: [
+        { 
+          id: "a", 
+          text: "Yelling at others", 
+          emoji: "😤", 
+          description: "Speaking harshly and aggressively",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Gossiping", 
+          emoji: "🗣️", 
+          description: "Talking about others behind their back",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Saying thank you", 
+          emoji: "🙏", 
+          description: "Expressing gratitude and appreciation",
+          isCorrect: true
+        }
+      ]
     },
     {
-      text: "Which is kind? (a) Listening to someone (b) Ignoring them (c) Interrupting)",
-      emoji: "👂",
-      choices: [
-        { id: 1, text: "Listening to someone", emoji: "🫂", isCorrect: true },
-        { id: 2, text: "Ignoring them", emoji: "🙄", isCorrect: false },
-        { id: 3, text: "Interrupting", emoji: "😬", isCorrect: false },
-      ],
+      id: 4,
+      text: "Which is kind?",
+      options: [
+        { 
+          id: "a", 
+          text: "Listening to someone", 
+          emoji: "🫂", 
+          description: "Paying attention and showing you care",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Ignoring them", 
+          emoji: "🙄", 
+          description: "Not paying attention when someone needs you",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Interrupting", 
+          emoji: "😬", 
+          description: "Cutting someone off while they're speaking",
+          isCorrect: false
+        }
+      ]
     },
     {
-      text: "Which is kind? (a) Complimenting (b) Criticizing harshly (c) Laughing at mistakes)",
-      emoji: "🌟",
-      choices: [
-        { id: 1, text: "Complimenting", emoji: "😊", isCorrect: true },
-        { id: 2, text: "Criticizing harshly", emoji: "😡", isCorrect: false },
-        { id: 3, text: "Laughing at mistakes", emoji: "😏", isCorrect: false },
-      ],
-    },
+      id: 5,
+      text: "Which is kind?",
+      options: [
+        { 
+          id: "a", 
+          text: "Criticizing harshly", 
+          emoji: "😡", 
+          description: "Saying mean things that hurt others",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Laughing at mistakes", 
+          emoji: "😏", 
+          description: "Making fun of others when they're wrong",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Complimenting", 
+          emoji: "😊", 
+          description: "Saying nice things to make others feel good",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const handleChoice = (choiceId) => setSelectedChoice(choiceId);
-
-  const handleConfirm = () => {
-    const choice = questions[currentQuestion].choices.find(c => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(3, true);
-      setCoins(prev => prev + 3);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-    setShowFeedback(true);
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    setShowFeedback(false);
-    setSelectedChoice(null);
-    resetFeedback();
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
-    } else {
-      navigate("/student/moral-values/kids/reflex-kindnesss"); // replace with actual next route
-    }
-  };
-
-  const selectedChoiceData = questions[currentQuestion].choices.find(c => c.id === selectedChoice);
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Kind or Rude Quiz"
-      subtitle="Recognizing Kindness"
-      onNext={handleNext}
-      nextEnabled={showFeedback}
-      showGameOver={currentQuestion === questions.length - 1 && showFeedback}
-      score={coins}
-      gameId="moral-kids-22"
-      gameType="educational"
-      totalLevels={100}
-      currentLevel={22}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-6 text-center">{questions[currentQuestion].emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-xl leading-relaxed text-center font-semibold">
-                {questions[currentQuestion].text}
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="text-3xl mb-3">{option.emoji}</div>
+                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="space-y-3 mb-6">
-              {questions[currentQuestion].choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Submit Answer
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "✨ Correct!" : "Not Quite..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-6">
-                  <p className="text-white text-center">
-                    Excellent! Choosing kind actions builds trust and happiness. Keep it up!
-                  </p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Excellent!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct!
+                  You know how to recognize kind actions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 3 Coins! 🪙
+                <p className="text-white/80">
+                  Kind actions build trust and make others feel happy and respected!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct.
+                  Remember, kind actions help everyone feel valued!
                 </p>
                 <button
-                  onClick={handleNext}
-                  className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Next Question
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Not quite! Kind actions help everyone feel happy and respected. Try again!
-                  </p>
-                </div>
-                <button
                   onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that shows helping, sharing, or being respectful.
+                </p>
+              </div>
             )}
           </div>
         )}

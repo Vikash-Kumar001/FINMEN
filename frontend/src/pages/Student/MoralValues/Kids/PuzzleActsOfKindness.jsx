@@ -1,294 +1,267 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleActsOfKindness = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
-
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [connections, setConnections] = useState([]);
-  const [selectedStart, setSelectedStart] = useState(null);
-  const [showResult, setShowResult] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-24";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const [shuffledEnds, setShuffledEnds] = useState([]);
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // All 5 puzzles
-  const questions = [
-    {
-      title: "Acts of Kindness",
-      actions: [
-        { id: 1, text: "Sharing", emoji: "🤲" },
-        { id: 2, text: "Helping", emoji: "🤝" },
-        { id: 3, text: "Teasing", emoji: "😈" },
-        { id: 4, text: "Ignoring", emoji: "🙅" },
-        { id: 5, text: "Complimenting", emoji: "💖" }
-      ],
-      outcomes: [
-        { id: 1, text: "Smile", emoji: "😊" },
-        { id: 2, text: "Tears", emoji: "😢" },
-        { id: 3, text: "Happiness", emoji: "😄" },
-        { id: 4, text: "Sadness", emoji: "😔" },
-        { id: 5, text: "Joy", emoji: "✨" }
-      ],
-      correctPairs: [
-        { start: 1, end: 1 },
-        { start: 2, end: 3 },
-        { start: 3, end: 2 },
-        { start: 4, end: 4 },
-        { start: 5, end: 5 }
-      ]
-    },
-    {
-      title: "Good Habits",
-      actions: [
-        { id: 1, text: "Brushing", emoji: "🪥" },
-        { id: 2, text: "Sleeping Late", emoji: "🌙" },
-        { id: 3, text: "Exercising", emoji: "🏃" },
-        { id: 4, text: "Skipping Meals", emoji: "🍔" },
-        { id: 5, text: "Washing Hands", emoji: "🖐️" }
-      ],
-      outcomes: [
-        { id: 1, text: "Healthy Teeth", emoji: "😁" },
-        { id: 2, text: "Tiredness", emoji: "😴" },
-        { id: 3, text: "Energy", emoji: "⚡" },
-        { id: 4, text: "Weakness", emoji: "🥱" },
-        { id: 5, text: "Cleanliness", emoji: "🧼" }
-      ],
-      correctPairs: [
-        { start: 1, end: 1 },
-        { start: 2, end: 2 },
-        { start: 3, end: 3 },
-        { start: 4, end: 4 },
-        { start: 5, end: 5 }
-      ]
-    },
-    {
-      title: "School Life",
-      actions: [
-        { id: 1, text: "Studying", emoji: "📚" },
-        { id: 2, text: "Fighting", emoji: "👊" },
-        { id: 3, text: "Helping Teacher", emoji: "🍎" },
-        { id: 4, text: "Cheating", emoji: "🙊" },
-        { id: 5, text: "Listening", emoji: "👂" }
-      ],
-      outcomes: [
-        { id: 1, text: "Good Marks", emoji: "🏅" },
-        { id: 2, text: "Punishment", emoji: "🚫" },
-        { id: 3, text: "Respect", emoji: "🙏" },
-        { id: 4, text: "Shame", emoji: "😔" },
-        { id: 5, text: "Knowledge", emoji: "💡" }
-      ],
-      correctPairs: [
-        { start: 1, end: 1 },
-        { start: 2, end: 2 },
-        { start: 3, end: 3 },
-        { start: 4, end: 4 },
-        { start: 5, end: 5 }
-      ]
-    },
-    {
-      title: "Environmental Acts",
-      actions: [
-        { id: 1, text: "Planting Trees", emoji: "🌱" },
-        { id: 2, text: "Littering", emoji: "🗑️" },
-        { id: 3, text: "Recycling", emoji: "♻️" },
-        { id: 4, text: "Wasting Water", emoji: "💧" },
-        { id: 5, text: "Saving Energy", emoji: "💡" }
-      ],
-      outcomes: [
-        { id: 1, text: "Fresh Air", emoji: "🌤️" },
-        { id: 2, text: "Dirty Roads", emoji: "🪣" },
-        { id: 3, text: "Clean Earth", emoji: "🌍" },
-        { id: 4, text: "Shortage", emoji: "🚱" },
-        { id: 5, text: "Sustainability", emoji: "🔋" }
-      ],
-      correctPairs: [
-        { start: 1, end: 1 },
-        { start: 2, end: 2 },
-        { start: 3, end: 3 },
-        { start: 4, end: 4 },
-        { start: 5, end: 5 }
-      ]
-    },
-    {
-      title: "Team Spirit",
-      actions: [
-        { id: 1, text: "Cooperating", emoji: "🤝" },
-        { id: 2, text: "Arguing", emoji: "🗣️" },
-        { id: 3, text: "Encouraging", emoji: "👏" },
-        { id: 4, text: "Helping Teammate", emoji: "💪" },
-        { id: 5, text: "Blaming", emoji: "👎" }
-      ],
-      outcomes: [
-        { id: 1, text: "Victory", emoji: "🏆" },
-        { id: 2, text: "Failure", emoji: "❌" },
-        { id: 3, text: "Motivation", emoji: "🔥" },
-        { id: 4, text: "Team Bond", emoji: "🤗" },
-        { id: 5, text: "Sadness", emoji: "😞" }
-      ],
-      correctPairs: [
-        { start: 1, end: 1 },
-        { start: 2, end: 2 },
-        { start: 3, end: 3 },
-        { start: 4, end: 4 },
-        { start: 5, end: 5 }
-      ]
-    }
+  // Actions and their outcomes
+  const leftItems = [
+    { id: 1, name: "Sharing", emoji: "🤲", description: "Giving to others" },
+    { id: 2, name: "Helping", emoji: "🤝", description: "Assisting those in need" },
+    { id: 3, name: "Teasing", emoji: "😈", description: "Making fun of others" },
+    { id: 4, name: "Ignoring", emoji: "🙅", description: "Not paying attention" },
+    { id: 5, name: "Complimenting", emoji: "💖", description: "Saying nice things" }
   ];
 
-  const current = questions[currentQuestion];
+  // Outcomes - reordered so correct matches are in different positions
+  const rightItems = [
+    { id: 1, name: "Tears", emoji: "😢", description: "Causes sadness and hurt" },
+    { id: 2, name: "Smile", emoji: "😊", description: "Brings happiness to faces" },
+    { id: 3, name: "Happiness", emoji: "😄", description: "Creates joy and cheer" },
+    { id: 4, name: "Sadness", emoji: "😔", description: "Makes others feel alone" },
+    { id: 5, name: "Joy", emoji: "✨", description: "Spreads positive feelings" }
+  ];
 
-  // Shuffle outcomes every time question changes
-  useEffect(() => {
-    setShuffledEnds([...current.outcomes].sort(() => Math.random() - 0.5));
-  }, [currentQuestion]);
+  // Correct matches (with reordered right items)
+  const correctMatches = [
+    { leftId: 1, rightId: 2 }, // Sharing → Smile
+    { leftId: 2, rightId: 3 }, // Helping → Happiness
+    { leftId: 3, rightId: 1 }, // Teasing → Tears
+    { leftId: 4, rightId: 4 }, // Ignoring → Sadness
+    { leftId: 5, rightId: 5 }  // Complimenting → Joy
+  ];
 
-  const handleStartClick = (startId) => {
-    setSelectedStart(startId);
+  // Check if a right item is already matched
+  const isRightItemMatched = (itemId) => {
+    return matches.some(match => match.rightId === itemId);
   };
 
-  const handleEndClick = (endId) => {
-    if (!selectedStart) return;
-    if (connections.find(c => c.start === selectedStart || c.end === endId)) return;
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    setSelectedLeft(item);
+  };
 
-    const newConnections = [...connections, { start: selectedStart, end: endId }];
-    setConnections(newConnections);
-    setSelectedStart(null);
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    if (isRightItemMatched(item.id)) return;
+    setSelectedRight(item);
+  };
 
-    if (newConnections.length === current.actions.length) {
-      const allCorrect = newConnections.every(conn =>
-        current.correctPairs.some(pair => pair.start === conn.start && pair.end === conn.end)
-      );
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
 
-      if (allCorrect) {
-        showCorrectAnswerFeedback(5, true);
-        setCoins(5);
-      } else {
-        setCoins(0);
-      }
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    if (newMatch.isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    if (newMatches.length === leftItems.length) {
+      const correctCount = newMatches.filter(match => match.isCorrect).length;
+      setFinalScore(correctCount);
       setShowResult(true);
     }
+
+    setSelectedLeft(null);
+    setSelectedRight(null);
   };
 
-  const handleNextPuzzle = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-      setConnections([]);
-      setSelectedStart(null);
-      setShowResult(false);
-      setCoins(0);
-    } else {
-      navigate("/student/moral-values/kids/animal-storyy");
-    }
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setMatches([]);
+    setSelectedLeft(null);
+    setSelectedRight(null);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
   };
 
-  const isConnected = (id, type) =>
-    connections.some(c => type === "start" ? c.start === id : c.end === id);
+  const isItemMatched = (itemId) => {
+    return matches.some(match => match.leftId === itemId);
+  };
+
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.leftId === itemId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
-      title={`Puzzle ${currentQuestion + 1}: ${current.title}`}
-      subtitle="Match Actions to Outcomes"
+      title="Puzzle: Acts of Kindness"
       score={coins}
-      gameId="moral-kids-24"
-      gameType="educational"
-      totalLevels={100}
-      currentLevel={24 + currentQuestion}
-      showConfetti={showResult && coins > 0}
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      subtitle={showResult ? "Game Complete!" : "Match actions to their outcomes"}
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
+      currentLevel={24}
+      maxScore={leftItems.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/kids"
     >
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-4 text-center">
-              Connect each action to its outcome
-            </h3>
-            <div className="grid grid-cols-2 gap-8">
-              {/* Actions */}
-              <div className="space-y-3">
-                <h4 className="text-white font-bold text-center mb-3">Actions</h4>
-                {current.actions.map(item => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Actions</h3>
+              <div className="space-y-4">
+                {leftItems.map(item => (
                   <button
                     key={item.id}
-                    onClick={() => handleStartClick(item.id)}
-                    disabled={isConnected(item.id, "start")}
-                    className={`w-full border-2 rounded-xl p-6 transition-all ${
-                      isConnected(item.id, "start")
-                        ? "bg-green-500/30 border-green-400"
-                        : selectedStart === item.id
-                        ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                        : "bg-white/20 border-white/40 hover:bg-white/30"
+                    onClick={() => handleLeftSelect(item)}
+                    disabled={isItemMatched(item.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isItemMatched(item.id)
+                        ? getMatchResult(item.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedLeft?.id === item.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
-                    <div className="text-5xl mb-2">{item.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{item.text}</div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Outcomes */}
-              <div className="space-y-3">
-                <h4 className="text-white font-bold text-center mb-3">Outcomes</h4>
-                {shuffledEnds.map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleEndClick(item.id)}
-                    disabled={isConnected(item.id, "end")}
-                    className={`w-full border-2 rounded-xl p-6 transition-all ${
-                      isConnected(item.id, "end")
-                        ? "bg-green-500/30 border-green-400"
-                        : "bg-white/20 border-white/40 hover:bg-white/30"
-                    }`}
-                  >
-                    <div className="text-5xl mb-2">{item.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{item.text}</div>
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{item.name}</h4>
+                        <p className="text-white/80 text-sm">{item.description}</p>
+                      </div>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
 
-            <p className="text-white/80 text-sm text-center mt-4">
-              Connections: {connections.length}/{current.actions.length}
-            </p>
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedLeft 
+                    ? `Selected: ${selectedLeft.name}` 
+                    : "Select an action"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedLeft || !selectedRight}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedLeft && selectedRight
+                      ? "bg-gradient-to-r from-green-500 to-lime-600 hover:from-green-600 hover:to-lime-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Coins: {coins}</p>
+                  <p>Matched: {matches.length}/{leftItems.length}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Outcomes</h3>
+              <div className="space-y-4">
+                {rightItems.map(item => {
+                  const isMatched = isRightItemMatched(item.id);
+                  const matchedLeft = matches.find(m => m.rightId === item.id);
+                  const isCorrectMatch = matchedLeft?.isCorrect;
+                  
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleRightSelect(item)}
+                      disabled={isMatched}
+                      className={`w-full p-4 rounded-xl text-left transition-all ${
+                        isMatched
+                          ? isCorrectMatch
+                            ? "bg-green-500/30 border-2 border-green-500"
+                            : "bg-red-500/30 border-2 border-red-500"
+                          : selectedRight?.id === item.id
+                          ? "bg-purple-500/50 border-2 border-purple-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <div className="text-2xl mr-3">{item.emoji}</div>
+                        <div>
+                          <h4 className="font-bold text-white">{item.name}</h4>
+                          <p className="text-white/80 text-sm">{item.description}</p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {coins > 0 ? (
-              <>
-                <h2 className="text-3xl font-bold text-white mb-4">🎉 Perfect!</h2>
-                <p className="text-yellow-400 text-2xl font-bold mb-6">
-                  You earned 5 Coins! 🪙
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {finalScore} out of {leftItems.length} actions!
+                  You understand how kindness works!
                 </p>
-              </>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Sharing and helping bring smiles and happiness, while teasing causes tears!
+                </p>
+              </div>
             ) : (
-              <>
-                <h2 className="text-3xl font-bold text-white mb-4">Not Quite Right 😅</h2>
-                <p className="text-white/70 mb-6">
-                  Try again to get all matches correct!
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {finalScore} out of {leftItems.length} actions correctly.
+                  Remember: Kind actions bring happy outcomes!
                 </p>
-              </>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to match each action with its correct outcome.
+                </p>
+              </div>
             )}
-
-            {/* ✅ Add Next Button */}
-            <button
-              onClick={handleNextPuzzle}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all"
-            >
-              {currentQuestion < questions.length - 1 ? "Next Puzzle ➡️" : "Finish Game 🎯"}
-            </button>
           </div>
         )}
       </div>

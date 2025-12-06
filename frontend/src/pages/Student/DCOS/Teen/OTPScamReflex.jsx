@@ -41,7 +41,8 @@ const OTPScamReflex = () => {
       options: [
         { text: "Share OTP Immediately", isCorrect: false },
         { text: "Ignore Scam Request", isCorrect: true },
-        { text: "Ask Why First", isCorrect: false }
+        { text: "Ask Why First", isCorrect: false },
+        { text: "Forward to Family", isCorrect: false }
       ]
     },
     {
@@ -51,7 +52,8 @@ const OTPScamReflex = () => {
       options: [
         { text: "Share with Friends", isCorrect: false },
         { text: "Keep OTP Private", isCorrect: true },
-        { text: "Post Online", isCorrect: false }
+        { text: "Post Online", isCorrect: false },
+        { text: "Save in Notes App", isCorrect: false }
       ]
     },
     {
@@ -61,7 +63,8 @@ const OTPScamReflex = () => {
       options: [
         { text: "Send OTP Quickly", isCorrect: false },
         { text: "Ask for More Info", isCorrect: false },
-        { text: "Ignore Scam Request", isCorrect: true }
+        { text: "Ignore Scam Request", isCorrect: true },
+        { text: "Call the Number", isCorrect: false }
       ]
     },
     {
@@ -71,7 +74,8 @@ const OTPScamReflex = () => {
       options: [
         { text: "Share with Others", isCorrect: false },
         { text: "Post Online", isCorrect: false },
-        { text: "Keep OTP Private", isCorrect: true }
+        { text: "Keep OTP Private", isCorrect: true },
+        { text: "Take Screenshot", isCorrect: false }
       ]
     },
     {
@@ -81,7 +85,8 @@ const OTPScamReflex = () => {
       options: [
         { text: "Forward OTP", isCorrect: false },
         { text: "Share with Bank", isCorrect: false },
-        { text: "Ignore Scam Request", isCorrect: true }
+        { text: "Ignore Scam Request", isCorrect: true },
+        { text: "Reply to Message", isCorrect: false }
       ]
     }
   ];

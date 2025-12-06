@@ -1,235 +1,266 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const RespectEldersStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-11";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stories = [
+  const questions = [
     {
       id: 1,
-      title: "Grandpa Needs Help",
-      emoji: "👴",
-      situation: "Your grandpa asks for help carrying groceries. What do you do?",
-      choices: [
-        { id: 1, text: "Keep playing and ignore him", emoji: "🎮", isCorrect: false },
-        { id: 2, text: "Help grandpa right away", emoji: "💪", isCorrect: true },
-        { id: 3, text: "Say you'll help later", emoji: "⏰", isCorrect: false },
-      ],
-      correctMsg:
-        "Perfect! Helping our elders right away shows respect and care. They have done so much for us, and helping them when they need us is important!",
+      text: "Your grandpa asks for help carrying groceries. What do you do?",
+      options: [
+        { 
+          id: "help", 
+          text: "Help grandpa right away", 
+          emoji: "💪", 
+          description: "Be helpful immediately",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Keep playing and ignore him", 
+          emoji: "🎮", 
+          description: "Continue your activity",
+          isCorrect: false
+        },
+        { 
+          id: "later", 
+          text: "Say you'll help later", 
+          emoji: "⏰", 
+          description: "Delay helping",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      title: "Grandma Calls You",
-      emoji: "👵",
-      situation: "Grandma calls you while you’re watching TV. What will you do?",
-      choices: [
-        { id: 1, text: "Pretend you didn’t hear", emoji: "🙉", isCorrect: false },
-        { id: 2, text: "Answer and ask how you can help", emoji: "📞", isCorrect: true },
-        { id: 3, text: "Say you’re busy and continue watching", emoji: "📺", isCorrect: false },
-      ],
-      correctMsg:
-        "Well done! Responding when elders call you shows respect and love.",
+      text: "Grandma calls you while you're watching TV. What will you do?",
+      options: [
+        { 
+          id: "answer", 
+          text: "Answer and ask how you can help", 
+          emoji: "📞", 
+          description: "Respond and offer help",
+          isCorrect: true
+        },
+        { 
+          id: "pretend", 
+          text: "Pretend you didn't hear", 
+          emoji: "🙉", 
+          description: "Ignore the call",
+          isCorrect: false
+        },
+        { 
+          id: "busy", 
+          text: "Say you're busy and continue watching", 
+          emoji: "📺", 
+          description: "Prioritize TV",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      title: "Helping Grandma Cross the Road",
-      emoji: "🚶‍♀️",
-      situation: "You see your grandma crossing the road with heavy bags. What will you do?",
-      choices: [
-        { id: 1, text: "Offer to carry her bags and walk with her", emoji: "👜", isCorrect: true },
-        { id: 2, text: "Just wave from far", emoji: "👋", isCorrect: false },
-        { id: 3, text: "Wait till she finishes", emoji: "⏳", isCorrect: false },
-      ],
-      correctMsg:
-        "Wonderful! Helping elders cross safely shows kindness and respect.",
+      text: "You see your grandma crossing the road with heavy bags. What will you do?",
+      options: [
+        { 
+          id: "offer", 
+          text: "Offer to carry her bags and walk with her", 
+          emoji: "👜", 
+          description: "Help her safely",
+          isCorrect: true
+        },
+        { 
+          id: "wave", 
+          text: "Just wave from far", 
+          emoji: "👋", 
+          description: "Greet from distance",
+          isCorrect: false
+        },
+        { 
+          id: "wait", 
+          text: "Wait till she finishes", 
+          emoji: "⏳", 
+          description: "Do nothing",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      title: "Grandpa Shares a Story",
-      emoji: "📖",
-      situation: "Grandpa starts telling an old story, but your phone rings. What will you do?",
-      choices: [
-        { id: 1, text: "Listen to grandpa first", emoji: "👂", isCorrect: true },
-        { id: 2, text: "Answer your phone", emoji: "📱", isCorrect: false },
-        { id: 3, text: "Walk away quietly", emoji: "🚶", isCorrect: false },
-      ],
-      correctMsg:
-        "Perfect! Listening to elders’ stories helps you learn wisdom and shows you value them.",
+      text: "Grandpa starts telling an old story, but your phone rings. What will you do?",
+      options: [
+        { 
+          id: "listen", 
+          text: "Listen to grandpa first", 
+          emoji: "👂", 
+          description: "Give him your attention",
+          isCorrect: true
+        },
+        { 
+          id: "phone", 
+          text: "Answer your phone", 
+          emoji: "📱", 
+          description: "Take the call",
+          isCorrect: false
+        },
+        { 
+          id: "walk", 
+          text: "Walk away quietly", 
+          emoji: "🚶", 
+          description: "Leave the situation",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      title: "Respecting Elder’s Advice",
-      emoji: "🧓",
-      situation: "Your elder tells you not to be rude online. What do you do?",
-      choices: [
-        { id: 1, text: "Ignore them and continue being rude", emoji: "😠", isCorrect: false },
-        { id: 2, text: "Say thank you and follow their advice", emoji: "🙏", isCorrect: true },
-        { id: 3, text: "Complain they’re old-fashioned", emoji: "😒", isCorrect: false },
-      ],
-      correctMsg:
-        "That’s right! Elders guide us to be kind and responsible. Listening makes us wiser!",
-    },
+      text: "Your elder tells you not to be rude online. What do you do?",
+      options: [
+        { 
+          id: "thank", 
+          text: "Say thank you and follow their advice", 
+          emoji: "🙏", 
+          description: "Accept the guidance",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore them and continue being rude", 
+          emoji: "😠", 
+          description: "Dismiss the advice",
+          isCorrect: false
+        },
+        { 
+          id: "complain", 
+          text: "Complain they're old-fashioned", 
+          emoji: "😒", 
+          description: "Criticize them",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const currentStory = stories[currentIndex];
-  const selectedChoiceData = currentStory.choices.find((c) => c.id === selectedChoice);
-
-  const handleChoice = (choiceId) => setSelectedChoice(choiceId);
-
-  const handleConfirm = () => {
-    const choice = currentStory.choices.find((c) => c.id === selectedChoice);
-    if (choice?.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
-      setTotalCoins((prev) => prev + 5);
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
     }
-    setShowFeedback(true);
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const handleNextQuestion = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
-    resetFeedback();
-    setCurrentIndex((prev) => prev + 1);
+  const handleNext = () => {
+    // Navigation handled by GameShell
   };
 
-  const handleNextGame = () => {
-    navigate("/student/moral-values/kids/polite-words-quiz2");
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
   };
 
-  const allQuestionsDone = currentIndex === stories.length;
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Respect Elders Story"
-      subtitle="Helping Our Elders"
-      onNext={handleNextGame}
-      nextEnabled={allQuestionsDone}
-      showGameOver={allQuestionsDone}
-      score={totalCoins}
-      gameId="moral-kids-11"
-      gameType="educational"
-      totalLevels={20}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       currentLevel={11}
-      showConfetti={allQuestionsDone}
-      backPath="/games/moral-values/kids"
-    
-      maxScore={20} // Max score is total number of questions (all correct)
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId={gameId}
+      gameType="moral"
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === questions.length}>
       <div className="space-y-8">
-        {!showFeedback ? (
-          <>
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-              <div className="text-8xl mb-4 text-center">{currentStory.emoji}</div>
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">
-                {currentStory.title}
-              </h2>
-              <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-                <p className="text-white text-lg leading-relaxed text-center">
-                  {currentStory.situation}
-                </p>
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
               </div>
-
-              <h3 className="text-white font-bold mb-4 text-center">What should you do?</h3>
-              <div className="space-y-3 mb-6">
-                {currentStory.choices.map((choice) => (
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
-                    key={choice.id}
-                    onClick={() => handleChoice(choice.id)}
-                    className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                      selectedChoice === choice.id
-                        ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                        : "bg-white/20 border-white/40 hover:bg-white/30"
-                    }`}
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="text-4xl">{choice.emoji}</div>
-                      <div className="text-white font-semibold text-lg">
-                        {choice.text}
-                      </div>
-                    </div>
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>
-
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedChoice}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedChoice
-                    ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                    : "bg-gray-500/50 cursor-not-allowed"
-                }`}
-              >
-                Confirm Choice
-              </button>
             </div>
-
-            <div className="text-center text-white/80 text-sm">
-              Question {currentIndex + 1} of {stories.length} | Total Coins: {totalCoins} 🪙
-            </div>
-          </>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect
-                ? "🌟 Respectful Kid!"
-                : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">
-              {selectedChoiceData.text}
-            </p>
-
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    {currentStory.correctMsg}
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                <p className="text-white text-center">
-                  Not quite! Try again to learn the right way to respect elders.
-                </p>
-              </div>
-            )}
-
-            <button
-              onClick={() =>
-                selectedChoiceData.isCorrect
-                  ? handleNextQuestion()
-                  : handleNextQuestion()
-              }
-              className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              {currentIndex + 1 < stories.length
-                ? "Next Question →"
-                : "Finish Quiz"}
-            </button>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

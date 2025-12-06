@@ -1,214 +1,130 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PosterTaskRightChoice = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [selectedPoster, setSelectedPoster] = useState(null);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-96";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [earnedBadge, setEarnedBadge] = useState(false);
-  const [currentRound, setCurrentRound] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  // 🧩 5 Rounds of Poster Sets
-  const posterRounds = [
+  const stages = [
     {
-      title: "Right Choice Posters",
-      posters: [
-        { id: 1, message: "Always Choose Right", emoji: "✅", color: "from-blue-400 to-purple-400" },
-        { id: 2, message: "Make the Right Decisions", emoji: "🎯", color: "from-green-400 to-teal-400" },
-        { id: 3, message: "Good Choices Lead to Success", emoji: "🌟", color: "from-pink-400 to-red-400" },
-        { id: 4, message: "Right Actions, Bright Future", emoji: "💡", color: "from-yellow-400 to-orange-400" },
-        { id: 5, message: "Choose Wisely Every Time", emoji: "🧭", color: "from-indigo-400 to-blue-500" }
+      question: 'Choose the best poster for making right choices:',
+      choices: [
+        { text: "Make Bad Decisions", design: "😈", correct: false },
+        { text: "Always Choose Right", design: "✅", correct: true },
+        { text: "Ignore What's Right", design: "🙈", correct: false },
       ],
-      feedback: "Making the right choices builds honesty, trust, and respect.",
     },
     {
-      title: "Kindness Posters",
-      posters: [
-        { id: 1, message: "Spread Kindness Everywhere", emoji: "💖", color: "from-pink-400 to-rose-400" },
-        { id: 2, message: "Be Kind, Be Brave", emoji: "🦋", color: "from-blue-400 to-cyan-400" },
-        { id: 3, message: "Kind Words Cost Nothing", emoji: "💬", color: "from-green-400 to-teal-400" },
-        { id: 4, message: "Kindness is Strength", emoji: "💪", color: "from-purple-400 to-indigo-400" },
-        { id: 5, message: "Do Good, Feel Good", emoji: "🌈", color: "from-orange-400 to-yellow-400" }
+      question: 'Which poster promotes right choices?',
+      choices: [
+        { text: "Make the Right Decisions", design: "🎯", correct: true },
+        { text: "Choose Wrong Paths", design: "🚫", correct: false },
+        { text: "Don't Think Before Acting", design: "⚡", correct: false },
       ],
-      feedback: "Small acts of kindness make the biggest difference!",
     },
     {
-      title: "Honesty Posters",
-      posters: [
-        { id: 1, message: "Honesty Shines Bright", emoji: "✨", color: "from-yellow-400 to-orange-400" },
-        { id: 2, message: "Tell the Truth, Always", emoji: "📖", color: "from-green-400 to-teal-400" },
-        { id: 3, message: "Honesty is the Best Policy", emoji: "🔑", color: "from-blue-400 to-indigo-400" },
-        { id: 4, message: "Be True, Be You", emoji: "🫶", color: "from-pink-400 to-purple-400" },
-        { id: 5, message: "Truth Builds Trust", emoji: "🤝", color: "from-indigo-400 to-blue-500" }
+      question: 'Select the best right choice poster:',
+      choices: [
+        { text: "Do What's Easy, Not Right", design: "😏", correct: false },
+        { text: "Ignore Moral Values", design: "👀", correct: false },
+        { text: "Good Choices Lead to Success", design: "🌟", correct: true },
       ],
-      feedback: "Honesty builds trust and makes every friendship stronger.",
     },
     {
-      title: "Helping Posters",
-      posters: [
-        { id: 1, message: "Helping Hands, Happy Hearts", emoji: "🤲", color: "from-green-400 to-lime-400" },
-        { id: 2, message: "Be the Reason Someone Smiles", emoji: "😊", color: "from-blue-400 to-sky-400" },
-        { id: 3, message: "Together We Can", emoji: "🤝", color: "from-purple-400 to-pink-400" },
-        { id: 4, message: "Helping is Caring", emoji: "🌷", color: "from-yellow-400 to-orange-400" },
-        { id: 5, message: "Share, Help, Inspire", emoji: "✨", color: "from-teal-400 to-blue-500" }
+      question: 'Choose the right choice poster:',
+      choices: [
+        { text: "Right Actions, Bright Future", design: "💡", correct: true },
+        { text: "Wrong Choices are Fine", design: "😅", correct: false },
+        { text: "Don't Consider Consequences", design: "🎲", correct: false },
       ],
-      feedback: "Helping others spreads joy and builds strong communities.",
     },
     {
-      title: "Respect Posters",
-      posters: [
-        { id: 1, message: "Respect Everyone, Always", emoji: "🙏", color: "from-purple-400 to-indigo-400" },
-        { id: 2, message: "Respect is Power", emoji: "💪", color: "from-blue-400 to-cyan-400" },
-        { id: 3, message: "Give Respect, Get Respect", emoji: "🤝", color: "from-yellow-400 to-orange-400" },
-        { id: 4, message: "Respect Nature, Respect Life", emoji: "🌍", color: "from-green-400 to-teal-400" },
-        { id: 5, message: "Respect Starts With You", emoji: "💫", color: "from-pink-400 to-red-400" }
+      question: 'Which is the best poster for right choices?',
+      choices: [
+        { text: "Choose Without Thinking", design: "🤷", correct: false },
+        { text: "Choose Wisely Every Time", design: "🧭", correct: true },
+        { text: "Make Impulsive Decisions", design: "🎪", correct: false },
       ],
-      feedback: "Respecting others brings peace, friendship, and unity.",
     },
   ];
 
-  const currentSet = posterRounds[currentRound];
-  const selectedPosterData = currentSet.posters.find(p => p.id === selectedPoster);
-
-  const handlePosterSelect = (posterId) => setSelectedPoster(posterId);
-
-  const handleCreate = () => {
-    if (selectedPoster) {
+  const handleSelect = (isCorrect) => {
+    if (isCorrect) {
+      const newScore = score + 1;
+      setScore(newScore);
       showCorrectAnswerFeedback(1, true);
-      setEarnedBadge(true);
-      setShowResult(true);
+    }
+    
+    if (currentStage < stages.length - 1) {
+      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    } else {
+      setTimeout(() => setShowResult(true), 800);
     }
   };
 
-  const handleNextRound = () => {
-    if (currentRound < posterRounds.length - 1) {
-      setSelectedPoster(null);
-      setShowResult(false);
-      setEarnedBadge(false);
-      setCurrentRound(currentRound + 1);
-    } else {
-      navigate("/student/moral-values/kids/journal-decisions");
-    }
-  };
+  const finalScore = score;
 
   return (
     <GameShell
-      title="Poster Task: Right Choice"
-      subtitle="Create Meaningful Moral Posters"
-      onNext={handleNextRound}
-      nextEnabled={showResult && earnedBadge}
-      showGameOver={showResult && currentRound === posterRounds.length - 1}
-      score={earnedBadge ? (currentRound + 1) * 3 : currentRound * 3}
-      gameId="moral-kids-96"
-      gameType="educational"
-      totalLevels={100}
-      currentLevel={96}
-      showConfetti={showResult && earnedBadge}
-      backPath="/games/moral-values/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      title="Poster: Right Choice"
+      subtitle={showResult ? "Activity Complete!" : `Question ${currentStage + 1} of ${stages.length}`}
+      onNext={null}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={finalScore}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
+      currentLevel={currentStage + 1}
+      maxScore={5}
+      showConfetti={showResult && finalScore === 5}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">
-              {currentSet.title}
-            </h2>
-
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              {currentSet.posters.map(poster => (
-                <button
-                  key={poster.id}
-                  onClick={() => handlePosterSelect(poster.id)}
-                  className={`border-3 rounded-xl p-6 transition-all bg-gradient-to-br ${poster.color} ${
-                    selectedPoster === poster.id ? "ring-4 ring-white scale-105" : ""
-                  }`}
-                >
-                  <div className="text-5xl mb-3">{poster.emoji}</div>
-                  <div className="text-white font-bold text-center">{poster.message}</div>
-                </button>
-              ))}
-            </div>
-
-            {selectedPoster && (
-              <div className="mb-6">
-                <h3 className="text-white text-xl font-bold mb-4 text-center">
-                  Your Poster Preview
-                </h3>
-                <div
-                  className={`rounded-xl p-8 bg-gradient-to-br ${selectedPosterData.color} min-h-[200px] flex flex-col items-center justify-center border-4 border-white`}
-                >
-                  <div className="text-6xl mb-4">{selectedPosterData.emoji}</div>
-                  <div className="text-white text-3xl font-bold text-center">
-                    {selectedPosterData.message}
-                  </div>
-                </div>
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {stages[currentStage].question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {stages[currentStage].choices.map((choice, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSelect(choice.correct)}
+                    className="p-6 rounded-2xl text-center transition-all transform hover:scale-105 bg-white/10 hover:bg-white/20 border border-white/20"
+                  >
+                    <div className="text-5xl mb-3">{choice.design}</div>
+                    <h4 className="font-bold text-white text-lg">{choice.text}</h4>
+                  </button>
+                ))}
               </div>
-            )}
-
-            <button
-              onClick={handleCreate}
-              disabled={!selectedPoster}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedPoster
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Create Poster! 🎨
-            </button>
-
-            <div className="mt-4 text-center text-white/70 text-sm">
-              Poster {currentRound + 1} of {posterRounds.length}
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              🏆 Poster Badge Earned!
-            </h2>
-
-            <div className="mb-6">
-              <div
-                className={`rounded-xl p-8 bg-gradient-to-br ${selectedPosterData.color} min-h-[200px] flex flex-col items-center justify-center border-4 border-white`}
-              >
-                <div className="text-6xl mb-4">{selectedPosterData.emoji}</div>
-                <div className="text-white text-3xl font-bold text-center">
-                  {selectedPosterData.message}
-                </div>
+              
+              <div className="mt-6 text-center text-white/80">
+                <p>Score: {score}/{stages.length}</p>
               </div>
             </div>
-
-            <div className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-xl p-6 text-center">
-              <div className="text-5xl mb-2">🏅</div>
-              <p className="text-white text-2xl font-bold">
-                {currentSet.title} Badge!
-              </p>
-              <p className="text-white/80 text-sm mt-2">
-                {currentSet.feedback}
-              </p>
-            </div>
-
-            <button
-              onClick={handleNextRound}
-              className="mt-6 w-full bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              {currentRound < posterRounds.length - 1
-                ? "Next Poster ➡️"
-                : "Finish Game 🎯"}
-            </button>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

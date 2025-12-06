@@ -1,251 +1,266 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PlaygroundRespectStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-18";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stories = [
+  const questions = [
     {
-      title: "Join Our Game",
-      emoji: "🏃",
-      situation: "A smaller child asks to join your game on the playground. What do you do?",
-      choices: [
-        { id: 1, text: "Say no - they're too small", emoji: "🙅", isCorrect: false },
-        { id: 2, text: "Allow them to join and play together", emoji: "🤗", isCorrect: true },
-        { id: 3, text: "Ignore them and keep playing", emoji: "😐", isCorrect: false },
-      ],
+      id: 1,
+      text: "A smaller child asks to join your game on the playground. What do you do?",
+      options: [
+        { 
+          id: "allow", 
+          text: "Allow them to join and play together", 
+          emoji: "🤗", 
+          description: "Be inclusive",
+          isCorrect: true
+        },
+        { 
+          id: "sayno", 
+          text: "Say no - they're too small", 
+          emoji: "🙅", 
+          description: "Exclude them",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore them and keep playing", 
+          emoji: "😐", 
+          description: "Don't respond",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Sharing the Swing",
-      emoji: "🏖️",
-      situation: "You’ve been on the swing for a long time and another kid is waiting. What’s fair?",
-      choices: [
-        { id: 1, text: "Keep swinging, I got here first", emoji: "😤", isCorrect: false },
-        { id: 2, text: "Let them have a turn", emoji: "😊", isCorrect: true },
-        { id: 3, text: "Ignore them and swing higher", emoji: "🙈", isCorrect: false },
-      ],
+      id: 2,
+      text: "You've been on the swing for a long time and another kid is waiting. What's fair?",
+      options: [
+        { 
+          id: "turn", 
+          text: "Let them have a turn", 
+          emoji: "😊", 
+          description: "Share the swing",
+          isCorrect: true
+        },
+        { 
+          id: "keep", 
+          text: "Keep swinging, I got here first", 
+          emoji: "😤", 
+          description: "Don't share",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore them and swing higher", 
+          emoji: "🙈", 
+          description: "Pretend not to see",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Helping a Friend",
-      emoji: "🧩",
-      situation: "A friend falls while running. What should you do?",
-      choices: [
-        { id: 1, text: "Laugh and keep running", emoji: "😂", isCorrect: false },
-        { id: 2, text: "Help them get up and ask if they're okay", emoji: "🤝", isCorrect: true },
-        { id: 3, text: "Tell others to look", emoji: "📣", isCorrect: false },
-      ],
+      id: 3,
+      text: "A friend falls while running. What should you do?",
+      options: [
+        { 
+          id: "help", 
+          text: "Help them get up and ask if they're okay", 
+          emoji: "🤝", 
+          description: "Show care and concern",
+          isCorrect: true
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh and keep running", 
+          emoji: "😂", 
+          description: "Make fun of them",
+          isCorrect: false
+        },
+        { 
+          id: "tell", 
+          text: "Tell others to look", 
+          emoji: "📣", 
+          description: "Draw attention",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "New Team Member",
-      emoji: "⚽",
-      situation: "A new student joins your team. They seem nervous. What’s kind?",
-      choices: [
-        { id: 1, text: "Ignore them since they’re new", emoji: "😐", isCorrect: false },
-        { id: 2, text: "Smile, introduce yourself, and include them", emoji: "😄", isCorrect: true },
-        { id: 3, text: "Only talk to your old friends", emoji: "🙄", isCorrect: false },
-      ],
+      id: 4,
+      text: "A new student joins your team. They seem nervous. What's kind?",
+      options: [
+        { 
+          id: "include", 
+          text: "Smile, introduce yourself, and include them", 
+          emoji: "😄", 
+          description: "Make them welcome",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore them since they're new", 
+          emoji: "😐", 
+          description: "Don't interact",
+          isCorrect: false
+        },
+        { 
+          id: "old", 
+          text: "Only talk to your old friends", 
+          emoji: "🙄", 
+          description: "Stay with friends",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Playground Clean-Up",
-      emoji: "🧹",
-      situation: "After playtime, there’s trash around the playground. What’s right?",
-      choices: [
-        { id: 1, text: "Leave it; not my problem", emoji: "😶", isCorrect: false },
-        { id: 2, text: "Pick it up and keep the area clean", emoji: "🌿", isCorrect: true },
-        { id: 3, text: "Blame others and walk away", emoji: "🙈", isCorrect: false },
-      ],
-    },
+      id: 5,
+      text: "After playtime, there's trash around the playground. What's right?",
+      options: [
+        { 
+          id: "pick", 
+          text: "Pick it up and keep the area clean", 
+          emoji: "🌿", 
+          description: "Take responsibility",
+          isCorrect: true
+        },
+        { 
+          id: "leave", 
+          text: "Leave it; not my problem", 
+          emoji: "😶", 
+          description: "Ignore it",
+          isCorrect: false
+        },
+        { 
+          id: "blame", 
+          text: "Blame others and walk away", 
+          emoji: "🙈", 
+          description: "Shift responsibility",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const [currentStory, setCurrentStory] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-
-  const story = stories[currentStory];
-  const selectedChoiceData = story.choices.find((c) => c.id === selectedChoice);
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedChoice) return;
-    const choice = story.choices.find((c) => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins((prev) => prev + 5);
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
     }
-    setShowFeedback(true);
-  };
 
-  const handleNextQuestion = () => {
-    if (currentStory < stories.length - 1) {
-      setCurrentStory(currentStory + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setShowFeedback(true);
-      setCurrentStory(stories.length);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    resetFeedback();
+  const handleNext = () => {
+    // Navigation handled by GameShell
   };
 
-  const handleNextGame = () => {
-    navigate("/student/moral-values/kids/reflex-help");
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
   };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Playground Respect Story"
-      score={coins}
-      subtitle="Including Everyone"
-      onNext={handleNextGame}
-      nextEnabled={currentStory === stories.length && coins > 0}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={currentStory === stories.length && coins > 0}
-      
-      gameId="moral-kids-18"
-      gameType="educational"
-      totalLevels={20}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       currentLevel={18}
-      showConfetti={currentStory === stories.length && coins > 0}
+      totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId={gameId}
+      gameType="moral"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/kids"
-    >
+      maxScore={questions.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === questions.length}>
       <div className="space-y-8">
-        {currentStory < stories.length ? (
-          !showFeedback ? (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-              <div className="text-8xl mb-4 text-center">{story.emoji}</div>
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">
-                {story.title} ({currentStory + 1}/5)
-              </h2>
-              <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-                <p className="text-white text-lg leading-relaxed text-center">
-                  {story.situation}
-                </p>
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
               </div>
-
-              <h3 className="text-white font-bold mb-4">What should you do?</h3>
-
-              <div className="space-y-3 mb-6">
-                {story.choices.map((choice) => (
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
-                    key={choice.id}
-                    onClick={() => handleChoice(choice.id)}
-                    className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                      selectedChoice === choice.id
-                        ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                        : "bg-white/20 border-white/40 hover:bg-white/30"
-                    }`}
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="text-4xl">{choice.emoji}</div>
-                      <div className="text-white font-semibold text-lg">
-                        {choice.text}
-                      </div>
-                    </div>
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>
-
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedChoice}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedChoice
-                    ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                    : "bg-gray-500/50 cursor-not-allowed"
-                }`}
-              >
-                Confirm Choice
-              </button>
             </div>
-          ) : (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <div className="text-7xl mb-4 text-center">
-                {selectedChoiceData?.emoji}
-              </div>
-              <h2 className="text-3xl font-bold text-white mb-4 text-center">
-                {selectedChoiceData?.isCorrect
-                  ? "💖 Great Choice!"
-                  : "Think Again..."}
-              </h2>
-              <p className="text-white/90 text-lg mb-6 text-center">
-                {selectedChoiceData?.text}
-              </p>
-
-              {selectedChoiceData?.isCorrect ? (
-                <>
-                  <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                    <p className="text-white text-center">
-                      {story.feedback ||
-                        "Awesome! You made the respectful and kind choice!"}
-                    </p>
-                  </div>
-                  <p className="text-yellow-400 text-2xl font-bold text-center mb-4">
-                    +5 Coins 🪙
-                  </p>
-                  <button
-                    onClick={handleNextQuestion}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition"
-                  >
-                    {currentStory < stories.length - 1
-                      ? "Next Question"
-                      : "Finish Game"}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                    <p className="text-white text-center">
-                      {selectedChoice === 1
-                        ? "Everyone can play, no matter their size!"
-                        : "Try to include others and act kindly!"}
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleTryAgain}
-                    className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                  >
-                    Try Again
-                  </button>
-                </>
-              )}
-            </div>
-          )
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-7xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Playground Respect Master!
-            </h2>
-            <p className="text-white mb-6">
-              You completed all 5 playground kindness questions.
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold">
-              Total Coins: {coins} 🪙
-            </p>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

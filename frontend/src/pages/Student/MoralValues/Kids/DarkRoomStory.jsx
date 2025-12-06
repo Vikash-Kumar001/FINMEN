@@ -1,193 +1,266 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const DarkRoomStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-51";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [score, setScore] = useState(0);
-  const [showPopup, setShowPopup] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      title: "Dark Room Story",
-      emoji: "🧸",
-      situation: "You're afraid to go get your toy in a dark room. What should you do?",
-      choices: [
-        { id: 1, text: "Stay in fear", emoji: "😨", isCorrect: false },
-        { id: 2, text: "Call someone", emoji: "📞", isCorrect: false },
-        { id: 3, text: "Go bravely yourself", emoji: "💪", isCorrect: true },
-        { id: 4, text: "Pretend toy doesn't exist", emoji: "🙈", isCorrect: false },
-        { id: 5, text: "Leave the room", emoji: "🚪", isCorrect: false },
-      ],
+      text: "You're afraid to go get your toy in a dark room. What should you do?",
+      options: [
+        { 
+          id: "bravely", 
+          text: "Go bravely yourself", 
+          emoji: "💪", 
+          description: "Face your fear",
+          isCorrect: true
+        },
+        { 
+          id: "fear", 
+          text: "Stay in fear", 
+          emoji: "😨", 
+          description: "Avoid it",
+          isCorrect: false
+        },
+        { 
+          id: "call", 
+          text: "Call someone", 
+          emoji: "📞", 
+          description: "Ask for help",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      title: "Dark Closet",
-      emoji: "🕯️",
-      situation: "You need to find your shoes in a dark closet. What should you do?",
-      choices: [
-        { id: 1, text: "Feel around slowly", emoji: "🤏", isCorrect: true },
-        { id: 2, text: "Wait for light", emoji: "💡", isCorrect: false },
-        { id: 3, text: "Kick everything", emoji: "👟", isCorrect: false },
-        { id: 4, text: "Ask someone else", emoji: "🙋", isCorrect: false },
-        { id: 5, text: "Ignore shoes", emoji: "🙈", isCorrect: false },
-      ],
+      text: "You need to find your shoes in a dark closet. What should you do?",
+      options: [
+        { 
+          id: "feel", 
+          text: "Feel around slowly", 
+          emoji: "🤏", 
+          description: "Try carefully",
+          isCorrect: true
+        },
+        { 
+          id: "light", 
+          text: "Wait for light", 
+          emoji: "💡", 
+          description: "Need light first",
+          isCorrect: false
+        },
+        { 
+          id: "kick", 
+          text: "Kick everything", 
+          emoji: "👟", 
+          description: "Be destructive",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      title: "Hallway Fear",
-      emoji: "🏠",
-      situation: "You see a dark hallway you must cross. How do you proceed?",
-      choices: [
-        { id: 1, text: "Run quickly", emoji: "🏃", isCorrect: false },
-        { id: 2, text: "Use a flashlight", emoji: "🔦", isCorrect: true },
-        { id: 3, text: "Stay put", emoji: "🛑", isCorrect: false },
-        { id: 4, text: "Shout for help", emoji: "📣", isCorrect: false },
-        { id: 5, text: "Turn back", emoji: "↩️", isCorrect: false },
-      ],
+      text: "You see a dark hallway you must cross. How do you proceed?",
+      options: [
+        { 
+          id: "flashlight", 
+          text: "Use a flashlight", 
+          emoji: "🔦", 
+          description: "Find a light source",
+          isCorrect: true
+        },
+        { 
+          id: "run", 
+          text: "Run quickly", 
+          emoji: "🏃", 
+          description: "Rush through",
+          isCorrect: false
+        },
+        { 
+          id: "stay", 
+          text: "Stay put", 
+          emoji: "🛑", 
+          description: "Don't go",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      title: "Basement Challenge",
-      emoji: "🏚️",
-      situation: "Your toy fell into the basement. What should you do?",
-      choices: [
-        { id: 1, text: "Go in carefully", emoji: "🧍", isCorrect: true },
-        { id: 2, text: "Leave it", emoji: "🚪", isCorrect: false },
-        { id: 3, text: "Call parent", emoji: "📞", isCorrect: false },
-        { id: 4, text: "Send a friend", emoji: "👦", isCorrect: false },
-        { id: 5, text: "Use a stick", emoji: "🪵", isCorrect: false },
-      ],
+      text: "Your toy fell into the basement. What should you do?",
+      options: [
+        { 
+          id: "carefully", 
+          text: "Go in carefully", 
+          emoji: "🧍", 
+          description: "Be brave and cautious",
+          isCorrect: true
+        },
+        { 
+          id: "leave", 
+          text: "Leave it", 
+          emoji: "🚪", 
+          description: "Give up",
+          isCorrect: false
+        },
+        { 
+          id: "parent", 
+          text: "Call parent", 
+          emoji: "📞", 
+          description: "Get adult help",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      title: "Final Toy Retrieval",
-      emoji: "🎁",
-      situation: "You're almost there. What’s the best approach to grab your toy safely?",
-      choices: [
-        { id: 1, text: "Rush in blindly", emoji: "🏃", isCorrect: false },
-        { id: 2, text: "Move slowly and carefully", emoji: "🐢", isCorrect: true },
-        { id: 3, text: "Ask for help", emoji: "🙋", isCorrect: false },
-        { id: 4, text: "Use another object", emoji: "🪀", isCorrect: false },
-        { id: 5, text: "Give up", emoji: "😞", isCorrect: false },
-      ],
-    },
+      text: "You're almost there. What's the best approach to grab your toy safely?",
+      options: [
+        { 
+          id: "slowly", 
+          text: "Move slowly and carefully", 
+          emoji: "🐢", 
+          description: "Be cautious",
+          isCorrect: true
+        },
+        { 
+          id: "rush", 
+          text: "Rush in blindly", 
+          emoji: "🏃", 
+          description: "Go fast",
+          isCorrect: false
+        },
+        { 
+          id: "throw", 
+          text: "Throw something at it", 
+          emoji: "🎯", 
+          description: "Try to knock it",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const current = questions[currentQuestion];
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
 
-  const handleChoice = (choice) => {
-    setSelectedChoice(choice);
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
 
-    // ✅ If correct: give score, show feedback, move to next
-    if (choice.isCorrect) {
-      setScore((prev) => prev + 1);
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setShowFeedback(true);
-
-      // Move to next after short delay
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
-        if (currentQuestion < questions.length - 1) {
-          setCurrentQuestion((prev) => prev + 1);
-          setSelectedChoice(null);
-          setShowFeedback(false);
-        } else {
-          // ✅ Show final popup on last question
-          setShowPopup(true);
-        }
-      }, 2000);
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      // If wrong: show feedback for retry
-      setShowFeedback(true);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleNextGame = () => {
-    navigate("/student/moral-values/kids/courage-quiz");
+  const handleNext = () => {
+    // Navigation handled by GameShell
   };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Dark Room Story"
-      subtitle={`Courage Challenge (${currentQuestion + 1}/${questions.length})`}
-      onNext={handleNextGame}
-      nextEnabled={showPopup}
-      showGameOver={showPopup}
-      score={score * 5}
-      gameId="moral-kids-51"
-      gameType="educational"
-      totalLevels={100}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       currentLevel={51}
-      showConfetti={showPopup}
-      backPath="/games/moral-values/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId={gameId}
+      gameType="moral"
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === questions.length}>
       <div className="space-y-8">
-        {/* Question Card */}
-        {!showPopup && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-7xl mb-4">{current.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4">{current.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed">{current.situation}</p>
-            </div>
-
-            <div className="space-y-3">
-              {current.choices.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => handleChoice(c)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all ${
-                    selectedChoice?.id === c.id
-                      ? c.isCorrect
-                        ? "bg-green-500/50 border-green-400"
-                        : "bg-red-500/50 border-red-400"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4 justify-center">
-                    <div className="text-3xl">{c.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{c.text}</div>
-                  </div>
-                </button>
-              ))}
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        )}
-
-        {/* ✅ Final Badge Popup */}
-        {showPopup && (
-          <div className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 rounded-2xl p-10 text-center shadow-2xl animate-pulse max-w-xl mx-auto">
-            <div className="text-8xl mb-4">💪</div>
-            <h2 className="text-4xl font-bold text-white mb-4">Courage Hero!</h2>
-            <p className="text-white/90 text-lg mb-6">
-              You faced all your fears bravely and completed the Dark Room Story!
-            </p>
-            <p className="text-yellow-300 font-bold text-xl mb-4">
-              Total Coins Earned: {score * 5} 🪙
-            </p>
-            <button
-              onClick={handleNextGame}
-              className="bg-white text-orange-600 font-bold px-6 py-3 rounded-xl hover:bg-gray-200"
-            >
-              Next Challenge
-            </button>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

@@ -1,217 +1,266 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const LostBallStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-28";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stories = [
+  const questions = [
     {
       id: 1,
-      title: "Found a Classmate's Ball",
-      emoji: "⚽",
-      situation: "You find a classmate’s ball in the playground. What should you do?",
-      choices: [
-        { id: 1, text: "Keep it for yourself", emoji: "😏", isCorrect: false },
-        { id: 2, text: "Return it to your classmate", emoji: "🙋", isCorrect: true }
+      text: "You find a classmate's ball in the playground. What should you do?",
+      options: [
+        { 
+          id: "return", 
+          text: "Return it to your classmate", 
+          emoji: "🙋", 
+          description: "Give it back",
+          isCorrect: true
+        },
+        { 
+          id: "keep", 
+          text: "Keep it for yourself", 
+          emoji: "😏", 
+          description: "Take it",
+          isCorrect: false
+        },
+        { 
+          id: "leave", 
+          text: "Leave it where it is", 
+          emoji: "🚶", 
+          description: "Don't do anything",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      title: "Lost Pencil Case",
-      emoji: "✏️",
-      situation: "You see a pencil case on the bench that isn’t yours. What do you do?",
-      choices: [
-        { id: 1, text: "Take it home", emoji: "😈", isCorrect: false },
-        { id: 2, text: "Give it to the teacher to return", emoji: "🛡️", isCorrect: true }
+      text: "You see a pencil case on the bench that isn't yours. What do you do?",
+      options: [
+        { 
+          id: "teacher", 
+          text: "Give it to the teacher to return", 
+          emoji: "🛡️", 
+          description: "Report it to authority",
+          isCorrect: true
+        },
+        { 
+          id: "take", 
+          text: "Take it home", 
+          emoji: "😈", 
+          description: "Keep it",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "🙈", 
+          description: "Don't touch it",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      title: "Forgotten Jacket",
-      emoji: "🧥",
-      situation: "Someone forgot their jacket in the classroom. How should you act?",
-      choices: [
-        { id: 1, text: "Wear it yourself", emoji: "😎", isCorrect: false },
-        { id: 2, text: "Give it to lost and found", emoji: "🙌", isCorrect: true }
+      text: "Someone forgot their jacket in the classroom. How should you act?",
+      options: [
+        { 
+          id: "found", 
+          text: "Give it to lost and found", 
+          emoji: "🙌", 
+          description: "Turn it in properly",
+          isCorrect: true
+        },
+        { 
+          id: "wear", 
+          text: "Wear it yourself", 
+          emoji: "😎", 
+          description: "Use it",
+          isCorrect: false
+        },
+        { 
+          id: "leave", 
+          text: "Leave it on the desk", 
+          emoji: "🪑", 
+          description: "Don't move it",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      title: "Missing Notebook",
-      emoji: "📓",
-      situation: "A classmate left their notebook on the desk. What do you do?",
-      choices: [
-        { id: 1, text: "Hide it", emoji: "🙈", isCorrect: false },
-        { id: 2, text: "Return it to them politely", emoji: "💌", isCorrect: true }
+      text: "A classmate left their notebook on the desk. What do you do?",
+      options: [
+        { 
+          id: "polite", 
+          text: "Return it to them politely", 
+          emoji: "💌", 
+          description: "Give it back nicely",
+          isCorrect: true
+        },
+        { 
+          id: "hide", 
+          text: "Hide it", 
+          emoji: "🙈", 
+          description: "Conceal it",
+          isCorrect: false
+        },
+        { 
+          id: "use", 
+          text: "Use it for yourself", 
+          emoji: "📝", 
+          description: "Take it",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      title: "Lost Lunchbox",
-      emoji: "🍱",
-      situation: "You find someone’s lunchbox outside. How should you respond?",
-      choices: [
-        { id: 1, text: "Eat it secretly", emoji: "😋", isCorrect: false },
-        { id: 2, text: "Return it to the owner", emoji: "🖐️", isCorrect: true }
+      text: "You find someone's lunchbox outside. How should you respond?",
+      options: [
+        { 
+          id: "owner", 
+          text: "Return it to the owner", 
+          emoji: "🖐️", 
+          description: "Give it back",
+          isCorrect: true
+        },
+        { 
+          id: "eat", 
+          text: "Eat it secretly", 
+          emoji: "😋", 
+          description: "Take the food",
+          isCorrect: false
+        },
+        { 
+          id: "throw", 
+          text: "Throw it away", 
+          emoji: "🗑️", 
+          description: "Discard it",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const story = stories[currentStoryIndex];
-    const choice = story.choices.find(c => c.id === selectedChoice);
-
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(prev => prev + 5);
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
     }
 
-    setShowFeedback(true);
-  };
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
 
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    resetFeedback();
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
   const handleNext = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    if (currentStoryIndex < stories.length - 1) {
-      setCurrentStoryIndex(prev => prev + 1);
-    } else {
-      navigate("/student/moral-values/kids/reflex-help-fast"); // Replace with actual next route
-    }
+    // Navigation handled by GameShell
   };
 
-  const currentStory = stories[currentStoryIndex];
-  const selectedChoiceData = currentStory.choices.find(c => c.id === selectedChoice);
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Lost Ball Story"
-      subtitle="Being Honest and Responsible"
-      onNext={handleNext}
-      nextEnabled={showFeedback && selectedChoiceData?.isCorrect}
-      showGameOver={currentStoryIndex === stories.length - 1 && showFeedback && selectedChoiceData?.isCorrect}
-      score={coins}
-      gameId="moral-kids-28"
-      gameType="educational"
-      totalLevels={100}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       currentLevel={28}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
+      totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId={gameId}
+      gameType="moral"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === questions.length}>
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">{currentStory.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{currentStory.title}</h2>
-            <div className="bg-orange-500/20 border-2 border-orange-400 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">{currentStory.situation}</p>
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4">What should you do?</h3>
-            <div className="space-y-3 mb-6">
-              {currentStory.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData?.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "🌟 Honest Choice!" : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData?.text}</p>
-
-            {selectedChoiceData?.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Perfect! Returning lost items shows honesty and responsibility. Always do the right thing!
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    That’s not the right choice. Remember, returning lost items is honest and kind.
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
-
-            {selectedChoiceData?.isCorrect && (
-              <button
-                onClick={handleNext}
-                className="mt-4 w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition"
-              >
-                Next Story
-              </button>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

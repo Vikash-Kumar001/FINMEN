@@ -1,265 +1,266 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const TeacherGreetingStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-15";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  // 5 Question Stories
   const questions = [
     {
-      title: "Teacher Enters Room",
-      emoji: "👩‍🏫",
-      situation: "Your teacher enters the classroom. What should you do?",
-      choices: [
-        { id: 1, text: "Keep talking with friends", emoji: "💬", isCorrect: false },
-        { id: 2, text: "Stand up and greet the teacher", emoji: "🙋", isCorrect: true },
-        { id: 3, text: "Look down and stay quiet", emoji: "😐", isCorrect: false },
-      ],
-      feedback:
-        "Standing up and greeting your teacher shows respect. Teachers work hard to help us learn, and greeting them shows we appreciate them!",
+      id: 1,
+      text: "Your teacher enters the classroom. What should you do?",
+      options: [
+        { 
+          id: "greet", 
+          text: "Stand up and greet the teacher", 
+          emoji: "🙋", 
+          description: "Show respect immediately",
+          isCorrect: true
+        },
+        { 
+          id: "talk", 
+          text: "Keep talking with friends", 
+          emoji: "💬", 
+          description: "Continue your conversation",
+          isCorrect: false
+        },
+        { 
+          id: "quiet", 
+          text: "Look down and stay quiet", 
+          emoji: "😐", 
+          description: "Avoid interaction",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Homework Check",
-      emoji: "📚",
-      situation: "The teacher asks for your homework, but you forgot it at home. What will you do?",
-      choices: [
-        { id: 1, text: "Make an excuse", emoji: "🙊", isCorrect: false },
-        { id: 2, text: "Be honest and apologize", emoji: "🙏", isCorrect: true },
-        { id: 3, text: "Blame your friend", emoji: "😬", isCorrect: false },
-      ],
-      feedback:
-        "Being honest and apologizing shows responsibility and respect. Everyone makes mistakes, but honesty builds trust!",
+      id: 2,
+      text: "The teacher asks for your homework, but you forgot it at home. What will you do?",
+      options: [
+        { 
+          id: "honest", 
+          text: "Be honest and apologize", 
+          emoji: "🙏", 
+          description: "Tell the truth",
+          isCorrect: true
+        },
+        { 
+          id: "excuse", 
+          text: "Make an excuse", 
+          emoji: "🙊", 
+          description: "Create a false reason",
+          isCorrect: false
+        },
+        { 
+          id: "blame", 
+          text: "Blame your friend", 
+          emoji: "😬", 
+          description: "Shift responsibility",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Class Discussion",
-      emoji: "🗣️",
-      situation: "During a discussion, your teacher is explaining something. What should you do?",
-      choices: [
-        { id: 1, text: "Interrupt to share your idea", emoji: "💭", isCorrect: false },
-        { id: 2, text: "Listen carefully until they finish", emoji: "👂", isCorrect: true },
-        { id: 3, text: "Talk to your friend", emoji: "🗨️", isCorrect: false },
-      ],
-      feedback:
-        "Listening carefully shows respect for the teacher and helps you learn better. Wait for your turn to share your thoughts!",
+      id: 3,
+      text: "During a discussion, your teacher is explaining something. What should you do?",
+      options: [
+        { 
+          id: "listen", 
+          text: "Listen carefully until they finish", 
+          emoji: "👂", 
+          description: "Pay attention fully",
+          isCorrect: true
+        },
+        { 
+          id: "interrupt", 
+          text: "Interrupt to share your idea", 
+          emoji: "💭", 
+          description: "Speak during explanation",
+          isCorrect: false
+        },
+        { 
+          id: "talk", 
+          text: "Talk to your friend", 
+          emoji: "🗨️", 
+          description: "Have side conversation",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Group Work",
-      emoji: "🤝",
-      situation: "Your teacher assigns you to work in a group. What is a respectful way to act?",
-      choices: [
-        { id: 1, text: "Do all the work alone", emoji: "😤", isCorrect: false },
-        { id: 2, text: "Work together and share ideas", emoji: "💡", isCorrect: true },
-        { id: 3, text: "Ignore others’ opinions", emoji: "🙄", isCorrect: false },
-      ],
-      feedback:
-        "Teamwork means listening and sharing ideas. Respecting everyone’s opinion makes the group stronger!",
+      id: 4,
+      text: "Your teacher assigns you to work in a group. What is a respectful way to act?",
+      options: [
+        { 
+          id: "together", 
+          text: "Work together and share ideas", 
+          emoji: "💡", 
+          description: "Collaborate respectfully",
+          isCorrect: true
+        },
+        { 
+          id: "alone", 
+          text: "Do all the work alone", 
+          emoji: "😤", 
+          description: "Work by yourself",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore others' opinions", 
+          emoji: "🙄", 
+          description: "Disregard teammates",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "End of the Day",
-      emoji: "🌅",
-      situation: "The class ends and your teacher is leaving. What should you do?",
-      choices: [
-        { id: 1, text: "Say 'Thank you, teacher!'", emoji: "😊", isCorrect: true },
-        { id: 2, text: "Run out of the classroom", emoji: "🏃‍♀️", isCorrect: false },
-        { id: 3, text: "Ignore and pack your bag", emoji: "🎒", isCorrect: false },
-      ],
-      feedback:
-        "Saying 'Thank you' shows gratitude and respect. Small acts of kindness create a positive classroom!",
-    },
+      id: 5,
+      text: "The class ends and your teacher is leaving. What should you do?",
+      options: [
+        { 
+          id: "thank", 
+          text: "Say 'Thank you, teacher!'", 
+          emoji: "😊", 
+          description: "Express gratitude",
+          isCorrect: true
+        },
+        { 
+          id: "run", 
+          text: "Run out of the classroom", 
+          emoji: "🏃‍♀️", 
+          description: "Leave quickly",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore and pack your bag", 
+          emoji: "🎒", 
+          description: "Don't acknowledge them",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const current = questions[currentQuestion];
-  const selectedChoiceData = current?.choices.find((c) => c.id === selectedChoice);
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedChoice) return;
-    const choice = current.choices.find((c) => c.id === selectedChoice);
-
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
-      setTotalCoins((prev) => prev + 5);
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
     }
-    setShowFeedback(true);
-  };
 
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
-    resetFeedback();
-  };
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
 
-  const handleNextQuestion = () => {
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    // Move to next question or show results
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      setCoins(0);
-      resetFeedback();
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setCurrentQuestion(questions.length);
-      setShowFeedback(true);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleFinish = () => {
-    navigate("/student/moral-values/kids/gratitude-poster");
+  const handleNext = () => {
+    // Navigation handled by GameShell
   };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
-      title={ currentQuestion < questions.length ? current.title : "All Scenarios Completed!"}
-      subtitle="Showing Respect"
-      onNext={handleFinish}
-      nextEnabled={currentQuestion === questions.length}
-      showGameOver={currentQuestion === questions.length}
-      score={totalCoins}
-      gameId="moral-kids-15"
-      gameType="educational"
-      totalLevels={20}
+      title="Teacher Greeting Story"
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       currentLevel={15}
-      showConfetti={showFeedback && coins > 0}
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId={gameId}
+      gameType="moral"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/kids"
-    >
+      maxScore={questions.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === questions.length}>
       <div className="space-y-8">
-        {currentQuestion === questions.length ? (
-          // ✅ Final Congrats Screen
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-4">🎉 Excellent!</h2>
-            <p className="text-white mb-4">
-              You completed all 5 respect lessons and earned{" "}
-              <span className="text-yellow-400 font-bold">{totalCoins} Coins 🪙</span>!
-            </p>
-            <p className="text-white/80 mb-6">
-              Great job! You’ve learned how to be a respectful and kind student.
-            </p>
-            <button
-              onClick={handleFinish}
-              className="mt-4 bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              Continue
-            </button>
-          </div>
-        ) : !showFeedback ? (
-          // ✅ Question Screen
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">{current.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              {current.title}
-            </h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">
-                {current.situation}
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4 text-center">
-              What should you do?
-            </h3>
-            <div className="space-y-3 mb-6">
-              {current.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">
-                      {choice.text}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
-        ) : (
-          // ✅ Feedback Screen
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">
-              {selectedChoiceData.emoji}
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect
-                ? "🌟 Respectful Choice!"
-                : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">
-              {selectedChoiceData.text}
-            </p>
-
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">{current.feedback}</p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
-                </p>
-                <button
-                  onClick={handleNextQuestion}
-                  className="mt-6 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Next Story →
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Try to think of the most respectful action.
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

@@ -1,223 +1,266 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ChoresStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-33";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
-      title: "Putting Plates Away",
-      emoji: "🍽️",
-      situation: "Mom asks you to put the plates away after dinner. What do you do?",
-      choices: [
-        { id: 1, text: "Say 'I'll do it later'", emoji: "😴", isCorrect: false },
-        { id: 2, text: "Do it right away to help", emoji: "💪", isCorrect: true },
-        { id: 3, text: "Ignore and keep playing", emoji: "🎮", isCorrect: false },
-      ],
-      feedback:
-        "Helping right away shows you’re responsible and caring. You make home life easier for everyone!",
+      id: 1,
+      text: "Mom asks you to put the plates away after dinner. What do you do?",
+      options: [
+        { 
+          id: "rightaway", 
+          text: "Do it right away to help", 
+          emoji: "💪", 
+          description: "Help immediately",
+          isCorrect: true
+        },
+        { 
+          id: "later", 
+          text: "Say 'I'll do it later'", 
+          emoji: "😴", 
+          description: "Postpone it",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore and keep playing", 
+          emoji: "🎮", 
+          description: "Don't help",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Feeding the Pet",
-      emoji: "🐶",
-      situation: "Your pet is hungry, and it's your turn to feed it.",
-      choices: [
-        { id: 1, text: "Feed your pet immediately", emoji: "🥣", isCorrect: true },
-        { id: 2, text: "Wait for mom to remind you", emoji: "🕒", isCorrect: false },
-        { id: 3, text: "Forget and go out to play", emoji: "🏃", isCorrect: false },
-      ],
-      feedback:
-        "Responsibility means doing things on time, especially when someone depends on you — even a pet!",
+      id: 2,
+      text: "Your pet is hungry, and it's your turn to feed it.",
+      options: [
+        { 
+          id: "immediately", 
+          text: "Feed your pet immediately", 
+          emoji: "🥣", 
+          description: "Take care of pet",
+          isCorrect: true
+        },
+        { 
+          id: "wait", 
+          text: "Wait for mom to remind you", 
+          emoji: "🕒", 
+          description: "Need reminders",
+          isCorrect: false
+        },
+        { 
+          id: "forget", 
+          text: "Forget and go out to play", 
+          emoji: "🏃", 
+          description: "Neglect responsibility",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Cleaning Toys",
-      emoji: "🧸",
-      situation: "After playing, your toys are all over the floor.",
-      choices: [
-        { id: 1, text: "Leave them and walk away", emoji: "🚶", isCorrect: false },
-        { id: 2, text: "Clean up all the toys neatly", emoji: "🧹", isCorrect: true },
-        { id: 3, text: "Ask someone else to clean", emoji: "🙋", isCorrect: false },
-      ],
-      feedback:
-        "Cleaning up your toys keeps your space neat and shows you take responsibility for your things!",
+      id: 3,
+      text: "After playing, your toys are all over the floor.",
+      options: [
+        { 
+          id: "clean", 
+          text: "Clean up all the toys neatly", 
+          emoji: "🧹", 
+          description: "Keep it tidy",
+          isCorrect: true
+        },
+        { 
+          id: "leave", 
+          text: "Leave them and walk away", 
+          emoji: "🚶", 
+          description: "Don't clean",
+          isCorrect: false
+        },
+        { 
+          id: "ask", 
+          text: "Ask someone else to clean", 
+          emoji: "🙋", 
+          description: "Make others do it",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Doing Homework",
-      emoji: "📚",
-      situation: "You promised to finish your homework before watching TV.",
-      choices: [
-        { id: 1, text: "Finish homework first", emoji: "✏️", isCorrect: true },
-        { id: 2, text: "Watch TV first and then maybe do it", emoji: "📺", isCorrect: false },
-        { id: 3, text: "Ignore homework completely", emoji: "🙈", isCorrect: false },
-      ],
-      feedback:
-        "Doing your work before fun shows discipline. Responsible kids keep their promises to themselves too!",
+      id: 4,
+      text: "You promised to finish your homework before watching TV.",
+      options: [
+        { 
+          id: "first", 
+          text: "Finish homework first", 
+          emoji: "✏️", 
+          description: "Keep your promise",
+          isCorrect: true
+        },
+        { 
+          id: "tv", 
+          text: "Watch TV first and then maybe do it", 
+          emoji: "📺", 
+          description: "Prioritize entertainment",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore homework completely", 
+          emoji: "🙈", 
+          description: "Break the promise",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Helping Siblings",
-      emoji: "👧👦",
-      situation: "Your younger sibling drops their crayons. What do you do?",
-      choices: [
-        { id: 1, text: "Help pick them up", emoji: "🤝", isCorrect: true },
-        { id: 2, text: "Laugh and walk away", emoji: "😅", isCorrect: false },
-        { id: 3, text: "Call mom to do it", emoji: "📞", isCorrect: false },
-      ],
-      feedback:
-        "Helping others without being asked is true responsibility. You make your family proud!",
-    },
+      id: 5,
+      text: "Your younger sibling drops their crayons. What do you do?",
+      options: [
+        { 
+          id: "help", 
+          text: "Help pick them up", 
+          emoji: "🤝", 
+          description: "Assist them",
+          isCorrect: true
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh and walk away", 
+          emoji: "😅", 
+          description: "Find it funny",
+          isCorrect: false
+        },
+        { 
+          id: "call", 
+          text: "Call mom to do it", 
+          emoji: "📞", 
+          description: "Get someone else",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const currentQuestion = questions[currentQuestionIndex];
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = currentQuestion.choices.find((c) => c.id === selectedChoice);
-
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins((prev) => prev + 5);
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
     }
 
-    setShowFeedback(true);
-  };
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
 
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    resetFeedback();
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      navigate("/student/moral-values/kids/poster-discipline");
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const selectedChoiceData = currentQuestion.choices.find((c) => c.id === selectedChoice);
+  const handleNext = () => {
+    // Navigation handled by GameShell
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Chores Story"
-      subtitle="Learning Responsibility at Home"
-      onNext={handleNextQuestion}
-      nextEnabled={showFeedback && selectedChoiceData?.isCorrect}
-      showGameOver={currentQuestionIndex === questions.length - 1 && showFeedback && selectedChoiceData?.isCorrect}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={33}
+      totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
       score={coins}
-      gameId="moral-kids-35"
-      gameType="story"
-      totalLevels={100}
-      currentLevel={35}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
+      gameId={gameId}
+      gameType="moral"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === questions.length}>
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">{currentQuestion.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{currentQuestion.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">
-                {currentQuestion.situation}
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4 text-center">What should you do?</h3>
-
-            <div className="space-y-3 mb-6">
-              {currentQuestion.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "🌟 Responsible Choice!" : "Try Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">{currentQuestion.feedback}</p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">You earned 5 Coins! 🪙</p>
-                <button
-                  onClick={handleNextQuestion}
-                  className="mt-6 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Next Question ➡️
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Responsibility means doing your duties on time and helping others!
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

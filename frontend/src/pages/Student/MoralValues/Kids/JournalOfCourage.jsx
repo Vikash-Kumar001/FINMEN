@@ -1,147 +1,122 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { PenSquare } from "lucide-react";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const JournalOfCourage = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [promptIndex, setPromptIndex] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-57";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
   const [entry, setEntry] = useState("");
-  const [completedEntries, setCompletedEntries] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
 
-  const prompts = [
-    "One time I showed courage was ___",
-    "I felt brave when I ___",
-    "I stood up for someone by ___",
-    "A scary situation I handled was ___",
-    "I did the right thing even though I was afraid by ___"
+  const stages = [
+    {
+      question: 'Write: "One time I showed courage was ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "I felt brave when I ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "I stood up for someone by ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "A scary situation I handled was ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "I did the right thing even though I was afraid by ___."',
+      minLength: 10,
+    },
   ];
 
   const handleSubmit = () => {
-    if (entry.trim().length >= 5) {
-      // Add entry and give reward
-      showCorrectAnswerFeedback(5, true);
-      setCoins((prev) => prev + 5);
-      setCompletedEntries([...completedEntries, entry]);
-
-      // Move to next prompt or finish
-      if (promptIndex < prompts.length - 1) {
-        setPromptIndex(promptIndex + 1);
-        setEntry(""); // clear for next
-      } else {
-        setShowResult(true);
-      }
+    if (showResult) return;
+    
+    resetFeedback();
+    const entryText = entry.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setShowResult(true);
+        } else {
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
+        }
+      }, 1500);
     }
   };
 
-  const handleNext = () => {
-    navigate("/student/moral-values/kids/bully-story1");
-  };
-
-  const currentPrompt = prompts[promptIndex];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Journal of Courage"
-      subtitle="Write About Your Bravery"
-      onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={coins}
-      gameId="moral-kids-57"
-      gameType="educational"
-      totalLevels={100}
-      currentLevel={57}
-      showConfetti={showResult}
-      backPath="/games/moral-values/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on your bravery!` : "Journal Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="moral"
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-6xl mb-4 text-center">📝</div>
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">
-              Write About Your Courage
-            </h2>
-
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white/70 text-sm mb-2">
-                Complete the sentence ({promptIndex + 1}/{prompts.length}):
-              </p>
-              <p className="text-white text-xl font-semibold">{currentPrompt}</p>
-            </div>
-
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-10 h-10 text-yellow-300" />
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
+            </p>
             <textarea
               value={entry}
               onChange={(e) => setEntry(e.target.value)}
-              placeholder="Write your courageous act here..."
-              className="w-full bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 min-h-[100px]"
-              maxLength={200}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-lg bg-white/90"
+              disabled={showResult}
             />
-
-            {entry.trim().length >= 5 && (
-              <div className="bg-purple-500/20 rounded-lg p-4 mt-4">
-                <p className="text-white/70 text-sm mb-1">Preview:</p>
-                <p className="text-white text-lg font-semibold italic">
-                  "{entry}"
-                </p>
-              </div>
-            )}
-
+            <div className="mt-2 text-white/50 text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
+            </div>
             <button
               onClick={handleSubmit}
-              disabled={entry.trim().length < 5}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                entry.trim().length >= 5
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
+              className={`mt-4 px-8 py-4 rounded-full text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
               }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
             >
-              {promptIndex < prompts.length - 1
-                ? "Next Prompt ➡️"
-                : "Finish Journal 🏁"}
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
             </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">🌟</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              Fantastic Courage!
-            </h2>
-
-            <div className="bg-purple-500/20 rounded-lg p-4 mb-6 space-y-2">
-              <p className="text-white/70 text-sm mb-2">Your Journal Entries:</p>
-              {completedEntries.map((e, i) => (
-                <p
-                  key={i}
-                  className="text-white text-lg font-semibold italic border-b border-white/10 pb-2"
-                >
-                  {i + 1}. "{e}"
-                </p>
-              ))}
-            </div>
-
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Being brave and standing up for what is right helps you grow
-                stronger and inspire others!
-              </p>
-            </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned {coins} Coins! 🪙
-            </p>
           </div>
         )}
       </div>

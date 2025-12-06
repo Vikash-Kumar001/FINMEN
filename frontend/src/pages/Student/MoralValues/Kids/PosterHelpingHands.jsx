@@ -1,169 +1,130 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PosterHelpingHands = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentPosterSet, setCurrentPosterSet] = useState(0);
-  const [selectedPoster, setSelectedPoster] = useState(null);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-76";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [earnedBadge, setEarnedBadge] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  // 🖼️ 5 Poster Sets — each with 5 options
-  const posterSets = [
-    [
-      { id: 1, message: "Helping is Happiness", emoji: "🤝", color: "from-blue-400 to-purple-400" },
-      { id: 2, message: "Be Kind Every Time", emoji: "💞", color: "from-green-400 to-teal-400" },
-      { id: 3, message: "Care, Share, Smile", emoji: "😊", color: "from-pink-400 to-red-400" },
-      { id: 4, message: "One Help Can Change a Day", emoji: "🌟", color: "from-yellow-400 to-orange-400" },
-      { id: 5, message: "Together We Shine", emoji: "✨", color: "from-indigo-400 to-blue-500" },
-    ],
-    [
-      { id: 1, message: "Lend a Hand, Spread Joy", emoji: "💖", color: "from-teal-400 to-green-400" },
-      { id: 2, message: "Help Others, Heal Yourself", emoji: "🩵", color: "from-purple-400 to-pink-400" },
-      { id: 3, message: "Teamwork Makes Miracles", emoji: "🤗", color: "from-orange-400 to-red-400" },
-      { id: 4, message: "Be the Light for Others", emoji: "💡", color: "from-blue-400 to-cyan-400" },
-      { id: 5, message: "Kind Hands, Happy Hearts", emoji: "💚", color: "from-yellow-400 to-green-500" },
-    ],
-    [
-      { id: 1, message: "Together We Can Do More", emoji: "🤲", color: "from-blue-500 to-indigo-500" },
-      { id: 2, message: "Kindness is Power", emoji: "⚡", color: "from-pink-400 to-violet-400" },
-      { id: 3, message: "Little Help, Big Change", emoji: "🌈", color: "from-orange-400 to-yellow-400" },
-      { id: 4, message: "Be a Helping Star", emoji: "⭐", color: "from-teal-400 to-sky-400" },
-      { id: 5, message: "Hands that Help, Hearts that Love", emoji: "💞", color: "from-green-400 to-lime-400" },
-    ],
-    [
-      { id: 1, message: "Help is the Best Gift", emoji: "🎁", color: "from-red-400 to-pink-500" },
-      { id: 2, message: "Support Makes Us Stronger", emoji: "💪", color: "from-blue-400 to-sky-400" },
-      { id: 3, message: "Caring Builds Community", emoji: "🏡", color: "from-teal-400 to-green-400" },
-      { id: 4, message: "Together We Rise", emoji: "🌅", color: "from-purple-400 to-pink-400" },
-      { id: 5, message: "Love Grows by Giving", emoji: "🌸", color: "from-yellow-400 to-orange-400" },
-    ],
-    [
-      { id: 1, message: "Be Someone’s Sunshine", emoji: "🌞", color: "from-orange-400 to-yellow-400" },
-      { id: 2, message: "Spread Love Everywhere", emoji: "💐", color: "from-pink-400 to-rose-400" },
-      { id: 3, message: "Your Help Counts!", emoji: "👐", color: "from-green-400 to-emerald-400" },
-      { id: 4, message: "Make the World Brighter", emoji: "🌍", color: "from-blue-400 to-indigo-400" },
-      { id: 5, message: "Helping Hands, Happy Lands", emoji: "🎨", color: "from-purple-400 to-blue-400" },
-    ],
+  const stages = [
+    {
+      question: 'Choose the best poster for helping others:',
+      choices: [
+        { text: "Ignore Those in Need", design: "🙈", correct: false },
+        { text: "Helping is Happiness", design: "🤝", correct: true },
+        { text: "Don't Help Anyone", design: "🚫", correct: false },
+      ],
+    },
+    {
+      question: 'Which poster promotes helping?',
+      choices: [
+        { text: "Be Kind Every Time", design: "💞", correct: true },
+        { text: "Only Help Yourself", design: "😎", correct: false },
+        { text: "Refuse to Help", design: "🙅", correct: false },
+      ],
+    },
+    {
+      question: 'Select the best helping poster:',
+      choices: [
+        { text: "Walk Away from Problems", design: "🚶", correct: false },
+        { text: "Never Offer Assistance", design: "😐", correct: false },
+        { text: "Care, Share, Smile", design: "😊", correct: true },
+      ],
+    },
+    {
+      question: 'Choose the helping poster:',
+      choices: [
+        { text: "One Help Can Change a Day", design: "🌟", correct: true },
+        { text: "Don't Get Involved", design: "👀", correct: false },
+        { text: "Avoid Helping Others", design: "🔄", correct: false },
+      ],
+    },
+    {
+      question: 'Which is the best poster for helping?',
+      choices: [
+        { text: "Ignore Community Needs", design: "🌍", correct: false },
+        { text: "Only Care About Yourself", design: "💭", correct: false },
+        { text: "Lend a Hand, Spread Joy", design: "💖", correct: true },
+      ],
+    },
   ];
 
-  const currentSet = posterSets[currentPosterSet];
-  const selectedPosterData = currentSet.find((p) => p.id === selectedPoster);
-
-  const handlePosterSelect = (posterId) => {
-    setSelectedPoster(posterId);
-  };
-
-  const handleCreate = () => {
-    if (selectedPoster) {
+  const handleSelect = (isCorrect) => {
+    if (isCorrect) {
+      const newScore = score + 1;
+      setScore(newScore);
       showCorrectAnswerFeedback(1, true);
-      setShowResult(true);
-      if (currentPosterSet === posterSets.length - 1) {
-        setEarnedBadge(true);
-      }
+    }
+    
+    if (currentStage < stages.length - 1) {
+      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    } else {
+      setTimeout(() => setShowResult(true), 800);
     }
   };
 
-  const handleNextPoster = () => {
-    if (currentPosterSet < posterSets.length - 1) {
-      setCurrentPosterSet(currentPosterSet + 1);
-      setSelectedPoster(null);
-      setShowResult(false);
-    }
-  };
-
-  const handleNextGame = () => {
-    navigate("/student/moral-values/kids/journal-service");
-  };
+  const finalScore = score;
 
   return (
     <GameShell
       title="Poster: Helping Hands"
-      subtitle={`Create Poster ${currentPosterSet + 1} of ${posterSets.length}`}
-      onNext={earnedBadge ? handleNextGame : undefined}
-      nextEnabled={earnedBadge}
-      showGameOver={earnedBadge}
-      score={earnedBadge ? 5 : currentPosterSet + 1}
-      gameId="moral-kids-76"
-      gameType="educational"
-      totalLevels={100}
-      currentLevel={76}
-      showConfetti={earnedBadge}
-      backPath="/games/moral-values/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      subtitle={showResult ? "Activity Complete!" : `Question ${currentStage + 1} of ${stages.length}`}
+      onNext={null}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={finalScore}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
+      currentLevel={currentStage + 1}
+      maxScore={5}
+      showConfetti={showResult && finalScore === 5}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">
-              Choose a Message for Poster {currentPosterSet + 1}
-            </h2>
-
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              {currentSet.map((poster) => (
-                <button
-                  key={poster.id}
-                  onClick={() => handlePosterSelect(poster.id)}
-                  className={`border-3 rounded-xl p-6 transition-all bg-gradient-to-br ${poster.color} ${
-                    selectedPoster === poster.id ? "ring-4 ring-white scale-105" : ""
-                  }`}
-                >
-                  <div className="text-5xl mb-3">{poster.emoji}</div>
-                  <div className="text-white font-bold text-center">{poster.message}</div>
-                </button>
-              ))}
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {stages[currentStage].question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {stages[currentStage].choices.map((choice, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSelect(choice.correct)}
+                    className="p-6 rounded-2xl text-center transition-all transform hover:scale-105 bg-white/10 hover:bg-white/20 border border-white/20"
+                  >
+                    <div className="text-5xl mb-3">{choice.design}</div>
+                    <h4 className="font-bold text-white text-lg">{choice.text}</h4>
+                  </button>
+                ))}
+              </div>
+              
+              <div className="mt-6 text-center text-white/80">
+                <p>Score: {score}/{stages.length}</p>
+              </div>
             </div>
-
-            <button
-              onClick={handleCreate}
-              disabled={!selectedPoster}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedPoster
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Create Poster! 🎨
-            </button>
           </div>
-        ) : !earnedBadge ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">✨ Great Job!</h2>
-            <div
-              className={`rounded-xl p-8 bg-gradient-to-br ${selectedPosterData.color} min-h-[200px] flex flex-col items-center justify-center border-4 border-white`}
-            >
-              <div className="text-6xl mb-4">{selectedPosterData.emoji}</div>
-              <div className="text-white text-3xl font-bold">{selectedPosterData.message}</div>
-            </div>
-
-            <button
-              onClick={handleNextPoster}
-              className="mt-6 py-3 px-6 bg-gradient-to-r from-yellow-400 to-orange-400 text-white font-bold rounded-xl hover:scale-105 transition"
-            >
-              Next Poster ➡️
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">🏆 Helping Hands Badge Earned!</h2>
-            <div className="text-6xl mb-4">🎖️</div>
-            <p className="text-white text-xl mb-2">
-              You completed all posters promoting kindness & teamwork!
-            </p>
-            <p className="text-white/80">Click “Next” to continue your journey.</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

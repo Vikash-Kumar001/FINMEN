@@ -1,185 +1,266 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const OldLadyStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-71";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stories = [
+  const questions = [
     {
       id: 1,
-      title: "Carrying Bags",
-      emoji: "🛍️",
-      situation: "You see an old lady struggling with heavy bags. Do you help her?",
-      choices: [
-        { id: 1, text: "Ignore and walk away", emoji: "🙁", isCorrect: false },
-        { id: 2, text: "Help her carry the bags", emoji: "🤝", isCorrect: true }
+      text: "You see an old lady struggling with heavy bags. Do you help her?",
+      options: [
+        { 
+          id: "help", 
+          text: "Help her carry the bags", 
+          emoji: "🤝", 
+          description: "Offer assistance",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore and walk away", 
+          emoji: "🙁", 
+          description: "Don't help",
+          isCorrect: false
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh at her struggle", 
+          emoji: "😅", 
+          description: "Make fun",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      title: "Crossing the Street",
-      emoji: "🚶‍♀️",
-      situation: "The old lady is afraid to cross the street alone. What do you do?",
-      choices: [
-        { id: 1, text: "Leave her", emoji: "🙁", isCorrect: false },
-        { id: 2, text: "Guide her safely across", emoji: "🤝", isCorrect: true }
+      text: "The old lady is afraid to cross the street alone. What do you do?",
+      options: [
+        { 
+          id: "guide", 
+          text: "Guide her safely across", 
+          emoji: "🤝", 
+          description: "Help her cross",
+          isCorrect: true
+        },
+        { 
+          id: "leave", 
+          text: "Leave her", 
+          emoji: "🙁", 
+          description: "Don't help",
+          isCorrect: false
+        },
+        { 
+          id: "hurry", 
+          text: "Hurry past quickly", 
+          emoji: "🏃", 
+          description: "Rush away",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      title: "Fallen Item",
-      emoji: "🍎",
-      situation: "She drops an item from her bag. Do you pick it up?",
-      choices: [
-        { id: 1, text: "Pick it up and return it", emoji: "🤝", isCorrect: true },
-        { id: 2, text: "Keep it for yourself", emoji: "🙁", isCorrect: false }
+      text: "She drops an item from her bag. Do you pick it up?",
+      options: [
+        { 
+          id: "pick", 
+          text: "Pick it up and return it", 
+          emoji: "🤝", 
+          description: "Help her",
+          isCorrect: true
+        },
+        { 
+          id: "keep", 
+          text: "Keep it for yourself", 
+          emoji: "🙁", 
+          description: "Take it",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Pretend you didn't see", 
+          emoji: "🙈", 
+          description: "Ignore it",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      title: "Carrying Long Distance",
-      emoji: "🏃‍♀️",
-      situation: "Her destination is far. Do you offer to carry her bags?",
-      choices: [
-        { id: 1, text: "Yes, carry them with her", emoji: "🤝", isCorrect: true },
-        { id: 2, text: "No, it’s too far", emoji: "🙁", isCorrect: false }
+      text: "Her destination is far. Do you offer to carry her bags?",
+      options: [
+        { 
+          id: "carry", 
+          text: "Yes, carry them with her", 
+          emoji: "🤝", 
+          description: "Go the distance",
+          isCorrect: true
+        },
+        { 
+          id: "too", 
+          text: "No, it's too far", 
+          emoji: "🙁", 
+          description: "Refuse to help",
+          isCorrect: false
+        },
+        { 
+          id: "part", 
+          text: "Only carry a little bit", 
+          emoji: "🤏", 
+          description: "Minimal help",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      title: "Thank You",
-      emoji: "🙏",
-      situation: "She thanks you sincerely. How do you respond?",
-      choices: [
-        { id: 1, text: "Smile and nod", emoji: "🤝", isCorrect: true },
-        { id: 2, text: "Ignore her thanks", emoji: "🙁", isCorrect: false }
+      text: "She thanks you sincerely. How do you respond?",
+      options: [
+        { 
+          id: "smile", 
+          text: "Smile and nod", 
+          emoji: "🤝", 
+          description: "Accept graciously",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore her thanks", 
+          emoji: "🙁", 
+          description: "Don't acknowledge",
+          isCorrect: false
+        },
+        { 
+          id: "ask", 
+          text: "Ask for money", 
+          emoji: "💰", 
+          description: "Expect payment",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const [currentStory, setCurrentStory] = useState(0);
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const story = stories[currentStory];
-    const choice = story.choices.find(c => c.id === selectedChoice);
-
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
     }
 
-    setShowFeedback(true);
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
 
-    // Auto move to next story after 1.5 seconds
-    setTimeout(() => {
-      if (currentStory < stories.length - 1) {
-        setCurrentStory(prev => prev + 1);
-        setSelectedChoice(null);
-        setShowFeedback(false);
-        setCoins(0);
-        resetFeedback();
-      } else {
-        navigate("/student/moral-values/kids/quiz-service");
-      }
-    }, 1500);
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const selectedChoiceData = selectedChoice
-    ? stories[currentStory].choices.find(c => c.id === selectedChoice)
-    : null;
+  const handleNext = () => {
+    // Navigation handled by GameShell
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Old Lady Story"
-      subtitle="Acts of Kindness"
-      score={coins}
-      gameId="moral-kids-71"
-      gameType="educational"
-      totalLevels={100}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       currentLevel={71}
-      showConfetti={showFeedback && coins > 0}
-      maxScore={100} // Max score is total number of questions (all correct)
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId={gameId}
+      gameType="moral"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/kids"
-    >
+      maxScore={questions.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === questions.length}>
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">{stories[currentStory].emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              {stories[currentStory].title}
-            </h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">
-                {stories[currentStory].situation}
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4 text-center">What should you do?</h3>
-
-            <div className="space-y-3 mb-6">
-              {stories[currentStory].choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-7xl mb-4">{selectedChoiceData?.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-2">
-              {selectedChoiceData?.isCorrect ? "🌟 Helpful Hero!" : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg">
-              {selectedChoiceData?.isCorrect
-                ? "Helping someone in need shows kindness!"
-                : "Remember, kindness always counts!"}
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

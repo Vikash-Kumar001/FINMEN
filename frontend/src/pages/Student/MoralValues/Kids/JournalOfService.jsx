@@ -1,157 +1,122 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { PenSquare } from "lucide-react";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const JournalOfService = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback } = useGameFeedback();
-
-  const [currentEntry, setCurrentEntry] = useState(0);
-  const [entries, setEntries] = useState([
-    { id: 1, person: "", action: "" },
-    { id: 2, person: "", action: "" },
-    { id: 3, person: "", action: "" },
-    { id: 4, person: "", action: "" },
-    { id: 5, person: "", action: "" },
-  ]);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-77";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [entry, setEntry] = useState("");
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
 
-  const handleChange = (field, value) => {
-    setEntries((prev) =>
-      prev.map((e, index) =>
-        index === currentEntry ? { ...e, [field]: value } : e
-      )
-    );
-  };
+  const stages = [
+    {
+      question: 'Write: "Today I helped someone by ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "I made a difference when I ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "Helping others makes me feel ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "A way I can serve my community is ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "Service to others means ___ to me."',
+      minLength: 10,
+    },
+  ];
 
-  const handleNextEntry = () => {
-    if (entries[currentEntry].person.trim().length >= 3 && entries[currentEntry].action.trim().length >= 5) {
-      if (currentEntry < entries.length - 1) {
-        setCurrentEntry(currentEntry + 1);
-      } else {
-        showCorrectAnswerFeedback(5, true);
-        setCoins(5);
-        setShowResult(true);
-      }
+  const handleSubmit = () => {
+    if (showResult) return;
+    
+    resetFeedback();
+    const entryText = entry.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setShowResult(true);
+        } else {
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
+        }
+      }, 1500);
     }
   };
 
-  const handleNextGame = () => {
-    navigate("/student/moral-values/kids/animal-care-story");
-  };
-
-  const current = entries[currentEntry];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Journal of Service"
-      subtitle="Write About Helping Others"
-      onNext={handleNextGame}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={coins}
-      gameId="moral-kids-77"
-      gameType="educational"
-      totalLevels={100}
-      currentLevel={77}
-      showConfetti={showResult}
-      backPath="/games/moral-values/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on helping others!` : "Journal Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="moral"
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-6xl mb-4 text-center">📝</div>
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">
-              Prompt {current.id} of 5
-            </h2>
-
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-2">
-              <p className="text-white/70 text-sm">
-                Today I helped someone by...
-              </p>
-            </div>
-
-            <input
-              type="text"
-              value={current.person}
-              onChange={(e) => handleChange("person", e.target.value)}
-              placeholder="Who did you help? (min 3 chars)"
-              className="w-full bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 mb-2"
-              maxLength={50}
-            />
-            <input
-              type="text"
-              value={current.action}
-              onChange={(e) => handleChange("action", e.target.value)}
-              placeholder="What did you do? (min 5 chars)"
-              className="w-full bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50"
-              maxLength={100}
-            />
-
-            {current.person.trim() && current.action.trim() && (
-              <div className="bg-purple-500/20 rounded-lg p-3 mt-3">
-                <p className="text-white/70 text-sm">Preview:</p>
-                <p className="text-white text-lg font-semibold italic">
-                  "Today I helped {current.person} by {current.action}."
-                </p>
-              </div>
-            )}
-
-            <button
-              onClick={handleNextEntry}
-              disabled={
-                current.person.trim().length < 3 ||
-                current.action.trim().length < 5
-              }
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                current.person.trim().length >= 3 &&
-                current.action.trim().length >= 5
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              {currentEntry === entries.length - 1
-                ? "Finish Journal ✨"
-                : "Next ➡️"}
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">🌟</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              Wonderful Service Journal!
-            </h2>
-
-            {entries.map((entry) => (
-              <div key={entry.id} className="bg-purple-500/20 rounded-lg p-4 mb-4">
-                <p className="text-white/70 text-sm">Entry {entry.id}:</p>
-                <p className="text-white text-lg font-semibold italic">
-                  "Today I helped {entry.person} by {entry.action}."
-                </p>
-              </div>
-            ))}
-
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Helping others makes the world a better place. Keep doing
-                good deeds!
-              </p>
-            </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned 5 Coins! 🪙
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-10 h-10 text-yellow-300" />
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
             </p>
+            <textarea
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-lg bg-white/90"
+              disabled={showResult}
+            />
+            <div className="mt-2 text-white/50 text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
+            </div>
+            <button
+              onClick={handleSubmit}
+              className={`mt-4 px-8 py-4 rounded-full text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
+            >
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
+            </button>
           </div>
         )}
       </div>

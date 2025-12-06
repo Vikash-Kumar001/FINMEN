@@ -41,7 +41,8 @@ const ReflexAdTrap = () => {
       options: [
         { text: "Close Scam Pop-up", isCorrect: true },
         { text: "Click to Claim", isCorrect: false },
-        { text: "Share with Friends", isCorrect: false }
+        { text: "Share with Friends", isCorrect: false },
+        { text: "Enter Personal Info", isCorrect: false }
       ]
     },
     {
@@ -51,7 +52,8 @@ const ReflexAdTrap = () => {
       options: [
         { text: "Ignore It", isCorrect: false },
         { text: "Delete Notification", isCorrect: false },
-        { text: "Check Legitimate Update", isCorrect: true }
+        { text: "Check Legitimate Update", isCorrect: true },
+        { text: "Update Immediately", isCorrect: false }
       ]
     },
     {
@@ -61,7 +63,8 @@ const ReflexAdTrap = () => {
       options: [
         { text: "Claim Prize", isCorrect: false },
         { text: "Close Scam Pop-up", isCorrect: true },
-        { text: "Click to See", isCorrect: false }
+        { text: "Click to See", isCorrect: false },
+        { text: "Forward to Others", isCorrect: false }
       ]
     },
     {
@@ -71,7 +74,8 @@ const ReflexAdTrap = () => {
       options: [
         { text: "Check System Notification", isCorrect: true },
         { text: "Ignore It", isCorrect: false },
-        { text: "Delete Notification", isCorrect: false }
+        { text: "Delete Notification", isCorrect: false },
+        { text: "Disable All Notifications", isCorrect: false }
       ]
     },
     {
@@ -81,7 +85,8 @@ const ReflexAdTrap = () => {
       options: [
         { text: "Click to Claim", isCorrect: false },
         { text: "Take Screenshot", isCorrect: false },
-        { text: "Close Scam Pop-up", isCorrect: true }
+        { text: "Close Scam Pop-up", isCorrect: true },
+        { text: "Call the Number", isCorrect: false }
       ]
     }
   ];

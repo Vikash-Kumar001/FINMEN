@@ -1,214 +1,282 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PoliteWordsQuiz2 = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-12";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
+      id: 1,
       text: "Which word is polite?",
-      emoji: "🗣️",
-      choices: [
-        { id: 1, text: "Please", emoji: "✨", isCorrect: true },
-        { id: 2, text: "Stupid", emoji: "😠", isCorrect: false },
-        { id: 3, text: "Idiot", emoji: "👎", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "Please", 
+          emoji: "✨", 
+          description: "A respectful word used when asking for something",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Stupid", 
+          emoji: "😠", 
+          description: "An impolite word that hurts others' feelings",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Idiot", 
+          emoji: "👎", 
+          description: "A mean word that is disrespectful",
+          isCorrect: false
+        }
       ]
     },
     {
+      id: 2,
       text: "Your friend gives you a gift. What should you say?",
-      emoji: "🎁",
-      choices: [
-        { id: 1, text: "Thank you!", emoji: "😊", isCorrect: true },
-        { id: 2, text: "Whatever", emoji: "😒", isCorrect: false },
-        { id: 3, text: "Finally!", emoji: "🙄", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "Whatever", 
+          emoji: "😒", 
+          description: "Being dismissive and ungrateful",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Thank you!", 
+          emoji: "😊", 
+          description: "Showing gratitude and appreciation politely",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Finally!", 
+          emoji: "🙄", 
+          description: "Being rude and unappreciative",
+          isCorrect: false
+        }
       ]
     },
     {
+      id: 3,
       text: "If you bump into someone accidentally, what should you say?",
-      emoji: "🚶‍♀️💥🚶‍♂️",
-      choices: [
-        { id: 1, text: "Move!", emoji: "😠", isCorrect: false },
-        { id: 2, text: "Sorry!", emoji: "🙏", isCorrect: true },
-        { id: 3, text: "Watch it!", emoji: "😤", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "Move!", 
+          emoji: "😠", 
+          description: "Being rude and blaming others",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Watch it!", 
+          emoji: "😤", 
+          description: "Being defensive instead of apologetic",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Sorry!", 
+          emoji: "🙏", 
+          description: "Apologizing politely when you make a mistake",
+          isCorrect: true
+        }
       ]
     },
     {
+      id: 4,
       text: "Before asking for help, what should you say?",
-      emoji: "🧒🙋‍♀️",
-      choices: [
-        { id: 1, text: "Do this!", emoji: "😡", isCorrect: false },
-        { id: 2, text: "Please help me", emoji: "💖", isCorrect: true },
-        { id: 3, text: "Hurry up!", emoji: "😤", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "Please help me", 
+          emoji: "💖", 
+          description: "Asking politely with respectful words",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Do this!", 
+          emoji: "😡", 
+          description: "Demanding instead of asking politely",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Hurry up!", 
+          emoji: "😤", 
+          description: "Being impatient and rude",
+          isCorrect: false
+        }
       ]
     },
     {
+      id: 5,
       text: "If someone helps you, what polite word should you say?",
-      emoji: "🤝",
-      choices: [
-        { id: 1, text: "Thanks!", emoji: "🌸", isCorrect: true },
-        { id: 2, text: "So what?", emoji: "😐", isCorrect: false },
-        { id: 3, text: "That’s it?", emoji: "🙄", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "So what?", 
+          emoji: "😐", 
+          description: "Being ungrateful and dismissive",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "That's it?", 
+          emoji: "🙄", 
+          description: "Being unappreciative of help received",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Thanks!", 
+          emoji: "🌸", 
+          description: "Expressing gratitude politely for help received",
+          isCorrect: true
+        }
       ]
     }
   ];
 
-  const current = questions[currentQuestion];
-  const selectedChoiceData = current.choices.find(c => c.id === selectedChoice);
-
-  const handleChoice = (id) => setSelectedChoice(id);
-
-  const handleConfirm = () => {
-    const choice = current.choices.find(c => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(3, true);
-      setTotalCoins((prev) => prev + 3);
-    }
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
     resetFeedback();
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-    } else {
-      setShowFeedback(true);
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleFinish = () => {
-    navigate("/student/moral-values/kids/reflex-respect");
-  };
-
-  const isLast = currentQuestion === questions.length - 1;
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Polite Words Quiz"
-      subtitle="Learning Respectful Language"
-      onNext={handleFinish}
-      nextEnabled={showFeedback && isLast}
-      showGameOver={showFeedback && isLast}
-      score={totalCoins}
-      gameId="moral-kids-12"
-      gameType="educational"
-      totalLevels={20}
-      currentLevel={12}
-      showConfetti={showFeedback && isLast}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-6 text-center">{current.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-xl text-center font-semibold">{current.text}</p>
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="text-3xl mb-3">{option.emoji}</div>
+                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="space-y-3 mb-6">
-              {current.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Submit Answer
-            </button>
           </div>
-        ) : !isLast ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData?.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "✨ Polite Kid!" : "Not Polite..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData?.text}</p>
-
-            {selectedChoiceData?.isCorrect ? (
-              <>
-                <p className="text-green-400 text-xl text-center mb-4">
-                  Great job! Let's move to the next question.
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Excellent!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct!
+                  You know how to use polite words!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Remember to always use words like "please", "thank you", and "sorry"!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct.
+                  Remember, polite words make others feel respected and valued!
                 </p>
                 <button
-                  onClick={handleNextQuestion}
-                  className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Next Question ➜
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Try again and choose a more polite word!
-                  </p>
-                </div>
-                <button
                   onClick={handleTryAgain}
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that uses respectful and kind words.
+                </p>
+              </div>
             )}
-          </div>
-        ) : (
-          <div className="text-center text-white bg-white/10 p-10 rounded-2xl border border-white/20">
-            <h2 className="text-4xl font-bold mb-4">🎉 Amazing Job!</h2>
-            <p className="text-xl mb-4">
-              You completed all 5 polite word questions!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold">
-              Total Coins Earned: {totalCoins} 🪙
-            </p>
-            <button
-              onClick={handleFinish}
-              className="mt-6 bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              Finish Game
-            </button>
           </div>
         )}
       </div>

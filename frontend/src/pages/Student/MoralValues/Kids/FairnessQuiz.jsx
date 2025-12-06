@@ -1,221 +1,282 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const FairnessQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-43";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
+      id: 1,
       text: "Which is fair?",
-      emoji: "⚖️",
-      choices: [
-        { id: 1, text: "Sharing equal turns", emoji: "🤝", isCorrect: true },
-        { id: 2, text: "Skipping someone’s turn", emoji: "🙅‍♂️", isCorrect: false },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Sharing equal turns", 
+          emoji: "🤝", 
+          description: "Giving everyone the same opportunity to participate",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Skipping someone's turn", 
+          emoji: "🙅‍♂️", 
+          description: "Leaving someone out or treating them unfairly",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Letting favorites go first", 
+          emoji: "😏", 
+          description: "Showing favoritism instead of treating everyone equally",
+          isCorrect: false
+        }
+      ]
     },
     {
-      text: "Two friends want the same toy. What’s the fair thing to do?",
-      emoji: "🧸",
-      choices: [
-        { id: 1, text: "Take it without asking", emoji: "😠", isCorrect: false },
-        { id: 2, text: "Take turns playing with it", emoji: "😊", isCorrect: true },
-      ],
+      id: 2,
+      text: "Two friends want the same toy. What's the fair thing to do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Take it without asking", 
+          emoji: "😠", 
+          description: "Taking something without considering others",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Take turns playing with it", 
+          emoji: "😊", 
+          description: "Sharing and giving everyone equal time with the toy",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Keep it all for yourself", 
+          emoji: "😈", 
+          description: "Being selfish and not sharing",
+          isCorrect: false
+        }
+      ]
     },
     {
+      id: 3,
       text: "In a race, one person starts early. Is that fair?",
-      emoji: "🏃‍♀️",
-      choices: [
-        { id: 1, text: "No, everyone should start together", emoji: "🛑", isCorrect: true },
-        { id: 2, text: "Yes, it’s fine if they win", emoji: "😏", isCorrect: false },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Yes, it's fine if they win", 
+          emoji: "😏", 
+          description: "Accepting unfair advantages",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "No, everyone should start together", 
+          emoji: "🛑", 
+          description: "Ensuring equal rules and fair competition for all",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "It depends on who it is", 
+          emoji: "🤷", 
+          description: "Applying different rules to different people",
+          isCorrect: false
+        }
+      ]
     },
     {
-      text: "You and your sibling get candies. What’s fair?",
-      emoji: "🍬",
-      choices: [
-        { id: 1, text: "Share them equally", emoji: "🎁", isCorrect: true },
-        { id: 2, text: "Keep all for yourself", emoji: "😈", isCorrect: false },
-      ],
+      id: 4,
+      text: "You and your sibling get candies. What's fair?",
+      options: [
+        { 
+          id: "a", 
+          text: "Share them equally", 
+          emoji: "🎁", 
+          description: "Dividing treats fairly so everyone gets the same amount",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Keep all for yourself", 
+          emoji: "😈", 
+          description: "Being greedy and not sharing",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Give more to favorites", 
+          emoji: "😏", 
+          description: "Showing favoritism instead of fairness",
+          isCorrect: false
+        }
+      ]
     },
     {
-      text: "Your friend forgot their lunch. What’s fair?",
-      emoji: "🍱",
-      choices: [
-        { id: 1, text: "Share your lunch", emoji: "❤️", isCorrect: true },
-        { id: 2, text: "Ignore them", emoji: "🙄", isCorrect: false },
-      ],
-    },
+      id: 5,
+      text: "Your friend forgot their lunch. What's fair?",
+      options: [
+        { 
+          id: "a", 
+          text: "Ignore them", 
+          emoji: "🙄", 
+          description: "Not helping someone in need",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Eat alone without sharing", 
+          emoji: "😐", 
+          description: "Keeping everything for yourself",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Share your lunch", 
+          emoji: "❤️", 
+          description: "Helping others and treating everyone with kindness",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const currentQ = questions[currentQuestion];
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = currentQ.choices.find((c) => c.id === selectedChoice);
-
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(3, true);
-      setCoins((prev) => prev + 3);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
-    } else {
-      // End of quiz
-      setShowFeedback(true);
-    }
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/student/moral-values/kids/reflex-fair-play");
-  };
-
-  const selectedChoiceData = currentQ.choices.find((c) => c.id === selectedChoice);
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Fairness Quiz"
-      subtitle="Learning to Be Fair"
-      onNext={handleNext}
-      nextEnabled={showFeedback && currentQuestion === questions.length - 1}
-      showGameOver={showFeedback && currentQuestion === questions.length - 1}
-      score={coins}
-      gameId="moral-kids-42"
-      gameType="educational"
-      totalLevels={100}
-      currentLevel={42}
-      showConfetti={showFeedback && currentQuestion === questions.length - 1}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-6 text-center">{currentQ.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-xl leading-relaxed text-center font-semibold">
-                {currentQ.text}
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="text-3xl mb-3">{option.emoji}</div>
+                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="space-y-3 mb-6">
-              {currentQ.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Submit Answer
-            </button>
           </div>
-        ) : currentQuestion < questions.length - 1 ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "✨ Correct!" : "Not Quite..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-6">
-                  <p className="text-white text-center">
-                    Great! Fairness means treating everyone equally and giving everyone the same
-                    chance. You earned 3 Coins! 🪙
-                  </p>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Excellent!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct!
+                  You understand fairness!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
-                <button
-                  onClick={handleNextQuestion}
-                  className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Next Question →
-                </button>
-              </>
+                <p className="text-white/80">
+                  Fairness means treating everyone equally and giving everyone the same chance!
+                </p>
+              </div>
             ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    That’s not fair. Fairness means everyone gets the same opportunity. Try again!
-                  </p>
-                </div>
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct.
+                  Remember, fairness means treating everyone equally!
+                </p>
                 <button
                   onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that treats everyone equally and gives everyone the same opportunity.
+                </p>
+              </div>
             )}
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-4">🎉 Fairness Master!</h2>
-            <p className="text-white text-lg mb-6">
-              You completed all 5 fairness questions and proved you know how to treat everyone equally!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              Total Coins Earned: {coins} 🪙
-            </p>
-            <button
-              onClick={handleNext}
-              className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              Continue →
-            </button>
           </div>
         )}
       </div>

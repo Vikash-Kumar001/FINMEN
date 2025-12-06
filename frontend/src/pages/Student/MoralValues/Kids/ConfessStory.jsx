@@ -1,205 +1,266 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ConfessStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-kids-55";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
-      title: "Broken Vase",
-      emoji: "🏺",
-      situation: "You accidentally broke a vase at home. Do you confess?",
-      choices: [
-        { id: 1, text: "Hide it", emoji: "🙈", isCorrect: false },
-        { id: 2, text: "Confess", emoji: "🙋‍♂️", isCorrect: true }
+      id: 1,
+      text: "You accidentally broke a vase at home. Do you confess?",
+      options: [
+        { 
+          id: "confess", 
+          text: "Confess", 
+          emoji: "🙋‍♂️", 
+          description: "Tell the truth",
+          isCorrect: true
+        },
+        { 
+          id: "hide", 
+          text: "Hide it", 
+          emoji: "🙈", 
+          description: "Try to hide it",
+          isCorrect: false
+        },
+        { 
+          id: "blame", 
+          text: "Blame someone else", 
+          emoji: "👆", 
+          description: "Shift the blame",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Lost Book",
-      emoji: "📖",
-      situation: "You lost your friend's book. Do you tell them?",
-      choices: [
-        { id: 1, text: "Keep it secret", emoji: "🤫", isCorrect: false },
-        { id: 2, text: "Tell the truth", emoji: "🗣️", isCorrect: true }
+      id: 2,
+      text: "You lost your friend's book. Do you tell them?",
+      options: [
+        { 
+          id: "truth", 
+          text: "Tell the truth", 
+          emoji: "🗣️", 
+          description: "Be honest",
+          isCorrect: true
+        },
+        { 
+          id: "secret", 
+          text: "Keep it secret", 
+          emoji: "🤫", 
+          description: "Don't tell",
+          isCorrect: false
+        },
+        { 
+          id: "lie", 
+          text: "Say you don't know", 
+          emoji: "🤷", 
+          description: "Deny knowledge",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Forgot Homework",
-      emoji: "📝",
-      situation: "You forgot to do your homework. What do you do?",
-      choices: [
-        { id: 1, text: "Lie and say it's done", emoji: "😅", isCorrect: false },
-        { id: 2, text: "Admit you forgot", emoji: "🙇", isCorrect: true }
+      id: 3,
+      text: "You forgot to do your homework. What do you do?",
+      options: [
+        { 
+          id: "admit", 
+          text: "Admit you forgot", 
+          emoji: "🙇", 
+          description: "Tell the truth",
+          isCorrect: true
+        },
+        { 
+          id: "lie", 
+          text: "Lie and say it's done", 
+          emoji: "😅", 
+          description: "Make up a story",
+          isCorrect: false
+        },
+        { 
+          id: "blame", 
+          text: "Blame the dog", 
+          emoji: "🐶", 
+          description: "Make excuses",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Spilled Juice",
-      emoji: "🥤",
-      situation: "You spilled juice on the table. Confess or hide?",
-      choices: [
-        { id: 1, text: "Hide it", emoji: "🙊", isCorrect: false },
-        { id: 2, text: "Confess", emoji: "🙋‍♀️", isCorrect: true }
+      id: 4,
+      text: "You spilled juice on the table. Confess or hide?",
+      options: [
+        { 
+          id: "confess", 
+          text: "Confess", 
+          emoji: "🙋‍♀️", 
+          description: "Tell about it",
+          isCorrect: true
+        },
+        { 
+          id: "hide", 
+          text: "Hide it", 
+          emoji: "🙊", 
+          description: "Cover it up",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "😐", 
+          description: "Don't mention it",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Broken Toy",
-      emoji: "🧸",
-      situation: "You accidentally broke your sibling's toy. What do you do?",
-      choices: [
-        { id: 1, text: "Blame someone else", emoji: "🤥", isCorrect: false },
-        { id: 2, text: "Confess and apologize", emoji: "🙏", isCorrect: true }
+      id: 5,
+      text: "You accidentally broke your sibling's toy. What do you do?",
+      options: [
+        { 
+          id: "apologize", 
+          text: "Confess and apologize", 
+          emoji: "🙏", 
+          description: "Be honest and sorry",
+          isCorrect: true
+        },
+        { 
+          id: "blame", 
+          text: "Blame someone else", 
+          emoji: "🤥", 
+          description: "Shift responsibility",
+          isCorrect: false
+        },
+        { 
+          id: "hide", 
+          text: "Hide the broken toy", 
+          emoji: "🗑️", 
+          description: "Throw it away",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const question = questions[currentQuestion];
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
 
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
 
-  const handleConfirm = () => {
-    const choice = question.choices.find(c => c.id === selectedChoice);
-
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(1, true);
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
       setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
+    
+    // Move to next question or show results
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      // Final score handling
-      if (coins === questions.length) {
-        setCoins(5); // total reward
-      }
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
-  };
-
-  const handleTryAgain = () => {
-    setCurrentQuestion(0);
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
-    resetFeedback();
   };
 
   const handleNext = () => {
-    navigate("/student/moral-values/kids/poster-courage");
+    // Navigation handled by GameShell
   };
 
-  const selectedChoiceData = question.choices.find(c => c.id === selectedChoice);
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Confess Story"
-      score={coins}
-      subtitle={`Story ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={currentQuestion === questions.length - 1 && showFeedback && coins > 0}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={currentQuestion === questions.length - 1 && showFeedback && coins > 0}
-      
-      gameId="moral-kids-55"
-      gameType="educational"
-      totalLevels={100}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       currentLevel={55}
-      showConfetti={currentQuestion === questions.length - 1 && showFeedback && coins > 0}
+      totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId={gameId}
+      gameType="moral"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/kids"
-    >
+      maxScore={questions.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === questions.length}>
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">{question.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{question.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">{question.situation}</p>
-            </div>
-
-            <div className="space-y-3 mb-6">
-              {question.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Choice
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "🌟 Honest Choice!" : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <button
-                onClick={handleNextQuestion}
-                className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                {currentQuestion < questions.length - 1 ? "Next Story" : "Finish"}
-              </button>
-            ) : (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
-
-            {currentQuestion === questions.length - 1 && selectedChoiceData.isCorrect && coins === questions.length && (
-              <p className="text-yellow-400 text-2xl font-bold text-center mt-4">
-                You earned 5 Coins! 🪙
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
               </p>
-            )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

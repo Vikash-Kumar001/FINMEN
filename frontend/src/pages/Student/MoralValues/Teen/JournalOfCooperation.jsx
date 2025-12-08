@@ -1,158 +1,120 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { PenSquare } from "lucide-react";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const JournalOfCooperation = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [entries, setEntries] = useState(["", "", "", "", ""]);
-  const [currentPrompt, setCurrentPrompt] = useState(0);
+  
+  const gameId = "moral-teen-67";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [entry, setEntry] = useState("");
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
 
-  const prompts = [
-    "1️⃣ Describe one time your team achieved more than you could alone.",
-    "2️⃣ What made your team work well together?",
-    "3️⃣ How did you contribute to your team’s success?",
-    "4️⃣ What challenge did your team face, and how did you overcome it?",
-    "5️⃣ How did teamwork make you feel compared to working alone?",
+  const stages = [
+    {
+      question: 'Write: "One time my team achieved more than I could alone was when ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "What made my team work well together was ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "I contributed to my team\'s success by ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "My team faced a challenge. We overcame it by ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "Teamwork made me feel ___ compared to working alone because ___."',
+      minLength: 10,
+    },
   ];
 
-  const handleEntryChange = (value) => {
-    const updated = [...entries];
-    updated[currentPrompt] = value;
-    setEntries(updated);
-  };
-
-  const handleNextPrompt = () => {
-    if (entries[currentPrompt].trim().length < 20) return;
-
-    if (currentPrompt < prompts.length - 1) {
-      setCurrentPrompt(currentPrompt + 1);
-    } else {
-      handleSubmit();
-    }
-  };
-
   const handleSubmit = () => {
-    const allValid = entries.every((entry) => entry.trim().length >= 20);
-    if (allValid) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
-      setShowResult(true);
+    if (showResult) return;
+    
+    resetFeedback();
+    const entryText = entry.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setShowResult(true);
+        } else {
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
+        }
+      }, 1500);
     }
   };
 
-  const handleNext = () => {
-    navigate("/student/moral-values/teen/roleplay-good-teammate");
-  };
+  const finalScore = score;
 
   return (
     <GameShell
       title="Journal of Cooperation"
-      subtitle="Celebrating Teamwork and Unity"
-      onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={coins}
-      gameId="moral-teen-67"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={67}
-      showConfetti={showResult}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on teamwork!` : "Journal Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="moral"
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showResult ? (
-          // Journal Question Step-by-Step
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 transition-all duration-500">
-            <div className="text-6xl mb-4 text-center">🤝</div>
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">
-              Reflect on Cooperation
-            </h2>
-
-            {/* Progress Bar */}
-            <div className="w-full bg-white/20 rounded-full h-2 mb-6">
-              <div
-                className="bg-gradient-to-r from-blue-500 to-green-400 h-2 rounded-full transition-all duration-500"
-                style={{
-                  width: `${((currentPrompt + 1) / prompts.length) * 100}%`,
-                }}
-              />
-            </div>
-
-            {/* Current Prompt */}
-            <p className="text-white font-semibold mb-2">
-              {prompts[currentPrompt]}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-10 h-10 text-yellow-300" />
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
             </p>
             <textarea
-              value={entries[currentPrompt]}
-              onChange={(e) => handleEntryChange(e.target.value)}
-              placeholder="Write your reflection (min 20 characters)..."
-              className="w-full h-24 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 resize-none"
-              maxLength={200}
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-lg bg-white/90"
+              disabled={showResult}
             />
-            <div className="text-white/50 text-sm text-right">
-              {entries[currentPrompt].length}/200
+            <div className="mt-2 text-white/50 text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
             </div>
-
-            {/* Next / Submit Button */}
             <button
-              onClick={handleNextPrompt}
-              disabled={entries[currentPrompt].trim().length < 20}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                entries[currentPrompt].trim().length >= 20
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
+              onClick={handleSubmit}
+              className={`mt-4 px-8 py-4 rounded-full text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
               }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
             >
-              {currentPrompt === prompts.length - 1
-                ? "Submit Journal"
-                : "Next Question →"}
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
             </button>
-
-            {/* Progress Indicator */}
-            <p className="text-center text-white/60 mt-3">
-              {currentPrompt + 1} / {prompts.length} reflections completed
-            </p>
-          </div>
-        ) : (
-          // ✅ Final Result / Feedback
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 transition-all duration-500">
-            <div className="text-7xl mb-4 text-center">🌟</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              Great Team Reflection!
-            </h2>
-
-            <div className="bg-purple-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white/70 text-sm mb-2">Your Journal Entries:</p>
-              {entries.map((entry, index) => (
-                <p key={index} className="text-white italic mb-2">
-                  • {entry}
-                </p>
-              ))}
-            </div>
-
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Cooperation brings out the best in everyone. Together, we
-                achieve what individuals alone cannot.
-              </p>
-            </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned 5 Coins! 🪙
-            </p>
           </div>
         )}
       </div>

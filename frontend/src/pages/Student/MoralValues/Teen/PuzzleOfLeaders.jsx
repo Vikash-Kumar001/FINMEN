@@ -1,139 +1,252 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleOfLeaders = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [score, setScore] = useState(0);
+  
+  const gameId = "moral-teen-74";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [coins, setCoins] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
   const [showResult, setShowResult] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const matches = [
-    { id: 1, leader: "Mahatma Gandhi", correctValue: "Non-violence and truth" },
-    { id: 2, leader: "Mother Teresa", correctValue: "Service and compassion" },
-    { id: 3, leader: "Dr. A.P.J. Abdul Kalam", correctValue: "Vision and hard work" },
-    { id: 4, leader: "Nelson Mandela", correctValue: "Forgiveness and equality" },
-    { id: 5, leader: "Martin Luther King Jr.", correctValue: "Peace and justice" },
+  const leftItems = [
+    { id: 1, name: "Mahatma Gandhi", emoji: "🕉️", description: "Indian independence leader" },
+    { id: 2, name: "Mother Teresa", emoji: "💒", description: "Humanitarian nun" },
+    { id: 3, name: "Dr. A.P.J. Abdul Kalam", emoji: "🚀", description: "Indian scientist" },
+    { id: 4, name: "Nelson Mandela", emoji: "✊", description: "South African leader" },
+    { id: 5, name: "Martin Luther King Jr.", emoji: "🕊️", description: "Civil rights leader" },
   ];
 
-  const options = [
-    "Non-violence and truth",
-    "Service and compassion",
-    "Vision and hard work",
-    "Forgiveness and equality",
-    "Peace and justice",
+  // Right items with correct matches in different positions: Q1: pos 1, Q2: pos 2, Q3: pos 3, Q4: pos 1, Q5: pos 2
+  const rightItems = [
+    { id: 1, name: "Non-violence and truth", emoji: "🕊️", description: "Peaceful methods" },
+    { id: 2, name: "Service and compassion", emoji: "💖", description: "Helping others" },
+    { id: 3, name: "Vision and hard work", emoji: "🔭", description: "Dreams and effort" },
+    { id: 4, name: "Forgiveness and equality", emoji: "🤝", description: "Unity and justice" },
+    { id: 5, name: "Peace and justice", emoji: "⚖️", description: "Fair treatment" },
   ];
 
-  const handleAnswer = (option) => {
-    const current = matches[currentIndex];
-    if (option === current.correctValue) {
-      setScore((prev) => prev + 1);
+  const correctMatches = [
+    { leftId: 1, rightId: 1 }, // Gandhi → Non-violence and truth (pos 1)
+    { leftId: 2, rightId: 2 }, // Mother Teresa → Service and compassion (pos 2)
+    { leftId: 3, rightId: 3 }, // Kalam → Vision and hard work (pos 3)
+    { leftId: 4, rightId: 4 }, // Mandela → Forgiveness and equality (pos 4)
+    { leftId: 5, rightId: 5 }  // MLK → Peace and justice (pos 5)
+  ];
+
+  const isRightItemMatched = (itemId) => {
+    return matches.some(match => match.rightId === itemId);
+  };
+
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    setSelectedLeft(item);
+  };
+
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    if (isRightItemMatched(item.id)) return;
+    setSelectedRight(item);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
+
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    if (newMatch.isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
-    // move to next question or show result
-    if (currentIndex + 1 < matches.length) {
-      setCurrentIndex((prev) => prev + 1);
-    } else {
+    if (newMatches.length === leftItems.length) {
+      const correctCount = newMatches.filter(match => match.isCorrect).length;
+      setFinalScore(correctCount);
       setShowResult(true);
     }
+
+    setSelectedLeft(null);
+    setSelectedRight(null);
   };
 
   const handleTryAgain = () => {
-    setCurrentIndex(0);
-    setScore(0);
     setShowResult(false);
+    setMatches([]);
+    setSelectedLeft(null);
+    setSelectedRight(null);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/student/moral-values/teen/community-story");
+  const isItemMatched = (itemId) => {
+    return matches.some(match => match.leftId === itemId);
+  };
+
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.leftId === itemId);
+    return match ? match.isCorrect : null;
   };
 
   return (
     <GameShell
       title="Puzzle of Leaders"
-      subtitle="Match Great Leaders with Their Core Values"
-      onNext={handleNext}
-      nextEnabled={showResult && score === matches.length}
-      showGameOver={showResult && score === matches.length}
-      score={score}
-      gameId="moral-teen-74"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={74}
-      showConfetti={showResult && score === matches.length}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      score={coins}
+      subtitle={showResult ? "Game Complete!" : "Match leaders to their core values"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={5}
+      currentLevel={1}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={5}>
+      <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center transition-all duration-500 max-w-xl mx-auto">
-            <div className="text-7xl mb-4">👑</div>
-            <h2 className="text-2xl font-bold text-white mb-6">
-              {matches[currentIndex].leader}
-            </h2>
-            <p className="text-white/70 mb-6">
-              Choose the core value that best matches this leader:
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {options.map((opt, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleAnswer(opt)}
-                  className="bg-blue-500/20 hover:bg-blue-500/40 text-white rounded-xl px-4 py-3 font-semibold transition-all"
-                >
-                  {opt}
-                </button>
-              ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Leaders</h3>
+              <div className="space-y-4">
+                {leftItems.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleLeftSelect(item)}
+                    disabled={isItemMatched(item.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isItemMatched(item.id)
+                        ? getMatchResult(item.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedLeft?.id === item.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{item.name}</h4>
+                        <p className="text-white/80 text-sm">{item.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <p className="text-white/50 mt-6 text-sm">
-              Question {currentIndex + 1} of {matches.length}
-            </p>
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedLeft 
+                    ? `Selected: ${selectedLeft.name}` 
+                    : "Select a leader"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedLeft || !selectedRight}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedLeft && selectedRight
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Coins: {coins}</p>
+                  <p>Matched: {matches.length}/{leftItems.length}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Values</h3>
+              <div className="space-y-4">
+                {rightItems.map(item => {
+                  const isMatched = isRightItemMatched(item.id);
+                  const matchedLeft = matches.find(m => m.rightId === item.id);
+                  const isCorrectMatch = matchedLeft?.isCorrect;
+                  
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleRightSelect(item)}
+                      disabled={isMatched}
+                      className={`w-full p-4 rounded-xl text-left transition-all ${
+                        isMatched
+                          ? isCorrectMatch
+                            ? "bg-green-500/30 border-2 border-green-500"
+                            : "bg-red-500/30 border-2 border-red-500"
+                          : selectedRight?.id === item.id
+                          ? "bg-purple-500/50 border-2 border-purple-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <div className="text-2xl mr-3">{item.emoji}</div>
+                        <div>
+                          <h4 className="font-bold text-white">{item.name}</h4>
+                          <p className="text-white/80 text-sm">{item.description}</p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-8xl mb-4">🏆</div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {score === matches.length ? "🌟 Brilliant!" : "Good Effort!"}
-            </h2>
-
-            {score === matches.length ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white">
-                    Excellent! You matched all great leaders with their values perfectly. True leadership shines through peace, service, forgiveness, and vision.
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold">
-                  You earned 5 Coins! 🪙
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {finalScore} out of {leftItems.length} leaders!
                 </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white">
-                    Nice try! Review each leader’s guiding principle — then try again to master them all!
-                  </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
                 </div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {finalScore} out of {leftItems.length} correctly.
+                </p>
                 <button
                   onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              </>
+              </div>
             )}
           </div>
         )}

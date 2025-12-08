@@ -1,238 +1,205 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const DebateKindnessOrStrength = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const gameId = "moral-teen-26";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentRound, setCurrentRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
-  const [argument, setArgument] = useState("");
-  const [rebuttal, setRebuttal] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [totalCorrect, setTotalCorrect] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [answered, setAnswered] = useState(false);
+  const [gameComplete, setGameComplete] = useState(false);
 
-  const debates = [
+  const debateTopics = [
     {
       id: 1,
-      topic: "Is kindness a sign of strength or weakness?",
+      scenario: "Is kindness a sign of strength or weakness?",
       positions: [
-        { id: 1, position: "Weakness - people take advantage", emoji: "😕", isCorrect: false },
-        { id: 2, position: "Strength - it takes courage to stay kind", emoji: "💪", isCorrect: true },
-      ],
+        { id: "strength", text: "FOR: It takes courage to stay kind", emoji: "💪", points: ["Shows inner strength", "Requires self-control", "Builds respect"], isCorrect: true },
+        { id: "balanced", text: "BALANCED: It depends on the situation", emoji: "⚖️", points: ["Context matters", "Balance is key", "Choose wisely"], isCorrect: false },
+        { id: "weakness", text: "AGAINST: People take advantage", emoji: "😕", points: ["Makes you vulnerable", "Others exploit", "Shows weakness"], isCorrect: false }
+      ]
     },
     {
       id: 2,
-      topic: "Does being kind make you vulnerable?",
+      scenario: "Does being kind make you vulnerable?",
       positions: [
-        { id: 1, position: "Yes - people might hurt you", emoji: "🥺", isCorrect: false },
-        { id: 2, position: "No - kindness inspires and uplifts", emoji: "🌈", isCorrect: true },
-      ],
+        { id: "balanced", text: "BALANCED: Sometimes, but worth it", emoji: "⚖️", points: ["Risks exist", "Benefits too", "Be wise"], isCorrect: false },
+        { id: "inspire", text: "FOR: Kindness inspires and uplifts", emoji: "🌈", points: ["Creates positivity", "Builds connections", "Makes impact"], isCorrect: true },
+        { id: "hurt", text: "AGAINST: People might hurt you", emoji: "🥺", points: ["Too risky", "Get hurt", "Protect yourself"], isCorrect: false }
+      ]
     },
     {
       id: 3,
-      topic: "Can kindness change others’ behavior?",
+      scenario: "Can kindness change others' behavior?",
       positions: [
-        { id: 1, position: "No - people don’t change easily", emoji: "🙄", isCorrect: false },
-        { id: 2, position: "Yes - kindness can heal and motivate", emoji: "💖", isCorrect: true },
-      ],
+        { id: "nochange", text: "AGAINST: People don't change easily", emoji: "🙄", points: ["Waste of effort", "No impact", "People stay same"], isCorrect: false },
+        { id: "balanced", text: "BALANCED: Sometimes it helps", emoji: "⚖️", points: ["Can work", "Not always", "Try anyway"], isCorrect: false },
+        { id: "heal", text: "FOR: Kindness can heal and motivate", emoji: "💖", points: ["Creates change", "Heals wounds", "Inspires growth"], isCorrect: true }
+      ]
     },
     {
       id: 4,
-      topic: "Is standing up for others a form of kindness?",
+      scenario: "Is standing up for others a form of kindness?",
       positions: [
-        { id: 1, position: "No - it causes conflict", emoji: "😬", isCorrect: false },
-        { id: 2, position: "Yes - kindness includes courage", emoji: "🦁", isCorrect: true },
-      ],
+        { id: "courage", text: "FOR: Kindness includes courage", emoji: "🦁", points: ["Protect others", "Show care", "Stand strong"], isCorrect: true },
+        { id: "conflict", text: "AGAINST: It causes conflict", emoji: "😬", points: ["Creates problems", "Avoid trouble", "Stay out"], isCorrect: false },
+        { id: "balanced", text: "BALANCED: Depends on how you do it", emoji: "⚖️", points: ["Method matters", "Be careful", "Choose approach"], isCorrect: false }
+      ]
     },
     {
       id: 5,
-      topic: "Can a strong leader also be kind?",
+      scenario: "Can a strong leader also be kind?",
       positions: [
-        { id: 1, position: "No - kindness makes you soft", emoji: "🧊", isCorrect: false },
-        { id: 2, position: "Yes - true strength includes kindness", emoji: "👑", isCorrect: true },
-      ],
-    },
+        { id: "balanced", text: "BALANCED: Balance both qualities", emoji: "⚖️", points: ["Mix of both", "Find balance", "Be flexible"], isCorrect: false },
+        { id: "soft", text: "AGAINST: Kindness makes you soft", emoji: "🧊", points: ["Weakens authority", "Lose respect", "Too gentle"], isCorrect: false },
+        { id: "true", text: "FOR: True strength includes kindness", emoji: "👑", points: ["Real leadership", "Respect and care", "Best leaders"], isCorrect: true }
+      ]
+    }
   ];
 
-  const currentDebate = debates[currentIndex];
+  const handlePositionSelect = (positionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    const topic = debateTopics[currentRound];
+    const isCorrect = topic.positions.find(pos => pos.id === positionId)?.isCorrect;
 
-  const handleSubmit = () => {
-    const pos = currentDebate.positions.find((p) => p.id === selectedPosition);
-    if (pos?.isCorrect && argument.trim().length >= 30 && rebuttal.trim().length >= 20) {
-      showCorrectAnswerFeedback(2, true);
-      setTotalCorrect((prev) => prev + 1);
+    setSelectedPosition(positionId);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
 
-    if (currentIndex < debates.length - 1) {
-      setTimeout(() => {
-        setCurrentIndex((prev) => prev + 1);
-        setSelectedPosition(null);
-        setArgument("");
-        setRebuttal("");
-      }, 600);
+    const isLastRound = currentRound === debateTopics.length - 1;
+    
+    if (isLastRound) {
+      setGameComplete(true);
+      setTimeout(() => setShowResult(true), 500);
     } else {
-      const earned = totalCorrect + (pos?.isCorrect ? 1 : 0);
-      setCoins(earned * 2);
-      setShowFeedback(true);
+      setTimeout(() => {
+        setCurrentRound(prev => prev + 1);
+        setSelectedPosition(null);
+        setAnswered(false);
+      }, 500);
     }
   };
-
-  const handleTryAgain = () => {
-    setSelectedPosition(null);
-    setArgument("");
-    setRebuttal("");
-    setCurrentIndex(0);
-    setCoins(0);
-    setShowFeedback(false);
-    setTotalCorrect(0);
-  };
-
-  const handleNext = () => {
-    navigate("/student/moral-values/teen/journal-empathy1");
-  };
-
-  const selectedPos = currentDebate.positions.find((p) => p.id === selectedPosition);
 
   return (
     <GameShell
       title="Debate: Kindness or Strength"
-      score={coins}
-      subtitle="Exploring True Strength"
-      onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
+      subtitle={!showResult ? `Round ${currentRound + 1} of ${debateTopics.length}` : "Debate Complete!"}
+      score={score}
+      currentLevel={currentRound + 1}
+      totalLevels={debateTopics.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={debateTopics.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showFeedback && coins > 0}
-      
-      gameId="moral-teen-26"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={26}
-      showConfetti={showFeedback && coins > 0}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
+      gameId={gameId}
+      gameType="moral"
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-6xl mb-4 text-center">💬</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              Debate {currentIndex + 1} of {debates.length}
-            </h2>
-
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-xl font-semibold text-center">
-                {currentDebate.topic}
-              </p>
+        {!showResult && debateTopics[currentRound] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Round {currentRound + 1}/{debateTopics.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{debateTopics.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-4">{debateTopics[currentRound].scenario}</h3>
+              <h4 className="text-lg font-semibold text-white/90 mb-4">Take a Position:</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {debateTopics[currentRound].positions.map((position) => (
+                  <button
+                    key={position.id}
+                    onClick={() => handlePositionSelect(position.id)}
+                    disabled={answered}
+                    className={`w-full text-left p-6 rounded-2xl transition-all transform hover:scale-105 border ${
+                      answered && selectedPosition === position.id
+                        ? position.isCorrect
+                          ? "bg-green-500/20 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-red-400 ring-4 ring-red-400"
+                        : selectedPosition === position.id
+                        ? "bg-blue-500/30 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border-white/20"
+                    } ${answered ? "opacity-75 cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center mb-2">
+                      <span className="text-2xl mr-2">{position.emoji}</span>
+                      <div className="font-bold text-lg text-white">{position.text}</div>
+                    </div>
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-white/80">
+                      {position.points.map((point, index) => (
+                        <li key={index}>{point}</li>
+                      ))}
+                    </ul>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4">1. Choose Your Position</h3>
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {currentDebate.positions.map((pos) => (
-                <button
-                  key={pos.id}
-                  onClick={() => setSelectedPosition(pos.id)}
-                  className={`border-2 rounded-xl p-4 transition-all ${
-                    selectedPosition === pos.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="text-3xl mb-2">{pos.emoji}</div>
-                  <div className="text-white font-semibold text-sm text-center">
-                    {pos.position}
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <h3 className="text-white font-bold mb-2">
-              2. Write Your Argument (min 30 chars)
-            </h3>
-            <textarea
-              value={argument}
-              onChange={(e) => setArgument(e.target.value)}
-              placeholder="Share your reasoning..."
-              className="w-full h-24 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={200}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">
-              {argument.length}/200
-            </div>
-
-            <h3 className="text-white font-bold mb-2">
-              3. Prepare Rebuttal (min 20 chars)
-            </h3>
-            <textarea
-              value={rebuttal}
-              onChange={(e) => setRebuttal(e.target.value)}
-              placeholder="Counter the other side..."
-              className="w-full h-20 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={150}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">
-              {rebuttal.length}/150
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedPosition || argument.trim().length < 30 || rebuttal.trim().length < 20}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedPosition && argument.trim().length >= 30 && rebuttal.trim().length >= 20
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Submit Response
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">💖</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {coins >= 8 ? "🌟 Kindness is Power!" : "Think Deeper..."}
-            </h2>
-
-            {coins >= 8 ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Beautiful reasoning! Kindness isn’t weakness — it’s real
-                    strength. It takes confidence, control, and compassion to
-                    stay kind in a tough world. True leaders combine both
-                    courage and kindness.
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned {coins} Coins! 🪙
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Debate Master!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You scored {score} out of {debateTopics.length}!
+                  You understand that kindness is true strength!
                 </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Kindness may seem soft, but it takes inner strength. Try
-                    again to explore how compassion builds strong relationships
-                    and leadership.
-                  </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
+                <p className="text-white/80">
+                  Lesson: Kindness isn't weakness — it's real strength that takes courage and confidence!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You scored {score} out of {debateTopics.length}.
+                  Remember, true strength includes kindness and compassion!
+                </p>
                 <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  onClick={() => {
+                    setShowResult(false);
+                    setCurrentRound(0);
+                    setScore(0);
+                    setSelectedPosition(null);
+                    setAnswered(false);
+                    setGameComplete(false);
+                    resetFeedback();
+                  }}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  Tip: Kindness requires inner strength and shows true leadership qualities.
+                </p>
+              </div>
             )}
           </div>
         )}

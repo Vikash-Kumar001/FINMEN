@@ -1,208 +1,206 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const DebateEqualVsFair = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  
+  const gameId = "moral-teen-46";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentRound, setCurrentRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
-  const [argument, setArgument] = useState("");
-  const [rebuttal, setRebuttal] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [answered, setAnswered] = useState(false);
+  const [gameComplete, setGameComplete] = useState(false);
 
-  // 🧩 5 Debate Topics for Equal vs Fair
-  const debates = [
+  const debateTopics = [
     {
-      topic: "Is treating everyone the same always fair?",
+      id: 1,
+      scenario: "Is treating everyone the same always fair?",
       positions: [
-        { id: 1, position: "Yes, equal means fair", emoji: "⚖️", isCorrect: false },
-        { id: 2, position: "No, fairness can mean giving based on need", emoji: "🎯", isCorrect: true }
+        { id: "need", text: "FOR: Fairness can mean giving based on need", emoji: "🎯", points: ["Consider needs", "True fairness", "Help those who need"], isCorrect: true },
+        { id: "balanced", text: "BALANCED: Sometimes equal, sometimes need-based", emoji: "⚖️", points: ["Depends on situation", "Balance both", "Use judgment"], isCorrect: false },
+        { id: "equal", text: "AGAINST: Equal means fair", emoji: "⚖️", points: ["Same for everyone", "No exceptions", "Equal treatment"], isCorrect: false }
       ]
     },
     {
-      topic: "Should all students get the same resources, even if some need more help?",
+      id: 2,
+      scenario: "Should all students get the same resources, even if some need more help?",
       positions: [
-        { id: 1, position: "Yes, same for everyone", emoji: "📚", isCorrect: false },
-        { id: 2, position: "No, extra help for those who need it is fair", emoji: "💡", isCorrect: true }
+        { id: "balanced", text: "BALANCED: Base resources on needs", emoji: "⚖️", points: ["Consider needs", "Fair distribution", "Support learning"], isCorrect: false },
+        { id: "help", text: "FOR: Extra help for those who need it is fair", emoji: "💡", points: ["Support learning", "Level playing field", "True fairness"], isCorrect: true },
+        { id: "same", text: "AGAINST: Same for everyone", emoji: "📚", points: ["Equal resources", "No special treatment", "Fair share"], isCorrect: false }
       ]
     },
     {
-      topic: "If two players practice differently, should they get equal rewards?",
+      id: 3,
+      scenario: "If two players practice differently, should they get equal rewards?",
       positions: [
-        { id: 1, position: "Yes, equality first", emoji: "🏅", isCorrect: false },
-        { id: 2, position: "No, reward effort and performance fairly", emoji: "🔥", isCorrect: true }
+        { id: "effort", text: "AGAINST: Reward effort and performance fairly", emoji: "🔥", points: ["Reward hard work", "Recognize effort", "Fair recognition"], isCorrect: false },
+        { id: "balanced", text: "BALANCED: Consider both effort and results", emoji: "⚖️", points: ["Balance factors", "Consider all", "Fair evaluation"], isCorrect: false },
+        { id: "performance", text: "FOR: Reward based on performance fairly", emoji: "🏅", points: ["Recognize achievement", "Fair competition", "Merit-based"], isCorrect: true }
       ]
     },
     {
-      topic: "In a family, should all siblings get the same allowance regardless of chores?",
+      id: 4,
+      scenario: "In a family, should all siblings get the same allowance regardless of chores?",
       positions: [
-        { id: 1, position: "Yes, equal treatment", emoji: "💰", isCorrect: false },
-        { id: 2, position: "No, fair means based on contribution", emoji: "🧹", isCorrect: true }
+        { id: "contribution", text: "FOR: Fair means based on contribution", emoji: "🧹", points: ["Reward work", "Fair compensation", "Encourage responsibility"], isCorrect: true },
+        { id: "equal", text: "AGAINST: Equal treatment", emoji: "💰", points: ["Same for all", "No differences", "Equal share"], isCorrect: false },
+        { id: "balanced", text: "BALANCED: Base on age and contribution", emoji: "⚖️", points: ["Consider factors", "Fair system", "Balance needs"], isCorrect: false }
       ]
     },
     {
-      topic: "At school, should teachers give everyone the same grade for trying?",
+      id: 5,
+      scenario: "At school, should teachers give everyone the same grade for trying?",
       positions: [
-        { id: 1, position: "Yes, equality matters", emoji: "📝", isCorrect: false },
-        { id: 2, position: "No, fairness rewards effort and skill", emoji: "🏆", isCorrect: true }
+        { id: "balanced", text: "BALANCED: Consider effort and skill", emoji: "⚖️", points: ["Balance factors", "Fair evaluation", "Recognize both"], isCorrect: false },
+        { id: "equality", text: "AGAINST: Equality matters", emoji: "📝", points: ["Same grades", "Equal recognition", "No differences"], isCorrect: false },
+        { id: "fairness", text: "FOR: Fairness rewards effort and skill", emoji: "🏆", points: ["Recognize achievement", "Fair assessment", "Merit-based"], isCorrect: true }
       ]
     }
   ];
 
-  const handleSubmit = () => {
-    const currentDebate = debates[currentQuestion];
-    if (selectedPosition === 2 && argument.trim().length >= 30 && rebuttal.trim().length >= 20) {
-      showCorrectAnswerFeedback(10, true);
-      setCoins(coins + 10);
-      setShowFeedback(true);
-    } else if (selectedPosition && argument.trim().length >= 30 && rebuttal.trim().length >= 20) {
-      setShowFeedback(true);
-    }
-  };
+  const handlePositionSelect = (positionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    const topic = debateTopics[currentRound];
+    const isCorrect = topic.positions.find(pos => pos.id === positionId)?.isCorrect;
 
-  const handleNext = () => {
-    if (currentQuestion < debates.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedPosition(null);
-      setArgument("");
-      setRebuttal("");
-      setShowFeedback(false);
+    setSelectedPosition(positionId);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    const isLastRound = currentRound === debateTopics.length - 1;
+    
+    if (isLastRound) {
+      setGameComplete(true);
+      setTimeout(() => setShowResult(true), 500);
     } else {
-      navigate("/student/moral-values/teen/journal-fairness");
+      setTimeout(() => {
+        setCurrentRound(prev => prev + 1);
+        setSelectedPosition(null);
+        setAnswered(false);
+      }, 500);
     }
   };
-
-  const selectedPos = debates[currentQuestion].positions.find(p => p.id === selectedPosition);
 
   return (
     <GameShell
       title="Debate: Equal vs Fair"
-      subtitle="Understanding Real Fairness"
-      onNext={handleNext}
-      nextEnabled={showFeedback && selectedPos?.isCorrect}
-      showGameOver={showFeedback && selectedPos?.isCorrect}
-      score={coins}
-      gameId="moral-teen-46"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={46}
-      showConfetti={showFeedback && selectedPos?.isCorrect}
+      subtitle={!showResult ? `Round ${currentRound + 1} of ${debateTopics.length}` : "Debate Complete!"}
+      score={score}
+      currentLevel={currentRound + 1}
+      totalLevels={debateTopics.length}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={debateTopics.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
+      gameId={gameId}
+      gameType="moral"
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-6xl mb-4 text-center">⚖️</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">Debate Topic</h2>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-xl font-semibold text-center">{debates[currentQuestion].topic}</p>
+        {!showResult && debateTopics[currentRound] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Round {currentRound + 1}/{debateTopics.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{debateTopics.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-4">{debateTopics[currentRound].scenario}</h3>
+              <h4 className="text-lg font-semibold text-white/90 mb-4">Take a Position:</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {debateTopics[currentRound].positions.map((position) => (
+                  <button
+                    key={position.id}
+                    onClick={() => handlePositionSelect(position.id)}
+                    disabled={answered}
+                    className={`w-full text-left p-6 rounded-2xl transition-all transform hover:scale-105 border ${
+                      answered && selectedPosition === position.id
+                        ? position.isCorrect
+                          ? "bg-green-500/20 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-red-400 ring-4 ring-red-400"
+                        : selectedPosition === position.id
+                        ? "bg-blue-500/30 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border-white/20"
+                    } ${answered ? "opacity-75 cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center mb-2">
+                      <span className="text-2xl mr-2">{position.emoji}</span>
+                      <div className="font-bold text-lg text-white">{position.text}</div>
+                    </div>
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-white/80">
+                      {position.points.map((point, index) => (
+                        <li key={index}>{point}</li>
+                      ))}
+                    </ul>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4">1. Choose Your Position</h3>
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {debates[currentQuestion].positions.map(pos => (
-                <button
-                  key={pos.id}
-                  onClick={() => setSelectedPosition(pos.id)}
-                  className={`border-2 rounded-xl p-4 transition-all ${
-                    selectedPosition === pos.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">{pos.emoji}</div>
-                  <div className="text-white font-semibold text-sm text-center">{pos.position}</div>
-                </button>
-              ))}
-            </div>
-
-            <h3 className="text-white font-bold mb-2">2. Build Your Argument (min 30 chars)</h3>
-            <textarea
-              value={argument}
-              onChange={(e) => setArgument(e.target.value)}
-              placeholder="Explain why fairness is not always equality..."
-              className="w-full h-24 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={200}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">{argument.length}/200</div>
-
-            <h3 className="text-white font-bold mb-2">3. Prepare Your Rebuttal (min 20 chars)</h3>
-            <textarea
-              value={rebuttal}
-              onChange={(e) => setRebuttal(e.target.value)}
-              placeholder="Counter the equality-only viewpoint..."
-              className="w-full h-20 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={150}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">{rebuttal.length}/150</div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedPosition || argument.trim().length < 30 || rebuttal.trim().length < 20}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedPosition && argument.trim().length >= 30 && rebuttal.trim().length >= 20
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Submit Debate
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedPos?.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedPos?.isCorrect ? "🏆 Fairness Expert!" : "Think Deeper..."}
-            </h2>
-
-            {selectedPos?.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Great point! Equality gives everyone the same thing, but fairness means giving people what they truly need. 
-                    Real justice considers effort, context, and individual needs — not just sameness.
-                  </p>
-                </div>
-                <div className="bg-purple-500/20 rounded-lg p-3 mb-4">
-                  <p className="text-white/80 text-sm mb-1">Your Argument:</p>
-                  <p className="text-white italic">"{argument}"</p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 10 Coins! 🪙
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Debate Master!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You scored {score} out of {debateTopics.length}!
+                  You understand that fairness sometimes means need-based treatment!
                 </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Equal treatment isn't always fair. Fairness looks at each person's needs and efforts. 
-                    True justice balances both equality and compassion.
-                  </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
-                <p className="text-white/70 text-center">Try again with a thoughtful argument!</p>
-              </>
+                <p className="text-white/80">
+                  Lesson: Sometimes fair means need-based — equal isn't always fair!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You scored {score} out of {debateTopics.length}.
+                  Remember, fairness considers needs and circumstances!
+                </p>
+                <button
+                  onClick={() => {
+                    setShowResult(false);
+                    setCurrentRound(0);
+                    setScore(0);
+                    setSelectedPosition(null);
+                    setAnswered(false);
+                    setGameComplete(false);
+                    resetFeedback();
+                  }}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Fairness means giving people what they need, not always the same thing.
+                </p>
+              </div>
             )}
-
-            <button
-              onClick={handleNext}
-              className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              Next Question
-            </button>
           </div>
         )}
       </div>

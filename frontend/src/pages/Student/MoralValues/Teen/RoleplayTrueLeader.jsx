@@ -1,233 +1,302 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const RoleplayTrueLeader = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [selectedApproach, setSelectedApproach] = useState(null);
-  const [leaderResponse, setLeaderResponse] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [earnedBadge, setEarnedBadge] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("moral-teen-78");
+  const gameId = gameData?.id || "moral-teen-78";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for RoleplayTrueLeader, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  // 🧭 5 service-based leadership scenarios
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      situation:
-        "Your team is struggling to complete a science project. Some members are tired. As a true leader, what do you do?",
-      approaches: [
-        { id: 1, text: "Tell them to hurry up without helping", isCorrect: false },
-        { id: 2, text: "Offer to help and motivate the team to finish together", isCorrect: true },
-        { id: 3, text: "Blame them for being slow", isCorrect: false },
-      ],
+      text: "Your team is struggling to complete a science project. Some members are tired. As a true leader, what do you do?",
+      emoji: "🔬",
+      options: [
+        { 
+          id: "help", 
+          text: "Offer to help and motivate the team to finish together", 
+          emoji: "💪", 
+          description: "Helping and motivating shows true leadership",
+          isCorrect: true 
+        },
+        { 
+          id: "hurry", 
+          text: "Tell them to hurry up without helping", 
+          emoji: "😠", 
+          description: "Commanding without helping isn't true leadership",
+          isCorrect: false 
+        },
+        { 
+          id: "blame", 
+          text: "Blame them for being slow", 
+          emoji: "👆", 
+          description: "Blaming doesn't help the team",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 2,
-      situation:
-        "During cleaning duty, one student refuses to help. How does a true leader respond?",
-      approaches: [
-        { id: 1, text: "Do the task yourself and inspire others by example", isCorrect: true },
-        { id: 2, text: "Complain loudly to the teacher", isCorrect: false },
-        { id: 3, text: "Ignore it and leave the work unfinished", isCorrect: false },
-      ],
+      text: "During cleaning duty, one student refuses to help. How does a true leader respond?",
+      emoji: "🧹",
+      options: [
+        { 
+          id: "complain", 
+          text: "Complain loudly to the teacher", 
+          emoji: "😠", 
+          description: "Complaining doesn't show leadership",
+          isCorrect: false 
+        },
+        { 
+          id: "example", 
+          text: "Do the task yourself and inspire others by example", 
+          emoji: "🌟", 
+          description: "Leading by example shows true leadership",
+          isCorrect: true 
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it and leave the work unfinished", 
+          emoji: "😶", 
+          description: "Ignoring problems doesn't show leadership",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 3,
-      situation:
-        "Your friend takes credit for work you helped with. What’s a true leader’s action?",
-      approaches: [
-        { id: 1, text: "Publicly argue and embarrass them", isCorrect: false },
-        { id: 2, text: "Calmly talk later and focus on teamwork over ego", isCorrect: true },
-        { id: 3, text: "Stop working with them forever", isCorrect: false },
-      ],
+      text: "Your friend takes credit for work you helped with. What's a true leader's action?",
+      emoji: "👥",
+      options: [
+        { 
+          id: "argue", 
+          text: "Publicly argue and embarrass them", 
+          emoji: "😠", 
+          description: "Public arguments damage relationships",
+          isCorrect: false 
+        },
+        { 
+          id: "stop", 
+          text: "Stop working with them forever", 
+          emoji: "🚫", 
+          description: "Cutting ties doesn't resolve issues",
+          isCorrect: false 
+        },
+        { 
+          id: "calm", 
+          text: "Calmly talk later and focus on teamwork over ego", 
+          emoji: "🤝", 
+          description: "Calm communication shows mature leadership",
+          isCorrect: true 
+        }
+      ]
     },
     {
       id: 4,
-      situation:
-        "A classmate makes a mistake while presenting. Everyone laughs. What do you do as a leader?",
-      approaches: [
-        { id: 1, text: "Join in the laughter", isCorrect: false },
-        { id: 2, text: "Encourage them and remind others to be kind", isCorrect: true },
-        { id: 3, text: "Stay silent and ignore it", isCorrect: false },
-      ],
+      text: "A classmate makes a mistake while presenting. Everyone laughs. What do you do as a leader?",
+      emoji: "🎤",
+      options: [
+        { 
+          id: "encourage", 
+          text: "Encourage them and remind others to be kind", 
+          emoji: "💪", 
+          description: "Encouraging and promoting kindness shows leadership",
+          isCorrect: true 
+        },
+        { 
+          id: "laugh", 
+          text: "Join in the laughter", 
+          emoji: "😄", 
+          description: "Laughing at mistakes is unkind",
+          isCorrect: false 
+        },
+        { 
+          id: "silent", 
+          text: "Stay silent and ignore it", 
+          emoji: "😶", 
+          description: "Leaders should support others",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 5,
-      situation:
-        "Your team wins a competition. As the leader, how do you celebrate?",
-      approaches: [
-        { id: 1, text: "Thank the team and share credit with everyone", isCorrect: true },
-        { id: 2, text: "Take all the praise for yourself", isCorrect: false },
-        { id: 3, text: "Ignore the team and post about it alone", isCorrect: false },
-      ],
-    },
+      text: "Your team wins a competition. As the leader, how do you celebrate?",
+      emoji: "🏆",
+      options: [
+        { 
+          id: "praise", 
+          text: "Take all the praise for yourself", 
+          emoji: "😏", 
+          description: "Taking all credit is selfish",
+          isCorrect: false 
+        },
+        { 
+          id: "thank", 
+          text: "Thank the team and share credit with everyone", 
+          emoji: "👏", 
+          description: "Sharing credit shows true leadership",
+          isCorrect: true 
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore the team and post about it alone", 
+          emoji: "😶", 
+          description: "Ignoring the team is disrespectful",
+          isCorrect: false 
+        }
+      ]
+    }
   ];
 
-  const currentScenario = scenarios[currentQuestion];
-
-  const handleSubmit = () => {
-    if (selectedApproach && leaderResponse.trim().length >= 20) {
-      if (currentScenario.approaches.find((a) => a.id === selectedApproach)?.isCorrect) {
-        showCorrectAnswerFeedback(1, true);
-        setEarnedBadge(true);
-      } else {
-        setEarnedBadge(false);
-      }
-      setShowFeedback(true);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentQuestion < scenarios.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedApproach(null);
-      setLeaderResponse("");
-      setShowFeedback(false);
-      setEarnedBadge(false);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      navigate("/student/moral-values/teen/reflex-team-first");
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const selectedApp = currentScenario.approaches.find((a) => a.id === selectedApproach);
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
+    resetFeedback();
+  };
 
   return (
     <GameShell
       title="Roleplay: True Leader"
-      subtitle="Leading by Serving Others"
-      onNext={handleNext}
-      nextEnabled={showFeedback && earnedBadge}
-      showGameOver={showFeedback && currentQuestion === scenarios.length - 1 && earnedBadge}
-      score={earnedBadge ? (currentQuestion + 1) * 1 : currentQuestion * 1}
-      gameId="moral-teen-true-leader-78"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={78}
-      showConfetti={showFeedback && earnedBadge}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={scenarios.length} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showFeedback ? (
-          // 🧠 Question Screen
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">🫶</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              Leadership Scenario {currentQuestion + 1}/5
-            </h2>
-
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed">
-                {currentScenario.situation}
-              </p>
+      gameId={gameId}
+      gameType="moral"
+    >
+      <div className="space-y-8 max-w-2xl mx-auto">
+        {!showResult && questions[currentQuestion] ? (
+          <div>
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{questions[currentQuestion].emoji}</div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`w-full text-left p-4 rounded-xl transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{option.emoji}</span>
+                      <div className="flex-1">
+                        <div className="font-semibold text-lg">{option.text}</div>
+                        <div className="text-sm opacity-90">{option.description}</div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4">1️⃣ Choose the Best Leadership Action</h3>
-            <div className="space-y-3 mb-6">
-              {currentScenario.approaches.map((app) => (
-                <button
-                  key={app.id}
-                  onClick={() => setSelectedApproach(app.id)}
-                  className={`w-full border-2 rounded-xl p-4 transition-all ${
-                    selectedApproach === app.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="text-white font-semibold">{app.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <h3 className="text-white font-bold mb-2">2️⃣ What Would You Say? (min 20 chars)</h3>
-            <textarea
-              value={leaderResponse}
-              onChange={(e) => setLeaderResponse(e.target.value)}
-              placeholder="Write what you would say to inspire or support your team..."
-              className="w-full h-32 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={200}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">
-              {leaderResponse.length}/200
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedApproach || leaderResponse.trim().length < 20}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedApproach && leaderResponse.trim().length >= 20
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Submit Leadership
-            </button>
           </div>
         ) : (
-          // ✅ Feedback Screen with Next Button
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-7xl mb-4">
-              {selectedApp.isCorrect ? "🏅" : "🤔"}
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {selectedApp.isCorrect ? "True Leader Badge!" : "Try Again..."}
-            </h2>
-
-            {selectedApp.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white">
-                    Excellent! A true leader serves others, leads with kindness,
-                    and lifts the whole team up — not just themselves.
-                  </p>
-                </div>
-                <div className="bg-purple-500/20 rounded-lg p-3 mb-6">
-                  <p className="text-white/80 text-sm mb-1">Your Response:</p>
-                  <p className="text-white italic">"{leaderResponse}"</p>
-                </div>
-                <div className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-xl p-6 text-center mb-6">
-                  <div className="text-5xl mb-2">🏅</div>
-                  <p className="text-white text-2xl font-bold">True Leader Badge!</p>
-                  <p className="text-white/80 text-sm mt-2">
-                    You led by example and service!
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white">
-                    {selectedApproach === 1
-                      ? "Commanding without support isn’t leadership — it’s authority. True leaders serve first."
-                      : "Ignoring or blaming weakens trust. A real leader inspires and helps others succeed."}
-                  </p>
-                </div>
-                <p className="text-white/70 mb-6">
-                  Reflect on how service builds true leadership — and try again!
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">You're a True Leader!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You know how to lead by serving others!
                 </p>
-              </>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: True leaders serve others, lead by example, and share credit with their team!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember: Choose actions that serve and support your team!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: True leaders serve others, lead by example, and share credit. Practice leading through service!
+                </p>
+              </div>
             )}
-
-            {/* 👉 Added Next Button */}
-            <button
-              onClick={handleNext}
-              className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90 transition"
-            >
-              {currentQuestion < scenarios.length - 1 ? "Next Scenario ➡️" : "Finish 🏁"}
-            </button>
           </div>
         )}
       </div>

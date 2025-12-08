@@ -1,214 +1,293 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ResponsibilityStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-teen-31";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const [coins, setCoins] = useState(0);
-  const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      title: "Project Leadership",
-      emoji: "📊",
-      situation: "You’re leading a group project. Do you divide work fairly or dump it on others?",
-      choices: [
-        { id: 1, text: "Dump work on others", emoji: "😅", isCorrect: false },
-        { id: 2, text: "Divide work fairly", emoji: "✅", isCorrect: true },
-      ],
+      text: "You're leading a group project. Do you divide work fairly or dump it on others?",
+      options: [
+        { 
+          id: "dump", 
+          text: "Dump work on others", 
+          emoji: "😅", 
+          description: "Push all the work onto other team members",
+          isCorrect: false
+        },
+        { 
+          id: "divide", 
+          text: "Divide work fairly", 
+          emoji: "✅", 
+          description: "Distribute tasks equally among all team members",
+          isCorrect: true
+        },
+        { 
+          id: "all", 
+          text: "Do everything yourself", 
+          emoji: "😤", 
+          description: "Take on all the work alone",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      title: "Team Presentation",
-      emoji: "📝",
-      situation: "The team has a presentation. Do you take all credit or share it?",
-      choices: [
-        { id: 1, text: "Take all credit", emoji: "🙄", isCorrect: false },
-        { id: 2, text: "Share credit equally", emoji: "👏", isCorrect: true },
-      ],
+      text: "The team has a presentation. Do you take all credit or share it?",
+      options: [
+        { 
+          id: "share", 
+          text: "Share credit equally", 
+          emoji: "👏", 
+          description: "Acknowledge everyone's contributions",
+          isCorrect: true
+        },
+        { 
+          id: "take", 
+          text: "Take all credit", 
+          emoji: "🙄", 
+          description: "Claim all the success for yourself",
+          isCorrect: false
+        },
+        { 
+          id: "silent", 
+          text: "Stay silent", 
+          emoji: "😶", 
+          description: "Don't mention anyone's contributions",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      title: "Deadline Management",
-      emoji: "⏰",
-      situation: "Some members are slow. Do you finish everything yourself or help them?",
-      choices: [
-        { id: 1, text: "Finish everything myself", emoji: "😤", isCorrect: false },
-        { id: 2, text: "Help members complete tasks", emoji: "🤝", isCorrect: true },
-      ],
+      text: "Some members are slow. Do you finish everything yourself or help them?",
+      options: [
+        { 
+          id: "finish", 
+          text: "Finish everything myself", 
+          emoji: "😤", 
+          description: "Complete all tasks without helping others",
+          isCorrect: false
+        },
+        { 
+          id: "yell", 
+          text: "Yell at them to hurry", 
+          emoji: "😠", 
+          description: "Pressure them to work faster",
+          isCorrect: false
+        },
+        { 
+          id: "help", 
+          text: "Help members complete tasks", 
+          emoji: "🤝", 
+          description: "Support and guide struggling team members",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
-      title: "Conflict Resolution",
-      emoji: "⚖️",
-      situation: "Two members argue. Do you ignore it or mediate fairly?",
-      choices: [
-        { id: 1, text: "Ignore the argument", emoji: "🙈", isCorrect: false },
-        { id: 2, text: "Mediate fairly", emoji: "🗣️", isCorrect: true },
-      ],
+      text: "Two members argue. Do you ignore it or mediate fairly?",
+      options: [
+        { 
+          id: "mediate", 
+          text: "Mediate fairly", 
+          emoji: "🗣️", 
+          description: "Help resolve the conflict calmly and fairly",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore the argument", 
+          emoji: "🙈", 
+          description: "Avoid getting involved in the conflict",
+          isCorrect: false
+        },
+        { 
+          id: "pick", 
+          text: "Pick a side", 
+          emoji: "😬", 
+          description: "Support one person over the other",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      title: "Extra Task",
-      emoji: "📌",
-      situation: "An extra task comes. Do you force others to do it or distribute fairly?",
-      choices: [
-        { id: 1, text: "Force others", emoji: "😠", isCorrect: false },
-        { id: 2, text: "Distribute fairly", emoji: "💪", isCorrect: true },
-      ],
-    },
+      text: "An extra task comes. Do you force others to do it or distribute fairly?",
+      options: [
+        { 
+          id: "force", 
+          text: "Force others", 
+          emoji: "😠", 
+          description: "Make someone else handle the extra work",
+          isCorrect: false
+        },
+        { 
+          id: "avoid", 
+          text: "Avoid it completely", 
+          emoji: "🙈", 
+          description: "Pretend not to see the task",
+          isCorrect: false
+        },
+        { 
+          id: "distribute", 
+          text: "Distribute fairly", 
+          emoji: "💪", 
+          description: "Divide the extra task among the team fairly",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const currentScenario = scenarios[currentScenarioIndex];
-  const selectedChoiceData = currentScenario.choices.find(
-    (c) => c.id === selectedChoice
-  );
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedChoice) return;
-
-    const choice = currentScenario.choices.find((c) => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins((prev) => prev + 5);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-    setShowFeedback(true);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
+    }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
-  const handleNextScenario = () => {
-    if (currentScenarioIndex < scenarios.length - 1) {
-      setCurrentScenarioIndex((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
-    } else {
-      navigate("/student/moral-values/teen/quiz-discipline");
-    }
+  const handleNext = () => {
+    navigate("/student/moral-values/teen/quiz-discipline");
   };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Responsibility Story"
-      subtitle={`Scenario ${currentScenarioIndex + 1} of ${scenarios.length}`}
-      onNext={handleNextScenario}
-      nextEnabled={showFeedback && selectedChoiceData?.isCorrect}
-      showGameOver={currentScenarioIndex === scenarios.length - 1 && showFeedback}
       score={coins}
-      gameId="moral-teen-31"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={31}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={scenarios.length} // Max score is total number of questions (all correct)
+      subtitle={showResult ? "Activity Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore === questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">{currentScenario.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              {currentScenario.title}
-            </h2>
-
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">
-                {currentScenario.situation}
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4">What should you do?</h3>
-            <div className="space-y-3 mb-6">
-              {currentScenario.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "✅ Responsible Leader!" : "Think Again..."}
-            </h2>
-
-            <p className="text-white/90 text-lg mb-6 text-center">
-              {selectedChoiceData.text}
-            </p>
-
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <p className="text-yellow-400 text-2xl font-bold text-center mb-4">
-                  You earned 5 Coins! 🪙
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about responsibility and fair leadership!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand the importance of fair distribution and responsibility!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, good leaders share work and credit fairly!
                 </p>
                 <button
-                  onClick={handleNextScenario}
-                  className="w-full bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Next Scenario
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    That wasn’t the responsible choice. Try again and choose what a fair
-                    and caring leader would do.
-                  </p>
-                </div>
-                <button
                   onClick={handleTryAgain}
-                  className="mt-2 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that shows fair distribution and responsibility.
+                </p>
+              </div>
             )}
           </div>
         )}

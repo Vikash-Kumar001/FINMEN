@@ -1,198 +1,242 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const CourageQuiz1 = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("moral-teen-52");
+  const gameId = gameData?.id || "moral-teen-52";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for CourageQuiz1, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
+      id: 1,
       text: "Which is real courage?",
-      emoji: "🦁",
-      choices: [
-        { id: 1, text: "Teasing others", emoji: "😏", isCorrect: false },
-        { id: 2, text: "Protecting others", emoji: "🛡️", isCorrect: true },
-        { id: 3, text: "Running away", emoji: "🏃", isCorrect: false },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Protecting others", 
+          emoji: "🛡️", 
+          description: "Protecting others shows true courage",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Teasing others", 
+          emoji: "😏", 
+          description: "Teasing is not courage, it's bullying",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Running away", 
+          emoji: "🏃", 
+          description: "Running away avoids facing challenges",
+          isCorrect: false
+        }
+      ]
     },
     {
+      id: 2,
       text: "What does a brave person do when they see bullying?",
-      emoji: "👀",
-      choices: [
-        { id: 1, text: "Join the bully", emoji: "😈", isCorrect: false },
-        { id: 2, text: "Stay silent", emoji: "😶", isCorrect: false },
-        { id: 3, text: "Stand up and help", emoji: "🤝", isCorrect: true },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Join the bully", 
+          emoji: "😈", 
+          description: "Joining bullies is not brave",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Stay silent", 
+          emoji: "😶", 
+          description: "Staying silent allows bullying to continue",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Stand up and help", 
+          emoji: "🤝", 
+          description: "Standing up for others shows true courage",
+          isCorrect: true
+        }
+      ]
     },
     {
+      id: 3,
       text: "Courage means...",
-      emoji: "🧠",
-      choices: [
-        { id: 1, text: "Doing what is right even when scared", emoji: "💪", isCorrect: true },
-        { id: 2, text: "Never being scared", emoji: "😎", isCorrect: false },
-        { id: 3, text: "Showing off strength", emoji: "🔥", isCorrect: false },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Never being scared", 
+          emoji: "😎", 
+          description: "Everyone feels fear sometimes",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Showing off strength", 
+          emoji: "🔥", 
+          description: "Showing off is not true courage",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Doing what is right even when scared", 
+          emoji: "💪", 
+          description: "True courage is acting despite fear",
+          isCorrect: true
+        }
+      ]
     },
     {
+      id: 4,
       text: "When your friend admits a mistake, what should you do?",
-      emoji: "🤗",
-      choices: [
-        { id: 1, text: "Laugh at them", emoji: "😂", isCorrect: false },
-        { id: 2, text: "Appreciate their honesty", emoji: "👏", isCorrect: true },
-        { id: 3, text: "Ignore them", emoji: "😐", isCorrect: false },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Appreciate their honesty", 
+          emoji: "👏", 
+          description: "Appreciating honesty encourages courage",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Laugh at them", 
+          emoji: "😂", 
+          description: "Laughing discourages honesty",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignore them", 
+          emoji: "😐", 
+          description: "Ignoring doesn't support their courage",
+          isCorrect: false
+        }
+      ]
     },
     {
+      id: 5,
       text: "Which action shows bravery?",
-      emoji: "🏅",
-      choices: [
-        { id: 1, text: "Admitting you were wrong", emoji: "🙋", isCorrect: true },
-        { id: 2, text: "Hiding mistakes", emoji: "🙈", isCorrect: false },
-        { id: 3, text: "Blaming others", emoji: "😬", isCorrect: false },
-      ],
-    },
+      options: [
+        { 
+          id: "a", 
+          text: "Hiding mistakes", 
+          emoji: "🙈", 
+          description: "Hiding mistakes shows fear, not courage",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Admitting you were wrong", 
+          emoji: "🙋", 
+          description: "Admitting mistakes shows true bravery",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Blaming others", 
+          emoji: "😬", 
+          description: "Blaming others avoids responsibility",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const question = questions[currentQuestion];
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = question.choices.find((c) => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(3, true);
-      setCoins((prev) => prev + 3);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-    setShowFeedback(true);
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
-    } else {
-      navigate("/student/moral-values/teen/reflex-moral-courage"); // change path to next game
-    }
-  };
-
-  const selectedChoiceData = question.choices.find((c) => c.id === selectedChoice);
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Courage Quiz1"
-      subtitle="Discover what true courage means"
-      onNext={handleNextQuestion}
-      nextEnabled={showFeedback}
-      showGameOver={currentQuestion === questions.length - 1 && showFeedback}
-      score={coins}
-      gameId="moral-teen-courage-1-52"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={52}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-6 text-center">{question.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-xl leading-relaxed text-center font-semibold">
-                {question.text}
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="space-y-3 mb-6">
-              {question.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Submit Answer
-            </button>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "💪 Correct!" : "🤔 Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-6">
-                  <p className="text-white text-center">
-                    True courage means doing the right thing — even when it’s hard. Protecting others,
-                    standing up to wrong, or admitting mistakes are signs of real bravery!
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 3 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Real courage isn’t about showing off or teasing. It’s about kindness,
-                    honesty, and helping others even when it’s difficult.
-                  </p>
-                </div>
-              </>
-            )}
-
-            <button
-              onClick={handleNextQuestion}
-              className="mt-6 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              {currentQuestion === questions.length - 1 ? "Finish Quiz" : "Next Question"}
-            </button>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

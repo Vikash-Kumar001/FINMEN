@@ -1,220 +1,302 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const RoleplayRespectLeader = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [selectedApproach, setSelectedApproach] = useState(null);
-  const [leadershipAction, setLeadershipAction] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [earnedBadge, setEarnedBadge] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("moral-teen-18");
+  const gameId = gameData?.id || "moral-teen-18";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for RoleplayRespectLeader, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      situation: "You're leading a group discussion. Some members are quiet while others dominate. How do you lead with respect?",
-      approaches: [
-        { id: 1, text: "Let loud members continue", isCorrect: false },
-        { id: 2, text: "Listen to everyone's ideas equally", isCorrect: true },
-        { id: 3, text: "Only listen to the smartest members", isCorrect: false },
-      ],
+      text: "You're leading a group discussion. Some members are quiet while others dominate. How do you lead with respect?",
+      emoji: "👥",
+      options: [
+        { 
+          id: "equal", 
+          text: "Listen to everyone's ideas equally", 
+          emoji: "👂", 
+          description: "Equal listening shows respect for all",
+          isCorrect: true 
+        },
+        { 
+          id: "loud", 
+          text: "Let loud members continue", 
+          emoji: "🗣️", 
+          description: "This ignores quiet members",
+          isCorrect: false 
+        },
+        { 
+          id: "smart", 
+          text: "Only listen to the smartest members", 
+          emoji: "🧠", 
+          description: "This disrespects others' contributions",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 2,
-      situation: "A teammate disagrees with your idea during a project meeting. What’s your respectful response?",
-      approaches: [
-        { id: 1, text: "Ignore their opinion", isCorrect: false },
-        { id: 2, text: "Listen carefully and discuss calmly", isCorrect: true },
-        { id: 3, text: "Tell them you’re the leader and they must follow", isCorrect: false },
-      ],
+      text: "A teammate disagrees with your idea during a project meeting. What's your respectful response?",
+      emoji: "💬",
+      options: [
+        { 
+          id: "ignore", 
+          text: "Ignore their opinion", 
+          emoji: "😶", 
+          description: "Ignoring shows disrespect",
+          isCorrect: false 
+        },
+        { 
+          id: "listen", 
+          text: "Listen carefully and discuss calmly", 
+          emoji: "🤝", 
+          description: "Respectful discussion builds understanding",
+          isCorrect: true 
+        },
+        { 
+          id: "command", 
+          text: "Tell them you're the leader and they must follow", 
+          emoji: "👆", 
+          description: "Commanding shows lack of respect",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 3,
-      situation: "You notice one group member is always doing extra work. What’s a respectful leadership move?",
-      approaches: [
-        { id: 1, text: "Let them handle it since they’re responsible", isCorrect: false },
-        { id: 2, text: "Appreciate them and redistribute tasks fairly", isCorrect: true },
-        { id: 3, text: "Take credit for the team’s success", isCorrect: false },
-      ],
+      text: "You notice one group member is always doing extra work. What's a respectful leadership move?",
+      emoji: "💼",
+      options: [
+        { 
+          id: "let", 
+          text: "Let them handle it since they're responsible", 
+          emoji: "😶", 
+          description: "This takes advantage of them",
+          isCorrect: false 
+        },
+        { 
+          id: "appreciate", 
+          text: "Appreciate them and redistribute tasks fairly", 
+          emoji: "🙏", 
+          description: "Fair distribution shows respect",
+          isCorrect: true 
+        },
+        { 
+          id: "credit", 
+          text: "Take credit for the team's success", 
+          emoji: "😏", 
+          description: "Taking credit is disrespectful",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 4,
-      situation: "Two members are arguing loudly in your group. How would you lead respectfully?",
-      approaches: [
-        { id: 1, text: "Let them argue it out", isCorrect: false },
-        { id: 2, text: "Calm them, listen to both sides, and find balance", isCorrect: true },
-        { id: 3, text: "Pick a side quickly to end it", isCorrect: false },
-      ],
+      text: "Two members are arguing loudly in your group. How would you lead respectfully?",
+      emoji: "😠",
+      options: [
+        { 
+          id: "calm", 
+          text: "Calm them, listen to both sides, and find balance", 
+          emoji: "🕊️", 
+          description: "Calm mediation shows respect for all",
+          isCorrect: true 
+        },
+        { 
+          id: "argue", 
+          text: "Let them argue it out", 
+          emoji: "😠", 
+          description: "This doesn't resolve the conflict",
+          isCorrect: false 
+        },
+        { 
+          id: "pick", 
+          text: "Pick a side quickly to end it", 
+          emoji: "👆", 
+          description: "Picking sides shows bias",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 5,
-      situation: "You’re presenting your group’s idea. Some classmates mock the plan. How do you respond as a respectful leader?",
-      approaches: [
-        { id: 1, text: "Argue back rudely", isCorrect: false },
-        { id: 2, text: "Stay calm, respond politely, and stand by your team", isCorrect: true },
-        { id: 3, text: "Stop presenting and give up", isCorrect: false },
-      ],
-    },
+      text: "You're presenting your group's idea. Some classmates mock the plan. How do you respond as a respectful leader?",
+      emoji: "🎤",
+      options: [
+        { 
+          id: "argue", 
+          text: "Argue back rudely", 
+          emoji: "😠", 
+          description: "Rudeness shows lack of respect",
+          isCorrect: false 
+        },
+        { 
+          id: "calm", 
+          text: "Stay calm, respond politely, and stand by your team", 
+          emoji: "💪", 
+          description: "Calm respect shows strong leadership",
+          isCorrect: true 
+        },
+        { 
+          id: "giveup", 
+          text: "Stop presenting and give up", 
+          emoji: "😔", 
+          description: "Giving up doesn't show leadership",
+          isCorrect: false 
+        }
+      ]
+    }
   ];
 
-  const current = scenarios[currentScenario];
-  const selectedApp = current.approaches.find((a) => a.id === selectedApproach);
-
-  const handleSubmit = () => {
-    if (selectedApproach && leadershipAction.trim().length >= 20) {
-      if (selectedApp.isCorrect) {
-        showCorrectAnswerFeedback(2, true);
-        setCoins((prev) => prev + 2);
-      }
-      setShowFeedback(true);
-    }
-  };
-
-  const handleNextScenario = () => {
-    if (currentScenario < scenarios.length - 1) {
-      setCurrentScenario(currentScenario + 1);
-      setSelectedApproach(null);
-      setLeadershipAction("");
-      setShowFeedback(false);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setEarnedBadge(true);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleNextGame = () => {
-    navigate("/student/moral-values/teen/reflex-gratitude");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
+    resetFeedback();
   };
 
   return (
     <GameShell
       title="Roleplay: Respect Leader"
-      subtitle="Lead by Listening"
-      onNext={handleNextGame}
-      nextEnabled={earnedBadge}
-      showGameOver={earnedBadge}
-      score={coins}
-      gameId="moral-teen-18"
-      gameType="moral"
-      totalLevels={20}
-      currentLevel={18}
-      showConfetti={earnedBadge}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={scenarios.length} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!earnedBadge ? (
-          !showFeedback ? (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-              <div className="text-6xl mb-4 text-center">👥</div>
-              <h2 className="text-white text-xl font-bold text-center mb-4">
-                Scenario {currentScenario + 1} of {scenarios.length}
-              </h2>
-
-              <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-                <p className="text-white text-lg leading-relaxed">{current.situation}</p>
+      gameId={gameId}
+      gameType="moral"
+    >
+      <div className="space-y-8 max-w-2xl mx-auto">
+        {!showResult && questions[currentQuestion] ? (
+          <div>
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
-
-              <h3 className="text-white font-bold mb-4">1. Choose Your Leadership Approach</h3>
-              <div className="space-y-3 mb-6">
-                {current.approaches.map((app) => (
+              
+              <div className="text-6xl mb-4 text-center">{questions[currentQuestion].emoji}</div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {questions[currentQuestion].options.map((option) => (
                   <button
-                    key={app.id}
-                    onClick={() => setSelectedApproach(app.id)}
-                    className={`w-full border-2 rounded-xl p-4 transition-all ${
-                      selectedApproach === app.id
-                        ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                        : "bg-white/20 border-white/40 hover:bg-white/30"
-                    }`}
+                    key={option.id}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`w-full text-left p-4 rounded-xl transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-white font-semibold">{app.text}</div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{option.emoji}</span>
+                      <div className="flex-1">
+                        <div className="font-semibold text-lg">{option.text}</div>
+                        <div className="text-sm opacity-90">{option.description}</div>
+                      </div>
+                    </div>
                   </button>
                 ))}
               </div>
-
-              <h3 className="text-white font-bold mb-2">2. What Would You Do? (min 20 chars)</h3>
-              <textarea
-                value={leadershipAction}
-                onChange={(e) => setLeadershipAction(e.target.value)}
-                placeholder="Describe how you would respond respectfully..."
-                className="w-full h-32 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-                maxLength={200}
-              />
-              <div className="text-white/50 text-sm mb-4 text-right">{leadershipAction.length}/200</div>
-
-              <button
-                onClick={handleSubmit}
-                disabled={!selectedApproach || leadershipAction.trim().length < 20}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedApproach && leadershipAction.trim().length >= 20
-                    ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                    : "bg-gray-500/50 cursor-not-allowed"
-                }`}
-              >
-                Submit
-              </button>
             </div>
-          ) : (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-              <div className="text-7xl mb-4 text-center">
-                {selectedApp.isCorrect ? "🏆" : "😔"}
-              </div>
-              <h2 className="text-3xl font-bold text-white mb-4 text-center">
-                {selectedApp.isCorrect ? "Great Leadership!" : "Needs Improvement"}
-              </h2>
-
-              <div
-                className={`${
-                  selectedApp.isCorrect ? "bg-green-500/20" : "bg-red-500/20"
-                } rounded-lg p-4 mb-4`}
-              >
-                <p className="text-white text-center">
-                  {selectedApp.isCorrect
-                    ? "Excellent! Respectful leaders listen, stay calm, and value everyone’s ideas."
-                    : "That choice might cause disrespect or imbalance in leadership. Try again with empathy and fairness."}
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">You're a Respectful Leader!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You know how to lead with respect and fairness!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Respectful leaders listen to everyone, stay calm, and value all team members!
                 </p>
               </div>
-
-              <div className="bg-purple-500/20 rounded-lg p-3 mb-6">
-                <p className="text-white/80 text-sm mb-1">Your Response:</p>
-                <p className="text-white italic">"{leadershipAction}"</p>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember: Choose respectful and fair leadership actions!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Respectful leaders listen to everyone, stay calm, and value all team members. Practice showing respect in your leadership!
+                </p>
               </div>
-
-              <button
-                onClick={handleNextScenario}
-                className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-yellow-400 to-orange-500 hover:opacity-90 transition"
-              >
-                {currentScenario < scenarios.length - 1
-                  ? "Next Scenario →"
-                  : "View Badge Result 🏅"}
-              </button>
-            </div>
-          )
-        ) : (
-          <div className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-xl p-8 text-center">
-            <div className="text-6xl mb-4">🏅</div>
-            <h2 className="text-3xl font-bold text-white mb-2">
-              Respect Leader Badge Unlocked!
-            </h2>
-            <p className="text-white/80 text-lg">
-              You led with respect, fairness, and empathy across all challenges.
-            </p>
-            <p className="text-yellow-200 text-2xl font-bold mt-4">
-              Total Coins Earned: {coins} 🪙
-            </p>
+            )}
           </div>
         )}
       </div>

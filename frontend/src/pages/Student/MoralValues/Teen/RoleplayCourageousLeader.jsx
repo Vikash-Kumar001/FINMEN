@@ -1,217 +1,302 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const RoleplayCourageousLeader = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("moral-teen-59");
+  const gameId = gameData?.id || "moral-teen-59";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for RoleplayCourageousLeader, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [statement, setStatement] = useState("");
   const [score, setScore] = useState(0);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [earnedBadge, setEarnedBadge] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      scenario: "You see a team member being blamed unfairly for a group mistake. What do you do?",
+      text: "You see a team member being blamed unfairly for a group mistake. What do you do?",
+      emoji: "🛡️",
       options: [
-        { id: 1, text: "Stay silent to avoid conflict", isCorrect: false },
-        { id: 2, text: "Speak up and clarify everyone’s role", isCorrect: true },
-        { id: 3, text: "Join others in blaming to stay popular", isCorrect: false },
-      ],
+        { 
+          id: "speak", 
+          text: "Speak up and clarify everyone's role", 
+          emoji: "🗣️", 
+          description: "Standing up for fairness shows courage",
+          isCorrect: true 
+        },
+        { 
+          id: "silent", 
+          text: "Stay silent to avoid conflict", 
+          emoji: "😶", 
+          description: "Staying silent allows unfairness",
+          isCorrect: false 
+        },
+        { 
+          id: "join", 
+          text: "Join others in blaming to stay popular", 
+          emoji: "😏", 
+          description: "Joining unfair blame is wrong",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 2,
-      scenario: "A classmate is being teased for asking questions. How would you lead?",
+      text: "A classmate is being teased for asking questions. How would you lead?",
+      emoji: "💬",
       options: [
-        { id: 1, text: "Ignore the teasing", isCorrect: false },
-        { id: 2, text: "Tell others to stop and encourage curiosity", isCorrect: true },
-        { id: 3, text: "Laugh along to fit in", isCorrect: false },
-      ],
+        { 
+          id: "ignore", 
+          text: "Ignore the teasing", 
+          emoji: "😶", 
+          description: "Ignoring allows bullying to continue",
+          isCorrect: false 
+        },
+        { 
+          id: "stop", 
+          text: "Tell others to stop and encourage curiosity", 
+          emoji: "🛡️", 
+          description: "Standing up against teasing shows courage",
+          isCorrect: true 
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh along to fit in", 
+          emoji: "😄", 
+          description: "Laughing along supports bullying",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 3,
-      scenario: "Your team excludes a quiet member from discussions. What’s your action?",
+      text: "Your team excludes a quiet member from discussions. What's your action?",
+      emoji: "👥",
       options: [
-        { id: 1, text: "Let it continue, it’s their choice", isCorrect: false },
-        { id: 2, text: "Include everyone and ensure fairness", isCorrect: true },
-        { id: 3, text: "Only focus on your work", isCorrect: false },
-      ],
+        { 
+          id: "let", 
+          text: "Let it continue, it's their choice", 
+          emoji: "😶", 
+          description: "Leaders should ensure inclusion",
+          isCorrect: false 
+        },
+        { 
+          id: "focus", 
+          text: "Only focus on your work", 
+          emoji: "📝", 
+          description: "Leaders should help the team",
+          isCorrect: false 
+        },
+        { 
+          id: "include", 
+          text: "Include everyone and ensure fairness", 
+          emoji: "🤝", 
+          description: "Including everyone shows courageous leadership",
+          isCorrect: true 
+        }
+      ]
     },
     {
       id: 4,
-      scenario: "During a sports match, your team cheats to win. What do you do?",
+      text: "During a sports match, your team cheats to win. What do you do?",
+      emoji: "⚽",
       options: [
-        { id: 1, text: "Say nothing since you won", isCorrect: false },
-        { id: 2, text: "Admit the mistake and accept fair results", isCorrect: true },
-        { id: 3, text: "Defend the cheating as teamwork", isCorrect: false },
-      ],
+        { 
+          id: "admit", 
+          text: "Admit the mistake and accept fair results", 
+          emoji: "💎", 
+          description: "Admitting mistakes shows courage and integrity",
+          isCorrect: true 
+        },
+        { 
+          id: "nothing", 
+          text: "Say nothing since you won", 
+          emoji: "😶", 
+          description: "Staying silent about cheating is wrong",
+          isCorrect: false 
+        },
+        { 
+          id: "defend", 
+          text: "Defend the cheating as teamwork", 
+          emoji: "😏", 
+          description: "Defending cheating is dishonest",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 5,
-      scenario: "You notice favoritism in assigning team roles. What’s the right stand?",
+      text: "You notice favoritism in assigning team roles. What's the right stand?",
+      emoji: "⚖️",
       options: [
-        { id: 1, text: "Accept it quietly", isCorrect: false },
-        { id: 2, text: "Speak to the teacher about equal opportunities", isCorrect: true },
-        { id: 3, text: "Complain secretly to friends", isCorrect: false },
-      ],
-    },
+        { 
+          id: "accept", 
+          text: "Accept it quietly", 
+          emoji: "😶", 
+          description: "Accepting unfairness doesn't help",
+          isCorrect: false 
+        },
+        { 
+          id: "speak", 
+          text: "Speak to the teacher about equal opportunities", 
+          emoji: "🗣️", 
+          description: "Speaking up for fairness shows courage",
+          isCorrect: true 
+        },
+        { 
+          id: "complain", 
+          text: "Complain secretly to friends", 
+          emoji: "🤫", 
+          description: "Secret complaints don't solve problems",
+          isCorrect: false 
+        }
+      ]
+    }
   ];
 
-  const handleSubmit = () => {
-    const current = questions[currentQuestion];
-    const chosen = current.options.find(o => o.id === selectedOption);
-
-    if (chosen && chosen.isCorrect && statement.trim().length >= 20) {
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setScore(score + 1);
-    }
-
-    setShowFeedback(true);
-    if (currentQuestion === questions.length - 1) {
-      if (score + (chosen?.isCorrect ? 1 : 0) === 5) {
-        setEarnedBadge(true);
-      }
-    }
-  };
-
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setStatement("");
-      setShowFeedback(false);
     } else {
-      navigate("/student/moral-values/teen/badge-courage-hero");
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const currentQ = questions[currentQuestion];
-  const selected = currentQ.options.find(o => o.id === selectedOption);
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
+    resetFeedback();
+  };
 
   return (
     <GameShell
       title="Roleplay: Courageous Leader"
-      subtitle="Stand Up for Justice"
-      onNext={handleNext}
-      nextEnabled={showFeedback}
-      showGameOver={earnedBadge}
-      score={earnedBadge ? 3 : 0}
-      gameId="moral-teen-59"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={59}
-      showConfetti={earnedBadge}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">⚖️</div>
-            <div className="bg-red-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed">{currentQ.scenario}</p>
+      gameId={gameId}
+      gameType="moral"
+    >
+      <div className="space-y-8 max-w-2xl mx-auto">
+        {!showResult && questions[currentQuestion] ? (
+          <div>
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{questions[currentQuestion].emoji}</div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`w-full text-left p-4 rounded-xl transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{option.emoji}</span>
+                      <div className="flex-1">
+                        <div className="font-semibold text-lg">{option.text}</div>
+                        <div className="text-sm opacity-90">{option.description}</div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4">1. Choose Your Response</h3>
-            <div className="space-y-3 mb-6">
-              {currentQ.options.map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => setSelectedOption(opt.id)}
-                  className={`w-full border-2 rounded-xl p-4 transition-all ${
-                    selectedOption === opt.id
-                      ? "bg-blue-500/50 border-blue-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="text-white font-semibold">{opt.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <h3 className="text-white font-bold mb-2">2. What Would You Say? (min 20 chars)</h3>
-            <textarea
-              value={statement}
-              onChange={(e) => setStatement(e.target.value)}
-              placeholder="Write how you'd act courageously and fairly..."
-              className="w-full h-32 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-blue-400 resize-none mb-4"
-              maxLength={200}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">{statement.length}/200</div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedOption || statement.trim().length < 20}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedOption && statement.trim().length >= 20
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Submit Response
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-7xl mb-4">{selected?.isCorrect ? "🏆" : "😔"}</div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {selected?.isCorrect ? "Courageous Leader!" : "Missed the Mark..."}
-            </h2>
-
-            {selected?.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white">
-                    You acted with courage and fairness! Real leaders defend what’s right, even when 
-                    it’s uncomfortable. Your brave stand inspires respect and creates fairness for all. 
-                    Keep being the voice for justice!
-                  </p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">You're a Courageous Leader!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You know how to stand up for what's right!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
-                <div className="bg-blue-500/20 rounded-lg p-3 mb-6">
-                  <p className="text-white/80 text-sm mb-1">Your Leadership Statement:</p>
-                  <p className="text-white italic">"{statement}"</p>
-                </div>
-                {earnedBadge && (
-                  <div className="bg-gradient-to-r from-yellow-400 to-red-400 rounded-xl p-6 text-center mb-4">
-                    <div className="text-5xl mb-2">🏅</div>
-                    <p className="text-white text-2xl font-bold">Courageous Leader Badge!</p>
-                    <p className="text-white/80 text-sm mt-2">You stood up for what’s right!</p>
-                  </div>
-                )}
-              </>
+                <p className="text-white/80">
+                  Lesson: Courageous leaders stand up for fairness, speak against wrong, and protect others!
+                </p>
+              </div>
             ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white">
-                    True leaders don’t stay silent in unfairness. Next time, stand up for others 
-                    and show fairness through your actions!
-                  </p>
-                </div>
-                <p className="text-white/70">Try again with more courage!</p>
-              </>
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember: Choose actions that stand up for what's right!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Courageous leaders stand up for fairness, speak against wrong, and protect others. Practice being brave!
+                </p>
+              </div>
             )}
-
-            {/* ✅ NEXT BUTTON added here */}
-            <button
-              onClick={handleNext}
-              className="mt-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              {currentQuestion < questions.length - 1 ? "Next Scenario →" : "Finish Game"}
-            </button>
           </div>
         )}
       </div>

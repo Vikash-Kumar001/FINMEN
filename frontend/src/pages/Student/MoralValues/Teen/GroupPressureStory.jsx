@@ -1,274 +1,294 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const GroupPressureStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-teen-55";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const [coins, setCoins] = useState(0);
-  const {
-    flashPoints,
-    showAnswerConfetti,
-    showCorrectAnswerFeedback,
-    resetFeedback,
-  } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stories = [
+  const questions = [
     {
       id: 1,
-      title: "New Student Teased",
-      emoji: "😢",
-      situation:
-        "Your friends start teasing a new student who looks shy and nervous. What do you do?",
-      choices: [
-        { id: 1, text: "Join in the teasing", emoji: "😈", isCorrect: false },
-        { id: 2, text: "Stay silent and watch", emoji: "😶", isCorrect: false },
-        { id: 3, text: "Tell your friends to stop", emoji: "🛑", isCorrect: true },
-      ],
-      feedback:
-        "Real courage means standing up for someone even if your friends don’t. You chose kindness and bravery!",
+      text: "Your friends start teasing a new student who looks shy and nervous. What do you do?",
+      options: [
+        { 
+          id: "join", 
+          text: "Join in the teasing", 
+          emoji: "😈", 
+          description: "Participate in making fun of the new student",
+          isCorrect: false
+        },
+        { 
+          id: "stay", 
+          text: "Stay silent and watch", 
+          emoji: "😶", 
+          description: "Observe without saying anything",
+          isCorrect: false
+        },
+        { 
+          id: "stop", 
+          text: "Tell your friends to stop", 
+          emoji: "🛑", 
+          description: "Stand up and tell them to stop teasing",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 2,
-      title: "Copying in Exam",
-      emoji: "📝",
-      situation:
-        "A friend whispers during the test asking for your answers. What should you do?",
-      choices: [
-        { id: 1, text: "Help your friend cheat", emoji: "🤫", isCorrect: false },
-        { id: 2, text: "Ignore and focus on your paper", emoji: "🧠", isCorrect: true },
-        { id: 3, text: "Complain loudly in the class", emoji: "📢", isCorrect: false },
-      ],
-      feedback:
-        "You made the right call! Staying honest under pressure keeps your integrity strong.",
+      text: "A friend whispers during the test asking for your answers. What should you do?",
+      options: [
+        { 
+          id: "help", 
+          text: "Help your friend cheat", 
+          emoji: "🤫", 
+          description: "Share your answers during the test",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore and focus on your paper", 
+          emoji: "🧠", 
+          description: "Focus on your own test and ignore the request",
+          isCorrect: true
+        },
+        { 
+          id: "complain", 
+          text: "Complain loudly in the class", 
+          emoji: "📢", 
+          description: "Announce the cheating to the whole class",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      title: "Group Decision",
-      emoji: "🤝",
-      situation:
-        "Your group wants to skip cleaning duty, but you think it’s wrong. What will you do?",
-      choices: [
-        { id: 1, text: "Agree with them", emoji: "😬", isCorrect: false },
-        { id: 2, text: "Remind them it’s everyone’s duty", emoji: "🧹", isCorrect: true },
-        { id: 3, text: "Stay quiet", emoji: "😐", isCorrect: false },
-      ],
-      feedback:
-        "You showed leadership! Reminding your group of their responsibility inspires others to do right.",
+      text: "Your group wants to skip cleaning duty, but you think it's wrong. What will you do?",
+      options: [
+        { 
+          id: "agree", 
+          text: "Agree with them", 
+          emoji: "😬", 
+          description: "Go along with skipping the duty",
+          isCorrect: false
+        },
+        { 
+          id: "remind", 
+          text: "Remind them it's everyone's duty", 
+          emoji: "🧹", 
+          description: "Remind the group about their responsibility",
+          isCorrect: true
+        },
+        { 
+          id: "quiet", 
+          text: "Stay quiet", 
+          emoji: "😐", 
+          description: "Don't voice your opinion",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      title: "Laughing at Mistake",
-      emoji: "😂",
-      situation:
-        "A classmate makes a silly mistake while reading aloud, and your group laughs. What do you do?",
-      choices: [
-        { id: 1, text: "Laugh along with your friends", emoji: "😅", isCorrect: false },
-        { id: 2, text: "Stay quiet and ignore", emoji: "😶", isCorrect: false },
-        { id: 3, text: "Stop others and encourage your classmate", emoji: "💪", isCorrect: true },
-      ],
-      feedback:
-        "Kindness shines brighter when others choose cruelty. You did the right thing by supporting your classmate.",
+      text: "A classmate makes a silly mistake while reading aloud, and your group laughs. What do you do?",
+      options: [
+        { 
+          id: "encourage", 
+          text: "Stop others and encourage your classmate", 
+          emoji: "💪", 
+          description: "Defend them and show support",
+          isCorrect: true
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh along with your friends", 
+          emoji: "😅", 
+          description: "Join in the laughter",
+          isCorrect: false
+        },
+        { 
+          id: "silent", 
+          text: "Stay quiet and ignore", 
+          emoji: "😶", 
+          description: "Don't react to the situation",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      title: "Skipping Practice",
-      emoji: "⚽",
-      situation:
-        "Your friends want to skip team practice to hang out, but the coach trusts you to show up. What do you do?",
-      choices: [
-        { id: 1, text: "Go with them and skip practice", emoji: "😎", isCorrect: false },
-        { id: 2, text: "Show up and practice alone", emoji: "🏃‍♀️", isCorrect: true },
-        { id: 3, text: "Make an excuse to the coach", emoji: "🙄", isCorrect: false },
-      ],
-      feedback:
-        "Fantastic! Staying committed even when others don’t shows true responsibility and strength.",
-    },
+      text: "Your friends want to skip team practice to hang out, but the coach trusts you to show up. What do you do?",
+      options: [
+        { 
+          id: "go", 
+          text: "Go with them and skip practice", 
+          emoji: "😎", 
+          description: "Join your friends and skip practice",
+          isCorrect: false
+        },
+        { 
+          id: "excuse", 
+          text: "Make an excuse to the coach", 
+          emoji: "🙄", 
+          description: "Lie to the coach about why you can't come",
+          isCorrect: false
+        },
+        { 
+          id: "show", 
+          text: "Show up and practice alone", 
+          emoji: "🏃‍♀️", 
+          description: "Honor your commitment and attend practice",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const currentStory = stories[currentIndex];
-  const selectedChoiceData = currentStory.choices.find(
-    (c) => c.id === selectedChoice
-  );
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = currentStory.choices.find((c) => c.id === selectedChoice);
-    if (!choice) return;
-
-    if (choice.isCorrect) {
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setCoins((prev) => prev + 1);
     }
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
-    if (currentIndex < stories.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-      setShowFeedback(false);
-      setSelectedChoice(null);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      // Game finished
-      setShowFeedback(true);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
-    setCurrentIndex(0);
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
-  const handleNextGame = () => {
+  const handleNext = () => {
     navigate("/student/moral-values/teen/debate-fear-vs-courage");
   };
 
-  const isGameOver = currentIndex === stories.length - 1 && showFeedback;
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Group Pressure Story"
-      subtitle="Stand Up for What’s Right"
-      onNext={handleNextGame}
-      nextEnabled={isGameOver}
-      showGameOver={isGameOver}
       score={coins}
-      gameId="moral-teen-55"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={55}
-      showConfetti={isGameOver}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      subtitle={showResult ? "Activity Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore === questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!isGameOver ? (
-          !showFeedback ? (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-              <div className="text-8xl mb-4 text-center">{currentStory.emoji}</div>
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">
-                {currentStory.title}
-              </h2>
-              <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-                <p className="text-white text-lg leading-relaxed text-center">
-                  {currentStory.situation}
-                </p>
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
               </div>
-
-              <h3 className="text-white font-bold mb-4 text-center">
-                What should you do?
-              </h3>
-
-              <div className="space-y-3 mb-6">
-                {currentStory.choices.map((choice) => (
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
                   <button
-                    key={choice.id}
-                    onClick={() => handleChoice(choice.id)}
-                    className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                      selectedChoice === choice.id
-                        ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                        : "bg-white/20 border-white/40 hover:bg-white/30"
-                    }`}
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="text-4xl">{choice.emoji}</div>
-                      <div className="text-white font-semibold text-lg">
-                        {choice.text}
-                      </div>
-                    </div>
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>
-
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedChoice}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedChoice
-                    ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                    : "bg-gray-500/50 cursor-not-allowed"
-                }`}
-              >
-                Confirm Choice
-              </button>
             </div>
-          ) : (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-              <div className="text-7xl mb-4">{selectedChoiceData.emoji}</div>
-              <h2 className="text-3xl font-bold text-white mb-4">
-                {selectedChoiceData.isCorrect
-                  ? "🌟 You Chose Bravery!"
-                  : "Think Again..."}
-              </h2>
-              <p className="text-white/90 text-lg mb-6">
-                {selectedChoiceData.text}
-              </p>
-
-              {selectedChoiceData.isCorrect ? (
-                <>
-                  <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                    <p className="text-white text-center">
-                      {currentStory.feedback}
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleNextQuestion}
-                    className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                  >
-                    {currentIndex < stories.length - 1
-                      ? "Next Story ➡️"
-                      : "Finish Game 🎉"}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                    <p className="text-white text-center">
-                      Standing up for what’s right takes courage. Try again and
-                      show your true strength!
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleTryAgain}
-                    className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                  >
-                    Try Again
-                  </button>
-                </>
-              )}
-            </div>
-          )
+          </div>
         ) : (
-          <div className="text-center text-white">
-            <h2 className="text-4xl font-bold mb-4">🎉 Game Complete!</h2>
-            <p className="text-xl mb-6">
-              You completed all 5 stories and earned {coins} Coins! 🪙
-            </p>
-            <button
-              onClick={handleNextGame}
-              className="bg-gradient-to-r from-green-500 to-blue-500 px-6 py-3 rounded-full font-semibold text-white hover:opacity-90 transition"
-            >
-              Next Game ➡️
-            </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning to resist peer pressure and do what's right!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand the importance of standing up for what's right!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, standing up to peer pressure shows real strength!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that resists peer pressure and does what's right.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -1,214 +1,242 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const JusticeQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("moral-teen-42");
+  const gameId = gameData?.id || "moral-teen-42";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for JusticeQuiz, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Which is just? Punishing the guilty or punishing the innocent?",
-      emoji: "⚖️",
-      choices: [
-        { id: 1, text: "Punish the innocent", emoji: "❌", isCorrect: false },
-        { id: 2, text: "Punish the guilty", emoji: "✅", isCorrect: true },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Punish the guilty", 
+          emoji: "✅", 
+          description: "Justice means holding the guilty accountable",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Punish the innocent", 
+          emoji: "❌", 
+          description: "Punishing innocent people is unjust",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Punish both equally", 
+          emoji: "⚖️", 
+          description: "Justice requires fairness, not equal punishment",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "If a friend broke the rules, should they face consequences?",
-      emoji: "👥",
-      choices: [
-        { id: 1, text: "No, protect your friend", emoji: "🙈", isCorrect: false },
-        { id: 2, text: "Yes, they should be held accountable", emoji: "⚖️", isCorrect: true },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "No, protect your friend", 
+          emoji: "🙈", 
+          description: "Protecting friends from consequences is unfair",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Yes, they should be held accountable", 
+          emoji: "⚖️", 
+          description: "Everyone should face fair consequences for their actions",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Only if others find out", 
+          emoji: "🤷", 
+          description: "Justice should apply regardless of who knows",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "Is it fair to blame someone else for your mistake?",
-      emoji: "😶",
-      choices: [
-        { id: 1, text: "Yes, if it avoids trouble", emoji: "🤷", isCorrect: false },
-        { id: 2, text: "No, honesty and justice must prevail", emoji: "💎", isCorrect: true },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Yes, if it avoids trouble", 
+          emoji: "🤷", 
+          description: "Blaming others is dishonest and unfair",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Only if they won't mind", 
+          emoji: "😶", 
+          description: "Blaming others is never fair or just",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "No, honesty and justice must prevail", 
+          emoji: "💎", 
+          description: "Taking responsibility shows justice and integrity",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
       text: "If rules are broken accidentally, should punishment be different?",
-      emoji: "📝",
-      choices: [
-        { id: 1, text: "Yes, consider intent and fairness", emoji: "⚖️", isCorrect: true },
-        { id: 2, text: "No, punishment should be the same always", emoji: "❌", isCorrect: false },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Yes, consider intent and fairness", 
+          emoji: "⚖️", 
+          description: "Fairness considers intent and circumstances",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "No, punishment should be the same always", 
+          emoji: "❌", 
+          description: "Justice considers context and intent",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "No punishment for accidents", 
+          emoji: "😶", 
+          description: "Accidents may still need appropriate responses",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       text: "Is it just to reward good actions only?",
-      emoji: "🏆",
-      choices: [
-        { id: 1, text: "Yes, fair actions deserve recognition", emoji: "✅", isCorrect: true },
-        { id: 2, text: "No, everyone should be rewarded equally", emoji: "❌", isCorrect: false },
-      ],
-    },
+      options: [
+        { 
+          id: "a", 
+          text: "Reward everyone equally", 
+          emoji: "🤷", 
+          description: "Equal rewards regardless of actions is unfair",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Yes, fair actions deserve recognition", 
+          emoji: "✅", 
+          description: "Recognizing good actions promotes justice",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Never reward anyone", 
+          emoji: "❌", 
+          description: "Recognition encourages positive behavior",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const currentQuestionData = questions[currentQuestion];
-  const selectedChoiceData = currentQuestionData?.choices.find(c => c.id === selectedChoice);
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedChoice) return;
-
-    const choice = currentQuestionData.choices.find(c => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(3, true);
-      setCoins(prev => prev + 3);
-    }
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      // Move to next question
-      setCurrentQuestion(prev => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
-    } else {
-      // End of quiz → move to next game
-      navigate("/student/moral-values/teen/reflex-justice-symbols");
-    }
-  };
-
-  const handleTryAgain = () => {
-    setShowFeedback(false);
-    setSelectedChoice(null);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
     resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
+
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Justice Quiz"
-      subtitle="Understanding Fairness"
-      score={coins}
-      gameId="moral-teen-42"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={42}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {/* Progress indicator */}
-        <p className="text-center text-white/70 font-medium">
-          Question {currentQuestion + 1} of {questions.length}
-        </p>
-
-        {!showFeedback ? (
-          // ---- QUESTION SCREEN ----
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-6 text-center">{currentQuestionData.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-xl leading-relaxed text-center font-semibold">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
                 {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="space-y-3 mb-6">
-              {currentQuestionData.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Submit Answer
-            </button>
           </div>
-        ) : (
-          // ---- FEEDBACK SCREEN ----
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-7xl mb-4">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {selectedChoiceData.isCorrect ? "✨ Correct!" : "Think Deeper..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-6">
-                  <p className="text-white text-center">
-                    Great! You made a fair choice that upholds justice and integrity.
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold mb-6">
-                  +3 Coins 🪙
-                </p>
-                <button
-                  onClick={handleNextQuestion}
-                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white font-bold rounded-xl hover:opacity-90 transition"
-                >
-                  {currentQuestion < questions.length - 1 ? "Next Question ➡️" : "Finish Quiz 🎯"}
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-6">
-                  <p className="text-white text-center">
-                    Justice means being fair and honest — try again to make the right choice!
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold rounded-xl hover:opacity-90 transition"
-                >
-                  Try Again 🔁
-                </button>
-              </>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

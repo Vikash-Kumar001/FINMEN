@@ -1,203 +1,294 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PeerPressureStory1 = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-teen-95";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stories = [
+  const questions = [
     {
       id: 1,
-      title: "Skipping Homework",
-      emoji: "📚",
-      situation: "Your friends say, 'Let’s skip homework and play games instead!'",
-      choices: [
-        { id: 1, text: "Agree and skip homework", emoji: "🎮", isCorrect: false },
-        { id: 2, text: "Politely refuse and do your work", emoji: "📝", isCorrect: true },
-        { id: 3, text: "Pretend to agree but don’t do it", emoji: "🤐", isCorrect: false },
-      ],
+      text: "Your friends say, 'Let's skip homework and play games instead!'",
+      options: [
+        { 
+          id: "refuse", 
+          text: "Politely refuse and do your work", 
+          emoji: "📝", 
+          description: "Decline and focus on completing your homework",
+          isCorrect: true
+        },
+        { 
+          id: "agree", 
+          text: "Agree and skip homework", 
+          emoji: "🎮", 
+          description: "Join them and skip your homework",
+          isCorrect: false
+        },
+        { 
+          id: "pretend", 
+          text: "Pretend to agree but don't do it", 
+          emoji: "🤐", 
+          description: "Say yes but secretly do your homework",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      title: "Classroom Dare",
-      emoji: "🏫",
-      situation: "Your friends dare you to make fun of a quiet classmate.",
-      choices: [
-        { id: 1, text: "Join in to look cool", emoji: "😎", isCorrect: false },
-        { id: 2, text: "Say no and defend the classmate", emoji: "🫶", isCorrect: true },
-        { id: 3, text: "Laugh quietly but don’t say anything", emoji: "😐", isCorrect: false },
-      ],
+      text: "Your friends dare you to make fun of a quiet classmate.",
+      options: [
+        { 
+          id: "cool", 
+          text: "Join in to look cool", 
+          emoji: "😎", 
+          description: "Participate to fit in with the group",
+          isCorrect: false
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh quietly but don't say anything", 
+          emoji: "😐", 
+          description: "Laugh but don't actively participate",
+          isCorrect: false
+        },
+        { 
+          id: "defend", 
+          text: "Say no and defend the classmate", 
+          emoji: "🫶", 
+          description: "Refuse and stand up for the classmate",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 3,
-      title: "Cheating in Test",
-      emoji: "✏️",
-      situation: "Your friend whispers answers during an exam.",
-      choices: [
-        { id: 1, text: "Copy quietly", emoji: "🤫", isCorrect: false },
-        { id: 2, text: "Refuse to cheat and focus on your paper", emoji: "💪", isCorrect: true },
-        { id: 3, text: "Warn others about teacher coming", emoji: "👀", isCorrect: false },
-      ],
+      text: "Your friend whispers answers during an exam.",
+      options: [
+        { 
+          id: "copy", 
+          text: "Copy quietly", 
+          emoji: "🤫", 
+          description: "Accept the answers and use them",
+          isCorrect: false
+        },
+        { 
+          id: "warn", 
+          text: "Warn others about teacher coming", 
+          emoji: "👀", 
+          description: "Alert others about the teacher",
+          isCorrect: false
+        },
+        { 
+          id: "refuse2", 
+          text: "Refuse to cheat and focus on your paper", 
+          emoji: "💪", 
+          description: "Decline and complete the exam honestly",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
-      title: "Breaking Rules",
-      emoji: "🚷",
-      situation: "Your group suggests sneaking out of school early.",
-      choices: [
-        { id: 1, text: "Follow them and sneak out", emoji: "🚪", isCorrect: false },
-        { id: 2, text: "Say no and remind them it’s wrong", emoji: "🙅‍♂️", isCorrect: true },
-        { id: 3, text: "Wait to see if teachers notice", emoji: "👀", isCorrect: false },
-      ],
+      text: "Your group suggests sneaking out of school early.",
+      options: [
+        { 
+          id: "say", 
+          text: "Say no and remind them it's wrong", 
+          emoji: "🙅‍♂️", 
+          description: "Refuse and explain why it's wrong",
+          isCorrect: true
+        },
+        { 
+          id: "follow", 
+          text: "Follow them and sneak out", 
+          emoji: "🚪", 
+          description: "Join them in leaving early",
+          isCorrect: false
+        },
+        { 
+          id: "wait", 
+          text: "Wait to see if teachers notice", 
+          emoji: "👀", 
+          description: "Observe and decide based on teachers' reaction",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      title: "Copying Homework",
-      emoji: "📄",
-      situation: "Your friend asks to copy your homework.",
-      choices: [
-        { id: 1, text: "Let them copy", emoji: "✍️", isCorrect: false },
-        { id: 2, text: "Refuse and tell them to try it themselves", emoji: "🧠", isCorrect: true },
-        { id: 3, text: "Ignore and walk away", emoji: "🚶", isCorrect: false },
-      ],
-    },
+      text: "Your friend asks to copy your homework.",
+      options: [
+        { 
+          id: "let", 
+          text: "Let them copy", 
+          emoji: "✍️", 
+          description: "Allow them to copy your work",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore and walk away", 
+          emoji: "🚶", 
+          description: "Leave without responding",
+          isCorrect: false
+        },
+        { 
+          id: "refuse3", 
+          text: "Refuse and tell them to try it themselves", 
+          emoji: "🧠", 
+          description: "Decline and encourage them to do it themselves",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const story = stories[currentIndex];
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = story.choices.find((c) => c.id === selectedChoice);
-
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins((prev) => prev + 5);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    setShowFeedback(true);
-  };
-
-  const handleNextStory = () => {
-    if (currentIndex < stories.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      navigate("/student/moral-values/teen/debate-right-vs-popular");
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
-  const selectedChoiceData = story.choices.find((c) => c.id === selectedChoice);
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const handleNext = () => {
+    navigate("/student/moral-values/teen/debate-right-vs-popular");
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Peer Pressure Story"
-      subtitle={`Scenario ${currentIndex + 1} of ${stories.length}`}
-      onNext={handleNextStory}
-      nextEnabled={showFeedback}
-      showGameOver={currentIndex === stories.length - 1 && showFeedback}
       score={coins}
-      gameId="moral-teen-95"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={95}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      subtitle={showResult ? "Activity Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore === questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">{story.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{story.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">{story.situation}</p>
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4 text-center">What should you do?</h3>
-
-            <div className="space-y-3 mb-6">
-              {story.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-7xl mb-4">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {selectedChoiceData.isCorrect ? "🌟 Well Done!" : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                <p className="text-white">
-                  Great choice! You resisted peer pressure and stood up for what’s right.
-                  That’s real courage and integrity!
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning to resist peer pressure!
                 </p>
-                <p className="text-yellow-400 text-2xl font-bold mt-4">+5 Coins 🪙</p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand the importance of standing up for what's right!
+                </p>
               </div>
             ) : (
-              <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                <p className="text-white">
-                  Remember, real friends never force you to break rules. Stand firm and choose right next time!
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, resisting peer pressure shows real strength!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that resists peer pressure and does what's right.
                 </p>
               </div>
             )}
-
-            {/* ✅ Next Scenario Button always visible after feedback */}
-            <button
-              onClick={handleNextStory}
-              className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              {currentIndex < stories.length - 1 ? "Next Scenario →" : "Finish Game 🎯"}
-            </button>
           </div>
         )}
       </div>

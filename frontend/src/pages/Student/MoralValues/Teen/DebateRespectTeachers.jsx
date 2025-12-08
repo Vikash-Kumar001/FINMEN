@@ -1,210 +1,206 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const DebateRespectTeachers = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  const gameId = "moral-teen-17";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentRound, setCurrentRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
-  const [argument, setArgument] = useState("");
-  const [rebuttal, setRebuttal] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [currentDebate, setCurrentDebate] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [answered, setAnswered] = useState(false);
+  const [gameComplete, setGameComplete] = useState(false);
 
-  // 🔹 5 debate questions
-  const debates = [
+  const debateTopics = [
     {
-      topic: "Should students argue rudely with teachers?",
-      correctId: 2,
+      id: 1,
+      scenario: "Should students argue rudely with teachers?",
       positions: [
-        { id: 1, position: "Yes - students have rights too", emoji: "💪" },
-        { id: 2, position: "No - disagree respectfully, not rudely", emoji: "🙏" },
-      ],
+        { id: "respect", text: "FOR: Disagree respectfully, not rudely", emoji: "🙏", points: ["Show respect", "Polite disagreement", "Build dialogue"], isCorrect: true },
+        { id: "balanced", text: "BALANCED: It depends on the situation", emoji: "⚖️", points: ["Consider context", "Choose approach", "Be thoughtful"], isCorrect: false },
+        { id: "rude", text: "AGAINST: Students have rights too", emoji: "💪", points: ["Stand your ground", "Express freely", "No filters"], isCorrect: false }
+      ]
     },
     {
-      topic: "Is it okay to interrupt a teacher while they’re explaining?",
-      correctId: 2,
+      id: 2,
+      scenario: "Is it okay to interrupt a teacher while they're explaining?",
       positions: [
-        { id: 1, position: "Yes - if I think they’re wrong", emoji: "🗣️" },
-        { id: 2, position: "No - wait and share politely later", emoji: "🤝" },
-      ],
+        { id: "balanced", text: "BALANCED: Sometimes urgent questions need answers", emoji: "⚖️", points: ["Urgent cases", "Use judgment", "Be considerate"], isCorrect: false },
+        { id: "wait", text: "FOR: Wait and share politely later", emoji: "🤝", points: ["Show respect", "Wait your turn", "Better learning"], isCorrect: true },
+        { id: "interrupt", text: "AGAINST: If I think they're wrong", emoji: "🗣️", points: ["Correct immediately", "No waiting", "Speak up"], isCorrect: false }
+      ]
     },
     {
-      topic: "Should students gossip about teachers online?",
-      correctId: 2,
+      id: 3,
+      scenario: "Should students gossip about teachers online?",
       positions: [
-        { id: 1, position: "Yes - it’s freedom of speech", emoji: "💬" },
-        { id: 2, position: "No - it spreads disrespect", emoji: "🚫" },
-      ],
+        { id: "freedom", text: "AGAINST: It's freedom of speech", emoji: "💬", points: ["Free expression", "Online privacy", "Your right"], isCorrect: false },
+        { id: "balanced", text: "BALANCED: Depends on what you say", emoji: "⚖️", points: ["Consider impact", "Be mindful", "Think first"], isCorrect: false },
+        { id: "respect", text: "FOR: It spreads disrespect", emoji: "🚫", points: ["Shows disrespect", "Harms reputation", "Unkind behavior"], isCorrect: true }
+      ]
     },
     {
-      topic: "Is obeying teachers the same as respecting them?",
-      correctId: 2,
+      id: 4,
+      scenario: "Is obeying teachers the same as respecting them?",
       positions: [
-        { id: 1, position: "Yes - you must always obey", emoji: "🙇" },
-        { id: 2, position: "No - respect means understanding, not blind obedience", emoji: "🧠" },
-      ],
+        { id: "understand", text: "FOR: Respect means understanding, not blind obedience", emoji: "🧠", points: ["True respect", "Critical thinking", "Mutual understanding"], isCorrect: true },
+        { id: "obey", text: "AGAINST: You must always obey", emoji: "🙇", points: ["Complete obedience", "No questions", "Just follow"], isCorrect: false },
+        { id: "balanced", text: "BALANCED: Both matter in different ways", emoji: "⚖️", points: ["Balance both", "Respect and follow", "Find middle"], isCorrect: false }
+      ]
     },
     {
-      topic: "Should teachers and students treat each other equally?",
-      correctId: 2,
+      id: 5,
+      scenario: "Should teachers and students treat each other equally?",
       positions: [
-        { id: 1, position: "No - teachers should always dominate", emoji: "👑" },
-        { id: 2, position: "Yes - mutual respect creates better learning", emoji: "🤗" },
-      ],
-    },
+        { id: "balanced", text: "BALANCED: Equal respect, different roles", emoji: "⚖️", points: ["Respect both ways", "Different roles", "Mutual dignity"], isCorrect: false },
+        { id: "dominate", text: "AGAINST: Teachers should always dominate", emoji: "👑", points: ["Authority first", "Teachers lead", "Students follow"], isCorrect: false },
+        { id: "mutual", text: "FOR: Mutual respect creates better learning", emoji: "🤗", points: ["Better learning", "Open dialogue", "Shared respect"], isCorrect: true }
+      ]
+    }
   ];
 
-  const current = debates[currentDebate];
-  const selectedPos = current.positions.find((p) => p.id === selectedPosition);
+  const handlePositionSelect = (positionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    const topic = debateTopics[currentRound];
+    const isCorrect = topic.positions.find(pos => pos.id === positionId)?.isCorrect;
 
-  const handleSubmit = () => {
-    if (selectedPosition && argument.trim().length >= 30 && rebuttal.trim().length >= 20) {
-      const isCorrect = selectedPosition === current.correctId;
-      const earned = isCorrect ? 2 : 0;
-      if (isCorrect) showCorrectAnswerFeedback(2, true);
-      setCoins((prev) => prev + earned);
-
-      // Move to next debate or end
-      if (currentDebate < debates.length - 1) {
-        setTimeout(() => {
-          setSelectedPosition(null);
-          setArgument("");
-          setRebuttal("");
-          setShowFeedback(false);
-          setCurrentDebate((prev) => prev + 1);
-        }, 1000);
-      } else {
-        setShowFeedback(true);
-      }
+    setSelectedPosition(positionId);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
 
-  const handleNext = () => {
-    navigate("/student/moral-values/teen/roleplay-respect-leader");
+    const isLastRound = currentRound === debateTopics.length - 1;
+    
+    if (isLastRound) {
+      setGameComplete(true);
+      setTimeout(() => setShowResult(true), 500);
+    } else {
+      setTimeout(() => {
+        setCurrentRound(prev => prev + 1);
+        setSelectedPosition(null);
+        setAnswered(false);
+      }, 500);
+    }
   };
 
   return (
     <GameShell
-      title="Debate: Respect & Communication"
-      subtitle="Think, Argue, Reflect Respectfully"
-      onNext={handleNext}
-      nextEnabled={showFeedback}
-      showGameOver={showFeedback}
-      score={coins}
-      gameId="moral-teen-17"
-      gameType="moral"
-      totalLevels={20}
-      currentLevel={17}
-      showConfetti={showFeedback}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={20} // Max score is total number of questions (all correct)
+      title="Debate: Respect Teachers"
+      subtitle={!showResult ? `Round ${currentRound + 1} of ${debateTopics.length}` : "Debate Complete!"}
+      score={score}
+      currentLevel={currentRound + 1}
+      totalLevels={debateTopics.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={debateTopics.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="moral"
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-5xl mb-4 text-center">👩‍🏫</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              Debate {currentDebate + 1} / 5
-            </h2>
-
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-xl font-semibold text-center">
-                {current.topic}
-              </p>
+        {!showResult && debateTopics[currentRound] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Round {currentRound + 1}/{debateTopics.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{debateTopics.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-4">{debateTopics[currentRound].scenario}</h3>
+              <h4 className="text-lg font-semibold text-white/90 mb-4">Take a Position:</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {debateTopics[currentRound].positions.map((position) => (
+                  <button
+                    key={position.id}
+                    onClick={() => handlePositionSelect(position.id)}
+                    disabled={answered}
+                    className={`w-full text-left p-6 rounded-2xl transition-all transform hover:scale-105 border ${
+                      answered && selectedPosition === position.id
+                        ? position.isCorrect
+                          ? "bg-green-500/20 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-red-400 ring-4 ring-red-400"
+                        : selectedPosition === position.id
+                        ? "bg-blue-500/30 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border-white/20"
+                    } ${answered ? "opacity-75 cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center mb-2">
+                      <span className="text-2xl mr-2">{position.emoji}</span>
+                      <div className="font-bold text-lg text-white">{position.text}</div>
+                    </div>
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-white/80">
+                      {position.points.map((point, index) => (
+                        <li key={index}>{point}</li>
+                      ))}
+                    </ul>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4">1️⃣ Choose Your Position</h3>
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {current.positions.map((pos) => (
-                <button
-                  key={pos.id}
-                  onClick={() => setSelectedPosition(pos.id)}
-                  className={`border-2 rounded-xl p-4 transition-all ${
-                    selectedPosition === pos.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="text-3xl mb-2">{pos.emoji}</div>
-                  <div className="text-white font-semibold text-sm text-center">
-                    {pos.position}
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <h3 className="text-white font-bold mb-2">2️⃣ Build Your Argument (min 30 chars)</h3>
-            <textarea
-              value={argument}
-              onChange={(e) => setArgument(e.target.value)}
-              placeholder="Provide reasoning or examples..."
-              className="w-full h-24 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={200}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">
-              {argument.length}/200
-            </div>
-
-            <h3 className="text-white font-bold mb-2">3️⃣ Prepare Your Rebuttal (min 20 chars)</h3>
-            <textarea
-              value={rebuttal}
-              onChange={(e) => setRebuttal(e.target.value)}
-              placeholder="Counter the other side’s view..."
-              className="w-full h-20 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={150}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">
-              {rebuttal.length}/150
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={
-                !selectedPosition ||
-                argument.trim().length < 30 ||
-                rebuttal.trim().length < 20
-              }
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedPosition &&
-                argument.trim().length >= 30 &&
-                rebuttal.trim().length >= 20
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              {currentDebate < debates.length - 1
-                ? "Next Debate ➡️"
-                : "Finish All Debates 🌟"}
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">🏅</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              Great Work, Respectful Debater!
-            </h2>
-
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 You completed all 5 debates thoughtfully! Remember — respectful disagreement
-                builds understanding and trust. Keep your voice confident and kind.
-              </p>
-            </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned {coins} Coins! 🪙
-            </p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Debate Master!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You scored {score} out of {debateTopics.length}!
+                  You understand respectful communication with teachers!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Respectful communication builds trust and creates better learning environments!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You scored {score} out of {debateTopics.length}.
+                  Remember, respect and communication go hand in hand!
+                </p>
+                <button
+                  onClick={() => {
+                    setShowResult(false);
+                    setCurrentRound(0);
+                    setScore(0);
+                    setSelectedPosition(null);
+                    setAnswered(false);
+                    setGameComplete(false);
+                    resetFeedback();
+                  }}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Respectful disagreement shows maturity and helps build positive relationships with teachers.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

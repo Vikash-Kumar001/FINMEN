@@ -8,7 +8,7 @@ const QuizResponsibility = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "moral-kids-31";
+  const gameId = "moral-kids-32";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults

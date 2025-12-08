@@ -1,226 +1,206 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const DebateLyingForFriend = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  
+  const gameId = "moral-teen-6";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentRound, setCurrentRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
-  const [argument, setArgument] = useState("");
-  const [rebuttal, setRebuttal] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [answered, setAnswered] = useState(false);
+  const [gameComplete, setGameComplete] = useState(false);
 
-  // 🧩 5 Debate Topics
-  const debates = [
+  const debateTopics = [
     {
       id: 1,
-      topic: "Is lying okay to protect a friend?",
+      scenario: "Is lying okay to protect a friend?",
       positions: [
-        { id: 1, position: "Yes - loyalty to friends comes first", emoji: "🤝", isCorrect: false },
-        { id: 2, position: "No - truth matters even in friendship", emoji: "💎", isCorrect: true },
-      ],
-      correctMessage:
-        "Excellent! Truth matters even in friendship. Lying for a friend damages credibility and integrity.",
+        { id: "truth", text: "FOR: Truth matters even in friendship", emoji: "💎", points: ["Builds trust", "Shows integrity", "Long-term respect"], isCorrect: true },
+        { id: "balanced", text: "BALANCED: Consider the situation", emoji: "⚖️", points: ["Depends on context", "Weigh consequences", "Choose wisely"], isCorrect: false },
+        { id: "lie", text: "AGAINST: Loyalty to friends comes first", emoji: "🤝", points: ["Protect friends", "Friendship matters", "Stand together"], isCorrect: false }
+      ]
     },
     {
       id: 2,
-      topic: "Is cheating in exams ever justified?",
+      scenario: "Is cheating in exams ever justified?",
       positions: [
-        { id: 1, position: "Yes - pressure makes it okay sometimes", emoji: "📚", isCorrect: false },
-        { id: 2, position: "No - honesty matters more than grades", emoji: "🎓", isCorrect: true },
-      ],
-      correctMessage:
-        "Great choice! Cheating may bring short success, but honesty builds true confidence and respect.",
+        { id: "balanced", text: "BALANCED: Sometimes pressure is real", emoji: "⚖️", points: ["Understand pressure", "Consider circumstances", "Find alternatives"], isCorrect: false },
+        { id: "honesty", text: "FOR: Honesty matters more than grades", emoji: "🎓", points: ["Builds character", "True learning", "Self-respect"], isCorrect: true },
+        { id: "cheat", text: "AGAINST: Pressure makes it okay sometimes", emoji: "📚", points: ["High expectations", "Everyone does it", "Just this once"], isCorrect: false }
+      ]
     },
     {
       id: 3,
-      topic: "Should you speak up if your friend bullies someone?",
+      scenario: "Should you speak up if your friend bullies someone?",
       positions: [
-        { id: 1, position: "Yes - silence supports wrong", emoji: "🗣️", isCorrect: true },
-        { id: 2, position: "No - stay out of it", emoji: "🙊", isCorrect: false },
-      ],
-      correctMessage:
-        "Exactly! Speaking up against wrong shows courage and integrity. Silence only encourages bullying.",
+        { id: "silent", text: "AGAINST: Stay out of it", emoji: "🙊", points: ["Not your problem", "Avoid conflict", "Stay neutral"], isCorrect: false },
+        { id: "balanced", text: "BALANCED: Talk to friend privately", emoji: "⚖️", points: ["Address privately", "Help them understand", "Guide gently"], isCorrect: false },
+        { id: "speak", text: "FOR: Silence supports wrong", emoji: "🗣️", points: ["Stand for justice", "Protect victims", "Show courage"], isCorrect: true }
+      ]
     },
     {
       id: 4,
-      topic: "Would you return a lost wallet if no one saw you?",
+      scenario: "Would you return a lost wallet if no one saw you?",
       positions: [
-        { id: 1, position: "Yes - integrity is doing right unseen", emoji: "💼", isCorrect: true },
-        { id: 2, position: "No - finders keepers", emoji: "😏", isCorrect: false },
-      ],
-      correctMessage:
-        "Perfect! Integrity is what you do when no one’s watching. Returning it shows true moral strength.",
+        { id: "return", text: "FOR: Integrity is doing right unseen", emoji: "💼", points: ["True character", "Do what's right", "Build trust"], isCorrect: true },
+        { id: "keep", text: "AGAINST: Finders keepers", emoji: "😏", points: ["No one saw", "Your luck", "Free money"], isCorrect: false },
+        { id: "balanced", text: "BALANCED: Try to find owner first", emoji: "⚖️", points: ["Make effort", "Then decide", "Be reasonable"], isCorrect: false }
+      ]
     },
     {
       id: 5,
-      topic: "Is it okay to gossip if it’s true?",
+      scenario: "Is it okay to gossip if it's true?",
       positions: [
-        { id: 1, position: "Yes - truth isn’t gossip", emoji: "🗞️", isCorrect: false },
-        { id: 2, position: "No - it still harms others’ image", emoji: "🤐", isCorrect: true },
-      ],
-      correctMessage:
-        "Correct! Gossip, even true, spreads harm. Integrity means respecting others’ privacy and dignity.",
-    },
+        { id: "balanced", text: "BALANCED: Depends on intent", emoji: "⚖️", points: ["Context matters", "Consider impact", "Be thoughtful"], isCorrect: false },
+        { id: "gossip", text: "AGAINST: Truth isn't gossip", emoji: "🗞️", points: ["Facts are facts", "Sharing information", "Not harmful"], isCorrect: false },
+        { id: "respect", text: "FOR: It still harms others' image", emoji: "🤐", points: ["Respect privacy", "Avoid harm", "Show integrity"], isCorrect: true }
+      ]
+    }
   ];
 
-  const currentDebate = debates[currentQuestion];
+  const handlePositionSelect = (positionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    const topic = debateTopics[currentRound];
+    const isCorrect = topic.positions.find(pos => pos.id === positionId)?.isCorrect;
 
-  const handleSubmit = () => {
-    if (selectedPosition && argument.trim().length >= 30 && rebuttal.trim().length >= 20) {
-      const chosen = currentDebate.positions.find(p => p.id === selectedPosition);
-      if (chosen.isCorrect) {
-        showCorrectAnswerFeedback(10, true);
-        setCoins(10);
-        setTotalCoins(prev => prev + 10);
-      } else {
-        setCoins(0);
-      }
-      setShowFeedback(true);
+    setSelectedPosition(positionId);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
 
-  const handleNextQuestion = () => {
-    if (currentQuestion < debates.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedPosition(null);
-      setArgument("");
-      setRebuttal("");
-      setShowFeedback(false);
-      setCoins(0);
+    const isLastRound = currentRound === debateTopics.length - 1;
+    
+    if (isLastRound) {
+      setGameComplete(true);
+      setTimeout(() => setShowResult(true), 500);
     } else {
-      navigate("/student/moral-values/teen/integrity-journal");
+      setTimeout(() => {
+        setCurrentRound(prev => prev + 1);
+        setSelectedPosition(null);
+        setAnswered(false);
+      }, 500);
     }
   };
-
-  const selectedPos = currentDebate.positions.find(p => p.id === selectedPosition);
 
   return (
     <GameShell
-      title="Debate Arena: Moral Dilemmas"
-      subtitle="Truth, Loyalty, and Integrity"
-      onNext={handleNextQuestion}
-      nextEnabled={showFeedback}
-      showGameOver={currentQuestion === debates.length - 1 && showFeedback}
-      score={totalCoins}
-      gameId="moral-teen-6"
-      gameType="moral"
-      totalLevels={20}
-      currentLevel={6}
-      showConfetti={showFeedback && coins > 0}
-      maxScore={20} // Max score is total number of questions (all correct)
+      title="Debate: Lying for Friend"
+      subtitle={!showResult ? `Round ${currentRound + 1} of ${debateTopics.length}` : "Debate Complete!"}
+      score={score}
+      currentLevel={currentRound + 1}
+      totalLevels={debateTopics.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={debateTopics.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
+      gameId={gameId}
+      gameType="moral"
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-6xl mb-4 text-center">⚖️</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              Debate {currentQuestion + 1} of {debates.length}
-            </h2>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-xl font-semibold text-center">
-                {currentDebate.topic}
-              </p>
+        {!showResult && debateTopics[currentRound] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Round {currentRound + 1}/{debateTopics.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{debateTopics.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-4">{debateTopics[currentRound].scenario}</h3>
+              <h4 className="text-lg font-semibold text-white/90 mb-4">Take a Position:</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {debateTopics[currentRound].positions.map((position) => (
+                  <button
+                    key={position.id}
+                    onClick={() => handlePositionSelect(position.id)}
+                    disabled={answered}
+                    className={`w-full text-left p-6 rounded-2xl transition-all transform hover:scale-105 border ${
+                      answered && selectedPosition === position.id
+                        ? position.isCorrect
+                          ? "bg-green-500/20 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-red-400 ring-4 ring-red-400"
+                        : selectedPosition === position.id
+                        ? "bg-blue-500/30 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border-white/20"
+                    } ${answered ? "opacity-75 cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center mb-2">
+                      <span className="text-2xl mr-2">{position.emoji}</span>
+                      <div className="font-bold text-lg text-white">{position.text}</div>
+                    </div>
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-white/80">
+                      {position.points.map((point, index) => (
+                        <li key={index}>{point}</li>
+                      ))}
+                    </ul>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4">1. Choose Your Position</h3>
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {currentDebate.positions.map(pos => (
-                <button
-                  key={pos.id}
-                  onClick={() => setSelectedPosition(pos.id)}
-                  className={`border-2 rounded-xl p-4 transition-all ${
-                    selectedPosition === pos.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="text-3xl mb-2">{pos.emoji}</div>
-                  <div className="text-white font-semibold text-sm">{pos.position}</div>
-                </button>
-              ))}
-            </div>
-
-            <h3 className="text-white font-bold mb-2">2. Build Your Argument (min 30 chars)</h3>
-            <textarea
-              value={argument}
-              onChange={e => setArgument(e.target.value)}
-              placeholder="Provide evidence and reasoning..."
-              className="w-full h-24 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={200}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">{argument.length}/200</div>
-
-            <h3 className="text-white font-bold mb-2">3. Prepare Your Rebuttal (min 20 chars)</h3>
-            <textarea
-              value={rebuttal}
-              onChange={e => setRebuttal(e.target.value)}
-              placeholder="Counter the opposing view..."
-              className="w-full h-20 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={150}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">{rebuttal.length}/150</div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedPosition || argument.trim().length < 30 || rebuttal.trim().length < 20}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedPosition && argument.trim().length >= 30 && rebuttal.trim().length >= 20
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Submit Debate
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedPos?.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedPos?.isCorrect ? "🏆 Integrity Champion!" : "Reconsider This..."}
-            </h2>
-
-            {selectedPos?.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">{currentDebate.correctMessage}</p>
-                </div>
-                <div className="bg-purple-500/20 rounded-lg p-3 mb-4">
-                  <p className="text-white/80 text-sm mb-1">Your Argument:</p>
-                  <p className="text-white italic">"{argument}"</p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 10 Coins! 🪙
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Debate Master!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You scored {score} out of {debateTopics.length}!
+                  You understand the importance of integrity and truth!
                 </p>
-              </>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Truth and integrity build trust and respect, even when it's difficult!
+                </p>
+              </div>
             ) : (
-              <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                <p className="text-white text-center">
-                  That perspective values emotion over integrity. Try again to reflect deeper!
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You scored {score} out of {debateTopics.length}.
+                  Remember, integrity means doing the right thing even when it's hard!
+                </p>
+                <button
+                  onClick={() => {
+                    setShowResult(false);
+                    setCurrentRound(0);
+                    setScore(0);
+                    setSelectedPosition(null);
+                    setAnswered(false);
+                    setGameComplete(false);
+                    resetFeedback();
+                  }}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Integrity means being honest and doing what's right, even when no one is watching.
                 </p>
               </div>
             )}
-
-            <button
-              onClick={handleNextQuestion}
-              className="mt-6 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              {currentQuestion < debates.length - 1 ? "Next Debate ➜" : "Finish Game 🏁"}
-            </button>
           </div>
         )}
       </div>

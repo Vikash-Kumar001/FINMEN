@@ -1,238 +1,294 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const LateNightPartyStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-teen-35";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const [coins, setCoins] = useState(0);
-  const [gameOver, setGameOver] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
-      title: "Late Night Party 1",
-      emoji: "🎉",
-      situation: "Exam tomorrow, friends invite you for a late-night party. What do you do?",
-      choices: [
-        { id: 1, text: "Go to the party", emoji: "😎", isCorrect: false },
-        { id: 2, text: "Stay home and study", emoji: "📚", isCorrect: true },
-      ],
+      id: 1,
+      text: "Exam tomorrow, friends invite you for a late-night party. What do you do?",
+      options: [
+        { 
+          id: "party", 
+          text: "Go to the party", 
+          emoji: "😎", 
+          description: "Join your friends for the party",
+          isCorrect: false
+        },
+        { 
+          id: "study", 
+          text: "Stay home and study", 
+          emoji: "📚", 
+          description: "Prioritize your exam preparation",
+          isCorrect: true
+        },
+        { 
+          id: "short", 
+          text: "Go for just one hour", 
+          emoji: "⏰", 
+          description: "Attend briefly then leave early",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Late Night Party 2",
-      emoji: "🕺",
-      situation: "Friends plan a party the night before your big test. How do you respond?",
-      choices: [
-        { id: 1, text: "Join them for fun", emoji: "💃", isCorrect: false },
-        { id: 2, text: "Politely decline and revise", emoji: "✍️", isCorrect: true },
-      ],
+      id: 2,
+      text: "Friends plan a party the night before your big test. How do you respond?",
+      options: [
+        { 
+          id: "join", 
+          text: "Join them for fun", 
+          emoji: "💃", 
+          description: "Attend the party with your friends",
+          isCorrect: false
+        },
+        { 
+          id: "decline", 
+          text: "Politely decline and revise", 
+          emoji: "✍️", 
+          description: "Refuse politely and focus on studying",
+          isCorrect: true
+        },
+        { 
+          id: "compromise", 
+          text: "Go but leave early", 
+          emoji: "🚪", 
+          description: "Attend but promise to leave soon",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Late Night Party 3",
-      emoji: "🥳",
-      situation: "Everyone is going out for snacks late night, but you have an important exam. What’s your choice?",
-      choices: [
-        { id: 1, text: "Go with them", emoji: "🍕", isCorrect: false },
-        { id: 2, text: "Stay focused and prepare", emoji: "📖", isCorrect: true },
-      ],
+      id: 3,
+      text: "Everyone is going out for snacks late night, but you have an important exam. What's your choice?",
+      options: [
+        { 
+          id: "go", 
+          text: "Go with them", 
+          emoji: "🍕", 
+          description: "Join them for late-night snacks",
+          isCorrect: false
+        },
+        { 
+          id: "stay", 
+          text: "Stay focused and prepare", 
+          emoji: "📖", 
+          description: "Remain home and study for your exam",
+          isCorrect: true
+        },
+        { 
+          id: "quick", 
+          text: "Go for a quick snack", 
+          emoji: "🍔", 
+          description: "Join briefly for a short snack break",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Late Night Party 4",
-      emoji: "🎶",
-      situation: "Music and dance at a late-night party vs. early morning exam prep. You decide?",
-      choices: [
-        { id: 1, text: "Party all night", emoji: "🎧", isCorrect: false },
-        { id: 2, text: "Sleep early and review notes", emoji: "🛌", isCorrect: true },
-      ],
+      id: 4,
+      text: "Music and dance at a late-night party vs. early morning exam prep. You decide?",
+      options: [
+        { 
+          id: "sleep", 
+          text: "Sleep early and review notes", 
+          emoji: "🛌", 
+          description: "Get rest and review your notes in the morning",
+          isCorrect: true
+        },
+        { 
+          id: "party2", 
+          text: "Party all night", 
+          emoji: "🎧", 
+          description: "Attend the party and stay up late",
+          isCorrect: false
+        },
+        { 
+          id: "both", 
+          text: "Party first then study", 
+          emoji: "🎉", 
+          description: "Go to the party then try to study after",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Late Night Party 5",
-      emoji: "🍹",
-      situation: "Friends invite you for drinks late night but exam is next day. What’s right?",
-      choices: [
-        { id: 1, text: "Join friends", emoji: "🥂", isCorrect: false },
-        { id: 2, text: "Stay home and revise", emoji: "📝", isCorrect: true },
-      ],
-    },
+      id: 5,
+      text: "Friends invite you for drinks late night but exam is next day. What's right?",
+      options: [
+        { 
+          id: "join2", 
+          text: "Join friends", 
+          emoji: "🥂", 
+          description: "Attend the gathering with your friends",
+          isCorrect: false
+        },
+        { 
+          id: "revise", 
+          text: "Stay home and revise", 
+          emoji: "📝", 
+          description: "Focus on preparing for tomorrow's exam",
+          isCorrect: true
+        },
+        { 
+          id: "quick2", 
+          text: "Go for one drink only", 
+          emoji: "🥤", 
+          description: "Have one drink then leave quickly",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = questions[currentQuestion].choices.find(
-      (c) => c.id === selectedChoice
-    );
-
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins((prev) => prev + 5);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    setShowFeedback(true);
-  };
-
-  const handleNext = () => {
+    
+    // Move to next question or show results
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      // All questions done
-      setGameOver(true);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
-  const handleFinish = () => {
+  const handleNext = () => {
     navigate("/student/moral-values/teen/debate-rules-vs-freedom");
   };
 
-  const selectedChoiceData = questions[currentQuestion].choices.find(
-    (c) => c.id === selectedChoice
-  );
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Late Night Party Story"
-      subtitle="Make Responsible Choices"
-      onNext={handleNext}
-      nextEnabled={showFeedback}
-      showGameOver={gameOver}
       score={coins}
-      gameId="moral-teen-35"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={35}
-      showConfetti={gameOver}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      subtitle={showResult ? "Activity Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore === questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!gameOver ? (
-          <>
-            {!showFeedback ? (
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-                <div className="text-8xl mb-4 text-center">
-                  {questions[currentQuestion].emoji}
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about responsibility and self-discipline!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-4 text-center">
-                  {questions[currentQuestion].title}
-                </h2>
-                <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-                  <p className="text-white text-lg leading-relaxed text-center">
-                    {questions[currentQuestion].situation}
-                  </p>
-                </div>
-
-                <h3 className="text-white font-bold mb-4">What should you do?</h3>
-
-                <div className="space-y-3 mb-6">
-                  {questions[currentQuestion].choices.map((choice) => (
-                    <button
-                      key={choice.id}
-                      onClick={() => handleChoice(choice.id)}
-                      className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                        selectedChoice === choice.id
-                          ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                          : "bg-white/20 border-white/40 hover:bg-white/30"
-                      }`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="text-4xl">{choice.emoji}</div>
-                        <div className="text-white font-semibold text-lg">
-                          {choice.text}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  onClick={handleConfirm}
-                  disabled={!selectedChoice}
-                  className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                    selectedChoice
-                      ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                      : "bg-gray-500/50 cursor-not-allowed"
-                  }`}
-                >
-                  Confirm Choice
-                </button>
+                <p className="text-white/80">
+                  You understand the importance of prioritizing important tasks!
+                </p>
               </div>
             ) : (
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-                <div className="text-7xl mb-4 text-center">
-                  {selectedChoiceData.emoji}
-                </div>
-                <h2 className="text-3xl font-bold text-white mb-4 text-center">
-                  {selectedChoiceData.isCorrect ? "✨ Wise Choice!" : "Think Again..."}
-                </h2>
-                <p className="text-white/90 text-lg mb-6 text-center">
-                  {selectedChoiceData.text}
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, prioritizing important tasks leads to success!
                 </p>
-
-                {selectedChoiceData.isCorrect ? (
-                  <p className="text-yellow-400 text-2xl font-bold text-center">
-                    You earned 5 Coins! 🪙
-                  </p>
-                ) : (
-                  <button
-                    onClick={handleTryAgain}
-                    className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                  >
-                    Try Again
-                  </button>
-                )}
-
                 <button
-                  onClick={handleNext}
-                  className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
-                  {currentQuestion === questions.length - 1
-                    ? "Finish Game"
-                    : "Next Question"}
+                  Try Again
                 </button>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that prioritizes important responsibilities.
+                </p>
               </div>
             )}
-          </>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <h2 className="text-4xl font-bold text-white mb-4">🎉 Well Done!</h2>
-            <p className="text-white/90 text-lg mb-4">
-              You showed great discipline by making smart choices before exams.
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              Total Coins Earned: {coins} 🪙
-            </p>
-            <button
-              onClick={handleFinish}
-              className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              Continue
-            </button>
           </div>
         )}
       </div>

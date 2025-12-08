@@ -1,170 +1,258 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeEthicalHero = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("moral-teen-100");
+  const gameId = gameData?.id || "moral-teen-100";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for BadgeEthicalHero, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // ✅ 5 Ethical Dilemmas (Yes/No)
-  const ethicalDilemmas = [
-    { id: 1, text: "Returned a lost wallet instead of keeping it", emoji: "👛" },
-    { id: 2, text: "Told the truth even when it was hard", emoji: "💬" },
-    { id: 3, text: "Stood up for someone being treated unfairly", emoji: "🧍‍♂️" },
-    { id: 4, text: "Chose fairness over personal gain", emoji: "⚖️" },
-    { id: 5, text: "Admitted a mistake instead of hiding it", emoji: "🙌" },
+  const challenges = [
+    {
+      id: 1,
+      title: "Ethical Hero Challenge 1",
+      question: "What should you do if you find a lost wallet?",
+      options: [
+        { 
+          text: "Return it to the owner or turn it in", 
+          emoji: "👛", 
+          isCorrect: true
+        },
+        { 
+          text: "Keep it for yourself", 
+          emoji: "💰", 
+          isCorrect: false
+        },
+        { 
+          text: "Take the money and leave the wallet", 
+          emoji: "💵", 
+          isCorrect: false
+        },
+        { 
+          text: "Ignore it and walk away", 
+          emoji: "😶", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Ethical Hero Challenge 2",
+      question: "How should you handle telling the truth when it's difficult?",
+      options: [
+        { 
+          text: "Lie to avoid consequences", 
+          emoji: "🤥", 
+          isCorrect: false
+        },
+        { 
+          text: "Tell the truth even when it's hard", 
+          emoji: "💬", 
+          isCorrect: true
+        },
+        { 
+          text: "Avoid the situation", 
+          emoji: "😶", 
+          isCorrect: false
+        },
+        { 
+          text: "Tell a partial truth", 
+          emoji: "💭", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "Ethical Hero Challenge 3",
+      question: "What should you do when someone is treated unfairly?",
+      options: [
+        { 
+          text: "Ignore the unfair treatment", 
+          emoji: "😶", 
+          isCorrect: false
+        },
+        { 
+          text: "Join in the unfair treatment", 
+          emoji: "😏", 
+          isCorrect: false
+        },
+        { 
+          text: "Stand up for them and defend their rights", 
+          emoji: "🧍‍♂️", 
+          isCorrect: true
+        },
+        { 
+          text: "Only help if it's your friend", 
+          emoji: "👥", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "Ethical Hero Challenge 4",
+      question: "How should you choose between personal gain and fairness?",
+      options: [
+        { 
+          text: "Choose fairness over personal gain", 
+          emoji: "⚖️", 
+          isCorrect: true
+        },
+        { 
+          text: "Always choose personal gain", 
+          emoji: "💰", 
+          isCorrect: false
+        },
+        { 
+          text: "Choose based on what benefits you most", 
+          emoji: "💭", 
+          isCorrect: false
+        },
+        { 
+          text: "Avoid making the choice", 
+          emoji: "😶", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Ethical Hero Challenge 5",
+      question: "What should you do when you make a mistake?",
+      options: [
+        { 
+          text: "Hide the mistake", 
+          emoji: "😶", 
+          isCorrect: false
+        },
+        { 
+          text: "Blame someone else", 
+          emoji: "👆", 
+          isCorrect: false
+        },
+        { 
+          text: "Only admit if caught", 
+          emoji: "😔", 
+          isCorrect: false
+        },
+        { 
+          text: "Admit the mistake and take responsibility", 
+          emoji: "🙌", 
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const [answers, setAnswers] = useState({});
-  const [showResult, setShowResult] = useState(false);
-  const [isWinner, setIsWinner] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
-
-  // ✅ Handle Yes/No Selection
-  const handleAnswer = (id, value) => {
-    setAnswers((prev) => ({ ...prev, [id]: value }));
-  };
-
-  // ✅ Submit Logic
-  const handleSubmit = () => {
-    if (Object.keys(answers).length !== ethicalDilemmas.length) {
-      alert("Please answer all dilemmas before submitting!");
-      return;
-    }
-
-    const allYes = ethicalDilemmas.every((d) => answers[d.id] === "yes");
-    setIsWinner(allYes);
-    setShowResult(true);
-
-    if (allYes) {
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setTimeout(() => setShowPopup(true), 6000); // 🎉 Show popup after 6s
     }
+    
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
-  const handleNext = () => {
-    navigate("/games/moral-values/teens/friend-lie-story");
-  };
+  const currentChallengeData = challenges[challenge];
 
   return (
     <GameShell
       title="Badge: Ethical Hero"
-      subtitle="Ethical Excellence"
-      onNext={handleNext}
-      nextEnabled={isWinner}
-      showGameOver={showResult}
-      gameId="moral-teen-100"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={100}
-      showConfetti={isWinner}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-6">
-        {/* ✅ Main Card */}
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">
-            Ethical Hero Challenge ⚖️
-          </h2>
-
-          <p className="text-white/80 mb-6 text-center">
-            Answer truthfully — do you act ethically in these situations?
-          </p>
-
-          {/* ✅ 5 Dilemmas with Yes/No Buttons */}
-          <div className="space-y-4 mb-6">
-            {ethicalDilemmas.map((d) => (
-              <div
-                key={d.id}
-                className="border border-white/30 rounded-xl p-4 bg-white/5 hover:bg-white/10 transition"
-              >
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">{d.emoji}</div>
-                    <div className="text-white font-medium text-lg">{d.text}</div>
-                  </div>
-                  <div className="flex gap-4 mt-2 sm:mt-0">
-                    <button
-                      className={`px-4 py-2 rounded-xl font-semibold transition ${
-                        answers[d.id] === "yes"
-                          ? "bg-green-500 text-white"
-                          : "bg-white/20 text-white hover:bg-green-600/50"
-                      }`}
-                      onClick={() => handleAnswer(d.id, "yes")}
-                    >
-                      Yes
-                    </button>
-                    <button
-                      className={`px-4 py-2 rounded-xl font-semibold transition ${
-                        answers[d.id] === "no"
-                          ? "bg-red-500 text-white"
-                          : "bg-white/20 text-white hover:bg-red-600/50"
-                      }`}
-                      onClick={() => handleAnswer(d.id, "no")}
-                    >
-                      No
-                    </button>
-                  </div>
-                </div>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {!showResult && currentChallengeData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
-            ))}
-          </div>
-
-          {/* ✅ Submit Button */}
-          <div className="text-center">
-            <button
-              onClick={handleSubmit}
-              className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 hover:opacity-90 text-white font-semibold px-6 py-3 rounded-xl transition-all"
-            >
-              Submit Answers
-            </button>
-          </div>
-
-          {/* ✅ Result Section */}
-          {showResult && (
-            <div className="mt-8 text-center">
-              {isWinner ? (
-                <div className="text-green-400 text-xl font-bold">
-                  🌟 Ethical Excellence Achieved! You’re a True Hero!
-                </div>
-              ) : (
-                <div className="text-red-400 text-lg font-semibold">
-                  ⚠️ Reflect again — ethics means doing right even when it’s hard!
-                </div>
-              )}
+              
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallengeData.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallengeData.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallengeData.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* ✅ Popup for Badge Unlock */}
-      {showPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
-          <div className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 text-white rounded-2xl p-10 text-center shadow-2xl animate-bounce">
-            <div className="text-6xl mb-4">🏆</div>
-            <h3 className="text-3xl font-bold mb-2">Congratulations!</h3>
-            <p className="text-lg mb-6">
-              You’ve earned the <strong>Ethical Hero Badge!</strong> ⚖️
-            </p>
-            <button
-              onClick={() => setShowPopup(false)}
-              className="bg-white text-orange-600 font-bold px-6 py-2 rounded-xl hover:bg-gray-200"
-            >
-              Close
-            </button>
           </div>
-        </div>
-      )}
+        ) : null}
+      </div>
     </GameShell>
   );
 };

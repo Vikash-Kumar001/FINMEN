@@ -1,170 +1,258 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeCourageHero = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("moral-teen-60");
+  const gameId = gameData?.id || "moral-teen-60";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for BadgeCourageHero, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // ✅ 5 Courage Acts (Yes/No)
-  const courageActs = [
-    { id: 1, text: "Stood up for a classmate being treated unfairly", emoji: "🛡️" },
-    { id: 2, text: "Admitted a mistake honestly", emoji: "💬" },
-    { id: 3, text: "Told the truth even when it was hard", emoji: "🔥" },
-    { id: 4, text: "Spoke against group teasing", emoji: "🗣️" },
-    { id: 5, text: "Supported a friend facing injustice", emoji: "🤝" },
+  const challenges = [
+    {
+      id: 1,
+      title: "Courage Challenge 1",
+      question: "What should you do when a classmate is treated unfairly?",
+      options: [
+        { 
+          text: "Stand up for them and defend their rights", 
+          emoji: "🛡️", 
+          isCorrect: true
+        },
+        { 
+          text: "Stay quiet and avoid conflict", 
+          emoji: "😶", 
+          isCorrect: false
+        },
+        { 
+          text: "Join in the unfair treatment", 
+          emoji: "😏", 
+          isCorrect: false
+        },
+        { 
+          text: "Wait for someone else to act", 
+          emoji: "⏳", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Courage Challenge 2",
+      question: "How should you handle admitting a mistake?",
+      options: [
+        { 
+          text: "Hide the mistake and hope no one notices", 
+          emoji: "😶", 
+          isCorrect: false
+        },
+        { 
+          text: "Admit the mistake honestly and take responsibility", 
+          emoji: "💬", 
+          isCorrect: true
+        },
+        { 
+          text: "Blame someone else", 
+          emoji: "👆", 
+          isCorrect: false
+        },
+        { 
+          text: "Only admit if caught", 
+          emoji: "😔", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "Courage Challenge 3",
+      question: "What should you do when telling the truth is hard?",
+      options: [
+        { 
+          text: "Lie to avoid consequences", 
+          emoji: "🤥", 
+          isCorrect: false
+        },
+        { 
+          text: "Avoid the situation", 
+          emoji: "😶", 
+          isCorrect: false
+        },
+        { 
+          text: "Tell the truth even when it's difficult", 
+          emoji: "🔥", 
+          isCorrect: true
+        },
+        { 
+          text: "Tell a partial truth", 
+          emoji: "💭", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "Courage Challenge 4",
+      question: "How should you respond to group teasing?",
+      options: [
+        { 
+          text: "Speak against group teasing and defend the victim", 
+          emoji: "🗣️", 
+          isCorrect: true
+        },
+        { 
+          text: "Join in the teasing", 
+          emoji: "😄", 
+          isCorrect: false
+        },
+        { 
+          text: "Stay quiet and laugh along", 
+          emoji: "😶", 
+          isCorrect: false
+        },
+        { 
+          text: "Only speak up if it's your friend", 
+          emoji: "💭", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Courage Challenge 5",
+      question: "What should you do when a friend faces injustice?",
+      options: [
+        { 
+          text: "Stay out of it", 
+          emoji: "😶", 
+          isCorrect: false
+        },
+        { 
+          text: "Support your friend and stand against injustice", 
+          emoji: "🤝", 
+          isCorrect: true
+        },
+        { 
+          text: "Only help if others are watching", 
+          emoji: "👀", 
+          isCorrect: false
+        },
+        { 
+          text: "Wait for someone else to help", 
+          emoji: "⏳", 
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const [answers, setAnswers] = useState({});
-  const [showResult, setShowResult] = useState(false);
-  const [isWinner, setIsWinner] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
-
-  // ✅ Handle Yes/No Selection
-  const handleAnswer = (id, value) => {
-    setAnswers((prev) => ({ ...prev, [id]: value }));
-  };
-
-  // ✅ Submit Logic
-  const handleSubmit = () => {
-    if (Object.keys(answers).length !== courageActs.length) {
-      alert("Please answer all courage acts before submitting!");
-      return;
-    }
-
-    const allYes = courageActs.every((act) => answers[act.id] === "yes");
-    setIsWinner(allYes);
-    setShowResult(true);
-
-    if (allYes) {
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setTimeout(() => setShowPopup(true), 6000); // 🎉 Show popup after 6s
     }
+    
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
-  const handleNext = () => {
-    navigate("/games/moral-values/teens/group-project-story");
-  };
+  const currentChallengeData = challenges[challenge];
 
   return (
     <GameShell
       title="Badge: Courage Hero"
-      subtitle="Bravery in Action"
-      onNext={handleNext}
-      nextEnabled={isWinner}
-      showGameOver={showResult}
-      gameId="moral-teen-60"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={60}
-      showConfetti={isWinner}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-6">
-        {/* ✅ Main Card */}
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">
-            Courage Hero Challenge 🦁
-          </h2>
-
-          <p className="text-white/80 mb-6 text-center">
-            Answer honestly — do you show courage in your daily actions?
-          </p>
-
-          {/* ✅ 5 Courage Acts */}
-          <div className="space-y-4 mb-6">
-            {courageActs.map((act) => (
-              <div
-                key={act.id}
-                className="border border-white/30 rounded-xl p-4 bg-white/5 hover:bg-white/10 transition"
-              >
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">{act.emoji}</div>
-                    <div className="text-white font-medium text-lg">{act.text}</div>
-                  </div>
-                  <div className="flex gap-4 mt-2 sm:mt-0">
-                    <button
-                      className={`px-4 py-2 rounded-xl font-semibold transition ${
-                        answers[act.id] === "yes"
-                          ? "bg-green-500 text-white"
-                          : "bg-white/20 text-white hover:bg-green-600/50"
-                      }`}
-                      onClick={() => handleAnswer(act.id, "yes")}
-                    >
-                      Yes
-                    </button>
-                    <button
-                      className={`px-4 py-2 rounded-xl font-semibold transition ${
-                        answers[act.id] === "no"
-                          ? "bg-red-500 text-white"
-                          : "bg-white/20 text-white hover:bg-red-600/50"
-                      }`}
-                      onClick={() => handleAnswer(act.id, "no")}
-                    >
-                      No
-                    </button>
-                  </div>
-                </div>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {!showResult && currentChallengeData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
-            ))}
-          </div>
-
-          {/* ✅ Submit Button */}
-          <div className="text-center">
-            <button
-              onClick={handleSubmit}
-              className="bg-gradient-to-r from-yellow-500 to-red-500 hover:opacity-90 text-white font-semibold px-6 py-3 rounded-xl transition-all"
-            >
-              Submit Answers
-            </button>
-          </div>
-
-          {/* ✅ Result Section */}
-          {showResult && (
-            <div className="mt-8 text-center">
-              {isWinner ? (
-                <div className="text-green-400 text-xl font-bold">
-                  🦁 Courage Triumphs! You are a True Hero!
-                </div>
-              ) : (
-                <div className="text-red-400 text-lg font-semibold">
-                  ⚠️ Some answers show hesitation — try again with full bravery!
-                </div>
-              )}
+              
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallengeData.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallengeData.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallengeData.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* ✅ Popup for Badge Unlock */}
-      {showPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
-          <div className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white rounded-2xl p-10 text-center shadow-2xl animate-bounce">
-            <div className="text-6xl mb-4">🏆</div>
-            <h3 className="text-3xl font-bold mb-2">Congratulations!</h3>
-            <p className="text-lg mb-6">
-              You’ve earned the <strong>Courage Hero Badge!</strong> 🦁🔥
-            </p>
-            <button
-              onClick={() => setShowPopup(false)}
-              className="bg-white text-red-600 font-bold px-6 py-2 rounded-xl hover:bg-gray-200"
-            >
-              Close
-            </button>
           </div>
-        </div>
-      )}
+        ) : null}
+      </div>
     </GameShell>
   );
 };

@@ -12,7 +12,8 @@ import {
   getRecommendations,
   getLeaderboardSnippet,
   getAchievementTimeline,
-  getDailyActionsStatus
+  getDailyActionsStatus,
+  getMissingGames
 } from "../controllers/statsController.js";
 
 const router = express.Router();
@@ -29,5 +30,6 @@ router.get("/recommendations", requireAuth, getRecommendations);
 router.get("/leaderboard-snippet", requireAuth, getLeaderboardSnippet);
 router.get("/achievement-timeline", requireAuth, getAchievementTimeline);
 router.get("/daily-actions", requireAuth, getDailyActionsStatus);
+router.get("/missing-games/:pillarKey", requireAuth, getMissingGames);
 
 export default router;

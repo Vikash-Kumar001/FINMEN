@@ -308,6 +308,79 @@ export const getPillarMastery = async (req, res) => {
   }
 };
 
+// Get missing/incomplete games for a specific pillar
+export const getMissingGames = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { pillarKey } = req.params; // e.g., 'dcos', 'brain'
+
+    if (!pillarKey) {
+      return res.status(400).json({ error: "Pillar key is required" });
+    }
+
+    // Generate expected game IDs for this pillar
+    // Note: Brain Health uses "teens" (plural) instead of "teen" (singular)
+    const generateExpectedGameIds = (key) => {
+      const allGames = [];
+      for (let i = 1; i <= 100; i++) {
+        allGames.push(`${key}-kids-${i}`);
+        // Brain Health uses "teens" (plural), others use "teen" (singular)
+        if (key === 'brain') {
+          allGames.push(`${key}-teens-${i}`);
+        } else {
+          allGames.push(`${key}-teen-${i}`);
+        }
+      }
+      return allGames;
+    };
+
+    const expectedGames = generateExpectedGameIds(pillarKey);
+
+    // Get all games from database for this user and pillar
+    const dbGames = await UnifiedGameProgress.find({
+      userId,
+      gameType: pillarKey
+    }).select('gameId fullyCompleted lastPlayedAt levelsCompleted totalLevels');
+
+    const completedGames = dbGames.filter(g => g.fullyCompleted).map(g => g.gameId);
+    const allDbGameIds = dbGames.map(g => g.gameId);
+
+    // Find missing games (expected but not in database)
+    const missingGames = expectedGames.filter(id => !allDbGameIds.includes(id));
+
+    // Find incomplete games (in database but not fully completed)
+    const incompleteGames = expectedGames.filter(id => 
+      allDbGameIds.includes(id) && !completedGames.includes(id)
+    ).map(id => {
+      const gameData = dbGames.find(g => g.gameId === id);
+      return {
+        gameId: id,
+        lastPlayedAt: gameData?.lastPlayedAt || null,
+        levelsCompleted: gameData?.levelsCompleted || 0,
+        totalLevels: gameData?.totalLevels || 1
+      };
+    });
+
+    res.status(200).json({
+      pillarKey,
+      expected: expectedGames.length,
+      completed: completedGames.length,
+      missing: missingGames,
+      incomplete: incompleteGames,
+      totalMissingOrIncomplete: missingGames.length + incompleteGames.length,
+      summary: {
+        completed: completedGames.length,
+        missing: missingGames.length,
+        incomplete: incompleteGames.length,
+        total: expectedGames.length
+      }
+    });
+  } catch (error) {
+    console.error("❌ Failed to get missing games:", error);
+    res.status(500).json({ error: "Failed to fetch missing games" });
+  }
+};
+
 // Get pillar mastery for a specific student (for chat sidebar)
 export const getStudentPillarMastery = async (req, res) => {
   try {

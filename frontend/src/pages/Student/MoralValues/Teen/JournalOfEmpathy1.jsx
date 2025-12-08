@@ -1,124 +1,120 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { PenSquare } from "lucide-react";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const JournalOfEmpathy1 = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [journalEntry, setJournalEntry] = useState("");
-  const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
+  
+  const gameId = "moral-teen-27";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [entry, setEntry] = useState("");
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
 
-  const prompts = [
-    "One time I understood someone’s feelings was when my friend was sad after losing a game.",
-    "A time I showed empathy was when I comforted someone who felt left out.",
-    "I once noticed someone upset — I listened to them instead of judging.",
-    "When someone was angry, I tried to understand their side before reacting.",
-    "A moment I felt proud of showing empathy was when I forgave a classmate after a fight."
+  const stages = [
+    {
+      question: 'Write: "One time I understood someone\'s feelings was when ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "A time I showed empathy was when I comforted someone who felt left out. I ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "I once noticed someone upset — I listened to them instead of judging. It happened when ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "When someone was angry, I tried to understand their side before reacting. This was when ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "A moment I felt proud of showing empathy was when I forgave a classmate after a fight. I ___."',
+      minLength: 10,
+    },
   ];
 
   const handleSubmit = () => {
-    if (journalEntry.trim().length >= 30) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins((prev) => prev + 5);
-
-      if (currentPromptIndex < prompts.length - 1) {
-        // move to next prompt
-        setCurrentPromptIndex((prev) => prev + 1);
-        setJournalEntry("");
-      } else {
-        // all prompts done
-        setShowResult(true);
-      }
+    if (showResult) return;
+    
+    resetFeedback();
+    const entryText = entry.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setShowResult(true);
+        } else {
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
+        }
+      }, 1500);
     }
   };
 
-  const handleNext = () => {
-    navigate("/student/moral-values/teen/helping-hand-story");
-  };
+  const finalScore = score;
 
   return (
     <GameShell
       title="Journal of Empathy"
-      subtitle="Understanding Others’ Feelings"
-      onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={coins}
-      gameId="moral-teen-27"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={27}
-      showConfetti={showResult}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on understanding others!` : "Journal Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="moral"
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-6xl mb-4 text-center">💞</div>
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">
-              Reflection {currentPromptIndex + 1} of {prompts.length}
-            </h2>
-
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white/70 text-sm mb-2">Reflection Prompt:</p>
-              <p className="text-white text-lg font-semibold">
-                {prompts[currentPromptIndex]}
-              </p>
-            </div>
-
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-10 h-10 text-yellow-300" />
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
+            </p>
             <textarea
-              value={journalEntry}
-              onChange={(e) => setJournalEntry(e.target.value)}
-              placeholder="Write your reflection here... (minimum 30 characters)"
-              className="w-full h-44 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 resize-none"
-              maxLength={300}
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-lg bg-white/90"
+              disabled={showResult}
             />
-            <div className="text-white/50 text-sm mt-2 text-right">
-              {journalEntry.length}/300 characters (min: 30)
+            <div className="mt-2 text-white/50 text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
             </div>
-
             <button
               onClick={handleSubmit}
-              disabled={journalEntry.trim().length < 30}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                journalEntry.trim().length >= 30
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
+              className={`mt-4 px-8 py-4 rounded-full text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
               }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
             >
-              {currentPromptIndex < prompts.length - 1
-                ? "Next Reflection"
-                : "Submit Final Reflection"}
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
             </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">🌟</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              Heartfelt Reflections Completed!
-            </h2>
-
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 You reflected deeply on all 5 empathy moments. Understanding and sharing others’ feelings shows your emotional maturity and kindness!
-              </p>
-            </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              Total Earned: {coins} Coins 🪙
-            </p>
           </div>
         )}
       </div>

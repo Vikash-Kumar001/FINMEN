@@ -1,248 +1,293 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ServiceStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-teen-15";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stories = [
+  const questions = [
     {
-      title: "Dropped Money",
-      emoji: "💵",
-      situation:
-        "The bus conductor accidentally drops money while collecting fares. No one notices except you. What do you do?",
-      choices: [
-        { id: 1, text: "Keep it quietly", emoji: "😏", isCorrect: false },
-        { id: 2, text: "Return it to the conductor immediately", emoji: "🙋", isCorrect: true },
-        { id: 3, text: "Leave it on the floor", emoji: "👀", isCorrect: false },
-      ],
+      id: 1,
+      text: "The bus conductor accidentally drops money while collecting fares. No one notices except you. What do you do?",
+      options: [
+        { 
+          id: "keep", 
+          text: "Keep it quietly", 
+          emoji: "😏", 
+          description: "Take the money without telling anyone",
+          isCorrect: false
+        },
+        { 
+          id: "return", 
+          text: "Return it to the conductor immediately", 
+          emoji: "🙋", 
+          description: "Give the money back to its rightful owner",
+          isCorrect: true
+        },
+        { 
+          id: "leave", 
+          text: "Leave it on the floor", 
+          emoji: "👀", 
+          description: "Ignore it and let someone else handle it",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Old Lady’s Bag",
-      emoji: "👜",
-      situation:
-        "An elderly woman struggles to carry her grocery bag up the stairs. What would you do?",
-      choices: [
-        { id: 1, text: "Offer to help her carry it", emoji: "🤝", isCorrect: true },
-        { id: 2, text: "Just walk past silently", emoji: "🚶‍♀️", isCorrect: false },
-        { id: 3, text: "Laugh and walk away", emoji: "😅", isCorrect: false },
-      ],
+      id: 2,
+      text: "An elderly woman struggles to carry her grocery bag up the stairs. What would you do?",
+      options: [
+        { 
+          id: "walk", 
+          text: "Just walk past silently", 
+          emoji: "🚶‍♀️", 
+          description: "Continue on without offering assistance",
+          isCorrect: false
+        },
+        { 
+          id: "help", 
+          text: "Offer to help her carry it", 
+          emoji: "🤝", 
+          description: "Provide assistance to someone in need",
+          isCorrect: true
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh and walk away", 
+          emoji: "😅", 
+          description: "Make light of her struggle",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Library Cleanup",
-      emoji: "📚",
-      situation:
-        "You see books scattered all over a library table after a student leaves. What do you do?",
-      choices: [
-        { id: 1, text: "Leave them as is", emoji: "😐", isCorrect: false },
-        { id: 2, text: "Help arrange the books properly", emoji: "📖", isCorrect: true },
-        { id: 3, text: "Tell the librarian and walk away", emoji: "👩‍🏫", isCorrect: false },
-      ],
+      id: 3,
+      text: "You see books scattered all over a library table after a student leaves. What do you do?",
+      options: [
+        { 
+          id: "leave2", 
+          text: "Leave them as is", 
+          emoji: "😐", 
+          description: "Ignore the mess and continue",
+          isCorrect: false
+        },
+        { 
+          id: "tell", 
+          text: "Tell the librarian and walk away", 
+          emoji: "👩‍🏫", 
+          description: "Report it but don't help clean up",
+          isCorrect: false
+        },
+        { 
+          id: "arrange", 
+          text: "Help arrange the books properly", 
+          emoji: "📖", 
+          description: "Take action to organize the books",
+          isCorrect: true
+        }
+      ]
     },
     {
-      title: "Lost Wallet",
-      emoji: "👛",
-      situation:
-        "You find a wallet on a park bench with money and an ID card. What should you do?",
-      choices: [
-        { id: 1, text: "Keep the money and throw the wallet", emoji: "💸", isCorrect: false },
-        { id: 2, text: "Return it to the owner or nearest police", emoji: "🫡", isCorrect: true },
-        { id: 3, text: "Ignore it completely", emoji: "😶", isCorrect: false },
-      ],
+      id: 4,
+      text: "You find a wallet on a park bench with money and an ID card. What should you do?",
+      options: [
+        { 
+          id: "return2", 
+          text: "Return it to the owner or nearest police", 
+          emoji: "🫡", 
+          description: "Ensure it gets back to its rightful owner",
+          isCorrect: true
+        },
+        { 
+          id: "take", 
+          text: "Keep the money and throw the wallet", 
+          emoji: "💸", 
+          description: "Take the money and discard the wallet",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it completely", 
+          emoji: "😶", 
+          description: "Leave it and don't get involved",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Classroom Spill",
-      emoji: "🧃",
-      situation:
-        "A classmate accidentally spills juice on the floor. The teacher hasn’t noticed. What do you do?",
-      choices: [
-        { id: 1, text: "Complain to the teacher", emoji: "🙄", isCorrect: false },
-        { id: 2, text: "Help clean up the mess", emoji: "🧹", isCorrect: true },
-        { id: 3, text: "Step away and ignore", emoji: "😬", isCorrect: false },
-      ],
-    },
+      id: 5,
+      text: "A classmate accidentally spills juice on the floor. The teacher hasn't noticed. What do you do?",
+      options: [
+        { 
+          id: "complain", 
+          text: "Complain to the teacher", 
+          emoji: "🙄", 
+          description: "Report the spill without helping",
+          isCorrect: false
+        },
+        { 
+          id: "step", 
+          text: "Step away and ignore", 
+          emoji: "😬", 
+          description: "Avoid the situation entirely",
+          isCorrect: false
+        },
+        { 
+          id: "clean", 
+          text: "Help clean up the mess", 
+          emoji: "🧹", 
+          description: "Assist in cleaning the spill",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const story = stories[currentQuestion];
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = story.choices.find((c) => c.id === selectedChoice);
-
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins((prev) => prev + 5);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    setShowFeedback(true);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
+    }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
-  const handleNextQuestion = () => {
-    if (currentQuestion < stories.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
-    } else {
-      setShowFeedback(true);
-    }
-  };
-
-  const handleGameComplete = () => {
+  const handleNext = () => {
     navigate("/student/moral-values/teen/respect-journal");
   };
 
-  const selectedChoiceData = story.choices.find((c) => c.id === selectedChoice);
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Service Story"
-      subtitle="Acts of Honesty and Helpfulness"
-      onNext={handleGameComplete}
-      nextEnabled={showFeedback && currentQuestion === stories.length - 1}
-      showGameOver={showFeedback && currentQuestion === stories.length - 1}
       score={coins}
-      gameId="moral-teen-15"
-      gameType="moral"
-      totalLevels={20}
-      currentLevel={15}
-      showConfetti={showFeedback && currentQuestion === stories.length - 1}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={20} // Max score is total number of questions (all correct)
+      subtitle={showResult ? "Activity Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore === questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">{story.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              {story.title}
-            </h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">
-                {story.situation}
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4 text-center">
-              What should you do?
-            </h3>
-
-            <div className="space-y-3 mb-6">
-              {story.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">
-                      {choice.text}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">
-              {selectedChoiceData?.emoji}
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData?.isCorrect
-                ? "💪 Great Act of Service!"
-                : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">
-              {selectedChoiceData?.text}
-            </p>
-
-            {selectedChoiceData?.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Well done! Acts of honesty and kindness create a better
-                    world. Keep showing empathy and doing small helpful deeds
-                    that make a big difference!
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  +5 Coins Earned 🪙
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about service and helping others!
                 </p>
-                {currentQuestion < stories.length - 1 ? (
-                  <button
-                    onClick={handleNextQuestion}
-                    className="mt-4 w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                  >
-                    Next Question →
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleGameComplete}
-                    className="mt-4 w-full bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                  >
-                    Finish Game ✅
-                  </button>
-                )}
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Not quite right! Try to think about how your action affects
-                    others and what helps the community most.
-                  </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
                 </div>
+                <p className="text-white/80">
+                  You understand the importance of helping others!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, helping others makes the world a better place!
+                </p>
                 <button
                   onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that helps others or returns lost items.
+                </p>
+              </div>
             )}
           </div>
         )}

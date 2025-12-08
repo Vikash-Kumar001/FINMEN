@@ -1,120 +1,202 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const LeaderStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentStory, setCurrentStory] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [score, setScore] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-teen-71";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stories = [
+  const questions = [
     {
       id: 1,
-      title: "Leader Eats First",
-      emoji: "🍽️",
-      situation: "A team leader eats before their team finishes the task. Is this good leadership?",
-      choices: [
-        { id: 1, text: "Yes, they deserve rest first", emoji: "😴", isCorrect: false },
-        { id: 2, text: "No, a leader should wait and support the team", emoji: "🤝", isCorrect: true },
-      ],
-      feedback: "A good leader puts the team first. Waiting shows care, humility, and true leadership."
+      text: "A team leader eats before their team finishes the task. Is this good leadership?",
+      options: [
+        { 
+          id: "no", 
+          text: "No, a leader should wait and support the team", 
+          emoji: "🤝", 
+          description: "Leaders should wait and support their team",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes, they deserve rest first", 
+          emoji: "😴", 
+          description: "Leaders deserve to rest before others",
+          isCorrect: false
+        },
+        { 
+          id: "depends", 
+          text: "Depends on how much they worked", 
+          emoji: "🤷", 
+          description: "It depends on the leader's effort",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      title: "Taking Credit",
-      emoji: "🏆",
-      situation: "Your class leader takes credit for an idea you gave. What’s the right action?",
-      choices: [
-        { id: 1, text: "Let it go silently", emoji: "😶", isCorrect: false },
-        { id: 2, text: "Talk politely and remind them of teamwork", emoji: "💬", isCorrect: true },
-      ],
-      feedback: "True leaders share credit. They lift others up, not just themselves."
+      text: "Your class leader takes credit for an idea you gave. What's the right action?",
+      options: [
+        { 
+          id: "silent", 
+          text: "Let it go silently", 
+          emoji: "😶", 
+          description: "Say nothing and accept it",
+          isCorrect: false
+        },
+        { 
+          id: "talk", 
+          text: "Talk politely and remind them of teamwork", 
+          emoji: "💬", 
+          description: "Address it politely and emphasize teamwork",
+          isCorrect: true
+        },
+        { 
+          id: "angry", 
+          text: "Get angry and confront them publicly", 
+          emoji: "😠", 
+          description: "Confront them angrily in front of others",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      title: "Helping the Weak",
-      emoji: "🫶",
-      situation: "A team member struggles with their work. What should a leader do?",
-      choices: [
-        { id: 1, text: "Ignore it — everyone has to manage", emoji: "🙅", isCorrect: false },
-        { id: 2, text: "Offer help and guide them patiently", emoji: "🤗", isCorrect: true },
-      ],
-      feedback: "Leadership means support. Helping others grow builds stronger teams."
+      text: "A team member struggles with their work. What should a leader do?",
+      options: [
+        { 
+          id: "ignore", 
+          text: "Ignore it — everyone has to manage", 
+          emoji: "🙅", 
+          description: "Let them handle it on their own",
+          isCorrect: false
+        },
+        { 
+          id: "replace", 
+          text: "Replace them immediately", 
+          emoji: "🚫", 
+          description: "Find someone else to do the work",
+          isCorrect: false
+        },
+        { 
+          id: "help", 
+          text: "Offer help and guide them patiently", 
+          emoji: "🤗", 
+          description: "Provide support and guidance",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
-      title: "Fair Decision",
-      emoji: "⚖️",
-      situation: "Two teammates argue. The leader sides with their best friend. Is that right?",
-      choices: [
-        { id: 1, text: "Yes, friends deserve support", emoji: "👯", isCorrect: false },
-        { id: 2, text: "No, leaders must stay fair to all", emoji: "⚖️", isCorrect: true },
-      ],
-      feedback: "A fair leader treats everyone equally, not based on friendship."
+      text: "Two teammates argue. The leader sides with their best friend. Is that right?",
+      options: [
+        { 
+          id: "fair", 
+          text: "No, leaders must stay fair to all", 
+          emoji: "⚖️", 
+          description: "Leaders should be fair to everyone",
+          isCorrect: true
+        },
+        { 
+          id: "friends", 
+          text: "Yes, friends deserve support", 
+          emoji: "👯", 
+          description: "It's okay to support friends",
+          isCorrect: false
+        },
+        { 
+          id: "neutral", 
+          text: "Stay neutral and don't pick sides", 
+          emoji: "🤐", 
+          description: "Avoid getting involved in the argument",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      title: "Encouraging Others",
-      emoji: "🎤",
-      situation: "A shy team member doesn’t speak up. What should a leader do?",
-      choices: [
-        { id: 1, text: "Ignore them — they’ll talk later", emoji: "😐", isCorrect: false },
-        { id: 2, text: "Encourage them gently to share ideas", emoji: "🌟", isCorrect: true },
-      ],
-      feedback: "Encouraging quiet voices makes everyone feel valued — that’s real leadership!"
-    },
+      text: "A shy team member doesn't speak up. What should a leader do?",
+      options: [
+        { 
+          id: "ignore2", 
+          text: "Ignore them — they'll talk later", 
+          emoji: "😐", 
+          description: "Wait for them to speak up on their own",
+          isCorrect: false
+        },
+        { 
+          id: "force", 
+          text: "Force them to speak", 
+          emoji: "📢", 
+          description: "Make them speak even if uncomfortable",
+          isCorrect: false
+        },
+        { 
+          id: "encourage", 
+          text: "Encourage them gently to share ideas", 
+          emoji: "🌟", 
+          description: "Support and encourage them to participate",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const current = stories[currentStory];
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = current.choices.find(c => c.id === selectedChoice);
-
-    if (choice.isCorrect) {
-      setScore((prev) => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    setShowFeedback(true);
-  };
-
-  const handleNextStory = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    resetFeedback();
-
-    if (currentStory < stories.length - 1) {
-      setCurrentStory((prev) => prev + 1);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      const totalCorrect = score + (stories[currentStory].choices.find(c => c.id === selectedChoice)?.isCorrect ? 1 : 0);
-      const accuracy = (totalCorrect / stories.length) * 100;
-      if (accuracy >= 70) setCoins(5);
-      setScore(totalCorrect);
-      setShowFeedback(true);
-      setCurrentStory(stories.length); // mark as completed
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
-  const handleRestart = () => {
-    setCurrentStory(0);
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setScore(0);
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
@@ -122,111 +204,90 @@ const LeaderStory = () => {
     navigate("/student/moral-values/teen/quiz-leadership");
   };
 
-  const isLastStory = currentStory >= stories.length;
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Leader Story"
       score={coins}
-      subtitle="Good vs Poor Leadership"
+      subtitle={showResult ? "Activity Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={isLastStory && coins > 0}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={isLastStory && coins > 0}
-      
-      gameId="moral-teen-71"
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
       gameType="moral"
-      totalLevels={100}
-      currentLevel={71}
-      showConfetti={isLastStory && coins > 0}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore === questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
     >
       <div className="space-y-8">
-        {!isLastStory ? (
-          !showFeedback ? (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-              <div className="text-8xl mb-4 text-center">{current.emoji}</div>
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">{current.title}</h2>
-              <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-                <p className="text-white text-lg leading-relaxed text-center">{current.situation}</p>
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
               </div>
-
-              <h3 className="text-white font-bold mb-4">Choose the right action:</h3>
-
-              <div className="space-y-3 mb-6">
-                {current.choices.map((choice) => (
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
                   <button
-                    key={choice.id}
-                    onClick={() => handleChoice(choice.id)}
-                    className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                      selectedChoice === choice.id
-                        ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                        : "bg-white/20 border-white/40 hover:bg-white/30"
-                    }`}
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="text-4xl">{choice.emoji}</div>
-                      <div className="text-white font-semibold text-lg">{choice.text}</div>
-                    </div>
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>
-
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedChoice}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedChoice
-                    ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                    : "bg-gray-500/50 cursor-not-allowed"
-                }`}
-              >
-                Confirm Choice
-              </button>
             </div>
-          ) : (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-              <div className="text-7xl mb-4 text-center">
-                {current.choices.find((c) => c.id === selectedChoice)?.emoji}
-              </div>
-              <h2 className="text-3xl font-bold text-white mb-4 text-center">
-                {current.choices.find((c) => c.id === selectedChoice)?.isCorrect
-                  ? "🌟 Great Leadership!"
-                  : "🤔 Not Quite Right!"}
-              </h2>
-              <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                <p className="text-white text-center">{current.feedback}</p>
-              </div>
-              <button
-                onClick={handleNextStory}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Next Story →
-              </button>
-            </div>
-          )
+          </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <h2 className="text-4xl font-bold text-white mb-4">
-              {coins > 0 ? "🏆 Leadership Star!" : "💪 Keep Practicing!"}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              You answered {score} out of {stories.length} correctly.
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {coins > 0 ? "You earned 5 Coins! 🪙" : "Get 70% or higher to earn coins!"}
-            </p>
-            {coins === 0 && (
-              <button
-                onClick={handleRestart}
-                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about good leadership!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand the importance of fair and supportive leadership!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, good leaders support and include everyone!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that shows supportive and fair leadership.
+                </p>
+              </div>
             )}
           </div>
         )}

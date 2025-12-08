@@ -1,220 +1,302 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const RoleplayMediator = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("moral-teen-88");
+  const gameId = gameData?.id || "moral-teen-88";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for RoleplayMediator, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [statement, setStatement] = useState("");
   const [score, setScore] = useState(0);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [earnedBadge, setEarnedBadge] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      scenario: "Two classmates argue loudly over who should present the project. What’s your first move as a mediator?",
+      text: "Two classmates argue loudly over who should present the project. What's your first move as a mediator?",
+      emoji: "🗣️",
       options: [
-        { id: 1, text: "Let them argue until they calm down", isCorrect: false },
-        { id: 2, text: "Ask both to share their sides calmly one by one", isCorrect: true },
-        { id: 3, text: "Pick your favorite side to stop the fight faster", isCorrect: false },
-      ],
+        { 
+          id: "ask", 
+          text: "Ask both to share their sides calmly one by one", 
+          emoji: "👂", 
+          description: "Listening to both sides helps find solutions",
+          isCorrect: true 
+        },
+        { 
+          id: "let", 
+          text: "Let them argue until they calm down", 
+          emoji: "😠", 
+          description: "Letting arguments continue doesn't help",
+          isCorrect: false 
+        },
+        { 
+          id: "pick", 
+          text: "Pick your favorite side to stop the fight faster", 
+          emoji: "👆", 
+          description: "Picking sides creates more conflict",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 2,
-      scenario: "One student refuses to listen while the other talks. What would you say?",
+      text: "One student refuses to listen while the other talks. What would you say?",
+      emoji: "👂",
       options: [
-        { id: 1, text: "Tell them to stay quiet and let the teacher decide", isCorrect: false },
-        { id: 2, text: "Remind them that listening is key to solving conflicts", isCorrect: true },
-        { id: 3, text: "Leave the situation to avoid stress", isCorrect: false },
-      ],
+        { 
+          id: "tell", 
+          text: "Tell them to stay quiet and let the teacher decide", 
+          emoji: "👩‍🏫", 
+          description: "Mediators should help resolve conflicts",
+          isCorrect: false 
+        },
+        { 
+          id: "remind", 
+          text: "Remind them that listening is key to solving conflicts", 
+          emoji: "🕊️", 
+          description: "Encouraging listening helps resolve conflicts",
+          isCorrect: true 
+        },
+        { 
+          id: "leave", 
+          text: "Leave the situation to avoid stress", 
+          emoji: "🚶", 
+          description: "Mediators should help, not leave",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 3,
-      scenario: "Both students feel misunderstood. How can you help them reach common ground?",
+      text: "Both students feel misunderstood. How can you help them reach common ground?",
+      emoji: "🤝",
       options: [
-        { id: 1, text: "Repeat what each person said to ensure clarity", isCorrect: true },
-        { id: 2, text: "Tell them to forget it and move on", isCorrect: false },
-        { id: 3, text: "Ask others to choose who’s right", isCorrect: false },
-      ],
+        { 
+          id: "forget", 
+          text: "Tell them to forget it and move on", 
+          emoji: "😶", 
+          description: "Ignoring feelings doesn't solve problems",
+          isCorrect: false 
+        },
+        { 
+          id: "repeat", 
+          text: "Repeat what each person said to ensure clarity", 
+          emoji: "🔄", 
+          description: "Clarifying helps people understand each other",
+          isCorrect: true 
+        },
+        { 
+          id: "choose", 
+          text: "Ask others to choose who's right", 
+          emoji: "👥", 
+          description: "Choosing sides doesn't help find common ground",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 4,
-      scenario: "The argument gets heated again. How should you handle it?",
+      text: "The argument gets heated again. How should you handle it?",
+      emoji: "😠",
       options: [
-        { id: 1, text: "Raise your voice to control them", isCorrect: false },
-        { id: 2, text: "Encourage deep breaths and respectful tone", isCorrect: true },
-        { id: 3, text: "Walk away immediately", isCorrect: false },
-      ],
+        { 
+          id: "encourage", 
+          text: "Encourage deep breaths and respectful tone", 
+          emoji: "🕊️", 
+          description: "Calming techniques help de-escalate conflicts",
+          isCorrect: true 
+        },
+        { 
+          id: "raise", 
+          text: "Raise your voice to control them", 
+          emoji: "😠", 
+          description: "Raising your voice escalates conflicts",
+          isCorrect: false 
+        },
+        { 
+          id: "walk", 
+          text: "Walk away immediately", 
+          emoji: "🚶", 
+          description: "Mediators should help resolve, not abandon",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 5,
-      scenario: "After resolving the fight, what should a good mediator do next?",
+      text: "After resolving the fight, what should a good mediator do next?",
+      emoji: "✅",
       options: [
-        { id: 1, text: "Ignore both since the fight is over", isCorrect: false },
-        { id: 2, text: "Check in later to ensure peace continues", isCorrect: true },
-        { id: 3, text: "Remind them you were the hero", isCorrect: false },
-      ],
-    },
+        { 
+          id: "ignore", 
+          text: "Ignore both since the fight is over", 
+          emoji: "😶", 
+          description: "Good mediators follow up to ensure peace",
+          isCorrect: false 
+        },
+        { 
+          id: "check", 
+          text: "Check in later to ensure peace continues", 
+          emoji: "💚", 
+          description: "Following up shows care and ensures lasting peace",
+          isCorrect: true 
+        },
+        { 
+          id: "remind", 
+          text: "Remind them you were the hero", 
+          emoji: "😏", 
+          description: "Bragging doesn't show good mediation",
+          isCorrect: false 
+        }
+      ]
+    }
   ];
 
-  const currentQ = questions[currentQuestion];
-  const selected = currentQ.options.find((o) => o.id === selectedOption);
-
-  const handleSubmit = () => {
-    const chosen = currentQ.options.find((o) => o.id === selectedOption);
-    if (chosen && chosen.isCorrect && statement.trim().length >= 20) {
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setScore((prev) => prev + 1);
-    }
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setStatement("");
-      setShowFeedback(false);
     } else {
-      // End of quiz
-      if (score >= 4) setEarnedBadge(true);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleNextGame = () => {
-    navigate("/student/moral-values/teen/reflex-calm-action");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
+    resetFeedback();
   };
 
   return (
     <GameShell
       title="Roleplay: Mediator"
-      subtitle="Calm Conflicts with Understanding"
-      onNext={handleNextGame}
-      nextEnabled={earnedBadge}
-      showGameOver={earnedBadge}
-      score={earnedBadge ? 3 : 0}
-      gameId="moral-teen-88"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={88}
-      showConfetti={earnedBadge}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!earnedBadge ? (
-          <>
-            {!showFeedback ? (
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-                <div className="text-6xl mb-4 text-center">🕊️</div>
-                <p className="text-center text-white/70 mb-2">
-                  Question {currentQuestion + 1} of {questions.length}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="moral"
+    >
+      <div className="space-y-8 max-w-2xl mx-auto">
+        {!showResult && questions[currentQuestion] ? (
+          <div>
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{questions[currentQuestion].emoji}</div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`w-full text-left p-4 rounded-xl transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{option.emoji}</span>
+                      <div className="flex-1">
+                        <div className="font-semibold text-lg">{option.text}</div>
+                        <div className="text-sm opacity-90">{option.description}</div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">You're a Peaceful Mediator!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You know how to calm conflicts and bring peace!
                 </p>
-                <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-                  <p className="text-white text-lg leading-relaxed">{currentQ.scenario}</p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
-
-                <h3 className="text-white font-bold mb-4">1. Choose Your Response</h3>
-                <div className="space-y-3 mb-6">
-                  {currentQ.options.map((opt) => (
-                    <button
-                      key={opt.id}
-                      onClick={() => setSelectedOption(opt.id)}
-                      className={`w-full border-2 rounded-xl p-4 transition-all ${
-                        selectedOption === opt.id
-                          ? "bg-green-500/50 border-green-400 ring-2 ring-white"
-                          : "bg-white/20 border-white/40 hover:bg-white/30"
-                      }`}
-                    >
-                      <div className="text-white font-semibold">{opt.text}</div>
-                    </button>
-                  ))}
-                </div>
-
-                <h3 className="text-white font-bold mb-2">2. What Would You Say? (min 20 chars)</h3>
-                <textarea
-                  value={statement}
-                  onChange={(e) => setStatement(e.target.value)}
-                  placeholder="Write how you would calmly mediate between two students..."
-                  className="w-full h-32 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-green-400 resize-none mb-4"
-                  maxLength={200}
-                />
-                <div className="text-white/50 text-sm mb-4 text-right">
-                  {statement.length}/200
-                </div>
-
-                <button
-                  onClick={handleSubmit}
-                  disabled={!selectedOption || statement.trim().length < 20}
-                  className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                    selectedOption && statement.trim().length >= 20
-                      ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                      : "bg-gray-500/50 cursor-not-allowed"
-                  }`}
-                >
-                  Submit Response
-                </button>
+                <p className="text-white/80">
+                  Lesson: Good mediators listen to both sides, stay calm, and help people find solutions together!
+                </p>
               </div>
             ) : (
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-                <div className="text-7xl mb-4">{selected?.isCorrect ? "🤝" : "😔"}</div>
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  {selected?.isCorrect ? "Peaceful Mediator!" : "Try Again..."}
-                </h2>
-
-                {selected?.isCorrect ? (
-                  <>
-                    <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                      <p className="text-white text-center">
-                        Great job! You helped others find peace and understanding. A true mediator
-                        listens, respects both sides, and guides others toward harmony.
-                      </p>
-                    </div>
-                    <div className="bg-blue-500/20 rounded-lg p-3 mb-6">
-                      <p className="text-white/80 text-sm mb-1">Your Mediation Statement:</p>
-                      <p className="text-white italic">"{statement}"</p>
-                    </div>
-                  </>
-                ) : (
-                  <div className="bg-red-500/20 rounded-lg p-4 mb-6">
-                    <p className="text-white">
-                      Remember, mediators bring calm, not chaos. Stay neutral and help both sides feel heard!
-                    </p>
-                  </div>
-                )}
-
-                {/* ✅ Next Question Button */}
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember: Choose actions that help people resolve conflicts peacefully!
+                </p>
                 <button
-                  onClick={handleNextQuestion}
-                  className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-white font-bold hover:opacity-90 transition"
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
-                  {currentQuestion < questions.length - 1
-                    ? "Next Question ➜"
-                    : "Finish Roleplay 🏅"}
+                  Try Again
                 </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Good mediators listen to both sides, stay calm, and help people find solutions. Practice being a peacemaker!
+                </p>
               </div>
             )}
-          </>
-        ) : (
-          <div className="bg-gradient-to-r from-yellow-400 to-green-400 rounded-2xl p-8 text-center border border-white/20 max-w-xl mx-auto">
-            <div className="text-6xl mb-2">🏅</div>
-            <h2 className="text-3xl font-bold text-white mb-2">Mediator Badge Unlocked!</h2>
-            <p className="text-white/90 mb-4">
-              You calmed conflicts with wisdom and patience. True leaders bring peace wherever they go!
-            </p>
-            <p className="text-yellow-200 text-xl font-bold">You earned 3 Coins! 🪙</p>
           </div>
         )}
       </div>

@@ -1,170 +1,258 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeServiceLeader = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("moral-teen-80");
+  const gameId = gameData?.id || "moral-teen-80";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for BadgeServiceLeader, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // 🧭 5 Service Leadership Actions
-  const serviceActs = [
-    { id: 1, text: "Helped a classmate without expecting anything back", emoji: "🤝" },
-    { id: 2, text: "Encouraged your team during a difficult task", emoji: "💪" },
-    { id: 3, text: "Took responsibility for a group’s mistake", emoji: "🧭" },
-    { id: 4, text: "Supported a friend when others ignored them", emoji: "❤️" },
-    { id: 5, text: "Led by example instead of just giving orders", emoji: "🌟" },
+  const challenges = [
+    {
+      id: 1,
+      title: "Service Leader Challenge 1",
+      question: "How should you help a classmate?",
+      options: [
+        { 
+          text: "Help a classmate without expecting anything back", 
+          emoji: "🤝", 
+          isCorrect: true
+        },
+        { 
+          text: "Help only if they promise to return the favor", 
+          emoji: "💭", 
+          isCorrect: false
+        },
+        { 
+          text: "Ignore their need for help", 
+          emoji: "😶", 
+          isCorrect: false
+        },
+        { 
+          text: "Help only close friends", 
+          emoji: "👥", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Service Leader Challenge 2",
+      question: "What should you do when your team faces a difficult task?",
+      options: [
+        { 
+          text: "Let others handle it", 
+          emoji: "😶", 
+          isCorrect: false
+        },
+        { 
+          text: "Encourage your team and support them through challenges", 
+          emoji: "💪", 
+          isCorrect: true
+        },
+        { 
+          text: "Blame others for the difficulty", 
+          emoji: "👆", 
+          isCorrect: false
+        },
+        { 
+          text: "Only encourage if you're leading", 
+          emoji: "💭", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "Service Leader Challenge 3",
+      question: "How should you handle group mistakes?",
+      options: [
+        { 
+          text: "Blame others for the mistake", 
+          emoji: "👆", 
+          isCorrect: false
+        },
+        { 
+          text: "Avoid taking responsibility", 
+          emoji: "😶", 
+          isCorrect: false
+        },
+        { 
+          text: "Take responsibility for the group's mistake", 
+          emoji: "🧭", 
+          isCorrect: true
+        },
+        { 
+          text: "Only take responsibility if it's your fault", 
+          emoji: "💭", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "Service Leader Challenge 4",
+      question: "What should you do when others ignore someone in need?",
+      options: [
+        { 
+          text: "Support them and show you care", 
+          emoji: "❤️", 
+          isCorrect: true
+        },
+        { 
+          text: "Ignore them too", 
+          emoji: "😶", 
+          isCorrect: false
+        },
+        { 
+          text: "Only help if others are watching", 
+          emoji: "👀", 
+          isCorrect: false
+        },
+        { 
+          text: "Wait for someone else to help", 
+          emoji: "⏳", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Service Leader Challenge 5",
+      question: "How should you lead others?",
+      options: [
+        { 
+          text: "Give orders without helping", 
+          emoji: "👆", 
+          isCorrect: false
+        },
+        { 
+          text: "Lead by example and show the way", 
+          emoji: "🌟", 
+          isCorrect: true
+        },
+        { 
+          text: "Let others do all the work", 
+          emoji: "😶", 
+          isCorrect: false
+        },
+        { 
+          text: "Only lead when it benefits you", 
+          emoji: "💭", 
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const [answers, setAnswers] = useState({});
-  const [showResult, setShowResult] = useState(false);
-  const [isWinner, setIsWinner] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
-
-  // ✅ Handle Yes/No Selection
-  const handleAnswer = (id, value) => {
-    setAnswers((prev) => ({ ...prev, [id]: value }));
-  };
-
-  // ✅ Submit Logic
-  const handleSubmit = () => {
-    if (Object.keys(answers).length !== serviceActs.length) {
-      alert("Please answer all leadership acts before submitting!");
-      return;
-    }
-
-    const allYes = serviceActs.every((act) => answers[act.id] === "yes");
-    setIsWinner(allYes);
-    setShowResult(true);
-
-    if (allYes) {
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setTimeout(() => setShowPopup(true), 6000);
     }
+    
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
-  const handleNext = () => {
-    navigate("/student/moral-values/teen/journal-of-leadership");
-  };
+  const currentChallengeData = challenges[challenge];
 
   return (
     <GameShell
       title="Badge: Service Leader"
-      subtitle="Leading Through Service"
-      onNext={handleNext}
-      nextEnabled={isWinner}
-      showGameOver={showResult}
-      gameId="moral-teen-80"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={80}
-      showConfetti={isWinner}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-6">
-        {/* ✅ Main Card */}
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">
-            Service Leader Challenge 🌍
-          </h2>
-
-          <p className="text-white/80 mb-6 text-center">
-            Answer truthfully — do you lead others by serving and supporting them?
-          </p>
-
-          {/* ✅ 5 Leadership Service Acts with Yes/No Buttons */}
-          <div className="space-y-4 mb-6">
-            {serviceActs.map((act) => (
-              <div
-                key={act.id}
-                className="border border-white/30 rounded-xl p-4 bg-white/5 hover:bg-white/10 transition"
-              >
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">{act.emoji}</div>
-                    <div className="text-white font-medium text-lg">{act.text}</div>
-                  </div>
-                  <div className="flex gap-4 mt-2 sm:mt-0">
-                    <button
-                      className={`px-4 py-2 rounded-xl font-semibold transition ${
-                        answers[act.id] === "yes"
-                          ? "bg-green-500 text-white"
-                          : "bg-white/20 text-white hover:bg-green-600/50"
-                      }`}
-                      onClick={() => handleAnswer(act.id, "yes")}
-                    >
-                      Yes
-                    </button>
-                    <button
-                      className={`px-4 py-2 rounded-xl font-semibold transition ${
-                        answers[act.id] === "no"
-                          ? "bg-red-500 text-white"
-                          : "bg-white/20 text-white hover:bg-red-600/50"
-                      }`}
-                      onClick={() => handleAnswer(act.id, "no")}
-                    >
-                      No
-                    </button>
-                  </div>
-                </div>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {!showResult && currentChallengeData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
-            ))}
-          </div>
-
-          {/* ✅ Submit Button */}
-          <div className="text-center">
-            <button
-              onClick={handleSubmit}
-              className="bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90 text-white font-semibold px-6 py-3 rounded-xl transition-all"
-            >
-              Submit Answers
-            </button>
-          </div>
-
-          {/* ✅ Result Section */}
-          {showResult && (
-            <div className="mt-8 text-center">
-              {isWinner ? (
-                <div className="text-green-400 text-xl font-bold">
-                  🌟 True Leadership Through Service! You’re a Service Leader!
-                </div>
-              ) : (
-                <div className="text-red-400 text-lg font-semibold">
-                  ⚠️ Try again — true leaders serve with empathy and teamwork!
-                </div>
-              )}
+              
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallengeData.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallengeData.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallengeData.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* ✅ Popup for Badge Unlock */}
-      {showPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
-          <div className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 text-white rounded-2xl p-10 text-center shadow-2xl animate-bounce">
-            <div className="text-6xl mb-4">🏆</div>
-            <h3 className="text-3xl font-bold mb-2">Congratulations!</h3>
-            <p className="text-lg mb-6">
-              You’ve earned the <strong>Service Leader Badge!</strong> 🌍
-            </p>
-            <button
-              onClick={() => setShowPopup(false)}
-              className="bg-white text-orange-600 font-bold px-6 py-2 rounded-xl hover:bg-gray-200"
-            >
-              Close
-            </button>
           </div>
-        </div>
-      )}
+        ) : null}
+      </div>
     </GameShell>
   );
 };

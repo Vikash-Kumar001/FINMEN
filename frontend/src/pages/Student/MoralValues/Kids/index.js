@@ -134,7 +134,7 @@ const kidMoralGames = {
   'homework-storyy': HomeworkStoryy,
   'quiz-responsibility': QuizResponsibility,
   'reflex-discipline': ReflexDiscipline,
-  'puzzle-duties': PuzzleDuties,
+  'puzzle-of-duties': PuzzleDuties,
   'chores-story': ChoresStory,
   'poster-discipline': PosterDiscipline,
   'journal-of-duty': JournalOfDuty,

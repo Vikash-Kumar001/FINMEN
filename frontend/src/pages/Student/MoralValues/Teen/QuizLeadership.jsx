@@ -1,211 +1,242 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const QuizLeadership = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("moral-teen-72");
+  const gameId = gameData?.id || "moral-teen-72";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for QuizLeadership, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const {
-    flashPoints,
-    showAnswerConfetti,
-    showCorrectAnswerFeedback,
-    resetFeedback,
-  } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // 🧠 Leadership Quiz Questions
   const questions = [
     {
       id: 1,
       text: "What makes a great leader?",
-      emoji: "👑",
-      choices: [
-        { id: 1, text: "Commanding others", emoji: "📣", isCorrect: false },
-        { id: 2, text: "Serving and helping others", emoji: "🤝", isCorrect: true },
-        { id: 3, text: "Ignoring the team", emoji: "🙈", isCorrect: false },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Serving and helping others", 
+          emoji: "🤝", 
+          description: "True leaders serve and support their team",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Commanding others", 
+          emoji: "📣", 
+          description: "Commanding creates fear, not respect",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignoring the team", 
+          emoji: "🙈", 
+          description: "Ignoring the team shows poor leadership",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "A true leader inspires others by…",
-      emoji: "💡",
-      choices: [
-        { id: 1, text: "Yelling for obedience", emoji: "😠", isCorrect: false },
-        { id: 2, text: "Setting a good example", emoji: "🌟", isCorrect: true },
-        { id: 3, text: "Doing everything alone", emoji: "🚶‍♂️", isCorrect: false },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Yelling for obedience", 
+          emoji: "😠", 
+          description: "Yelling creates fear, not inspiration",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Setting a good example", 
+          emoji: "🌟", 
+          description: "Leading by example inspires others",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Doing everything alone", 
+          emoji: "🚶‍♂️", 
+          description: "Leaders work with their team",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "When your team is struggling, a leader should…",
-      emoji: "🧩",
-      choices: [
-        { id: 1, text: "Blame them for failure", emoji: "👎", isCorrect: false },
-        { id: 2, text: "Support and guide them", emoji: "🫶", isCorrect: true },
-        { id: 3, text: "Stay silent", emoji: "🤐", isCorrect: false },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Blame them for failure", 
+          emoji: "👎", 
+          description: "Blaming demotivates the team",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Stay silent", 
+          emoji: "🤐", 
+          description: "Leaders should guide, not stay silent",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Support and guide them", 
+          emoji: "🫶", 
+          description: "Supporting the team shows true leadership",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
       text: "What quality best defines good leadership?",
-      emoji: "⚖️",
-      choices: [
-        { id: 1, text: "Kindness and fairness", emoji: "💖", isCorrect: true },
-        { id: 2, text: "Bossiness", emoji: "😤", isCorrect: false },
-        { id: 3, text: "Popularity", emoji: "🎭", isCorrect: false },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Kindness and fairness", 
+          emoji: "💖", 
+          description: "Kindness and fairness build trust",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Bossiness", 
+          emoji: "😤", 
+          description: "Bossiness creates resentment",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Popularity", 
+          emoji: "🎭", 
+          description: "Popularity doesn't equal good leadership",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       text: "A good leader makes decisions that…",
-      emoji: "📊",
-      choices: [
-        { id: 1, text: "Benefit everyone in the team", emoji: "🌍", isCorrect: true },
-        { id: 2, text: "Only help themselves", emoji: "🙄", isCorrect: false },
-        { id: 3, text: "Avoid responsibility", emoji: "🚫", isCorrect: false },
-      ],
-    },
+      options: [
+        { 
+          id: "a", 
+          text: "Only help themselves", 
+          emoji: "🙄", 
+          description: "Self-serving decisions hurt the team",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Benefit everyone in the team", 
+          emoji: "🌍", 
+          description: "Good leaders consider everyone's benefit",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Avoid responsibility", 
+          emoji: "🚫", 
+          description: "Leaders take responsibility",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const currentQuestionData = questions[currentQuestion];
-  const selectedChoiceData = currentQuestionData?.choices.find(
-    (c) => c.id === selectedChoice
-  );
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedChoiceData) return;
-
-    setShowFeedback(true);
-
-    if (selectedChoiceData.isCorrect) {
-      showCorrectAnswerFeedback(3, true);
-      setCoins((prev) => prev + 3);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    // ⏳ Auto move to next question after 3s
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion((prev) => prev + 1);
-        setSelectedChoice(null);
-        setShowFeedback(false);
-        resetFeedback();
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        // ✅ Move to next game after last question
-        navigate("/student/moral-values/teen/reflex-leadership-traits");
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    }, 3000);
+    }, 500);
   };
+
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Quiz on Leadership"
-      subtitle="Learn What True Leaders Do"
-      score={coins}
-      gameId="moral-teen-72"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={72}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-6 text-center">
-              {currentQuestionData.emoji}
-            </div>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-xl leading-relaxed text-center font-semibold">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
                 {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            {/* ✅ Choices */}
-            <div className="space-y-3 mb-6">
-              {currentQuestionData.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">
-                      {choice.text}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {/* ✅ Confirm Button */}
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Submit Answer
-            </button>
           </div>
-        ) : (
-          // ✅ Feedback View
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-7xl mb-4">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {selectedChoiceData.isCorrect ? "🌟 Great Leader!" : "🤔 Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {selectedChoiceData.text}
-            </p>
-            <div
-              className={`rounded-lg p-4 mb-4 ${
-                selectedChoiceData.isCorrect
-                  ? "bg-green-500/20"
-                  : "bg-red-500/20"
-              }`}
-            >
-              <p className="text-white">
-                {selectedChoiceData.isCorrect
-                  ? "Excellent! True leaders serve, inspire, and support others instead of commanding. 💪"
-                  : "Leadership isn't about control — it's about guiding with kindness and setting an example."}
-              </p>
-            </div>
-            {selectedChoiceData.isCorrect && (
-              <p className="text-yellow-400 text-2xl font-bold">
-                You earned 3 Coins! 🪙
-              </p>
-            )}
-            <p className="text-white/60 text-sm mt-3">
-              Next question loading...
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

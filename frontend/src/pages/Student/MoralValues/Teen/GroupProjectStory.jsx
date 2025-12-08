@@ -1,195 +1,294 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const GroupProjectStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-teen-61";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stories = [
+  const questions = [
     {
-      title: "Ignored Ideas",
-      emoji: "🧑‍💼",
-      situation: "Your group leader ignores everyone’s ideas and makes all decisions alone. Is that cooperation?",
-      choices: [
-        { id: 1, text: "Yes, leaders should decide everything", emoji: "😐", isCorrect: false },
-        { id: 2, text: "No, everyone’s voice matters in teamwork", emoji: "🤝", isCorrect: true },
-        { id: 3, text: "Maybe, if the leader is smart", emoji: "🤔", isCorrect: false },
-      ],
+      id: 1,
+      text: "Your group leader ignores everyone's ideas and makes all decisions alone. Is that cooperation?",
+      options: [
+        { 
+          id: "no", 
+          text: "No, everyone's voice matters in teamwork", 
+          emoji: "🤝", 
+          description: "Teamwork requires listening to everyone's input",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes, leaders should decide everything", 
+          emoji: "😐", 
+          description: "Leaders make all decisions without input",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe, if the leader is smart", 
+          emoji: "🤔", 
+          description: "It depends on the leader's abilities",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Helping Teammates",
-      emoji: "🧩",
-      situation: "A classmate is struggling to complete their part. What should you do?",
-      choices: [
-        { id: 1, text: "Ignore them and finish your own work", emoji: "🙅", isCorrect: false },
-        { id: 2, text: "Offer help so the project succeeds together", emoji: "🙌", isCorrect: true },
-        { id: 3, text: "Complain about them to the teacher", emoji: "😠", isCorrect: false },
-      ],
+      id: 2,
+      text: "A classmate is struggling to complete their part. What should you do?",
+      options: [
+        { 
+          id: "complain", 
+          text: "Complain about them to the teacher", 
+          emoji: "😠", 
+          description: "Report their struggles to the teacher",
+          isCorrect: false
+        },
+        { 
+          id: "help", 
+          text: "Offer help so the project succeeds together", 
+          emoji: "🙌", 
+          description: "Assist them to ensure team success",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore them and finish your own work", 
+          emoji: "🙅", 
+          description: "Focus only on your own responsibilities",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Credit for Work",
-      emoji: "🏅",
-      situation: "The teacher praises the team, but you did most of the work. Should you take all the credit?",
-      choices: [
-        { id: 1, text: "Yes, because you worked the hardest", emoji: "😤", isCorrect: false },
-        { id: 2, text: "No, teamwork means sharing credit equally", emoji: "🤗", isCorrect: true },
-        { id: 3, text: "Stay silent and feel upset", emoji: "😞", isCorrect: false },
-      ],
+      id: 3,
+      text: "The teacher praises the team, but you did most of the work. Should you take all the credit?",
+      options: [
+        { 
+          id: "silent", 
+          text: "Stay silent and feel upset", 
+          emoji: "😞", 
+          description: "Say nothing but feel resentful",
+          isCorrect: false
+        },
+        { 
+          id: "yes2", 
+          text: "Yes, because you worked the hardest", 
+          emoji: "😤", 
+          description: "Claim all credit since you did most work",
+          isCorrect: false
+        },
+        { 
+          id: "share", 
+          text: "No, teamwork means sharing credit equally", 
+          emoji: "🤗", 
+          description: "Acknowledge everyone's contributions",
+          isCorrect: true
+        }
+      ]
     },
     {
-      title: "Conflict in Team",
-      emoji: "🔥",
-      situation: "Two teammates are arguing about ideas. What’s the best thing to do?",
-      choices: [
-        { id: 1, text: "Let them fight until someone wins", emoji: "😬", isCorrect: false },
-        { id: 2, text: "Calmly listen and help them find a middle ground", emoji: "🕊️", isCorrect: true },
-        { id: 3, text: "Leave the group and work alone", emoji: "🚶", isCorrect: false },
-      ],
+      id: 4,
+      text: "Two teammates are arguing about ideas. What's the best thing to do?",
+      options: [
+        { 
+          id: "calm", 
+          text: "Calmly listen and help them find a middle ground", 
+          emoji: "🕊️", 
+          description: "Mediate and help resolve the conflict peacefully",
+          isCorrect: true
+        },
+        { 
+          id: "fight", 
+          text: "Let them fight until someone wins", 
+          emoji: "😬", 
+          description: "Allow them to argue until one gives up",
+          isCorrect: false
+        },
+        { 
+          id: "leave", 
+          text: "Leave the group and work alone", 
+          emoji: "🚶", 
+          description: "Abandon the team to avoid conflict",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Finishing Together",
-      emoji: "📚",
-      situation: "The project is almost done, but one part is incomplete. What would a cooperative teammate do?",
-      choices: [
-        { id: 1, text: "Finish it together to meet the goal", emoji: "💪", isCorrect: true },
-        { id: 2, text: "Blame others for being slow", emoji: "😒", isCorrect: false },
-        { id: 3, text: "Do nothing since it’s not your part", emoji: "😴", isCorrect: false },
-      ],
-    },
+      id: 5,
+      text: "The project is almost done, but one part is incomplete. What would a cooperative teammate do?",
+      options: [
+        { 
+          id: "nothing", 
+          text: "Do nothing since it's not your part", 
+          emoji: "😴", 
+          description: "Ignore it because it's not your responsibility",
+          isCorrect: false
+        },
+        { 
+          id: "finish", 
+          text: "Finish it together to meet the goal", 
+          emoji: "💪", 
+          description: "Work together to complete the remaining part",
+          isCorrect: true
+        },
+        { 
+          id: "blame", 
+          text: "Blame others for being slow", 
+          emoji: "😒", 
+          description: "Criticize teammates for not finishing",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const story = stories[currentIndex];
-
-  const handleChoice = (choiceId) => setSelectedChoice(choiceId);
-
-  const handleConfirm = () => {
-    const choice = story.choices.find((c) => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins((prev) => prev + 5);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-    setShowFeedback(true);
-  };
-
-  const handleNextStory = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    resetFeedback();
-    if (currentIndex < stories.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      navigate("/student/moral-values/teen/quiz-team-skills");
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
-  const selectedChoiceData = story.choices.find((c) => c.id === selectedChoice);
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const handleNext = () => {
+    navigate("/student/moral-values/teen/quiz-team-skills");
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Group Project Story"
-      subtitle="Teamwork and Cooperation"
-      onNext={handleNextStory}
-      nextEnabled={showFeedback}
-      showGameOver={currentIndex === stories.length - 1 && showFeedback}
       score={coins}
-      gameId="moral-teen-61"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={61}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      subtitle={showResult ? "Activity Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore === questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">{story.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{story.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">{story.situation}</p>
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4 text-center">What should you do?</h3>
-
-            <div className="space-y-3 mb-6">
-              {story.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "🌟 Great Team Spirit!" : "🤔 Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Excellent! Cooperation means listening, helping, and working together toward shared goals.
-                    Great teamwork makes success easier for everyone!
-                  </p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about teamwork and cooperation!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
                 </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">You earned 5 Coins! 🪙</p>
-              </>
+                <p className="text-white/80">
+                  You understand the importance of working together as a team!
+                </p>
+              </div>
             ) : (
-              <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                <p className="text-white text-center">
-                  That’s not cooperation. True teamwork means respecting ideas, supporting each other, and solving problems calmly.
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, teamwork means helping each other and sharing credit!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that shows cooperation and teamwork.
                 </p>
               </div>
             )}
-
-            <button
-              onClick={handleNextStory}
-              className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              {currentIndex < stories.length - 1 ? "Next Story ➜" : "Finish Game 🎉"}
-            </button>
           </div>
         )}
       </div>

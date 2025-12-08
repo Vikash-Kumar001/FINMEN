@@ -160,6 +160,8 @@ class GameCompletionService {
         canReplay: result.replayUnlocked !== undefined ? result.replayUnlocked : false,
         isReplay: result.isReplay || false,
         replayUnlocked: result.replayUnlocked !== undefined ? result.replayUnlocked : false,
+        allAnswersCorrect: result.allAnswersCorrect !== undefined ? result.allAnswersCorrect : false,
+        fullyCompleted: result.fullyCompleted !== undefined ? result.fullyCompleted : false,
         message: result.message || 'Game completed successfully!'
       };
 

@@ -1,145 +1,120 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { PenSquare } from "lucide-react";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const JournalOfResolution = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
-  const [journalEntry, setJournalEntry] = useState("");
-  const [entries, setEntries] = useState([]);
+  
+  const gameId = "moral-teen-87";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [entry, setEntry] = useState("");
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
 
-  const prompts = [
-    "1️⃣ One time I resolved a conflict was when my friend and I argued over something small.",
-    "2️⃣ I once had a disagreement at school, but I found a peaceful way to solve it.",
-    "3️⃣ A moment when I chose to talk calmly instead of getting angry was...",
-    "4️⃣ I helped two classmates become friends again after a misunderstanding.",
-    "5️⃣ I once said sorry first even though it was hard, and it helped us make peace.",
+  const stages = [
+    {
+      question: 'Write: "One time I resolved a conflict was when ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "I had a disagreement at school, but I found a peaceful way to solve it when ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "A moment when I chose to talk calmly instead of getting angry was when ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "I helped two classmates become friends again after a misunderstanding by ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "I said sorry first even though it was hard, and it helped us make peace when ___."',
+      minLength: 10,
+    },
   ];
 
-  const handleNextPrompt = () => {
-    if (journalEntry.trim().length >= 30) {
-      const updatedEntries = [...entries, journalEntry];
-      setEntries(updatedEntries);
-      setJournalEntry("");
-
-      if (currentPromptIndex < prompts.length - 1) {
-        setCurrentPromptIndex(currentPromptIndex + 1);
-      } else {
-        // All prompts done
-        showCorrectAnswerFeedback(5, true);
-        setCoins(5);
-        setShowResult(true);
-      }
+  const handleSubmit = () => {
+    if (showResult) return;
+    
+    resetFeedback();
+    const entryText = entry.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setShowResult(true);
+        } else {
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
+        }
+      }, 1500);
     }
   };
 
-  const handleNextGame = () => {
-    navigate("/student/moral-values/teen/roleplay-mediator");
-  };
+  const finalScore = score;
 
   return (
     <GameShell
       title="Journal of Resolution"
-      subtitle="Reflecting on Conflict & Peace"
-      onNext={handleNextGame}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={coins}
-      gameId="moral-teen-87"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={87}
-      showConfetti={showResult}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on conflict and peace!` : "Journal Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="moral"
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showResult ? ( 
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-6xl mb-4 text-center">🕊️</div>
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">
-              Reflection {currentPromptIndex + 1} of {prompts.length}
-            </h2>
-
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-lg font-semibold mb-2 text-center">
-                {prompts[currentPromptIndex]}
-              </p>
-            </div>
-
-            <textarea
-              value={journalEntry}
-              onChange={(e) => setJournalEntry(e.target.value)}
-              placeholder="Write your reflection here... (minimum 30 characters)"
-              className="w-full h-48 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 resize-none"
-              maxLength={300}
-            />
-            <div className="text-white/50 text-sm mt-2 text-right">
-              {journalEntry.length}/300 characters (min: 30)
-            </div>
-
-            <button
-              onClick={handleNextPrompt}
-              disabled={journalEntry.trim().length < 30}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                journalEntry.trim().length >= 30
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              {currentPromptIndex < prompts.length - 1
-                ? "Next Reflection ➜"
-                : "Finish Journal 🕊️"}
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">🌟</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              Peaceful Resolution!
-            </h2>
-
-            <div className="bg-purple-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white/70 text-sm mb-2">Your Reflections:</p>
-              <ul className="space-y-3">
-                {entries.map((entry, i) => (
-                  <li
-                    key={i}
-                    className="text-white text-base italic bg-white/10 p-3 rounded-lg border border-white/20"
-                  >
-                    <span className="font-semibold text-purple-300">
-                      {prompts[i]}
-                    </span>
-                    <br />
-                    “{entry}”
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Great job! Resolving conflicts peacefully shows emotional
-                intelligence and maturity. You chose peace over pride — that’s
-                the mark of a true leader!
-              </p>
-            </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned 5 Coins! 🪙
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-10 h-10 text-yellow-300" />
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
             </p>
+            <textarea
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-lg bg-white/90"
+              disabled={showResult}
+            />
+            <div className="mt-2 text-white/50 text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
+            </div>
+            <button
+              onClick={handleSubmit}
+              className={`mt-4 px-8 py-4 rounded-full text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
+            >
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
+            </button>
           </div>
         )}
       </div>

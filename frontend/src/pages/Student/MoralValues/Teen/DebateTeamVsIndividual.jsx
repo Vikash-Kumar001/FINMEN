@@ -1,188 +1,205 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const DebateTeamVsIndividual = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  const gameId = "moral-teen-66";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentRound, setCurrentRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
-  const [answers, setAnswers] = useState(["", "", "", "", ""]);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [answered, setAnswered] = useState(false);
+  const [gameComplete, setGameComplete] = useState(false);
 
-  const topic = "Which is better — working alone or in a team?";
-  const positions = [
-    { id: 1, position: "Working Alone", emoji: "🧍‍♂️", isCorrect: false },
-    { id: 2, position: "Working in a Team", emoji: "🤝", isCorrect: true },
+  const debateTopics = [
+    {
+      id: 1,
+      scenario: "Which is better — working alone or in a team?",
+      positions: [
+        { id: "team", text: "FOR: Working in a team", emoji: "🤝", points: ["Share ideas", "Support each other", "Achieve more"], isCorrect: true },
+        { id: "balanced", text: "BALANCED: Both have benefits", emoji: "⚖️", points: ["Team for big tasks", "Alone for focus", "Choose wisely"], isCorrect: false },
+        { id: "alone", text: "AGAINST: Working alone", emoji: "🧍‍♂️", points: ["More control", "No conflicts", "Faster decisions"], isCorrect: false }
+      ]
+    },
+    {
+      id: 2,
+      scenario: "Do teams achieve more than individuals?",
+      positions: [
+        { id: "balanced", text: "BALANCED: Depends on the task", emoji: "⚖️", points: ["Some tasks need teams", "Some need individuals", "Context matters"], isCorrect: false },
+        { id: "more", text: "FOR: Teams achieve more together", emoji: "🏆", points: ["Combine strengths", "Bigger results", "Shared success"], isCorrect: true },
+        { id: "less", text: "AGAINST: Individuals work faster", emoji: "⚡", points: ["No delays", "Quick decisions", "More efficient"], isCorrect: false }
+      ]
+    },
+    {
+      id: 3,
+      scenario: "Does teamwork improve creativity?",
+      positions: [
+        { id: "conflict", text: "AGAINST: Teams create conflicts", emoji: "😠", points: ["Too many opinions", "Slows down", "Creates tension"], isCorrect: false },
+        { id: "balanced", text: "BALANCED: Can help or hinder", emoji: "⚖️", points: ["Depends on team", "Can inspire", "Can conflict"], isCorrect: false },
+        { id: "creativity", text: "FOR: Different ideas spark creativity", emoji: "💡", points: ["Diverse perspectives", "New solutions", "Innovation"], isCorrect: true }
+      ]
+    },
+    {
+      id: 4,
+      scenario: "Is working alone more challenging?",
+      positions: [
+        { id: "challenging", text: "FOR: Alone is more challenging", emoji: "😓", points: ["No support", "All responsibility", "Harder work"], isCorrect: true },
+        { id: "easier", text: "AGAINST: Alone is easier", emoji: "😌", points: ["No conflicts", "Simple decisions", "Less stress"], isCorrect: false },
+        { id: "balanced", text: "BALANCED: Both have challenges", emoji: "⚖️", points: ["Different challenges", "Team has conflicts", "Alone has pressure"], isCorrect: false }
+      ]
+    },
+    {
+      id: 5,
+      scenario: "Does being part of a team teach responsibility?",
+      positions: [
+        { id: "balanced", text: "BALANCED: Both teach responsibility", emoji: "⚖️", points: ["Team: shared", "Alone: personal", "Both valuable"], isCorrect: false },
+        { id: "responsibility", text: "FOR: Team teaches shared responsibility", emoji: "📋", points: ["Accountable to others", "Reliable member", "Team commitment"], isCorrect: true },
+        { id: "less", text: "AGAINST: Alone teaches more responsibility", emoji: "🎯", points: ["All on you", "Full accountability", "Personal growth"], isCorrect: false }
+      ]
+    }
   ];
 
-  const questions = [
-    "1️⃣ What’s one advantage of working in a team?",
-    "2️⃣ How does teamwork improve creativity or problem-solving?",
-    "3️⃣ Describe a time when teamwork helped achieve something big.",
-    "4️⃣ Why can working alone sometimes be challenging?",
-    "5️⃣ How does being part of a team teach responsibility?",
-  ];
+  const handlePositionSelect = (positionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    const topic = debateTopics[currentRound];
+    const isCorrect = topic.positions.find(pos => pos.id === positionId)?.isCorrect;
 
-  const handleAnswerChange = (value) => {
-    const updated = [...answers];
-    updated[currentQuestion] = value;
-    setAnswers(updated);
-  };
+    setSelectedPosition(positionId);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
 
-  const handleNextQuestion = () => {
-    if (answers[currentQuestion].trim().length < 20) return;
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
+    const isLastRound = currentRound === debateTopics.length - 1;
+    
+    if (isLastRound) {
+      setGameComplete(true);
+      setTimeout(() => setShowResult(true), 500);
     } else {
-      handleSubmit();
+      setTimeout(() => {
+        setCurrentRound(prev => prev + 1);
+        setSelectedPosition(null);
+        setAnswered(false);
+      }, 500);
     }
   };
-
-  const handleSubmit = () => {
-    const allFilled = answers.every((a) => a.trim().length >= 20);
-    if (selectedPosition === 2 && allFilled) {
-      showCorrectAnswerFeedback(10, true);
-      setCoins(10);
-      setShowFeedback(true);
-    } else if (selectedPosition && allFilled) {
-      setShowFeedback(true);
-    }
-  };
-
-  const handleNext = () => {
-    navigate("/student/moral-values/teen/journal-cooperation");
-  };
-
-  const selectedPos = positions.find((p) => p.id === selectedPosition);
 
   return (
     <GameShell
       title="Debate: Team vs Individual"
-      score={coins}
-      subtitle="Collaboration vs Independence"
-      onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
+      subtitle={!showResult ? `Round ${currentRound + 1} of ${debateTopics.length}` : "Debate Complete!"}
+      score={score}
+      currentLevel={currentRound + 1}
+      totalLevels={debateTopics.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={debateTopics.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showFeedback && coins > 0}
-      
-      gameId="moral-teen-66"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={66}
-      showConfetti={showFeedback && coins > 0}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
+      gameId={gameId}
+      gameType="moral"
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-6xl mb-4 text-center">🤔</div>
-
-            {/* Debate Topic */}
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">Debate Topic</h2>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-xl font-semibold text-center">{topic}</p>
+        {!showResult && debateTopics[currentRound] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Round {currentRound + 1}/{debateTopics.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{debateTopics.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-4">{debateTopics[currentRound].scenario}</h3>
+              <h4 className="text-lg font-semibold text-white/90 mb-4">Take a Position:</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {debateTopics[currentRound].positions.map((position) => (
+                  <button
+                    key={position.id}
+                    onClick={() => handlePositionSelect(position.id)}
+                    disabled={answered}
+                    className={`w-full text-left p-6 rounded-2xl transition-all transform hover:scale-105 border ${
+                      answered && selectedPosition === position.id
+                        ? position.isCorrect
+                          ? "bg-green-500/20 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-red-400 ring-4 ring-red-400"
+                        : selectedPosition === position.id
+                        ? "bg-blue-500/30 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border-white/20"
+                    } ${answered ? "opacity-75 cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center mb-2">
+                      <span className="text-2xl mr-2">{position.emoji}</span>
+                      <div className="font-bold text-lg text-white">{position.text}</div>
+                    </div>
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-white/80">
+                      {position.points.map((point, index) => (
+                        <li key={index}>{point}</li>
+                      ))}
+                    </ul>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            {/* Step 1: Choose Position */}
-            {!selectedPosition ? (
-              <>
-                <h3 className="text-white font-bold mb-4">1️⃣ Choose Your Position</h3>
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  {positions.map((pos) => (
-                    <button
-                      key={pos.id}
-                      onClick={() => setSelectedPosition(pos.id)}
-                      className={`border-2 rounded-xl p-4 transition-all ${
-                        selectedPosition === pos.id
-                          ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                          : "bg-white/20 border-white/40 hover:bg-white/30"
-                      }`}
-                    >
-                      <div className="text-3xl mb-2">{pos.emoji}</div>
-                      <div className="text-white font-semibold text-sm">{pos.position}</div>
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <>
-                {/* Step 2: Answer Questions One by One */}
-                <h3 className="text-white font-bold mb-2">
-                  {`Question ${currentQuestion + 1} of ${questions.length}`}
-                </h3>
-                <div className="mb-5">
-                  <p className="text-white mb-2 font-semibold">{questions[currentQuestion]}</p>
-                  <textarea
-                    value={answers[currentQuestion]}
-                    onChange={(e) => handleAnswerChange(e.target.value)}
-                    placeholder="Write your thoughts (min 20 chars)..."
-                    className="w-full h-24 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none"
-                    maxLength={200}
-                  />
-                  <div className="text-white/50 text-sm text-right">
-                    {answers[currentQuestion].length}/200
-                  </div>
-                </div>
-
-                {/* Next / Submit Button */}
-                <button
-                  onClick={handleNextQuestion}
-                  disabled={answers[currentQuestion].trim().length < 20}
-                  className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                    answers[currentQuestion].trim().length >= 20
-                      ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                      : "bg-gray-500/50 cursor-not-allowed"
-                  }`}
-                >
-                  {currentQuestion === questions.length - 1 ? "Submit Debate" : "Next Question →"}
-                </button>
-              </>
-            )}
           </div>
         ) : (
-          // Feedback Section
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">{selectedPos.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedPos.isCorrect ? "🌟 Team Spirit Winner!" : "Reconsider Your Approach"}
-            </h2>
-
-            {selectedPos.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Great insight! Teamwork builds collaboration, communication, and empathy.
-                    Together, people achieve more, combining strengths and supporting each other.
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 10 Coins! 🪙
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Debate Master!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You scored {score} out of {debateTopics.length}!
+                  You understand the power of teamwork!
                 </p>
-              </>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Teams achieve more together by combining strengths and supporting each other!
+                </p>
+              </div>
             ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    While independence has value, working in a team teaches collaboration and
-                    patience. Try to think from both perspectives!
-                  </p>
-                </div>
-                <p className="text-white/70 text-center">
-                  Think again about teamwork’s importance!
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You scored {score} out of {debateTopics.length}.
+                  Remember, teamwork combines strengths and achieves more together!
                 </p>
-              </>
+                <button
+                  onClick={() => {
+                    setShowResult(false);
+                    setCurrentRound(0);
+                    setScore(0);
+                    setSelectedPosition(null);
+                    setAnswered(false);
+                    setGameComplete(false);
+                    resetFeedback();
+                  }}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Teams achieve more by sharing ideas, supporting each other, and working together.
+                </p>
+              </div>
             )}
           </div>
         )}

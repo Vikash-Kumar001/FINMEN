@@ -1,196 +1,242 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const QuizOnConflict = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [quizComplete, setQuizComplete] = useState(false);
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("moral-teen-82");
+  const gameId = gameData?.id || "moral-teen-82";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for QuizOnConflict, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "What is the best way to solve a conflict?",
-      emoji: "🗣️",
-      choices: [
-        { id: 1, text: "Listen carefully to each other", emoji: "👂", isCorrect: true },
-        { id: 2, text: "Shout louder to prove your point", emoji: "😡", isCorrect: false },
-        { id: 3, text: "Ignore and walk away", emoji: "🚶", isCorrect: false },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Listen carefully to each other", 
+          emoji: "👂", 
+          description: "Listening helps understand different perspectives",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Shout louder to prove your point", 
+          emoji: "😡", 
+          description: "Shouting escalates conflicts",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignore and walk away", 
+          emoji: "🚶", 
+          description: "Ignoring doesn't resolve conflicts",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "When your classmate disagrees, what should you do first?",
-      emoji: "🤝",
-      choices: [
-        { id: 1, text: "Interrupt them", emoji: "🗯️", isCorrect: false },
-        { id: 2, text: "Listen to understand", emoji: "👂", isCorrect: true },
-        { id: 3, text: "Complain to the teacher", emoji: "👩‍🏫", isCorrect: false },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Interrupt them", 
+          emoji: "🗯️", 
+          description: "Interrupting prevents understanding",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Listen to understand", 
+          emoji: "👂", 
+          description: "Listening helps find common ground",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Complain to the teacher", 
+          emoji: "👩‍🏫", 
+          description: "Try resolving conflicts directly first",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "What helps prevent arguments from getting worse?",
-      emoji: "🧘",
-      choices: [
-        { id: 1, text: "Staying calm and speaking politely", emoji: "🙂", isCorrect: true },
-        { id: 2, text: "Raising your voice", emoji: "😤", isCorrect: false },
-        { id: 3, text: "Ignoring the person", emoji: "🙄", isCorrect: false },
-      ],
+      options: [
+        { 
+          id: "a", 
+          text: "Raising your voice", 
+          emoji: "😤", 
+          description: "Raising your voice escalates arguments",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Ignoring the person", 
+          emoji: "🙄", 
+          description: "Ignoring doesn't solve problems",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Staying calm and speaking politely", 
+          emoji: "🙂", 
+          description: "Calm communication prevents escalation",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
-      text: "If two friends fight, what’s the best thing to do?",
-      emoji: "👬",
-      choices: [
-        { id: 1, text: "Help them talk it out peacefully", emoji: "🕊️", isCorrect: true },
-        { id: 2, text: "Take sides", emoji: "⚔️", isCorrect: false },
-        { id: 3, text: "Spread gossip about it", emoji: "🗣️", isCorrect: false },
-      ],
+      text: "If two friends fight, what's the best thing to do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Help them talk it out peacefully", 
+          emoji: "🕊️", 
+          description: "Peaceful discussion resolves conflicts",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Take sides", 
+          emoji: "⚔️", 
+          description: "Taking sides increases conflict",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Spread gossip about it", 
+          emoji: "🗣️", 
+          description: "Gossip makes conflicts worse",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       text: "Which of these builds peace after a conflict?",
-      emoji: "🌈",
-      choices: [
-        { id: 1, text: "Saying sorry and forgiving", emoji: "💖", isCorrect: true },
-        { id: 2, text: "Avoiding people forever", emoji: "🚷", isCorrect: false },
-        { id: 3, text: "Ignoring feelings", emoji: "😶", isCorrect: false },
-      ],
-    },
+      options: [
+        { 
+          id: "a", 
+          text: "Avoiding people forever", 
+          emoji: "🚷", 
+          description: "Avoidance doesn't build peace",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Saying sorry and forgiving", 
+          emoji: "💖", 
+          description: "Apology and forgiveness restore peace",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Ignoring feelings", 
+          emoji: "😶", 
+          description: "Ignoring feelings prevents healing",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const currentQuestion = questions[currentQuestionIndex];
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = currentQuestion.choices.find((c) => c.id === selectedChoice);
-    setShowFeedback(true);
-
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(3, true);
-      setCoins((prev) => prev + 3);
-      // ✅ Automatically move to next question after short delay
-      setTimeout(() => {
-        if (currentQuestionIndex < questions.length - 1) {
-          setCurrentQuestionIndex((prev) => prev + 1);
-          setSelectedChoice(null);
-          setShowFeedback(false);
-          resetFeedback();
-        } else {
-          setQuizComplete(true);
-        }
-      }, 2000);
-    } else {
-      // ❌ If wrong, allow retry manually
-      setTimeout(() => {
-        setShowFeedback(false);
-      }, 2000);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleNext = () => {
-    navigate("/student/moral-values/teen/reflex-peace-symbols");
-  };
-
-  const selectedChoiceData = currentQuestion.choices.find((c) => c.id === selectedChoice);
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Quiz on Conflict"
-      subtitle="Peaceful Solutions"
-      onNext={handleNext}
-      nextEnabled={quizComplete}
-      showGameOver={quizComplete}
-      score={coins}
-      gameId="moral-teen-82"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={82}
-      showConfetti={quizComplete}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!quizComplete ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-8xl mb-4">{currentQuestion.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4">
-              Question {currentQuestionIndex + 1} of {questions.length}
-            </h2>
-
-            <p className="text-white text-lg font-semibold mb-6">
-              {currentQuestion.text}
-            </p>
-
-            <div className="space-y-3 mb-6">
-              {currentQuestion.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  disabled={showFeedback}
-                  className={`w-full border-2 rounded-xl p-4 transition-all ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4 justify-center">
-                    <div className="text-3xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {!showFeedback ? (
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedChoice}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedChoice
-                    ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                    : "bg-gray-500/50 cursor-not-allowed"
-                }`}
-              >
-                Submit Answer
-              </button>
-            ) : (
-              <p className="text-lg mt-4 text-white/80">
-                {selectedChoiceData?.isCorrect
-                  ? "✅ Correct! Moving to next question..."
-                  : "❌ Try again..."}
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
               </p>
-            )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-8xl mb-4">🏆</div>
-            <h2 className="text-3xl font-bold text-white mb-4">Peace Maker!</h2>
-            <p className="text-white/80 text-lg mb-6">
-              You completed all 5 conflict questions! You understand how to build peace and solve disagreements calmly.
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold">
-              Total Coins Earned: {coins} 🪙
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

@@ -1,199 +1,294 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const GratitudeStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "moral-teen-12";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stories = [
+  const questions = [
     {
-      title: "Shared Notes",
-      emoji: "📔",
-      situation: "Your friend shares their study notes with you before the exam. What do you do?",
-      choices: [
-        { id: 1, text: "Use them without saying anything", emoji: "😐", isCorrect: false },
-        { id: 2, text: "Thank them genuinely and offer to help back", emoji: "🙏", isCorrect: true },
-        { id: 3, text: "Just say 'okay' and move on", emoji: "👍", isCorrect: false }
+      id: 1,
+      text: "Your friend shares their study notes with you before the exam. What do you do?",
+      options: [
+        { 
+          id: "thank", 
+          text: "Thank them genuinely and offer to help back", 
+          emoji: "🙏", 
+          description: "Express gratitude and show willingness to return the favor",
+          isCorrect: true
+        },
+        { 
+          id: "use", 
+          text: "Use them without saying anything", 
+          emoji: "😐", 
+          description: "Take the notes without acknowledging their kindness",
+          isCorrect: false
+        },
+        { 
+          id: "okay", 
+          text: "Just say 'okay' and move on", 
+          emoji: "👍", 
+          description: "Give a brief response without showing appreciation",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Lunch Box Help",
-      emoji: "🍱",
-      situation: "A classmate shares their lunch when you forgot yours. What do you say?",
-      choices: [
-        { id: 1, text: "Ignore and eat quietly", emoji: "😶", isCorrect: false },
-        { id: 2, text: "Say thank you and share your snacks next time", emoji: "😊", isCorrect: true },
-        { id: 3, text: "Say 'finally!' and eat fast", emoji: "😅", isCorrect: false }
+      id: 2,
+      text: "A classmate shares their lunch when you forgot yours. What do you say?",
+      options: [
+        { 
+          id: "ignore", 
+          text: "Ignore and eat quietly", 
+          emoji: "😶", 
+          description: "Eat without acknowledging their generosity",
+          isCorrect: false
+        },
+        { 
+          id: "thank2", 
+          text: "Say thank you and share your snacks next time", 
+          emoji: "😊", 
+          description: "Express thanks and offer to reciprocate the kindness",
+          isCorrect: true
+        },
+        { 
+          id: "finally", 
+          text: "Say 'finally!' and eat fast", 
+          emoji: "😅", 
+          description: "Respond casually without showing proper gratitude",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Teacher’s Help",
-      emoji: "👩‍🏫",
-      situation: "Your teacher spends extra time helping you understand a tough topic.",
-      choices: [
-        { id: 1, text: "Leave class without saying anything", emoji: "😶", isCorrect: false },
-        { id: 2, text: "Thank them and promise to practice more", emoji: "📚", isCorrect: true },
-        { id: 3, text: "Complain it was too long", emoji: "🙄", isCorrect: false }
+      id: 3,
+      text: "Your teacher spends extra time helping you understand a tough topic.",
+      options: [
+        { 
+          id: "leave", 
+          text: "Leave class without saying anything", 
+          emoji: "😶", 
+          description: "Exit without acknowledging the extra help",
+          isCorrect: false
+        },
+        { 
+          id: "complain", 
+          text: "Complain it was too long", 
+          emoji: "🙄", 
+          description: "Show ingratitude by complaining about the time spent",
+          isCorrect: false
+        },
+        { 
+          id: "thank3", 
+          text: "Thank them and promise to practice more", 
+          emoji: "📚", 
+          description: "Show appreciation and commitment to improve",
+          isCorrect: true
+        }
       ]
     },
     {
-      title: "Sibling Support",
-      emoji: "👫",
-      situation: "Your sibling helps you with a project late at night. What should you do?",
-      choices: [
-        { id: 1, text: "Say thanks and do the same when they need help", emoji: "🤗", isCorrect: true },
-        { id: 2, text: "Say 'you had to help anyway'", emoji: "😏", isCorrect: false },
-        { id: 3, text: "Ignore it", emoji: "😶", isCorrect: false }
+      id: 4,
+      text: "Your sibling helps you with a project late at night. What should you do?",
+      options: [
+        { 
+          id: "same", 
+          text: "Say thanks and do the same when they need help", 
+          emoji: "🤗", 
+          description: "Show gratitude and offer to help them in return",
+          isCorrect: true
+        },
+        { 
+          id: "had", 
+          text: "Say 'you had to help anyway'", 
+          emoji: "😏", 
+          description: "Dismiss their help as an obligation",
+          isCorrect: false
+        },
+        { 
+          id: "ignore2", 
+          text: "Ignore it", 
+          emoji: "😶", 
+          description: "Don't acknowledge their late-night assistance",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Community Cleaner",
-      emoji: "🧹",
-      situation: "You see a cleaner working hard in your school corridor.",
-      choices: [
-        { id: 1, text: "Say thank you for keeping it clean", emoji: "🙂", isCorrect: true },
-        { id: 2, text: "Walk past without noticing", emoji: "😐", isCorrect: false },
-        { id: 3, text: "Laugh with friends", emoji: "🙃", isCorrect: false }
+      id: 5,
+      text: "You see a cleaner working hard in your school corridor.",
+      options: [
+        { 
+          id: "walk", 
+          text: "Walk past without noticing", 
+          emoji: "😐", 
+          description: "Continue on without acknowledging their work",
+          isCorrect: false
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh with friends", 
+          emoji: "🙃", 
+          description: "Make light of the situation without respect",
+          isCorrect: false
+        },
+        { 
+          id: "thank4", 
+          text: "Say thank you for keeping it clean", 
+          emoji: "🙂", 
+          description: "Acknowledge their hard work with gratitude",
+          isCorrect: true
+        }
       ]
     }
   ];
 
-  const currentStory = stories[currentQuestion];
-  const selectedChoiceData = currentStory.choices.find(c => c.id === selectedChoice);
-
-  const handleChoice = (id) => setSelectedChoice(id);
-
-  const handleConfirm = () => {
-    const choice = currentStory.choices.find(c => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
-      setTotalCoins(prev => prev + 5);
-    } else {
-      setCoins(0);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-    setShowFeedback(true);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
+    }
   };
 
-  const handleNextQuestion = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
+    setFinalScore(0);
     resetFeedback();
-    if (currentQuestion < stories.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-    } else {
-      navigate("/student/moral-values/teen/reflex-politeness");
-    }
   };
+
+  const handleNext = () => {
+    navigate("/student/moral-values/teen/reflex-politeness");
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
-      title="Gratitude Stories"
-      subtitle="Expressing Thanks"
-      onNext={handleNextQuestion}
-      nextEnabled={showFeedback}
-      showGameOver={showFeedback && currentQuestion === stories.length - 1}
-      score={totalCoins}
-      gameId="moral-teen-12"
-      gameType="moral"
-      totalLevels={20}
-      currentLevel={12}
-      showConfetti={showFeedback && coins > 0}
-      maxScore={20} // Max score is total number of questions (all correct)
+      title="Gratitude Story"
+      score={coins}
+      subtitle={showResult ? "Activity Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
+      gameType="moral"
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore === questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">{currentStory.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{currentStory.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">{currentStory.situation}</p>
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4">What should you do?</h3>
-            <div className="space-y-3 mb-6">
-              {currentStory.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "💖 Grateful Person!" : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Great! Showing gratitude spreads kindness and strengthens trust. Keep it up!
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  +5 Coins Earned! 🪙
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about gratitude and appreciation!
                 </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Gratitude matters! Next time, say thank you and show appreciation — it makes a difference.
-                  </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
                 </div>
-              </>
+                <p className="text-white/80">
+                  You understand the importance of expressing gratitude!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, showing gratitude makes others feel valued!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that shows appreciation and gratitude.
+                </p>
+              </div>
             )}
-            <button
-              onClick={handleNextQuestion}
-              className="mt-6 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              {currentQuestion < stories.length - 1 ? "Next Story ➜" : "Finish 🎉"}
-            </button>
           </div>
         )}
       </div>

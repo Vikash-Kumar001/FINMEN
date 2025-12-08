@@ -34,8 +34,10 @@ const StrongPasswordReflex = () => {
       question: "Password: '12345' - Is this password strong or weak?",
       correctAnswer: "Weak",
       options: [
+        { text: "Weak", isCorrect: true, emoji: "❌" },
         { text: "Strong", isCorrect: false, emoji: "✓" },
-        { text: "Weak", isCorrect: true, emoji: "✗" }
+        { text: "Very Strong", isCorrect: false, emoji: "💪" },
+        { text: "Perfect", isCorrect: false, emoji: "🌟" }
       ]
     },
     {
@@ -43,8 +45,10 @@ const StrongPasswordReflex = () => {
       question: "Password: 'Tiger@2025' - Is this password strong or weak?",
       correctAnswer: "Strong",
       options: [
-        { text: "Strong", isCorrect: true, emoji: "✓" },
-        { text: "Weak", isCorrect: false, emoji: "✗" }
+        { text: "Very Weak", isCorrect: false, emoji: "😰" },
+        { text: "Weak", isCorrect: false, emoji: "⚠️" },
+        { text: "Strong", isCorrect: true, emoji: "✅" },
+        { text: "Too Simple", isCorrect: false, emoji: "😕" }
       ]
     },
     {
@@ -52,8 +56,10 @@ const StrongPasswordReflex = () => {
       question: "Password: 'password' - Is this password strong or weak?",
       correctAnswer: "Weak",
       options: [
+        { text: "Very Strong", isCorrect: false, emoji: "💪" },
         { text: "Strong", isCorrect: false, emoji: "✓" },
-        { text: "Weak", isCorrect: true, emoji: "✗" }
+        { text: "Perfect", isCorrect: false, emoji: "🌟" },
+        { text: "Weak", isCorrect: true, emoji: "❌" }
       ]
     },
     {
@@ -61,8 +67,10 @@ const StrongPasswordReflex = () => {
       question: "Password: 'Star#123!' - Is this password strong or weak?",
       correctAnswer: "Strong",
       options: [
-        { text: "Strong", isCorrect: true, emoji: "✓" },
-        { text: "Weak", isCorrect: false, emoji: "✗" }
+        { text: "Strong", isCorrect: true, emoji: "✅" },
+        { text: "Very Weak", isCorrect: false, emoji: "😰" },
+        { text: "Weak", isCorrect: false, emoji: "⚠️" },
+        { text: "Too Simple", isCorrect: false, emoji: "😕" }
       ]
     },
     {
@@ -70,8 +78,10 @@ const StrongPasswordReflex = () => {
       question: "Password: 'Secure$99' - Is this password strong or weak?",
       correctAnswer: "Strong",
       options: [
-        { text: "Strong", isCorrect: true, emoji: "✓" },
-        { text: "Weak", isCorrect: false, emoji: "✗" }
+        { text: "Very Weak", isCorrect: false, emoji: "😰" },
+        { text: "Weak", isCorrect: false, emoji: "⚠️" },
+        { text: "Too Simple", isCorrect: false, emoji: "😕" },
+        { text: "Strong", isCorrect: true, emoji: "✅" }
       ]
     }
   ];

@@ -1,237 +1,205 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const DebateBossVsLeader = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentRound, setCurrentRound] = useState(0);
-  const [selectedPosition, setSelectedPosition] = useState(null);
-  const [argument, setArgument] = useState("");
-  const [rebuttal, setRebuttal] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
+  
+  const gameId = "moral-teen-76";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentRound, setCurrentRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [selectedPosition, setSelectedPosition] = useState(null);
+  const [answered, setAnswered] = useState(false);
+  const [gameComplete, setGameComplete] = useState(false);
 
-  const rounds = [
+  const debateTopics = [
     {
       id: 1,
-      topic: "A boss commands, a leader inspires — which is better?",
-      options: [
-        { id: 1, text: "Commanding shows authority", emoji: "🗣️", isCorrect: false },
-        { id: 2, text: "Inspiring motivates lasting results", emoji: "🌟", isCorrect: true },
-      ],
-      correctMessage:
-        "True! A leader inspires others to achieve shared goals, while a boss merely issues orders.",
-      wrongMessage: "Commanding creates fear, not respect. Inspiration builds loyalty.",
+      scenario: "A boss commands, a leader inspires — which is better?",
+      positions: [
+        { id: "inspire", text: "FOR: Inspiring motivates lasting results", emoji: "🌟", points: ["Builds loyalty", "Creates passion", "Long-term success"], isCorrect: true },
+        { id: "balanced", text: "BALANCED: Both have their place", emoji: "⚖️", points: ["Sometimes command", "Sometimes inspire", "Balance needed"], isCorrect: false },
+        { id: "command", text: "AGAINST: Commanding shows authority", emoji: "🗣️", points: ["Clear orders", "Quick action", "Shows control"], isCorrect: false }
+      ]
     },
     {
       id: 2,
-      topic: "Should a leader take credit or share it?",
-      options: [
-        { id: 1, text: "Take full credit for control", emoji: "👑", isCorrect: false },
-        { id: 2, text: "Share credit with the team", emoji: "🤝", isCorrect: true },
-      ],
-      correctMessage:
-        "Exactly! True leaders uplift their team and celebrate everyone’s contributions.",
-      wrongMessage: "Taking all the credit weakens trust. Leaders grow others, not their own ego.",
+      scenario: "Should a leader take credit or share it?",
+      positions: [
+        { id: "balanced", text: "BALANCED: Share major credit, take responsibility", emoji: "⚖️", points: ["Recognize team", "Take responsibility", "Balance both"], isCorrect: false },
+        { id: "share", text: "FOR: Share credit with the team", emoji: "🤝", points: ["Uplift others", "Build trust", "Team success"], isCorrect: true },
+        { id: "take", text: "AGAINST: Take full credit for control", emoji: "👑", points: ["Show authority", "Maintain control", "Your success"], isCorrect: false }
+      ]
     },
     {
       id: 3,
-      topic: "When mistakes happen, what should a leader do?",
-      options: [
-        { id: 1, text: "Blame others quickly", emoji: "⚠️", isCorrect: false },
-        { id: 2, text: "Take responsibility and guide", emoji: "🧭", isCorrect: true },
-      ],
-      correctMessage:
-        "Perfect! Accountability earns respect. Leaders fix problems, not find scapegoats.",
-      wrongMessage: "Blame divides teams — leadership means guiding through challenges.",
+      scenario: "When mistakes happen, what should a leader do?",
+      positions: [
+        { id: "blame", text: "AGAINST: Blame others quickly", emoji: "⚠️", points: ["Find fault", "Protect yourself", "Shift blame"], isCorrect: false },
+        { id: "balanced", text: "BALANCED: Address issues fairly", emoji: "⚖️", points: ["Investigate first", "Fair assessment", "Learn from it"], isCorrect: false },
+        { id: "responsibility", text: "FOR: Take responsibility and guide", emoji: "🧭", points: ["Accountable", "Fix problems", "Guide team"], isCorrect: true }
+      ]
     },
     {
       id: 4,
-      topic: "A boss uses fear; a leader uses respect — agree?",
-      options: [
-        { id: 1, text: "Yes, respect motivates more", emoji: "💎", isCorrect: true },
-        { id: 2, text: "No, fear keeps control", emoji: "😠", isCorrect: false },
-      ],
-      correctMessage:
-        "Correct! Respect builds long-term loyalty and creativity — fear only limits growth.",
-      wrongMessage: "Fear might control behavior, but it destroys innovation and trust.",
+      scenario: "A boss uses fear; a leader uses respect — agree?",
+      positions: [
+        { id: "respect", text: "FOR: Respect motivates more", emoji: "💎", points: ["Builds loyalty", "Creates trust", "Long-term success"], isCorrect: true },
+        { id: "fear", text: "AGAINST: Fear keeps control", emoji: "😠", points: ["Maintains order", "Quick compliance", "Shows power"], isCorrect: false },
+        { id: "balanced", text: "BALANCED: Both can work in different situations", emoji: "⚖️", points: ["Context matters", "Sometimes fear", "Sometimes respect"], isCorrect: false }
+      ]
     },
     {
       id: 5,
-      topic: "Final thought — Is a boss the same as a leader?",
-      options: [
-        { id: 1, text: "Yes, both manage people", emoji: "📋", isCorrect: false },
-        { id: 2, text: "No, a leader serves and empowers", emoji: "🚀", isCorrect: true },
-      ],
-      correctMessage:
-        "Exactly! A true leader serves their team, guiding them with empathy and vision.",
-      wrongMessage: "Management and leadership differ — leaders serve, not control.",
-    },
+      scenario: "Is a boss the same as a leader?",
+      positions: [
+        { id: "balanced", text: "BALANCED: Similar but different roles", emoji: "⚖️", points: ["Both manage", "Different styles", "Both needed"], isCorrect: false },
+        { id: "different", text: "FOR: A leader serves and empowers", emoji: "🚀", points: ["Serves team", "Empowers others", "True leadership"], isCorrect: true },
+        { id: "same", text: "AGAINST: Both manage people", emoji: "📋", points: ["Same role", "Just titles", "No difference"], isCorrect: false }
+      ]
+    }
   ];
 
-  const current = rounds[currentRound];
+  const handlePositionSelect = (positionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    const topic = debateTopics[currentRound];
+    const isCorrect = topic.positions.find(pos => pos.id === positionId)?.isCorrect;
 
-  const handleSubmit = () => {
-    const selected = current.options.find((opt) => opt.id === selectedPosition);
-    if (!selected) return;
-
-    if (selected.isCorrect && argument.trim().length >= 30 && rebuttal.trim().length >= 20) {
-      showCorrectAnswerFeedback(2, true);
-      setCoins((prev) => prev + 2);
-      setShowFeedback(true);
-    } else if (argument.trim().length >= 30 && rebuttal.trim().length >= 20) {
-      setShowFeedback(true);
+    setSelectedPosition(positionId);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
 
-  const handleNextRound = () => {
-    if (currentRound < rounds.length - 1) {
-      setCurrentRound((prev) => prev + 1);
-      setSelectedPosition(null);
-      setArgument("");
-      setRebuttal("");
-      setShowFeedback(false);
-      resetFeedback();
+    const isLastRound = currentRound === debateTopics.length - 1;
+    
+    if (isLastRound) {
+      setGameComplete(true);
+      setTimeout(() => setShowResult(true), 500);
+    } else {
+      setTimeout(() => {
+        setCurrentRound(prev => prev + 1);
+        setSelectedPosition(null);
+        setAnswered(false);
+      }, 500);
     }
-  };
-
-  const handleNext = () => {
-    navigate("/student/moral-values/teen/journal-leadership");
   };
 
   return (
     <GameShell
       title="Debate: Boss vs Leader"
-      subtitle="Understanding Leadership"
-      onNext={handleNext}
-      nextEnabled={showFeedback && currentRound === rounds.length - 1}
-      showGameOver={showFeedback && currentRound === rounds.length - 1}
-      score={coins}
-      gameId="moral-teen-76"
-      gameType="moral"
-      totalLevels={100}
-      currentLevel={76}
-      showConfetti={showFeedback && current.options[selectedPosition - 1]?.isCorrect}
+      subtitle={!showResult ? `Round ${currentRound + 1} of ${debateTopics.length}` : "Debate Complete!"}
+      score={score}
+      currentLevel={currentRound + 1}
+      totalLevels={debateTopics.length}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={debateTopics.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/teens"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
+      gameId={gameId}
+      gameType="moral"
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-6xl mb-4 text-center">🧠</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              Debate Round {currentRound + 1}
-            </h2>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-lg font-semibold text-center">{current.topic}</p>
+        {!showResult && debateTopics[currentRound] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Round {currentRound + 1}/{debateTopics.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{debateTopics.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-4">{debateTopics[currentRound].scenario}</h3>
+              <h4 className="text-lg font-semibold text-white/90 mb-4">Take a Position:</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {debateTopics[currentRound].positions.map((position) => (
+                  <button
+                    key={position.id}
+                    onClick={() => handlePositionSelect(position.id)}
+                    disabled={answered}
+                    className={`w-full text-left p-6 rounded-2xl transition-all transform hover:scale-105 border ${
+                      answered && selectedPosition === position.id
+                        ? position.isCorrect
+                          ? "bg-green-500/20 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-red-400 ring-4 ring-red-400"
+                        : selectedPosition === position.id
+                        ? "bg-blue-500/30 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border-white/20"
+                    } ${answered ? "opacity-75 cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center mb-2">
+                      <span className="text-2xl mr-2">{position.emoji}</span>
+                      <div className="font-bold text-lg text-white">{position.text}</div>
+                    </div>
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-white/80">
+                      {position.points.map((point, index) => (
+                        <li key={index}>{point}</li>
+                      ))}
+                    </ul>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-3">1. Choose Your Position</h3>
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {current.options.map((opt) => (
-                <button
-                  key={opt.id}
-                  onClick={() => setSelectedPosition(opt.id)}
-                  className={`border-2 rounded-xl p-4 transition-all ${
-                    selectedPosition === opt.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="text-3xl mb-2">{opt.emoji}</div>
-                  <div className="text-white font-semibold text-sm">{opt.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <h3 className="text-white font-bold mb-2">2. Build Your Argument (min 30 chars)</h3>
-            <textarea
-              value={argument}
-              onChange={(e) => setArgument(e.target.value)}
-              placeholder="Provide reasoning or evidence..."
-              className="w-full h-24 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={200}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">{argument.length}/200</div>
-
-            <h3 className="text-white font-bold mb-2">3. Prepare Your Rebuttal (min 20 chars)</h3>
-            <textarea
-              value={rebuttal}
-              onChange={(e) => setRebuttal(e.target.value)}
-              placeholder="Counter the opposing idea..."
-              className="w-full h-20 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={150}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">{rebuttal.length}/150</div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedPosition || argument.trim().length < 30 || rebuttal.trim().length < 20}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedPosition && argument.trim().length >= 30 && rebuttal.trim().length >= 20
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Submit Round
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">
-              {current.options.find((o) => o.id === selectedPosition)?.emoji}
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {current.options.find((o) => o.id === selectedPosition)?.isCorrect
-                ? "🏆 Great Leadership Insight!"
-                : "Think Like a True Leader..."}
-            </h2>
-
-            {current.options.find((o) => o.id === selectedPosition)?.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">{current.correctMessage}</p>
-                </div>
-                <div className="bg-purple-500/20 rounded-lg p-3 mb-4">
-                  <p className="text-white/80 text-sm mb-1">Your Argument:</p>
-                  <p className="text-white italic">"{argument}"</p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 2 Coins! 🪙
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Debate Master!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You scored {score} out of {debateTopics.length}!
+                  You understand the difference between a boss and a leader!
                 </p>
-                {currentRound < rounds.length - 1 && (
-                  <button
-                    onClick={handleNextRound}
-                    className="mt-6 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                  >
-                    Next Round
-                  </button>
-                )}
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">{current.wrongMessage}</p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
+                <p className="text-white/80">
+                  Lesson: A true leader serves and empowers, while a boss just commands!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You scored {score} out of {debateTopics.length}.
+                  Remember, leaders inspire and serve, not just command!
+                </p>
                 <button
-                  onClick={handleNextRound}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  onClick={() => {
+                    setShowResult(false);
+                    setCurrentRound(0);
+                    setScore(0);
+                    setSelectedPosition(null);
+                    setAnswered(false);
+                    setGameComplete(false);
+                    resetFeedback();
+                  }}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
-                  Next Round
+                  Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  Tip: True leaders serve their team, inspire others, and share credit for success.
+                </p>
+              </div>
             )}
           </div>
         )}

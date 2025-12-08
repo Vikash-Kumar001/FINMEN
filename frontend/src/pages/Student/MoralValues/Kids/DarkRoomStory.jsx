@@ -28,18 +28,18 @@ const DarkRoomStory = () => {
       text: "You're afraid to go get your toy in a dark room. What should you do?",
       options: [
         { 
-          id: "bravely", 
-          text: "Go bravely yourself", 
-          emoji: "💪", 
-          description: "Face your fear",
-          isCorrect: true
-        },
-        { 
           id: "fear", 
           text: "Stay in fear", 
           emoji: "😨", 
           description: "Avoid it",
           isCorrect: false
+        },
+        { 
+          id: "bravely", 
+          text: "Go bravely yourself", 
+          emoji: "💪", 
+          description: "Face your fear",
+          isCorrect: true
         },
         { 
           id: "call", 
@@ -55,13 +55,6 @@ const DarkRoomStory = () => {
       text: "You need to find your shoes in a dark closet. What should you do?",
       options: [
         { 
-          id: "feel", 
-          text: "Feel around slowly", 
-          emoji: "🤏", 
-          description: "Try carefully",
-          isCorrect: true
-        },
-        { 
           id: "light", 
           text: "Wait for light", 
           emoji: "💡", 
@@ -74,6 +67,13 @@ const DarkRoomStory = () => {
           emoji: "👟", 
           description: "Be destructive",
           isCorrect: false
+        },
+        { 
+          id: "feel", 
+          text: "Feel around slowly", 
+          emoji: "🤏", 
+          description: "Try carefully",
+          isCorrect: true
         }
       ]
     },
@@ -109,18 +109,18 @@ const DarkRoomStory = () => {
       text: "Your toy fell into the basement. What should you do?",
       options: [
         { 
-          id: "carefully", 
-          text: "Go in carefully", 
-          emoji: "🧍", 
-          description: "Be brave and cautious",
-          isCorrect: true
-        },
-        { 
           id: "leave", 
           text: "Leave it", 
           emoji: "🚪", 
           description: "Give up",
           isCorrect: false
+        },
+        { 
+          id: "carefully", 
+          text: "Go in carefully", 
+          emoji: "🧍", 
+          description: "Be brave and cautious",
+          isCorrect: true
         },
         { 
           id: "parent", 
@@ -136,13 +136,6 @@ const DarkRoomStory = () => {
       text: "You're almost there. What's the best approach to grab your toy safely?",
       options: [
         { 
-          id: "slowly", 
-          text: "Move slowly and carefully", 
-          emoji: "🐢", 
-          description: "Be cautious",
-          isCorrect: true
-        },
-        { 
           id: "rush", 
           text: "Rush in blindly", 
           emoji: "🏃", 
@@ -155,6 +148,13 @@ const DarkRoomStory = () => {
           emoji: "🎯", 
           description: "Try to knock it",
           isCorrect: false
+        },
+        { 
+          id: "slowly", 
+          text: "Move slowly and carefully", 
+          emoji: "🐢", 
+          description: "Be cautious",
+          isCorrect: true
         }
       ]
     }
@@ -223,7 +223,7 @@ const DarkRoomStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

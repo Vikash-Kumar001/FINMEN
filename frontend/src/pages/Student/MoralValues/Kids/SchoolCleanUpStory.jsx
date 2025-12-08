@@ -28,13 +28,6 @@ const SchoolCleanUpStory = () => {
       text: "Teacher asks to clean the school garden. Do you join?",
       options: [
         { 
-          id: "yes", 
-          text: "Yes, let's clean!", 
-          emoji: "💪", 
-          description: "Participate enthusiastically",
-          isCorrect: true
-        },
-        { 
           id: "no", 
           text: "No, I'm busy", 
           emoji: "😴", 
@@ -47,6 +40,13 @@ const SchoolCleanUpStory = () => {
           emoji: "👥", 
           description: "Conditional participation",
           isCorrect: false
+        },
+        { 
+          id: "yes", 
+          text: "Yes, let's clean!", 
+          emoji: "💪", 
+          description: "Participate enthusiastically",
+          isCorrect: true
         }
       ]
     },
@@ -55,18 +55,18 @@ const SchoolCleanUpStory = () => {
       text: "Do you pick up litter you see in the garden?",
       options: [
         { 
-          id: "yes", 
-          text: "Yes, every bit counts", 
-          emoji: "🌿", 
-          description: "Clean thoroughly",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "🙈", 
           description: "Don't help",
           isCorrect: false
+        },
+        { 
+          id: "yes", 
+          text: "Yes, every bit counts", 
+          emoji: "🌿", 
+          description: "Clean thoroughly",
+          isCorrect: true
         },
         { 
           id: "big", 
@@ -109,13 +109,6 @@ const SchoolCleanUpStory = () => {
       text: "Weeds are growing in the garden. Do you remove them?",
       options: [
         { 
-          id: "yes", 
-          text: "Yes, keep garden neat", 
-          emoji: "✂️", 
-          description: "Maintain the garden",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore them", 
           emoji: "🙃", 
@@ -128,6 +121,13 @@ const SchoolCleanUpStory = () => {
           emoji: "🤔", 
           description: "Partial effort",
           isCorrect: false
+        },
+        { 
+          id: "yes", 
+          text: "Yes, keep garden neat", 
+          emoji: "✂️", 
+          description: "Maintain the garden",
+          isCorrect: true
         }
       ]
     },
@@ -136,18 +136,18 @@ const SchoolCleanUpStory = () => {
       text: "The garden looks clean. Do you make a final check?",
       options: [
         { 
-          id: "yes", 
-          text: "Yes, make sure all is tidy", 
-          emoji: "✅", 
-          description: "Be thorough",
-          isCorrect: true
-        },
-        { 
           id: "no", 
           text: "No, I'm done", 
           emoji: "🛑", 
           description: "Stop early",
           isCorrect: false
+        },
+        { 
+          id: "yes", 
+          text: "Yes, make sure all is tidy", 
+          emoji: "✅", 
+          description: "Be thorough",
+          isCorrect: true
         },
         { 
           id: "small", 
@@ -223,7 +223,7 @@ const SchoolCleanUpStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

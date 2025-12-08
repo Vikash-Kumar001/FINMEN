@@ -28,18 +28,18 @@ const ConfessStory = () => {
       text: "You accidentally broke a vase at home. Do you confess?",
       options: [
         { 
-          id: "confess", 
-          text: "Confess", 
-          emoji: "🙋‍♂️", 
-          description: "Tell the truth",
-          isCorrect: true
-        },
-        { 
           id: "hide", 
           text: "Hide it", 
           emoji: "🙈", 
           description: "Try to hide it",
           isCorrect: false
+        },
+        { 
+          id: "confess", 
+          text: "Confess", 
+          emoji: "🙋‍♂️", 
+          description: "Tell the truth",
+          isCorrect: true
         },
         { 
           id: "blame", 
@@ -55,13 +55,6 @@ const ConfessStory = () => {
       text: "You lost your friend's book. Do you tell them?",
       options: [
         { 
-          id: "truth", 
-          text: "Tell the truth", 
-          emoji: "🗣️", 
-          description: "Be honest",
-          isCorrect: true
-        },
-        { 
           id: "secret", 
           text: "Keep it secret", 
           emoji: "🤫", 
@@ -74,6 +67,13 @@ const ConfessStory = () => {
           emoji: "🤷", 
           description: "Deny knowledge",
           isCorrect: false
+        },
+        { 
+          id: "truth", 
+          text: "Tell the truth", 
+          emoji: "🗣️", 
+          description: "Be honest",
+          isCorrect: true
         }
       ]
     },
@@ -109,13 +109,6 @@ const ConfessStory = () => {
       text: "You spilled juice on the table. Confess or hide?",
       options: [
         { 
-          id: "confess", 
-          text: "Confess", 
-          emoji: "🙋‍♀️", 
-          description: "Tell about it",
-          isCorrect: true
-        },
-        { 
           id: "hide", 
           text: "Hide it", 
           emoji: "🙊", 
@@ -128,6 +121,13 @@ const ConfessStory = () => {
           emoji: "😐", 
           description: "Don't mention it",
           isCorrect: false
+        },
+        { 
+          id: "confess", 
+          text: "Confess", 
+          emoji: "🙋‍♀️", 
+          description: "Tell about it",
+          isCorrect: true
         }
       ]
     },
@@ -136,18 +136,18 @@ const ConfessStory = () => {
       text: "You accidentally broke your sibling's toy. What do you do?",
       options: [
         { 
-          id: "apologize", 
-          text: "Confess and apologize", 
-          emoji: "🙏", 
-          description: "Be honest and sorry",
-          isCorrect: true
-        },
-        { 
           id: "blame", 
           text: "Blame someone else", 
           emoji: "🤥", 
           description: "Shift responsibility",
           isCorrect: false
+        },
+        { 
+          id: "apologize", 
+          text: "Confess and apologize", 
+          emoji: "🙏", 
+          description: "Be honest and sorry",
+          isCorrect: true
         },
         { 
           id: "hide", 
@@ -223,7 +223,7 @@ const ConfessStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

@@ -28,13 +28,6 @@ const AnimalCareStory = () => {
       text: "You see a stray dog that looks hungry. What should you do?",
       options: [
         { 
-          id: "food", 
-          text: "Give it some food", 
-          emoji: "🍖", 
-          description: "Help the dog",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore it and walk away", 
           emoji: "🙈", 
@@ -47,6 +40,13 @@ const AnimalCareStory = () => {
           emoji: "🚫", 
           description: "Be mean",
           isCorrect: false
+        },
+        { 
+          id: "food", 
+          text: "Give it some food", 
+          emoji: "🍖", 
+          description: "Help the dog",
+          isCorrect: true
         }
       ]
     },
@@ -55,18 +55,18 @@ const AnimalCareStory = () => {
       text: "A stray cat is thirsty near your home. What should you do?",
       options: [
         { 
-          id: "water", 
-          text: "Give it water", 
-          emoji: "💧", 
-          description: "Help the cat",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "🙈", 
           description: "Don't help",
           isCorrect: false
+        },
+        { 
+          id: "water", 
+          text: "Give it water", 
+          emoji: "💧", 
+          description: "Help the cat",
+          isCorrect: true
         },
         { 
           id: "scare", 
@@ -109,13 +109,6 @@ const AnimalCareStory = () => {
       text: "You find a lost puppy near your park. What should you do?",
       options: [
         { 
-          id: "care", 
-          text: "Take it home and care for it", 
-          emoji: "🏠", 
-          description: "Help the puppy",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "🙈", 
@@ -128,6 +121,13 @@ const AnimalCareStory = () => {
           emoji: "📢", 
           description: "Be mean",
           isCorrect: false
+        },
+        { 
+          id: "care", 
+          text: "Take it home and care for it", 
+          emoji: "🏠", 
+          description: "Help the puppy",
+          isCorrect: true
         }
       ]
     },
@@ -136,18 +136,18 @@ const AnimalCareStory = () => {
       text: "A stray goat is eating garbage. What should you do?",
       options: [
         { 
-          id: "food", 
-          text: "Give it proper food", 
-          emoji: "🥕", 
-          description: "Help the goat",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "🙈", 
           description: "Don't help",
           isCorrect: false
+        },
+        { 
+          id: "food", 
+          text: "Give it proper food", 
+          emoji: "🥕", 
+          description: "Help the goat",
+          isCorrect: true
         },
         { 
           id: "chase", 
@@ -223,7 +223,7 @@ const AnimalCareStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

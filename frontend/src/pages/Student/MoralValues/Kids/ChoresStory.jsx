@@ -8,7 +8,7 @@ const ChoresStory = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "moral-kids-33";
+  const gameId = "moral-kids-35";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -28,18 +28,18 @@ const ChoresStory = () => {
       text: "Mom asks you to put the plates away after dinner. What do you do?",
       options: [
         { 
-          id: "rightaway", 
-          text: "Do it right away to help", 
-          emoji: "💪", 
-          description: "Help immediately",
-          isCorrect: true
-        },
-        { 
           id: "later", 
           text: "Say 'I'll do it later'", 
           emoji: "😴", 
           description: "Postpone it",
           isCorrect: false
+        },
+        { 
+          id: "rightaway", 
+          text: "Do it right away to help", 
+          emoji: "💪", 
+          description: "Help immediately",
+          isCorrect: true
         },
         { 
           id: "ignore", 
@@ -55,13 +55,6 @@ const ChoresStory = () => {
       text: "Your pet is hungry, and it's your turn to feed it.",
       options: [
         { 
-          id: "immediately", 
-          text: "Feed your pet immediately", 
-          emoji: "🥣", 
-          description: "Take care of pet",
-          isCorrect: true
-        },
-        { 
           id: "wait", 
           text: "Wait for mom to remind you", 
           emoji: "🕒", 
@@ -74,6 +67,13 @@ const ChoresStory = () => {
           emoji: "🏃", 
           description: "Neglect responsibility",
           isCorrect: false
+        },
+        { 
+          id: "immediately", 
+          text: "Feed your pet immediately", 
+          emoji: "🥣", 
+          description: "Take care of pet",
+          isCorrect: true
         }
       ]
     },
@@ -109,18 +109,18 @@ const ChoresStory = () => {
       text: "You promised to finish your homework before watching TV.",
       options: [
         { 
-          id: "first", 
-          text: "Finish homework first", 
-          emoji: "✏️", 
-          description: "Keep your promise",
-          isCorrect: true
-        },
-        { 
           id: "tv", 
           text: "Watch TV first and then maybe do it", 
           emoji: "📺", 
           description: "Prioritize entertainment",
           isCorrect: false
+        },
+        { 
+          id: "first", 
+          text: "Finish homework first", 
+          emoji: "✏️", 
+          description: "Keep your promise",
+          isCorrect: true
         },
         { 
           id: "ignore", 
@@ -136,13 +136,6 @@ const ChoresStory = () => {
       text: "Your younger sibling drops their crayons. What do you do?",
       options: [
         { 
-          id: "help", 
-          text: "Help pick them up", 
-          emoji: "🤝", 
-          description: "Assist them",
-          isCorrect: true
-        },
-        { 
           id: "laugh", 
           text: "Laugh and walk away", 
           emoji: "😅", 
@@ -155,6 +148,13 @@ const ChoresStory = () => {
           emoji: "📞", 
           description: "Get someone else",
           isCorrect: false
+        },
+        { 
+          id: "help", 
+          text: "Help pick them up", 
+          emoji: "🤝", 
+          description: "Assist them",
+          isCorrect: true
         }
       ]
     }
@@ -223,7 +223,7 @@ const ChoresStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

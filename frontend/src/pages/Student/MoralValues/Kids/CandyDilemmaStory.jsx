@@ -28,13 +28,6 @@ const CandyDilemmaStory = () => {
       text: "You find extra candy in your bag. What should you do?",
       options: [
         { 
-          id: "return", 
-          text: "Return it to the teacher/shopkeeper", 
-          emoji: "🙋", 
-          description: "Be honest",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep it secretly", 
           emoji: "😏", 
@@ -47,6 +40,13 @@ const CandyDilemmaStory = () => {
           emoji: "😋", 
           description: "Consume it",
           isCorrect: false
+        },
+        { 
+          id: "return", 
+          text: "Return it to the teacher/shopkeeper", 
+          emoji: "🙋", 
+          description: "Be honest",
+          isCorrect: true
         }
       ]
     },
@@ -55,18 +55,18 @@ const CandyDilemmaStory = () => {
       text: "You see candy on the classroom floor. Do you eat it or return it?",
       options: [
         { 
-          id: "give", 
-          text: "Give it back to the teacher", 
-          emoji: "🙌", 
-          description: "Return it",
-          isCorrect: true
-        },
-        { 
           id: "eat", 
           text: "Eat it immediately", 
           emoji: "😋", 
           description: "Take it",
           isCorrect: false
+        },
+        { 
+          id: "give", 
+          text: "Give it back to the teacher", 
+          emoji: "🙌", 
+          description: "Return it",
+          isCorrect: true
         },
         { 
           id: "share", 
@@ -109,13 +109,6 @@ const CandyDilemmaStory = () => {
       text: "You got extra candy at a party. Should you keep or return?",
       options: [
         { 
-          id: "return", 
-          text: "Return to the host", 
-          emoji: "🙋‍♂️", 
-          description: "Give it back",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep it", 
           emoji: "😎", 
@@ -128,6 +121,13 @@ const CandyDilemmaStory = () => {
           emoji: "👨‍👩‍👧", 
           description: "Keep for family",
           isCorrect: false
+        },
+        { 
+          id: "return", 
+          text: "Return to the host", 
+          emoji: "🙋‍♂️", 
+          description: "Give it back",
+          isCorrect: true
         }
       ]
     },
@@ -136,18 +136,18 @@ const CandyDilemmaStory = () => {
       text: "The store gives you extra candy by mistake. What is right?",
       options: [
         { 
-          id: "return", 
-          text: "Return it to the shopkeeper", 
-          emoji: "🛎️", 
-          description: "Be honest",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep it without telling", 
           emoji: "😏", 
           description: "Take advantage",
           isCorrect: false
+        },
+        { 
+          id: "return", 
+          text: "Return it to the shopkeeper", 
+          emoji: "🛎️", 
+          description: "Be honest",
+          isCorrect: true
         },
         { 
           id: "eat", 
@@ -223,7 +223,7 @@ const CandyDilemmaStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

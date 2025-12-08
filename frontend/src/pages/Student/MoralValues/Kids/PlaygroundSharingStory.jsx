@@ -28,13 +28,6 @@ const PlaygroundSharingStory = () => {
       text: "You have one ball and many kids want to play. Do you share turns?",
       options: [
         { 
-          id: "share", 
-          text: "Yes, let everyone take turns", 
-          emoji: "🤝", 
-          description: "Share fairly",
-          isCorrect: true
-        },
-        { 
           id: "no", 
           text: "No, keep it for yourself", 
           emoji: "🙅", 
@@ -47,6 +40,13 @@ const PlaygroundSharingStory = () => {
           emoji: "👫", 
           description: "Selective sharing",
           isCorrect: false
+        },
+        { 
+          id: "share", 
+          text: "Yes, let everyone take turns", 
+          emoji: "🤝", 
+          description: "Share fairly",
+          isCorrect: true
         }
       ]
     },
@@ -55,18 +55,18 @@ const PlaygroundSharingStory = () => {
       text: "There are limited swings. Do you wait and share?",
       options: [
         { 
-          id: "share", 
-          text: "Share with others patiently", 
-          emoji: "👍", 
-          description: "Wait your turn",
-          isCorrect: true
-        },
-        { 
           id: "take", 
           text: "Take all the swings", 
           emoji: "🙃", 
           description: "Hog the swings",
           isCorrect: false
+        },
+        { 
+          id: "share", 
+          text: "Share with others patiently", 
+          emoji: "👍", 
+          description: "Wait your turn",
+          isCorrect: true
         },
         { 
           id: "long", 
@@ -109,13 +109,6 @@ const PlaygroundSharingStory = () => {
       text: "You have all the sand toys. How do you play?",
       options: [
         { 
-          id: "share", 
-          text: "Share toys so everyone can play", 
-          emoji: "🌟", 
-          description: "Include everyone",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep toys only for yourself", 
           emoji: "😡", 
@@ -128,6 +121,13 @@ const PlaygroundSharingStory = () => {
           emoji: "💥", 
           description: "Destroy them",
           isCorrect: false
+        },
+        { 
+          id: "share", 
+          text: "Share toys so everyone can play", 
+          emoji: "🌟", 
+          description: "Include everyone",
+          isCorrect: true
         }
       ]
     },
@@ -136,18 +136,18 @@ const PlaygroundSharingStory = () => {
       text: "Only some kids can play first. What do you do?",
       options: [
         { 
-          id: "turns", 
-          text: "Take turns fairly with everyone", 
-          emoji: "✌️", 
-          description: "Share fairly",
-          isCorrect: true
-        },
-        { 
           id: "repeatedly", 
           text: "Play repeatedly without breaks", 
           emoji: "🙄", 
           description: "Don't give others a turn",
           isCorrect: false
+        },
+        { 
+          id: "turns", 
+          text: "Take turns fairly with everyone", 
+          emoji: "✌️", 
+          description: "Share fairly",
+          isCorrect: true
         },
         { 
           id: "fight", 
@@ -223,7 +223,7 @@ const PlaygroundSharingStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

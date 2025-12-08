@@ -34,20 +34,20 @@ const PuzzleOfDilemmas = () => {
 
   // Outcomes - reordered so correct matches are in different positions
   const rightItems = [
-    { id: 1, name: "Wrong", emoji: "⚠️", description: "Bad and negative" },
-    { id: 2, name: "Right", emoji: "✅", description: "Correct choice" },
-    { id: 3, name: "Good", emoji: "🌟", description: "Right and positive" },
-    { id: 4, name: "Kind", emoji: "💖", description: "Caring and helpful" },
-    { id: 5, name: "Bad", emoji: "❌", description: "Not acceptable" }
+    { id: 3, name: "Kind", emoji: "💖", description: "Caring and helpful" },
+    { id: 4, name: "Bad", emoji: "❌", description: "Not acceptable" },
+    { id: 1, name: "Good", emoji: "🌟", description: "Right and positive" },
+    { id: 5, name: "Right", emoji: "✅", description: "Correct choice" },
+    { id: 2, name: "Wrong", emoji: "⚠️", description: "Bad and negative" }
   ];
 
   // Correct matches (with reordered right items)
   const correctMatches = [
-    { leftId: 1, rightId: 3 }, // Honesty → Good
-    { leftId: 2, rightId: 1 }, // Cheating → Wrong
-    { leftId: 3, rightId: 4 }, // Helping → Kind
-    { leftId: 4, rightId: 5 }, // Lying → Bad
-    { leftId: 5, rightId: 2 }  // Sharing → Right
+    { leftId: 1, rightId: 1 }, // Honesty → Good (now at position 3)
+    { leftId: 2, rightId: 2 }, // Cheating → Wrong (now at position 5)
+    { leftId: 3, rightId: 3 }, // Helping → Kind (now at position 1)
+    { leftId: 4, rightId: 4 }, // Lying → Bad (now at position 2)
+    { leftId: 5, rightId: 5 }  // Sharing → Right (now at position 4)
   ];
 
   // Check if a right item is already matched
@@ -117,7 +117,7 @@ const PuzzleOfDilemmas = () => {
   return (
     <GameShell
       title="Puzzle of Dilemmas"
-      score={coins}
+      score={showResult ? finalScore : coins}
       subtitle={showResult ? "Game Complete!" : "Match values to their outcomes"}
       showGameOver={showResult && finalScore >= 3}
       gameId={gameId}

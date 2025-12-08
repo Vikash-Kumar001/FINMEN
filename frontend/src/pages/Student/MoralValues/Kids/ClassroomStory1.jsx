@@ -28,13 +28,6 @@ const ClassroomStory1 = () => {
       text: "You're in a group project. Do you contribute your part or let others do all the work?",
       options: [
         { 
-          id: "contribute", 
-          text: "Contribute actively", 
-          emoji: "💡", 
-          description: "Do your fair share",
-          isCorrect: true
-        },
-        { 
           id: "nothing", 
           text: "Do nothing, let others handle it", 
           emoji: "😴", 
@@ -47,6 +40,13 @@ const ClassroomStory1 = () => {
           emoji: "🤏", 
           description: "Do minimal work",
           isCorrect: false
+        },
+        { 
+          id: "contribute", 
+          text: "Contribute actively", 
+          emoji: "💡", 
+          description: "Do your fair share",
+          isCorrect: true
         }
       ]
     },
@@ -55,18 +55,18 @@ const ClassroomStory1 = () => {
       text: "During discussion, do you share your ideas or stay silent?",
       options: [
         { 
-          id: "share", 
-          text: "Share your ideas", 
-          emoji: "💭", 
-          description: "Participate actively",
-          isCorrect: true
-        },
-        { 
           id: "silent", 
           text: "Stay silent", 
           emoji: "🤐", 
           description: "Don't participate",
           isCorrect: false
+        },
+        { 
+          id: "share", 
+          text: "Share your ideas", 
+          emoji: "💭", 
+          description: "Participate actively",
+          isCorrect: true
         },
         { 
           id: "agree", 
@@ -109,13 +109,6 @@ const ClassroomStory1 = () => {
       text: "Your part of the project is due tomorrow. Do you finish it on time or delay?",
       options: [
         { 
-          id: "finish", 
-          text: "Finish it on time", 
-          emoji: "✅", 
-          description: "Meet the deadline",
-          isCorrect: true
-        },
-        { 
           id: "delay", 
           text: "Delay it", 
           emoji: "🛌", 
@@ -128,6 +121,13 @@ const ClassroomStory1 = () => {
           emoji: "🙋", 
           description: "Pass it to others",
           isCorrect: false
+        },
+        { 
+          id: "finish", 
+          text: "Finish it on time", 
+          emoji: "✅", 
+          description: "Meet the deadline",
+          isCorrect: true
         }
       ]
     },
@@ -136,18 +136,18 @@ const ClassroomStory1 = () => {
       text: "Do you participate actively in presenting or let others speak for you?",
       options: [
         { 
-          id: "present", 
-          text: "Present your part confidently", 
-          emoji: "💪", 
-          description: "Take responsibility",
-          isCorrect: true
-        },
-        { 
           id: "quiet", 
           text: "Stay quiet", 
           emoji: "🙊", 
           description: "Don't present",
           isCorrect: false
+        },
+        { 
+          id: "present", 
+          text: "Present your part confidently", 
+          emoji: "💪", 
+          description: "Take responsibility",
+          isCorrect: true
         },
         { 
           id: "nod", 
@@ -223,7 +223,7 @@ const ClassroomStory1 = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

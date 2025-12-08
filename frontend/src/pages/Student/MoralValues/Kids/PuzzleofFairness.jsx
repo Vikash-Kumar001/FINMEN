@@ -41,13 +41,13 @@ const PuzzleofFairness = () => {
     { id: 5, name: "People Upset", emoji: "😠", description: "Makes others feel wronged" }
   ];
 
-  // Correct matches (with reordered right items)
+  // Correct matches - rearranged so correct answers aren't always in the same position
   const correctMatches = [
-    { leftId: 1, rightId: 3 }, // Sharing → Friends Happy
-    { leftId: 2, rightId: 1 }, // Cheating → Friends Angry
-    { leftId: 3, rightId: 4 }, // Waiting Turn → Everyone Smiles
-    { leftId: 4, rightId: 5 }, // Skipping Line → People Upset
-    { leftId: 5, rightId: 2 }  // Taking Turns → Fun Together
+    { leftId: 1, rightId: 3 }, // Sharing → Friends Happy (position 3)
+    { leftId: 2, rightId: 1 }, // Cheating → Friends Angry (position 1)
+    { leftId: 3, rightId: 4 }, // Waiting Turn → Everyone Smiles (position 4)
+    { leftId: 4, rightId: 5 }, // Skipping Line → People Upset (position 5)
+    { leftId: 5, rightId: 2 }  // Taking Turns → Fun Together (position 2)
   ];
 
   // Check if a right item is already matched
@@ -117,7 +117,7 @@ const PuzzleofFairness = () => {
   return (
     <GameShell
       title="Puzzle of Fairness"
-      score={coins}
+      score={showResult ? finalScore : coins}
       subtitle={showResult ? "Game Complete!" : "Match actions to their outcomes"}
       showGameOver={showResult && finalScore >= 3}
       gameId={gameId}

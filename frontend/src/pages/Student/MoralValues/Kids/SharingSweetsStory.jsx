@@ -8,7 +8,7 @@ const SharingSweetsStory = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "moral-kids-39";
+  const gameId = "moral-kids-48";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -28,18 +28,18 @@ const SharingSweetsStory = () => {
       text: "You have 4 sweets and your friend has 1. Do you share some with your friend?",
       options: [
         { 
-          id: "share", 
-          text: "Share some with your friend", 
-          emoji: "🤝", 
-          description: "Give them some sweets",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep all for yourself", 
           emoji: "😋", 
           description: "Don't share",
           isCorrect: false
+        },
+        { 
+          id: "share", 
+          text: "Share some with your friend", 
+          emoji: "🤝", 
+          description: "Give them some sweets",
+          isCorrect: true
         },
         { 
           id: "one", 
@@ -55,13 +55,6 @@ const SharingSweetsStory = () => {
       text: "Your friend forgot their lunch. What will you do?",
       options: [
         { 
-          id: "half", 
-          text: "Share half of your lunch", 
-          emoji: "🍔", 
-          description: "Share generously",
-          isCorrect: true
-        },
-        { 
           id: "bad", 
           text: "Say 'Too bad!'", 
           emoji: "😅", 
@@ -74,6 +67,13 @@ const SharingSweetsStory = () => {
           emoji: "🙈", 
           description: "Avoid sharing",
           isCorrect: false
+        },
+        { 
+          id: "half", 
+          text: "Share half of your lunch", 
+          emoji: "🍔", 
+          description: "Share generously",
+          isCorrect: true
         }
       ]
     },
@@ -82,13 +82,6 @@ const SharingSweetsStory = () => {
       text: "You have the new ball everyone wants to play with. What do you do?",
       options: [
         { 
-          id: "turns", 
-          text: "Let everyone take turns", 
-          emoji: "🤝", 
-          description: "Share fairly",
-          isCorrect: true
-        },
-        { 
           id: "alone", 
           text: "Play alone", 
           emoji: "🙅‍♂️", 
@@ -96,10 +89,71 @@ const SharingSweetsStory = () => {
           isCorrect: false
         },
         { 
+          id: "turns", 
+          text: "Let everyone take turns", 
+          emoji: "🤝", 
+          description: "Share fairly",
+          isCorrect: true
+        },
+        { 
           id: "best", 
           text: "Only allow your best friend", 
           emoji: "👫", 
           description: "Share with one person",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "You have 6 stickers and your friend has none. What should you do?",
+      options: [
+        { 
+          id: "share_stickers", 
+          text: "Share some stickers with your friend", 
+          emoji: "⭐", 
+          description: "Give them some",
+          isCorrect: true
+        },
+        { 
+          id: "keep_all", 
+          text: "Keep all stickers for yourself", 
+          emoji: "😎", 
+          description: "Don't share",
+          isCorrect: false
+        },
+        { 
+          id: "show_only", 
+          text: "Show them but don't give any", 
+          emoji: "👀", 
+          description: "Just show off",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "You have extra pencils and a classmate needs one. What will you do?",
+      options: [
+        { 
+          id: "give", 
+          text: "Give one to your classmate", 
+          emoji: "🎁", 
+          description: "Share generously",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore and keep them all", 
+          emoji: "😐", 
+          description: "Don't help",
+          isCorrect: false
+        },
+        { 
+          id: "lend", 
+          text: "Lend one to your classmate", 
+          emoji: "✏️", 
+          description: "Help them out",
           isCorrect: false
         }
       ]
@@ -164,12 +218,12 @@ const SharingSweetsStory = () => {
       title="Sharing Sweets Story"
       subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       currentLevel={39}
-      totalLevels={3}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

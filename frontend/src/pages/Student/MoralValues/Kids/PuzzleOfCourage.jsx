@@ -41,13 +41,13 @@ const PuzzleOfCourage = () => {
     { id: 5, name: "Honest", emoji: "💎", description: "Shows truth and integrity" }
   ];
 
-  // Correct matches (with reordered right items)
+  // Correct matches - rearranged so correct answers aren't always in the same position
   const correctMatches = [
-    { leftId: 1, rightId: 3 }, // Helping Friend → Brave
-    { leftId: 2, rightId: 1 }, // Teasing Someone → Weak
-    { leftId: 3, rightId: 4 }, // Standing Up to Bully → Heroic
-    { leftId: 4, rightId: 5 }, // Admitting Mistake → Honest
-    { leftId: 5, rightId: 2 }  // Telling Truth → Fearless
+    { leftId: 1, rightId: 3 }, // Helping Friend → Brave (position 3)
+    { leftId: 2, rightId: 1 }, // Teasing Someone → Weak (position 1)
+    { leftId: 3, rightId: 4 }, // Standing Up to Bully → Heroic (position 4)
+    { leftId: 4, rightId: 5 }, // Admitting Mistake → Honest (position 5)
+    { leftId: 5, rightId: 2 }  // Telling Truth → Fearless (position 2)
   ];
 
   // Check if a right item is already matched
@@ -117,7 +117,7 @@ const PuzzleOfCourage = () => {
   return (
     <GameShell
       title="Puzzle of Courage"
-      score={coins}
+      score={showResult ? finalScore : coins}
       subtitle={showResult ? "Game Complete!" : "Match actions to their outcomes"}
       showGameOver={showResult && finalScore >= 3}
       gameId={gameId}

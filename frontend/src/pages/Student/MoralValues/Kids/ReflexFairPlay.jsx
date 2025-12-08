@@ -51,57 +51,57 @@ const ReflexFairPlay = () => {
   const questions = [
     {
       id: 1,
-      question: "Which action shows fair play?",
-      correctAnswer: "Wait your turn",
+      question: "You and your friend both want the last cookie. What's fair?",
+      correctAnswer: "Share it equally",
       options: [
-        { text: "Wait your turn", isCorrect: true, emoji: "⏳" },
-        { text: "Jump the line", isCorrect: false, emoji: "🏃‍♂️" },
-        { text: "Push others aside", isCorrect: false, emoji: "🤦" },
-        { text: "Cut in front", isCorrect: false, emoji: "😠" }
+        { text: "Share it equally", isCorrect: true, emoji: "🍪" },
+        { text: "Take it for yourself", isCorrect: false, emoji: "😏" },
+        { text: "Hide it from your friend", isCorrect: false, emoji: "🙈" },
+        { text: "Eat it quickly", isCorrect: false, emoji: "😋" }
       ]
     },
     {
       id: 2,
-      question: "Which action shows fair play?",
-      correctAnswer: "Wait patiently",
+      question: "You're playing a game and you win every time. What should you do?",
+      correctAnswer: "Let others have a turn to win",
       options: [
-        { text: "Rush ahead", isCorrect: false, emoji: "⚡" },
-        { text: "Wait patiently", isCorrect: true, emoji: "🕰️" },
-        { text: "Skip the queue", isCorrect: false, emoji: "🚫" },
-        { text: "Push others", isCorrect: false, emoji: "🤦" }
+        { text: "Keep playing until you're bored", isCorrect: false, emoji: "😴" },
+        { text: "Let others have a turn to win", isCorrect: true, emoji: "🤝" },
+        { text: "Brag about winning", isCorrect: false, emoji: "😎" },
+        { text: "Make others feel bad", isCorrect: false, emoji: "😤" }
       ]
     },
     {
       id: 3,
-      question: "Which action shows fair play?",
-      correctAnswer: "Take turns fairly",
+      question: "Your team is winning by a lot. What's the fair thing to do?",
+      correctAnswer: "Play fairly and let everyone participate",
       options: [
-        { text: "Jump the line", isCorrect: false, emoji: "🏃‍♂️" },
-        { text: "Cut in front", isCorrect: false, emoji: "😠" },
-        { text: "Take turns fairly", isCorrect: true, emoji: "🤝" },
-        { text: "Rush ahead", isCorrect: false, emoji: "⚡" }
+        { text: "Play unfairly to make it harder", isCorrect: false, emoji: "😈" },
+        { text: "Play fairly and let everyone participate", isCorrect: true, emoji: "⚖️" },
+        { text: "Stop playing", isCorrect: false, emoji: "🛑" },
+        { text: "Make fun of the losing team", isCorrect: false, emoji: "😅" }
       ]
     },
     {
       id: 4,
-      question: "Which action shows fair play?",
-      correctAnswer: "Respect the queue",
+      question: "You see someone cutting in line. What should you do?",
+      correctAnswer: "Politely remind them to wait their turn",
       options: [
-        { text: "Skip the queue", isCorrect: false, emoji: "🚫" },
-        { text: "Push others", isCorrect: false, emoji: "🤦" },
-        { text: "Rush ahead", isCorrect: false, emoji: "⚡" },
-        { text: "Respect the queue", isCorrect: true, emoji: "✅" }
+        { text: "Push them out of line", isCorrect: false, emoji: "👊" },
+        { text: "Politely remind them to wait their turn", isCorrect: true, emoji: "🙋" },
+        { text: "Cut in line too", isCorrect: false, emoji: "🏃" },
+        { text: "Ignore it", isCorrect: false, emoji: "😐" }
       ]
     },
     {
       id: 5,
-      question: "Which action shows fair play?",
-      correctAnswer: "Follow the rules",
+      question: "You find extra candy that wasn't shared. What's fair?",
+      correctAnswer: "Share it with everyone",
       options: [
-        { text: "Follow the rules", isCorrect: true, emoji: "📋" },
-        { text: "Jump the line", isCorrect: false, emoji: "🏃‍♂️" },
-        { text: "Cut in front", isCorrect: false, emoji: "😠" },
-        { text: "Push others aside", isCorrect: false, emoji: "🤦" }
+        { text: "Keep it all for yourself", isCorrect: false, emoji: "🍭" },
+        { text: "Share it with everyone", isCorrect: true, emoji: "🍬" },
+        { text: "Give it only to your best friend", isCorrect: false, emoji: "👫" },
+        { text: "Hide it for later", isCorrect: false, emoji: "🔒" }
       ]
     }
   ];

@@ -8,7 +8,7 @@ const PlaygroundRulesStory = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "moral-kids-36";
+  const gameId = "moral-kids-38";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -28,18 +28,18 @@ const PlaygroundRulesStory = () => {
       text: "Teacher says, 'Line up!' Do you push or follow the rules?",
       options: [
         { 
-          id: "wait", 
-          text: "Wait calmly and follow the line", 
-          emoji: "🙂", 
-          description: "Follow the rules",
-          isCorrect: true
-        },
-        { 
           id: "push", 
           text: "Push others to go first", 
           emoji: "🚶‍♂️", 
           description: "Rush ahead",
           isCorrect: false
+        },
+        { 
+          id: "wait", 
+          text: "Wait calmly and follow the line", 
+          emoji: "🙂", 
+          description: "Follow the rules",
+          isCorrect: true
         },
         { 
           id: "ignore", 
@@ -55,13 +55,6 @@ const PlaygroundRulesStory = () => {
       text: "Only one swing is free, and a friend wants a turn too. What do you do?",
       options: [
         { 
-          id: "let", 
-          text: "Let your friend have a turn after you", 
-          emoji: "🤝", 
-          description: "Share fairly",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep swinging and ignore your friend", 
           emoji: "🙈", 
@@ -74,6 +67,13 @@ const PlaygroundRulesStory = () => {
           emoji: "⏰", 
           description: "Take all the time",
           isCorrect: false
+        },
+        { 
+          id: "let", 
+          text: "Let your friend have a turn after you", 
+          emoji: "🤝", 
+          description: "Share fairly",
+          isCorrect: true
         }
       ]
     },
@@ -109,18 +109,18 @@ const PlaygroundRulesStory = () => {
       text: "You see snack wrappers on the ground. What will you do?",
       options: [
         { 
-          id: "pick", 
-          text: "Pick them up and throw in the dustbin", 
-          emoji: "♻️", 
-          description: "Clean up",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore them — it's not your job", 
           emoji: "😐", 
           description: "Don't help",
           isCorrect: false
+        },
+        { 
+          id: "pick", 
+          text: "Pick them up and throw in the dustbin", 
+          emoji: "♻️", 
+          description: "Clean up",
+          isCorrect: true
         },
         { 
           id: "kick", 
@@ -136,13 +136,6 @@ const PlaygroundRulesStory = () => {
       text: "A friend falls while running. What's the right thing to do?",
       options: [
         { 
-          id: "help", 
-          text: "Help them stand and check if they're okay", 
-          emoji: "🤗", 
-          description: "Show care",
-          isCorrect: true
-        },
-        { 
           id: "laugh", 
           text: "Laugh and keep playing", 
           emoji: "😂", 
@@ -155,6 +148,13 @@ const PlaygroundRulesStory = () => {
           emoji: "👆", 
           description: "Draw attention",
           isCorrect: false
+        },
+        { 
+          id: "help", 
+          text: "Help them stand and check if they're okay", 
+          emoji: "🤗", 
+          description: "Show care",
+          isCorrect: true
         }
       ]
     }
@@ -223,7 +223,7 @@ const PlaygroundRulesStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

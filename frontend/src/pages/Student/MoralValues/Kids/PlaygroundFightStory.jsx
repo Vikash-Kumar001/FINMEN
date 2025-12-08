@@ -28,13 +28,6 @@ const PlaygroundFightStory = () => {
       text: "Two friends fight over a ball. What should you do?",
       options: [
         { 
-          id: "calm", 
-          text: "Calm them and share the ball", 
-          emoji: "🤝", 
-          description: "Bring peace",
-          isCorrect: true
-        },
-        { 
           id: "join", 
           text: "Join the fight", 
           emoji: "👊", 
@@ -47,6 +40,13 @@ const PlaygroundFightStory = () => {
           emoji: "🚶", 
           description: "Avoid helping",
           isCorrect: false
+        },
+        { 
+          id: "calm", 
+          text: "Calm them and share the ball", 
+          emoji: "🤝", 
+          description: "Bring peace",
+          isCorrect: true
         }
       ]
     },
@@ -55,18 +55,18 @@ const PlaygroundFightStory = () => {
       text: "Your friend breaks your toy by mistake. What should you do?",
       options: [
         { 
-          id: "forgive", 
-          text: "Forgive them kindly", 
-          emoji: "💖", 
-          description: "Show kindness",
-          isCorrect: true
-        },
-        { 
           id: "shout", 
           text: "Shout and scold them", 
           emoji: "😠", 
           description: "Be angry",
           isCorrect: false
+        },
+        { 
+          id: "forgive", 
+          text: "Forgive them kindly", 
+          emoji: "💖", 
+          description: "Show kindness",
+          isCorrect: true
         },
         { 
           id: "stop", 
@@ -109,13 +109,6 @@ const PlaygroundFightStory = () => {
       text: "You find a pencil on the floor. What will you do?",
       options: [
         { 
-          id: "ask", 
-          text: "Ask whose pencil it is", 
-          emoji: "🙋", 
-          description: "Try to return it",
-          isCorrect: true
-        },
-        { 
           id: "take", 
           text: "Take it quietly", 
           emoji: "🤫", 
@@ -128,6 +121,13 @@ const PlaygroundFightStory = () => {
           emoji: "🚶", 
           description: "Don't bother",
           isCorrect: false
+        },
+        { 
+          id: "ask", 
+          text: "Ask whose pencil it is", 
+          emoji: "🙋", 
+          description: "Try to return it",
+          isCorrect: true
         }
       ]
     },
@@ -136,18 +136,18 @@ const PlaygroundFightStory = () => {
       text: "Your friend forgot their lunch. What will you do?",
       options: [
         { 
-          id: "share", 
-          text: "Share your snacks with them", 
-          emoji: "🤗", 
-          description: "Be generous",
-          isCorrect: true
-        },
-        { 
           id: "eat", 
           text: "Eat secretly", 
           emoji: "😋", 
           description: "Don't share",
           isCorrect: false
+        },
+        { 
+          id: "share", 
+          text: "Share your snacks with them", 
+          emoji: "🤗", 
+          description: "Be generous",
+          isCorrect: true
         },
         { 
           id: "tell", 
@@ -223,7 +223,7 @@ const PlaygroundFightStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

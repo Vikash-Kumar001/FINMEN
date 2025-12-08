@@ -20,13 +20,8 @@ const CatOrDogGame = () => {
     { id: 1, emoji: "🐱", type: "cat", correct: "cat" },
     { id: 2, emoji: "🐶", type: "dog", correct: "dog" },
     { id: 3, emoji: "😺", type: "cat", correct: "cat" },
-    { id: 4, emoji: "🐕", type: "dog", correct: "dog" },
-    { id: 5, emoji: "😸", type: "cat", correct: "cat" },
-    { id: 6, emoji: "🦮", type: "dog", correct: "dog" },
-    { id: 7, emoji: "😻", type: "cat", correct: "cat" },
-    { id: 8, emoji: "🐩", type: "dog", correct: "dog" },
-    { id: 9, emoji: "🐈", type: "cat", correct: "cat" },
-    { id: 10, emoji: "🐕‍🦺", type: "dog", correct: "dog" }
+    { id: 4, emoji: "🦮", type: "dog", correct: "dog" },
+    { id: 5, emoji: "😻", type: "cat", correct: "cat" }
   ];
 
   const currentImageData = images[currentImage];
@@ -66,7 +61,7 @@ const CatOrDogGame = () => {
   return (
     <GameShell
       title="Cat or Dog Game"
-      score={coins}
+      score={score}
       subtitle={`Image ${currentImage + 1} of ${images.length}`}
       onNext={handleNext}
       nextEnabled={showResult && accuracy >= 70}
@@ -74,10 +69,10 @@ const CatOrDogGame = () => {
       totalCoins={totalCoins}
       totalXp={totalXp}
       showGameOver={showResult && accuracy >= 70}
-      
       gameId="ai-kids-2"
       gameType="ai"
-      totalLevels={20}
+      totalLevels={images.length}
+      maxScore={images.length}
       currentLevel={2}
       showConfetti={showResult && accuracy >= 70}
       flashPoints={flashPoints}

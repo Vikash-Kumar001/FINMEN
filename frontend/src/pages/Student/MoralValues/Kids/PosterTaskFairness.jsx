@@ -32,33 +32,33 @@ const PosterTaskFairness = () => {
     {
       question: 'Which poster promotes fairness?',
       choices: [
-        { text: "Everyone Deserves a Turn", design: "🎲", correct: true },
         { text: "Skip Others' Turns", design: "⏩", correct: false },
         { text: "Play Only for Yourself", design: "🎯", correct: false },
+        { text: "Everyone Deserves a Turn", design: "🎲", correct: true },
       ],
     },
     {
       question: 'Select the best fairness poster:',
       choices: [
+        { text: "Play Right, Not Just Win", design: "🏆", correct: true },
         { text: "Break the Rules", design: "💥", correct: false },
         { text: "Favor Only Friends", design: "👥", correct: false },
-        { text: "Play Right, Not Just Win", design: "🏆", correct: true },
       ],
     },
     {
       question: 'Choose the fairness poster:',
       choices: [
-        { text: "Treat Others Fairly", design: "🤗", correct: true },
         { text: "Unfair Advantages are Fine", design: "😏", correct: false },
         { text: "Don't Share Equally", design: "🙅", correct: false },
+        { text: "Treat Others Fairly", design: "🤗", correct: true },
       ],
     },
     {
       question: 'Which is the best poster for fairness?',
       choices: [
+        { text: "Play with Integrity", design: "💎", correct: true },
         { text: "Win by Any Means", design: "🎭", correct: false },
         { text: "Be Unfair to Others", design: "😠", correct: false },
-        { text: "Play with Integrity", design: "💎", correct: true },
       ],
     },
   ];

@@ -8,7 +8,7 @@ const LostWalletStory = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "moral-kids-38";
+  const gameId = "moral-kids-45";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -28,18 +28,18 @@ const LostWalletStory = () => {
       text: "You find a wallet on the street. What should you do?",
       options: [
         { 
-          id: "return", 
-          text: "Return the wallet to the owner", 
-          emoji: "🙋‍♂️", 
-          description: "Find and return it",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep the money", 
           emoji: "💰", 
           description: "Take the money",
           isCorrect: false
+        },
+        { 
+          id: "return", 
+          text: "Return the wallet to the owner", 
+          emoji: "🙋‍♂️", 
+          description: "Find and return it",
+          isCorrect: true
         },
         { 
           id: "give", 
@@ -55,13 +55,6 @@ const LostWalletStory = () => {
       text: "The wallet has an ID card. What is the best action?",
       options: [
         { 
-          id: "useid", 
-          text: "Use the ID to return the wallet", 
-          emoji: "🙋‍♀️", 
-          description: "Find the owner",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore it and leave it", 
           emoji: "🙈", 
@@ -74,6 +67,13 @@ const LostWalletStory = () => {
           emoji: "🏫", 
           description: "Bring to school",
           isCorrect: false
+        },
+        { 
+          id: "useid", 
+          text: "Use the ID to return the wallet", 
+          emoji: "🙋‍♀️", 
+          description: "Find the owner",
+          isCorrect: true
         }
       ]
     },
@@ -109,18 +109,18 @@ const LostWalletStory = () => {
       text: "Wallet has cash and cards. What is the right choice?",
       options: [
         { 
-          id: "intact", 
-          text: "Return the wallet intact", 
-          emoji: "👐", 
-          description: "Return everything",
-          isCorrect: true
-        },
-        { 
           id: "take", 
           text: "Take cash and discard wallet", 
           emoji: "😈", 
           description: "Steal the money",
           isCorrect: false
+        },
+        { 
+          id: "intact", 
+          text: "Return the wallet intact", 
+          emoji: "👐", 
+          description: "Return everything",
+          isCorrect: true
         },
         { 
           id: "charity", 
@@ -136,13 +136,6 @@ const LostWalletStory = () => {
       text: "Found a wallet at a store. How do you act?",
       options: [
         { 
-          id: "manager", 
-          text: "Give it to the store manager to return", 
-          emoji: "👩‍💼", 
-          description: "Let manager handle it",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep it", 
           emoji: "🙃", 
@@ -155,6 +148,13 @@ const LostWalletStory = () => {
           emoji: "👫", 
           description: "Pass responsibility",
           isCorrect: false
+        },
+        { 
+          id: "manager", 
+          text: "Give it to the store manager to return", 
+          emoji: "👩‍💼", 
+          description: "Let manager handle it",
+          isCorrect: true
         }
       ]
     }
@@ -223,7 +223,7 @@ const LostWalletStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

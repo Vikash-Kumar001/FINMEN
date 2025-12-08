@@ -28,13 +28,6 @@ const OldLadyStory = () => {
       text: "You see an old lady struggling with heavy bags. Do you help her?",
       options: [
         { 
-          id: "help", 
-          text: "Help her carry the bags", 
-          emoji: "🤝", 
-          description: "Offer assistance",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore and walk away", 
           emoji: "🙁", 
@@ -47,6 +40,13 @@ const OldLadyStory = () => {
           emoji: "😅", 
           description: "Make fun",
           isCorrect: false
+        },
+        { 
+          id: "help", 
+          text: "Help her carry the bags", 
+          emoji: "🤝", 
+          description: "Offer assistance",
+          isCorrect: true
         }
       ]
     },
@@ -55,18 +55,18 @@ const OldLadyStory = () => {
       text: "The old lady is afraid to cross the street alone. What do you do?",
       options: [
         { 
-          id: "guide", 
-          text: "Guide her safely across", 
-          emoji: "🤝", 
-          description: "Help her cross",
-          isCorrect: true
-        },
-        { 
           id: "leave", 
           text: "Leave her", 
           emoji: "🙁", 
           description: "Don't help",
           isCorrect: false
+        },
+        { 
+          id: "guide", 
+          text: "Guide her safely across", 
+          emoji: "🤝", 
+          description: "Help her cross",
+          isCorrect: true
         },
         { 
           id: "hurry", 
@@ -109,13 +109,6 @@ const OldLadyStory = () => {
       text: "Her destination is far. Do you offer to carry her bags?",
       options: [
         { 
-          id: "carry", 
-          text: "Yes, carry them with her", 
-          emoji: "🤝", 
-          description: "Go the distance",
-          isCorrect: true
-        },
-        { 
           id: "too", 
           text: "No, it's too far", 
           emoji: "🙁", 
@@ -128,6 +121,13 @@ const OldLadyStory = () => {
           emoji: "🤏", 
           description: "Minimal help",
           isCorrect: false
+        },
+        { 
+          id: "carry", 
+          text: "Yes, carry them with her", 
+          emoji: "🤝", 
+          description: "Go the distance",
+          isCorrect: true
         }
       ]
     },
@@ -136,18 +136,18 @@ const OldLadyStory = () => {
       text: "She thanks you sincerely. How do you respond?",
       options: [
         { 
-          id: "smile", 
-          text: "Smile and nod", 
-          emoji: "🤝", 
-          description: "Accept graciously",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore her thanks", 
           emoji: "🙁", 
           description: "Don't acknowledge",
           isCorrect: false
+        },
+        { 
+          id: "smile", 
+          text: "Smile and nod", 
+          emoji: "🤝", 
+          description: "Accept graciously",
+          isCorrect: true
         },
         { 
           id: "ask", 
@@ -223,7 +223,7 @@ const OldLadyStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

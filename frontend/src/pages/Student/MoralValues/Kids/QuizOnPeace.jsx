@@ -8,7 +8,7 @@ const QuizOnPeace = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "moral-kids-86";
+  const gameId = "moral-kids-82";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -27,13 +27,6 @@ const QuizOnPeace = () => {
       text: "Which brings peace?",
       options: [
         { 
-          id: "a", 
-          text: "Sharing", 
-          emoji: "🤝", 
-          description: "Working together and caring for others",
-          isCorrect: true
-        },
-        { 
           id: "b", 
           text: "Fighting", 
           emoji: "👊", 
@@ -46,6 +39,13 @@ const QuizOnPeace = () => {
           emoji: "😡", 
           description: "Using loud and aggressive behavior",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Sharing", 
+          emoji: "🤝", 
+          description: "Working together and caring for others",
+          isCorrect: true
         }
       ]
     },
@@ -81,6 +81,13 @@ const QuizOnPeace = () => {
       text: "How can we make our classroom peaceful?",
       options: [
         { 
+          id: "c", 
+          text: "Help each other", 
+          emoji: "🤗", 
+          description: "Supporting and caring for classmates",
+          isCorrect: true
+        },
+        { 
           id: "a", 
           text: "Argue all day", 
           emoji: "😤", 
@@ -93,13 +100,6 @@ const QuizOnPeace = () => {
           emoji: "🙊", 
           description: "Spreading negativity and gossip",
           isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Help each other", 
-          emoji: "🤗", 
-          description: "Supporting and caring for classmates",
-          isCorrect: true
         }
       ]
     },
@@ -107,13 +107,6 @@ const QuizOnPeace = () => {
       id: 4,
       text: "If two friends fight, what should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Help them calm down", 
-          emoji: "🤲", 
-          description: "Mediating conflicts and promoting peace",
-          isCorrect: true
-        },
         { 
           id: "b", 
           text: "Take sides", 
@@ -127,6 +120,13 @@ const QuizOnPeace = () => {
           emoji: "🙈", 
           description: "Not helping resolve conflicts",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Help them calm down", 
+          emoji: "🤲", 
+          description: "Mediating conflicts and promoting peace",
+          isCorrect: true
         }
       ]
     },
@@ -142,18 +142,18 @@ const QuizOnPeace = () => {
           isCorrect: false
         },
         { 
-          id: "b", 
-          text: "Walk away angry", 
-          emoji: "🚶‍♀️", 
-          description: "Avoiding problems instead of solving them",
-          isCorrect: false
-        },
-        { 
           id: "c", 
           text: "Talk and listen", 
           emoji: "🗣️", 
           description: "Communicating respectfully to find solutions",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Walk away angry", 
+          emoji: "🚶‍♀️", 
+          description: "Avoiding problems instead of solving them",
+          isCorrect: false
         }
       ]
     }

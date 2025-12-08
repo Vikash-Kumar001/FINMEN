@@ -13,6 +13,7 @@ const TrueFalseAIQuiz = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [score, setScore] = useState(0);
   const [coins, setCoins] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
@@ -55,11 +56,26 @@ const TrueFalseAIQuiz = () => {
     const isCorrect = selectedChoice === question.correct;
 
     if (isCorrect) {
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(5, true);
       setCoins((prev) => prev + 5);
+      
+      // Automatically move to next question after a short delay
+      setTimeout(() => {
+        resetFeedback();
+        setSelectedChoice(null);
+        
+        if (currentQuestion < questions.length - 1) {
+          setCurrentQuestion(currentQuestion + 1);
+        } else {
+          // All questions done → show game over
+          setShowFeedback(true);
+        }
+      }, 500);
+    } else {
+      // Show feedback only for wrong answers
+      setShowFeedback(true);
     }
-
-    setShowFeedback(true);
   };
 
   const handleNextQuestion = () => {
@@ -84,7 +100,7 @@ const TrueFalseAIQuiz = () => {
   return (
     <GameShell
       title="True or False AI Quiz"
-      score={coins}
+      score={score}
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={() => navigate("/student/ai-for-all/kids/emoji-classifier")}
       coinsPerLevel={coinsPerLevel}
@@ -95,7 +111,8 @@ const TrueFalseAIQuiz = () => {
       
       gameId="ai-kids-4"
       gameType="ai"
-      totalLevels={20}
+      totalLevels={questions.length}
+      maxScore={questions.length}
       currentLevel={4}
       showConfetti={showFeedback && coins > 0}
       flashPoints={flashPoints}
@@ -151,53 +168,52 @@ const TrueFalseAIQuiz = () => {
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">
-              {selectedChoice === question.correct ? "✨" : "❌"}
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoice === question.correct ? "Perfect!" : "Not Quite..."}
-            </h2>
-
-            {selectedChoice === question.correct ? (
+            {selectedChoice !== question.correct ? (
               <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Correct! Great job understanding AI concepts. 🌟
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center mb-6">
-                  +5 Coins! 🪙 Total: {coins}
-                </p>
-              </>
-            ) : (
-              <>
+                <div className="text-8xl mb-4 text-center">❌</div>
+                <h2 className="text-3xl font-bold text-white mb-4 text-center">
+                  Not Quite...
+                </h2>
                 <div className="bg-red-500/20 rounded-lg p-4 mb-4">
                   <p className="text-white text-center">
-                    Oops! That’s not right — remember, {question.correct === "true"
+                    Oops! That's not right — remember, {question.correct === "true"
                       ? "this statement is TRUE."
                       : "this statement is FALSE."}
                   </p>
                 </div>
+                <div className="flex justify-center gap-4 mt-6">
+                  <button
+                    onClick={handleTryAgain}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-8xl mb-4 text-center">✨</div>
+                <h2 className="text-3xl font-bold text-white mb-4 text-center">
+                  Quiz Complete! 🎉
+                </h2>
+                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
+                  <p className="text-white text-center">
+                    Great job understanding AI concepts! 🌟
+                  </p>
+                </div>
+                <p className="text-yellow-400 text-2xl font-bold text-center mb-6">
+                  Total Coins Earned: {coins} 🪙
+                </p>
+                <div className="flex justify-center gap-4 mt-6">
+                  <button
+                    onClick={handleNextQuestion}
+                    className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  >
+                    Continue →
+                  </button>
+                </div>
               </>
             )}
-
-            <div className="flex justify-center gap-4 mt-6">
-              {selectedChoice !== question.correct ? (
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              ) : (
-                <button
-                  onClick={handleNextQuestion}
-                  className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  {currentQuestion < questions.length - 1 ? "Next Question →" : "Finish Quiz 🎉"}
-                </button>
-              )}
-            </div>
           </div>
         )}
       </div>

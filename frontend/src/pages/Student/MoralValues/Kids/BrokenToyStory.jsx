@@ -28,13 +28,6 @@ const BrokenToyStory = () => {
       text: "Your friend accidentally breaks your favorite toy. What will you do?",
       options: [
         { 
-          id: "forgive", 
-          text: "Forgive and say 'It's okay'", 
-          emoji: "🤗", 
-          description: "Be understanding",
-          isCorrect: true
-        },
-        { 
           id: "shout", 
           text: "Shout and call them names", 
           emoji: "😡", 
@@ -47,6 +40,13 @@ const BrokenToyStory = () => {
           emoji: "🧑‍🏫", 
           description: "Report them",
           isCorrect: false
+        },
+        { 
+          id: "forgive", 
+          text: "Forgive and say 'It's okay'", 
+          emoji: "🤗", 
+          description: "Be understanding",
+          isCorrect: true
         }
       ]
     },
@@ -55,18 +55,18 @@ const BrokenToyStory = () => {
       text: "You find your classmate's lost pencil on the floor. What will you do?",
       options: [
         { 
-          id: "give", 
-          text: "Give it back to them", 
-          emoji: "😊", 
-          description: "Return it",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep it for yourself", 
           emoji: "😈", 
           description: "Take it",
           isCorrect: false
+        },
+        { 
+          id: "give", 
+          text: "Give it back to them", 
+          emoji: "😊", 
+          description: "Return it",
+          isCorrect: true
         },
         { 
           id: "throw", 
@@ -109,13 +109,6 @@ const BrokenToyStory = () => {
       text: "You see an elderly person struggling with heavy bags. What will you do?",
       options: [
         { 
-          id: "offer", 
-          text: "Offer to help carry them", 
-          emoji: "💪", 
-          description: "Be helpful",
-          isCorrect: true
-        },
-        { 
           id: "walk", 
           text: "Walk away quickly", 
           emoji: "🏃‍♀️", 
@@ -128,6 +121,13 @@ const BrokenToyStory = () => {
           emoji: "🕒", 
           description: "Don't take initiative",
           isCorrect: false
+        },
+        { 
+          id: "offer", 
+          text: "Offer to help carry them", 
+          emoji: "💪", 
+          description: "Be helpful",
+          isCorrect: true
         }
       ]
     },
@@ -136,18 +136,18 @@ const BrokenToyStory = () => {
       text: "You see trash on the classroom floor. What should you do?",
       options: [
         { 
-          id: "pick", 
-          text: "Pick it up and throw it in the bin", 
-          emoji: "🗑️", 
-          description: "Keep it clean",
-          isCorrect: true
-        },
-        { 
           id: "kick", 
           text: "Kick it under the desk", 
           emoji: "👟", 
           description: "Hide it",
           isCorrect: false
+        },
+        { 
+          id: "pick", 
+          text: "Pick it up and throw it in the bin", 
+          emoji: "🗑️", 
+          description: "Keep it clean",
+          isCorrect: true
         },
         { 
           id: "blame", 
@@ -223,7 +223,7 @@ const BrokenToyStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

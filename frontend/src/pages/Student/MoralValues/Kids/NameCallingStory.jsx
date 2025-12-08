@@ -28,13 +28,6 @@ const NameCallingStory = () => {
       text: "A classmate calls you silly in front of others. What should you do?",
       options: [
         { 
-          id: "ignore", 
-          text: "Ignore and stay calm", 
-          emoji: "😌", 
-          description: "Don't react negatively",
-          isCorrect: true
-        },
-        { 
           id: "shout", 
           text: "Shout back louder", 
           emoji: "😡", 
@@ -47,6 +40,13 @@ const NameCallingStory = () => {
           emoji: "🗣️", 
           description: "Spread negative words",
           isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore and stay calm", 
+          emoji: "😌", 
+          description: "Don't react negatively",
+          isCorrect: true
         }
       ]
     },
@@ -55,18 +55,18 @@ const NameCallingStory = () => {
       text: "Someone laughs and calls you slow while playing. What should you do?",
       options: [
         { 
-          id: "ignore", 
-          text: "Ignore and keep playing happily", 
-          emoji: "🙂", 
-          description: "Stay positive",
-          isCorrect: true
-        },
-        { 
           id: "push", 
           text: "Push them", 
           emoji: "🤜", 
           description: "Be physical",
           isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore and keep playing happily", 
+          emoji: "🙂", 
+          description: "Stay positive",
+          isCorrect: true
         },
         { 
           id: "cry", 
@@ -109,13 +109,6 @@ const NameCallingStory = () => {
       text: "Your friend jokes and calls you lazy. What should you do?",
       options: [
         { 
-          id: "laugh", 
-          text: "Laugh it off and stay friendly", 
-          emoji: "😄", 
-          description: "Take it lightly",
-          isCorrect: true
-        },
-        { 
           id: "stop", 
           text: "Stop talking to them", 
           emoji: "🙅", 
@@ -128,6 +121,13 @@ const NameCallingStory = () => {
           emoji: "😤", 
           description: "Retaliate",
           isCorrect: false
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh it off and stay friendly", 
+          emoji: "😄", 
+          description: "Take it lightly",
+          isCorrect: true
         }
       ]
     },
@@ -136,18 +136,18 @@ const NameCallingStory = () => {
       text: "A kid on the bus calls you names every day. What should you do?",
       options: [
         { 
-          id: "tell", 
-          text: "Ignore and tell an adult or teacher", 
-          emoji: "👩‍🏫", 
-          description: "Get help from adults",
-          isCorrect: true
-        },
-        { 
           id: "hit", 
           text: "Hit them next time", 
           emoji: "👊", 
           description: "Use violence",
           isCorrect: false
+        },
+        { 
+          id: "tell", 
+          text: "Ignore and tell an adult or teacher", 
+          emoji: "👩‍🏫", 
+          description: "Get help from adults",
+          isCorrect: true
         },
         { 
           id: "call", 
@@ -223,7 +223,7 @@ const NameCallingStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

@@ -28,13 +28,6 @@ const FootballStory = () => {
       text: "You hog the ball and don't pass. Is that teamwork?",
       options: [
         { 
-          id: "no", 
-          text: "No, teamwork means passing", 
-          emoji: "🤝", 
-          description: "Share and cooperate",
-          isCorrect: true
-        },
-        { 
           id: "yes", 
           text: "Yes, it's fine", 
           emoji: "🙃", 
@@ -47,6 +40,13 @@ const FootballStory = () => {
           emoji: "🤷", 
           description: "Depends on situation",
           isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No, teamwork means passing", 
+          emoji: "🤝", 
+          description: "Share and cooperate",
+          isCorrect: true
         }
       ]
     },
@@ -55,18 +55,18 @@ const FootballStory = () => {
       text: "Your teammate is struggling to score. Do you help or ignore?",
       options: [
         { 
-          id: "support", 
-          text: "Support and encourage them", 
-          emoji: "💪", 
-          description: "Help your teammate",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore, let them fail", 
           emoji: "🙈", 
           description: "Don't help",
           isCorrect: false
+        },
+        { 
+          id: "support", 
+          text: "Support and encourage them", 
+          emoji: "💪", 
+          description: "Help your teammate",
+          isCorrect: true
         },
         { 
           id: "criticize", 
@@ -109,13 +109,6 @@ const FootballStory = () => {
       text: "The team is losing. Do you stay motivated or give up?",
       options: [
         { 
-          id: "motivated", 
-          text: "Stay motivated and try your best", 
-          emoji: "🔥", 
-          description: "Keep trying",
-          isCorrect: true
-        },
-        { 
           id: "giveup", 
           text: "Give up, it's hopeless", 
           emoji: "😓", 
@@ -128,6 +121,13 @@ const FootballStory = () => {
           emoji: "😤", 
           description: "Find excuses",
           isCorrect: false
+        },
+        { 
+          id: "motivated", 
+          text: "Stay motivated and try your best", 
+          emoji: "🔥", 
+          description: "Keep trying",
+          isCorrect: true
         }
       ]
     },
@@ -136,18 +136,18 @@ const FootballStory = () => {
       text: "Someone makes a mistake. Do you blame them or support them?",
       options: [
         { 
-          id: "support", 
-          text: "Support and help them improve", 
-          emoji: "🤗", 
-          description: "Be encouraging",
-          isCorrect: true
-        },
-        { 
           id: "blame", 
           text: "Blame them, it's their fault", 
           emoji: "😠", 
           description: "Be critical",
           isCorrect: false
+        },
+        { 
+          id: "support", 
+          text: "Support and help them improve", 
+          emoji: "🤗", 
+          description: "Be encouraging",
+          isCorrect: true
         },
         { 
           id: "ignore", 
@@ -223,7 +223,7 @@ const FootballStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

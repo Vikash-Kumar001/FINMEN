@@ -28,13 +28,6 @@ const CheatingOfferStory = () => {
       text: "A friend offers you the answers during a test. What should you do?",
       options: [
         { 
-          id: "refuse", 
-          text: "Politely refuse and do your own work", 
-          emoji: "🙅", 
-          description: "Stay honest",
-          isCorrect: true
-        },
-        { 
           id: "accept", 
           text: "Accept the answers and copy", 
           emoji: "🤫", 
@@ -47,6 +40,13 @@ const CheatingOfferStory = () => {
           emoji: "👀", 
           description: "Peek at answers",
           isCorrect: false
+        },
+        { 
+          id: "refuse", 
+          text: "Politely refuse and do your own work", 
+          emoji: "🙅", 
+          description: "Stay honest",
+          isCorrect: true
         }
       ]
     },
@@ -55,18 +55,18 @@ const CheatingOfferStory = () => {
       text: "Your friend offers the solution to a tricky math problem. What do you do?",
       options: [
         { 
-          id: "try", 
-          text: "Try yourself first and refuse help", 
-          emoji: "💪", 
-          description: "Learn independently",
-          isCorrect: true
-        },
-        { 
           id: "take", 
           text: "Take it without asking", 
           emoji: "🙊", 
           description: "Accept the answer",
           isCorrect: false
+        },
+        { 
+          id: "try", 
+          text: "Try yourself first and refuse help", 
+          emoji: "💪", 
+          description: "Learn independently",
+          isCorrect: true
         },
         { 
           id: "copy", 
@@ -109,13 +109,6 @@ const CheatingOfferStory = () => {
       text: "Friend wants to share lab results to cheat. What do you do?",
       options: [
         { 
-          id: "experiment", 
-          text: "Do your own experiment honestly", 
-          emoji: "🧪", 
-          description: "Work independently",
-          isCorrect: true
-        },
-        { 
           id: "copy", 
           text: "Copy their results", 
           emoji: "😬", 
@@ -128,6 +121,13 @@ const CheatingOfferStory = () => {
           emoji: "😐", 
           description: "Fake the results",
           isCorrect: false
+        },
+        { 
+          id: "experiment", 
+          text: "Do your own experiment honestly", 
+          emoji: "🧪", 
+          description: "Work independently",
+          isCorrect: true
         }
       ]
     },
@@ -136,18 +136,18 @@ const CheatingOfferStory = () => {
       text: "Friend tries to give you answers secretly in the exam hall. Your choice?",
       options: [
         { 
-          id: "no", 
-          text: "Say no and focus on your own work", 
-          emoji: "✋", 
-          description: "Stay honest",
-          isCorrect: true
-        },
-        { 
           id: "accept", 
           text: "Accept secretly", 
           emoji: "🙈", 
           description: "Take the answers",
           isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "Say no and focus on your own work", 
+          emoji: "✋", 
+          description: "Stay honest",
+          isCorrect: true
         },
         { 
           id: "peek", 
@@ -223,7 +223,7 @@ const CheatingOfferStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

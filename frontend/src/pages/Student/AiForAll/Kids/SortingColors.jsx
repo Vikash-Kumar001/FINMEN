@@ -19,14 +19,9 @@ const SortingColors = () => {
   const items = [
     { id: 1, emoji: "🍎", color: "red", correctBox: "red" },
     { id: 2, emoji: "🔵", color: "blue", correctBox: "blue" },
-    { id: 3, emoji: "❤️", color: "red", correctBox: "red" },
-    { id: 4, emoji: "🟦", color: "blue", correctBox: "blue" },
-    { id: 5, emoji: "🌹", color: "red", correctBox: "red" },
-    { id: 6, emoji: "💙", color: "blue", correctBox: "blue" },
-    { id: 7, emoji: "🍓", color: "red", correctBox: "red" },
-    { id: 8, emoji: "🦋", color: "blue", correctBox: "blue" },
-    { id: 9, emoji: "🚗", color: "red", correctBox: "red" },
-    { id: 10, emoji: "🌊", color: "blue", correctBox: "blue" }
+    { id: 3, emoji: "🌹", color: "red", correctBox: "red" },
+    { id: 4, emoji: "🦋", color: "blue", correctBox: "blue" },
+    { id: 5, emoji: "🍓", color: "red", correctBox: "red" }
   ];
 
   const currentItemData = items[currentItem];
@@ -66,7 +61,7 @@ const SortingColors = () => {
   return (
     <GameShell
       title="Sorting Colors"
-      score={coins}
+      score={score}
       subtitle={`Item ${currentItem + 1} of ${items.length}`}
       onNext={handleNext}
       nextEnabled={showResult && accuracy >= 70}
@@ -74,10 +69,10 @@ const SortingColors = () => {
       totalCoins={totalCoins}
       totalXp={totalXp}
       showGameOver={showResult && accuracy >= 70}
-      
       gameId="ai-kids-3"
       gameType="ai"
-      totalLevels={20}
+      totalLevels={items.length}
+      maxScore={items.length}
       currentLevel={3}
       showConfetti={showResult && accuracy >= 70}
       flashPoints={flashPoints}
@@ -87,7 +82,7 @@ const SortingColors = () => {
       <div className="space-y-8">
         {!showResult ? (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">Drag to the correct box!</h3>
+            <h3 className="text-white text-xl font-bold mb-6 text-center">Click the correct color box!</h3>
             
             <div className="bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-xl p-12 mb-6 flex justify-center items-center">
               <div className="text-9xl animate-pulse">{currentItemData.emoji}</div>

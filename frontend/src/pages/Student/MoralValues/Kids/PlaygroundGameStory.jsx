@@ -8,7 +8,7 @@ const PlaygroundGameStory = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "moral-kids-37";
+  const gameId = "moral-kids-41";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -28,18 +28,18 @@ const PlaygroundGameStory = () => {
       text: "You win a race but know you started before the whistle. Should you still claim victory?",
       options: [
         { 
-          id: "no", 
-          text: "No, it's unfair to others.", 
-          emoji: "🛑", 
-          description: "Be honest about it",
-          isCorrect: true
-        },
-        { 
           id: "yes", 
           text: "Yes, winning is all that matters!", 
           emoji: "😏", 
           description: "Claim the win anyway",
           isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No, it's unfair to others.", 
+          emoji: "🛑", 
+          description: "Be honest about it",
+          isCorrect: true
         },
         { 
           id: "quiet", 
@@ -55,13 +55,6 @@ const PlaygroundGameStory = () => {
       text: "You touched the ball with your hand, but no one saw. What will you do?",
       options: [
         { 
-          id: "admit", 
-          text: "Admit it and give the ball to the other team.", 
-          emoji: "🤝", 
-          description: "Tell the truth",
-          isCorrect: true
-        },
-        { 
           id: "quiet", 
           text: "Stay quiet and keep playing.", 
           emoji: "🤫", 
@@ -74,6 +67,13 @@ const PlaygroundGameStory = () => {
           emoji: "😬", 
           description: "Shift the blame",
           isCorrect: false
+        },
+        { 
+          id: "admit", 
+          text: "Admit it and give the ball to the other team.", 
+          emoji: "🤝", 
+          description: "Tell the truth",
+          isCorrect: true
         }
       ]
     },
@@ -109,18 +109,18 @@ const PlaygroundGameStory = () => {
       text: "You accidentally moved your piece extra spaces and no one noticed. What's right?",
       options: [
         { 
-          id: "back", 
-          text: "Move it back and continue fairly.", 
-          emoji: "🔁", 
-          description: "Correct the mistake",
-          isCorrect: true
-        },
-        { 
           id: "leave", 
           text: "Leave it and stay quiet.", 
           emoji: "🤐", 
           description: "Don't fix it",
           isCorrect: false
+        },
+        { 
+          id: "back", 
+          text: "Move it back and continue fairly.", 
+          emoji: "🔁", 
+          description: "Correct the mistake",
+          isCorrect: true
         },
         { 
           id: "accident", 
@@ -136,13 +136,6 @@ const PlaygroundGameStory = () => {
       text: "Your friend tripped but you can still win if you ignore them. What should you do?",
       options: [
         { 
-          id: "stop", 
-          text: "Stop and help your friend.", 
-          emoji: "🤝", 
-          description: "Show care",
-          isCorrect: true
-        },
-        { 
           id: "run", 
           text: "Keep running and win.", 
           emoji: "🏃‍♀️", 
@@ -155,6 +148,13 @@ const PlaygroundGameStory = () => {
           emoji: "😅", 
           description: "Find it funny",
           isCorrect: false
+        },
+        { 
+          id: "stop", 
+          text: "Stop and help your friend.", 
+          emoji: "🤝", 
+          description: "Show care",
+          isCorrect: true
         }
       ]
     }
@@ -223,7 +223,7 @@ const PlaygroundGameStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

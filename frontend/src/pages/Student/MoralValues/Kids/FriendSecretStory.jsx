@@ -28,13 +28,6 @@ const FriendSecretStory = () => {
       text: "Your friend tells you a secret. What do you do?",
       options: [
         { 
-          id: "keep", 
-          text: "Keep it safe and don't tell anyone", 
-          emoji: "🛡️", 
-          description: "Respect the secret",
-          isCorrect: true
-        },
-        { 
           id: "tell", 
           text: "Tell others for fun", 
           emoji: "🗣️", 
@@ -47,6 +40,13 @@ const FriendSecretStory = () => {
           emoji: "😐", 
           description: "Don't care",
           isCorrect: false
+        },
+        { 
+          id: "keep", 
+          text: "Keep it safe and don't tell anyone", 
+          emoji: "🛡️", 
+          description: "Respect the secret",
+          isCorrect: true
         }
       ]
     },
@@ -55,18 +55,18 @@ const FriendSecretStory = () => {
       text: "Friend shares their homework answers secretly. What should you do?",
       options: [
         { 
-          id: "keep", 
-          text: "Keep it secret and don't copy", 
-          emoji: "🛡️", 
-          description: "Be honest",
-          isCorrect: true
-        },
-        { 
           id: "show", 
           text: "Show it to others", 
           emoji: "🗣️", 
           description: "Share it",
           isCorrect: false
+        },
+        { 
+          id: "keep", 
+          text: "Keep it secret and don't copy", 
+          emoji: "🛡️", 
+          description: "Be honest",
+          isCorrect: true
         },
         { 
           id: "discard", 
@@ -109,13 +109,6 @@ const FriendSecretStory = () => {
       text: "Friend lost a toy and tells you secretly. What do you do?",
       options: [
         { 
-          id: "help", 
-          text: "Help and keep it secret", 
-          emoji: "🤝", 
-          description: "Support them quietly",
-          isCorrect: true
-        },
-        { 
           id: "tell", 
           text: "Tell others to find it", 
           emoji: "🗣️", 
@@ -128,6 +121,13 @@ const FriendSecretStory = () => {
           emoji: "😐", 
           description: "Don't help",
           isCorrect: false
+        },
+        { 
+          id: "help", 
+          text: "Help and keep it secret", 
+          emoji: "🤝", 
+          description: "Support them quietly",
+          isCorrect: true
         }
       ]
     },
@@ -136,18 +136,18 @@ const FriendSecretStory = () => {
       text: "Friend shows you a drawing secretly. Do you show it to others?",
       options: [
         { 
-          id: "keep", 
-          text: "Keep it private", 
-          emoji: "🖌️", 
-          description: "Respect their privacy",
-          isCorrect: true
-        },
-        { 
           id: "share", 
           text: "Share for fun", 
           emoji: "🗣️", 
           description: "Break their trust",
           isCorrect: false
+        },
+        { 
+          id: "keep", 
+          text: "Keep it private", 
+          emoji: "🖌️", 
+          description: "Respect their privacy",
+          isCorrect: true
         },
         { 
           id: "throw", 
@@ -223,7 +223,7 @@ const FriendSecretStory = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

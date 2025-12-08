@@ -28,13 +28,6 @@ const BullyStory1 = () => {
       text: "Your friend is being teased by others. What should you do?",
       options: [
         { 
-          id: "support", 
-          text: "Support your friend and stand up", 
-          emoji: "🛡️", 
-          description: "Be brave and help",
-          isCorrect: true
-        },
-        { 
           id: "laugh", 
           text: "Laugh along with others", 
           emoji: "😂", 
@@ -47,6 +40,13 @@ const BullyStory1 = () => {
           emoji: "🙈", 
           description: "Avoid the situation",
           isCorrect: false
+        },
+        { 
+          id: "support", 
+          text: "Support your friend and stand up", 
+          emoji: "🛡️", 
+          description: "Be brave and help",
+          isCorrect: true
         }
       ]
     },
@@ -55,18 +55,18 @@ const BullyStory1 = () => {
       text: "You see someone spreading rumors about your classmate. What's the right response?",
       options: [
         { 
-          id: "stop", 
-          text: "Stop the gossip and tell the truth", 
-          emoji: "🤐", 
-          description: "Stop the rumor",
-          isCorrect: true
-        },
-        { 
           id: "join", 
           text: "Join the gossip to fit in", 
           emoji: "📢", 
           description: "Spread it further",
           isCorrect: false
+        },
+        { 
+          id: "stop", 
+          text: "Stop the gossip and tell the truth", 
+          emoji: "🤐", 
+          description: "Stop the rumor",
+          isCorrect: true
         },
         { 
           id: "listen", 
@@ -109,13 +109,6 @@ const BullyStory1 = () => {
       text: "You notice a new student sitting alone because others ignore them. What will you do?",
       options: [
         { 
-          id: "invite", 
-          text: "Invite them to join your group", 
-          emoji: "🤗", 
-          description: "Be inclusive",
-          isCorrect: true
-        },
-        { 
           id: "leave", 
           text: "Leave them alone — they'll find friends later", 
           emoji: "🕒", 
@@ -128,6 +121,13 @@ const BullyStory1 = () => {
           emoji: "😜", 
           description: "Tease them",
           isCorrect: false
+        },
+        { 
+          id: "invite", 
+          text: "Invite them to join your group", 
+          emoji: "🤗", 
+          description: "Be inclusive",
+          isCorrect: true
         }
       ]
     },
@@ -136,18 +136,18 @@ const BullyStory1 = () => {
       text: "Someone makes fun of another student's accent. What's the best thing to do?",
       options: [
         { 
-          id: "speak", 
-          text: "Speak up and remind others to respect differences", 
-          emoji: "🗯️", 
-          description: "Stand up for respect",
-          isCorrect: true
-        },
-        { 
           id: "laugh", 
           text: "Laugh along so you don't look boring", 
           emoji: "😂", 
           description: "Join in the mocking",
           isCorrect: false
+        },
+        { 
+          id: "speak", 
+          text: "Speak up and remind others to respect differences", 
+          emoji: "🗯️", 
+          description: "Stand up for respect",
+          isCorrect: true
         },
         { 
           id: "walk", 
@@ -223,7 +223,7 @@ const BullyStory1 = () => {
       onNext={handleNext}
       nextEnabled={false}
       showGameOver={showResult}
-      score={coins}
+      score={showResult ? finalScore : coins}
       gameId={gameId}
       gameType="moral"
       flashPoints={flashPoints}

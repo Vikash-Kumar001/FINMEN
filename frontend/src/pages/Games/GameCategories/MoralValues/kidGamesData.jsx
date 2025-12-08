@@ -392,7 +392,7 @@ export const getMoralKidsGames = (gameCompletionStatus)=> {
             xp: 10,
             completed: gameCompletionStatus["moral-kids-27"] || false,
             isSpecial: true,
-            path: "/student/moral-values/kids/journal-kindness",
+            path: "/student/moral-values/kids/journal-of-kindness",
             index: 26,
             },
             {

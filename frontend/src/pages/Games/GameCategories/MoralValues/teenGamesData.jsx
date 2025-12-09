@@ -491,7 +491,7 @@ export const getMoralTeenGames = (gameCompletionStatus)=> {
         },
         {
         id: "moral-teen-34",
-        title: "Puzzle of Self-Control",
+        title: "Puzzle of Self Control",
         description: "Match ‘Discipline → Success, Laziness → Failure.’",
         icon: <Puzzle className="w-6 h-6" />,
         difficulty: "Medium",
@@ -500,7 +500,7 @@ export const getMoralTeenGames = (gameCompletionStatus)=> {
         xp: 10,
         completed: gameCompletionStatus["moral-teen-34"] || false,
         isSpecial: true,
-        path: "/student/moral-values/teen/puzzle-self-control",
+        path: "/student/moral-values/teen/puzzle-of-self-control",
         index: 33,
         },
         {

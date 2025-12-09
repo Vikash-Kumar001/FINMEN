@@ -22,28 +22,28 @@ const PuzzleOfEthics = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const leftItems = [
-    { id: 1, name: "Fairness", emoji: "⚖️", description: "Equal treatment" },
-    { id: 2, name: "Stealing", emoji: "👛", description: "Taking without permission" },
-    { id: 3, name: "Honesty", emoji: "💎", description: "Telling the truth" },
-    { id: 4, name: "Respect", emoji: "🙏", description: "Treating others well" },
-    { id: 5, name: "Cheating", emoji: "📝", description: "Dishonest behavior" },
+    { id: 1, name: "Fairness", emoji: "⚖️", description: "Equal treatment" }, // Matches with "Justice and equality" (rightId: 6)
+    { id: 2, name: "Stealing", emoji: "👛", description: "Taking without permission" }, // Matches with "Wrong and unfair" (rightId: 7)
+    { id: 3, name: "Honesty", emoji: "💎", description: "Telling the truth" }, // Matches with "Telling the truth" (rightId: 8)
+    { id: 4, name: "Respect", emoji: "🙏", description: "Treating others well" }, // Matches with "Treating others kindly" (rightId: 9)
+    { id: 5, name: "Cheating", emoji: "📝", description: "Dishonest behavior" }, // Matches with "Dishonest and unethical" (rightId: 10)
   ];
 
-  // Right items with correct matches in different positions: Q1: pos 1, Q2: pos 2, Q3: pos 3, Q4: pos 1, Q5: pos 2
+  // Right items with correct matches in different positions: manually shuffled to avoid direct positional matching
   const rightItems = [
-    { id: 1, name: "Justice and equality", emoji: "✅", description: "Fair treatment" },
-    { id: 2, name: "Wrong and unfair", emoji: "❌", description: "Unethical action" },
-    { id: 3, name: "Telling the truth", emoji: "🗣️", description: "Being honest" },
-    { id: 4, name: "Treating others kindly", emoji: "💖", description: "Being respectful" },
-    { id: 5, name: "Dishonest and unethical", emoji: "🚫", description: "Wrong behavior" },
+    { id: 6, name: "Treating others kindly", emoji: "💖", description: "Being respectful" }, // Respect's meaning (originally id: 4)
+    { id: 7, name: "Wrong and unfair", emoji: "❌", description: "Unethical action" }, // Stealing's meaning (originally id: 2)
+    { id: 8, name: "Dishonest and unethical", emoji: "🚫", description: "Wrong behavior" }, // Cheating's meaning (originally id: 5)
+    { id: 9, name: "Justice and equality", emoji: "✅", description: "Fair treatment" }, // Fairness's meaning (originally id: 1)
+    { id: 10, name: "Telling the truth", emoji: "🗣️", description: "Being honest" }, // Honesty's meaning (originally id: 3)
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Fairness → Justice and equality (pos 1)
-    { leftId: 2, rightId: 2 }, // Stealing → Wrong and unfair (pos 2)
-    { leftId: 3, rightId: 3 }, // Honesty → Telling the truth (pos 3)
-    { leftId: 4, rightId: 4 }, // Respect → Treating others kindly (pos 4)
-    { leftId: 5, rightId: 5 }  // Cheating → Dishonest and unethical (pos 5)
+    { leftId: 1, rightId: 9 }, // Fairness → Justice and equality (id: 1 → 9, now at pos 4)
+    { leftId: 2, rightId: 7 }, // Stealing → Wrong and unfair (id: 2 → 7, pos 2)
+    { leftId: 3, rightId: 10 }, // Honesty → Telling the truth (id: 3 → 10, now at pos 5)
+    { leftId: 4, rightId: 6 }, // Respect → Treating others kindly (id: 4 → 6, now at pos 1)
+    { leftId: 5, rightId: 8 }  // Cheating → Dishonest and unethical (id: 5 → 8, now at pos 3)
   ];
 
   const isRightItemMatched = (itemId) => {

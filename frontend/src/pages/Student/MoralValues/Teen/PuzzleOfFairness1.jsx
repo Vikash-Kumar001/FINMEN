@@ -29,21 +29,21 @@ const PuzzleOfFairness1 = () => {
     { id: 5, name: "Favoritism", emoji: "⭐", description: "Unfair preference" },
   ];
 
-  // Right items with correct matches in different positions: Q1: pos 2, Q2: pos 1, Q3: pos 3, Q4: pos 1, Q5: pos 3
+  // Right items with clearer, more intuitive meanings
   const rightItems = [
-    { id: 1, name: "Injustice", emoji: "❌", description: "Unfair treatment" },
-    { id: 2, name: "Justice", emoji: "✅", description: "Fair treatment" },
-    { id: 3, name: "Unfairness", emoji: "🚫", description: "Not fair" },
-    { id: 4, name: "Fairness", emoji: "🤝", description: "Being fair" },
-    { id: 5, name: "Kindness", emoji: "💖", description: "Being kind" },
+    { id: 1, name: "Balanced Treatment", emoji: "⚖️", description: "Treating everyone the same" },
+    { id: 2, name: "Harm to Others", emoji: "😢", description: "Causing pain or suffering" },
+    { id: 3, name: "Unfair Advantage", emoji: "⚠️", description: "Getting ahead through wrong means" },
+    { id: 4, name: "Generous Sharing", emoji: "🤲", description: "Giving to others willingly" },
+    { id: 5, name: "Biased Preference", emoji: "🎭", description: "Showing favor to some over others" },
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 2 }, // Equality → Justice (pos 2)
-    { leftId: 2, rightId: 1 }, // Bullying → Injustice (pos 1)
-    { leftId: 3, rightId: 3 }, // Cheating → Unfairness (pos 3)
-    { leftId: 4, rightId: 4 }, // Sharing → Fairness (pos 4)
-    { leftId: 5, rightId: 1 }  // Favoritism → Injustice (pos 1) - Note: Injustice can appear twice
+    { leftId: 1, rightId: 4 }, // Equality → Generous Sharing
+    { leftId: 2, rightId: 2 }, // Bullying → Harm to Others
+    { leftId: 3, rightId: 3 }, // Cheating → Unfair Advantage
+    { leftId: 4, rightId: 1 }, // Sharing → Balanced Treatment
+    { leftId: 5, rightId: 5 }  // Favoritism → Biased Preference
   ];
 
   const isRightItemMatched = (itemId) => {
@@ -57,26 +57,16 @@ const PuzzleOfFairness1 = () => {
 
   const handleRightSelect = (item) => {
     if (showResult) return;
-    // Allow Injustice (id: 1) to be matched twice (for Bullying and Favoritism)
-    if (item.id === 1) {
-      const injusticeMatches = matches.filter(m => m.rightId === 1);
-      if (injusticeMatches.length >= 2) return;
-    } else if (isRightItemMatched(item.id)) {
-      return;
-    }
+    if (isRightItemMatched(item.id)) return;
     setSelectedRight(item);
   };
 
   const handleMatch = () => {
     if (!selectedLeft || !selectedRight || showResult) return;
 
-    // Check if right item is already matched (except Injustice which can be matched twice)
-    if (selectedRight.id !== 1 && isRightItemMatched(selectedRight.id)) {
+    // Check if right item is already matched
+    if (isRightItemMatched(selectedRight.id)) {
       return;
-    }
-    if (selectedRight.id === 1) {
-      const injusticeMatches = matches.filter(m => m.rightId === 1);
-      if (injusticeMatches.length >= 2) return;
     }
 
     const newMatch = {
@@ -125,10 +115,6 @@ const PuzzleOfFairness1 = () => {
   };
 
   const isRightItemAvailable = (rightId) => {
-    if (rightId === 1) {
-      const injusticeMatches = matches.filter(m => m.rightId === 1);
-      return injusticeMatches.length < 2;
-    }
     return !isRightItemMatched(rightId);
   };
 
@@ -136,7 +122,7 @@ const PuzzleOfFairness1 = () => {
     <GameShell
       title="Puzzle of Fairness"
       score={coins}
-      subtitle={showResult ? "Game Complete!" : "Match concepts to their meanings"}
+      subtitle={showResult ? "Game Complete!" : "Match fairness concepts to their meanings"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -153,7 +139,7 @@ const PuzzleOfFairness1 = () => {
         {!showResult ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Concepts</h3>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Fairness Concepts</h3>
               <div className="space-y-4">
                 {leftItems.map(item => (
                   <button
@@ -187,7 +173,7 @@ const PuzzleOfFairness1 = () => {
                 <p className="text-white/80 mb-4">
                   {selectedLeft 
                     ? `Selected: ${selectedLeft.name}` 
-                    : "Select a concept"}
+                    : "Select a fairness concept"}
                 </p>
                 <button
                   onClick={handleMatch}
@@ -208,7 +194,7 @@ const PuzzleOfFairness1 = () => {
             </div>
 
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Meanings</h3>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Descriptions</h3>
               <div className="space-y-4">
                 {rightItems.map(item => {
                   const isMatched = !isRightItemAvailable(item.id);
@@ -251,7 +237,7 @@ const PuzzleOfFairness1 = () => {
                 <div className="text-5xl mb-4">🎉</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You correctly matched {finalScore} out of {leftItems.length} concepts!
+                  You correctly matched {finalScore} out of {leftItems.length} fairness concepts!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{coins} Coins</span>
@@ -262,7 +248,7 @@ const PuzzleOfFairness1 = () => {
                 <div className="text-5xl mb-4">😔</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You matched {finalScore} out of {leftItems.length} correctly.
+                  You matched {finalScore} out of {leftItems.length} fairness concepts correctly.
                 </p>
                 <button
                   onClick={handleTryAgain}

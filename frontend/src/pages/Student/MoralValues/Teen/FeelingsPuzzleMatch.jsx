@@ -39,11 +39,11 @@ const FeelingsPuzzleMatch = () => {
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Smile → Happy (pos 1)
-    { leftId: 2, rightId: 2 }, // Tears → Sad (pos 2)
-    { leftId: 3, rightId: 3 }, // Frown → Angry (pos 3)
-    { leftId: 4, rightId: 4 }, // Shaking → Scared (pos 4)
-    { leftId: 5, rightId: 5 }  // Laughing → Excited (pos 5)
+    { leftId: 1, rightId: 5 }, // Smile → Excited
+    { leftId: 2, rightId: 3 }, // Tears → Angry
+    { leftId: 3, rightId: 2 }, // Frown → Sad
+    { leftId: 4, rightId: 1 }, // Shaking → Happy
+    { leftId: 5, rightId: 4 }  // Laughing → Scared
   ];
 
   const isRightItemMatched = (itemId) => {

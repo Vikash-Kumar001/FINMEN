@@ -1,224 +1,293 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const WeatherPredictionStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-38");
+  const gameId = gameData?.id || "ai-kids-38";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // 🌦️ 5 AI Weather Questions
   const questions = [
     {
-      title: "AI Weather Prediction",
-      emoji: "🌦️",
-      situation:
-        'The news says "Tomorrow it will rain." Who is most likely predicting it correctly?',
-      choices: [
-        { id: 1, text: "AI Weather Forecast 🤖", emoji: "🌐", isCorrect: true },
-        { id: 2, text: "Just guessing 🌤️", emoji: "❓", isCorrect: false },
-        { id: 3, text: "Looking at clouds ☁️", emoji: "☁️", isCorrect: false },
-        { id: 4, text: "Asking a neighbor 🗣️", emoji: "👤", isCorrect: false },
-      ],
-      explanation:
-        "AI uses historical and real-time data to predict weather accurately. Not random guessing!",
+      id: 1,
+      text: 'The news says "Tomorrow it will rain." Who is most likely predicting it correctly?',
+      options: [
+        { 
+          id: "ai", 
+          text: "AI Weather Forecast", 
+          emoji: "🌐", 
+          description: "AI uses historical and real-time data to predict weather accurately",
+          isCorrect: true
+        },
+        { 
+          id: "guess", 
+          text: "Just guessing", 
+          emoji: "❓", 
+          description: "AI weather forecasts use data, not random guessing",
+          isCorrect: false
+        },
+        { 
+          id: "clouds", 
+          text: "Looking at clouds", 
+          emoji: "☁️", 
+          description: "AI analyzes much more data than just clouds",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Data for Prediction",
-      emoji: "📊",
-      situation: "What kind of data helps AI predict the weather?",
-      choices: [
-        { id: 1, text: "Temperature, humidity & wind 🌡️💨", emoji: "🌦️", isCorrect: true },
-        { id: 2, text: "Movie ratings 🍿", emoji: "🎬", isCorrect: false },
-        { id: 3, text: "Random numbers 🎲", emoji: "🎲", isCorrect: false },
-        { id: 4, text: "Astrology signs ♈", emoji: "✨", isCorrect: false },
-      ],
-      explanation:
-        "AI studies temperature, humidity, and wind data to predict rainfall and storms.",
+      id: 2,
+      text: "What kind of data helps AI predict the weather?",
+      options: [
+        { 
+          id: "movies", 
+          text: "Movie ratings", 
+          emoji: "🎬", 
+          description: "AI studies weather-related data like temperature and humidity",
+          isCorrect: false
+        },
+        { 
+          id: "weather", 
+          text: "Temperature, humidity & wind", 
+          emoji: "🌦️", 
+          description: "AI studies temperature, humidity, and wind data to predict rainfall and storms",
+          isCorrect: true
+        },
+        { 
+          id: "random", 
+          text: "Random numbers", 
+          emoji: "🎲", 
+          description: "AI uses real weather data, not random numbers",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Smart Weather Apps",
-      emoji: "📱",
-      situation: "How do apps like AccuWeather or Google Weather work?",
-      choices: [
-        { id: 1, text: "Using AI models & satellites 🛰️", emoji: "🤖", isCorrect: true },
-        { id: 2, text: "Guessing randomly 🤷‍♂️", emoji: "❌", isCorrect: false },
-        { id: 3, text: "By reading newspapers 📰", emoji: "🗞️", isCorrect: false },
-        { id: 4, text: "By people’s opinions 💬", emoji: "👥", isCorrect: false },
-      ],
-      explanation:
-        "These apps use AI models with satellite and sensor data to forecast the weather.",
+      id: 3,
+      text: "How do apps like AccuWeather or Google Weather work?",
+      options: [
+        { 
+          id: "guess", 
+          text: "Guessing randomly", 
+          emoji: "❌", 
+          description: "Weather apps use AI models with satellite data",
+          isCorrect: false
+        },
+        { 
+          id: "newspaper", 
+          text: "By reading newspapers", 
+          emoji: "🗞️", 
+          description: "Weather apps use AI technology, not newspapers",
+          isCorrect: false
+        },
+        { 
+          id: "ai", 
+          text: "Using AI models & satellites", 
+          emoji: "🤖", 
+          description: "These apps use AI models with satellite and sensor data to forecast weather",
+          isCorrect: true
+        }
+      ]
     },
     {
-      title: "AI vs Humans",
-      emoji: "🧠",
-      situation: "Can AI predict weather better than humans?",
-      choices: [
-        { id: 1, text: "Yes, using data & patterns 📈", emoji: "✅", isCorrect: true },
-        { id: 2, text: "No, humans guess better 👨‍🏫", emoji: "👎", isCorrect: false },
-        { id: 3, text: "Only during summer ☀️", emoji: "☀️", isCorrect: false },
-        { id: 4, text: "Never 🌫️", emoji: "🚫", isCorrect: false },
-      ],
-      explanation:
-        "AI can analyze massive data and detect complex patterns that humans may miss.",
+      id: 4,
+      text: "Can AI predict weather better than humans?",
+      options: [
+        { 
+          id: "ai", 
+          text: "Yes, using data & patterns", 
+          emoji: "✅", 
+          description: "AI can analyze massive data and detect complex patterns that humans may miss",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No, humans guess better", 
+          emoji: "👎", 
+          description: "AI can analyze more data than humans",
+          isCorrect: false
+        },
+        { 
+          id: "summer", 
+          text: "Only during summer", 
+          emoji: "☀️", 
+          description: "AI works year-round, not just in summer",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Helping Farmers",
-      emoji: "🌾",
-      situation: "How does AI weather prediction help farmers?",
-      choices: [
-        { id: 1, text: "Plan crops & save from floods 🌧️", emoji: "🌻", isCorrect: true },
-        { id: 2, text: "Tell jokes 😂", emoji: "🤣", isCorrect: false },
-        { id: 3, text: "Change the weather ☁️", emoji: "⚡", isCorrect: false },
-        { id: 4, text: "Make animals talk 🐮", emoji: "🐮", isCorrect: false },
-      ],
-      explanation:
-        "AI predictions help farmers decide when to plant and protect crops from bad weather.",
-    },
+      id: 5,
+      text: "How does AI weather prediction help farmers?",
+      options: [
+        { 
+          id: "jokes", 
+          text: "Tell jokes", 
+          emoji: "🤣", 
+          description: "AI helps farmers plan crops and protect them from bad weather",
+          isCorrect: false
+        },
+        { 
+          id: "change", 
+          text: "Change the weather", 
+          emoji: "⚡", 
+          description: "AI predicts weather to help farmers plan",
+          isCorrect: false
+        },
+        { 
+          id: "plan", 
+          text: "Plan crops & save from floods", 
+          emoji: "🌻", 
+          description: "AI predictions help farmers decide when to plant and protect crops from bad weather",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const current = questions[currentQuestion];
-  const selectedChoiceData = current.choices.find((c) => c.id === selectedChoice);
-
-  const handleChoice = (id) => setSelectedChoice(id);
-
-  const handleConfirm = () => {
-    if (!selectedChoice) return;
-    const choice = current.choices.find((c) => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      setCoins((prev) => prev + 10);
-      showCorrectAnswerFeedback(10, true);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
+    
+    // Move to next question or show results
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      // 🎯 All questions done → move to next game
-      navigate("/student/ai-for-all/kids/smartwatch-game");
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
+
+  const handleNext = () => {
+    navigate("/student/ai-for-all/kids/smartwatch-game");
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Weather Prediction Story"
-      subtitle="Forecasting with AI"
       score={coins}
-      gameId="ai-kids-38"
-      gameType="ai"
-      totalLevels={100}
-      currentLevel={38}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      backPath="/games/ai-for-all/kids"
-      onNext={handleNextQuestion}
-      nextEnabled={showFeedback}
-      showGameOver={currentQuestion === questions.length - 1 && showFeedback}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      
+      gameId={gameId}
+      gameType="ai"
+      totalLevels={20}
+      currentLevel={38}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-9xl mb-4 text-center">{current.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              {current.title}
-            </h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg text-center font-semibold">
-                {current.situation}
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="space-y-3 mb-6">
-              {current.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Answer
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-7xl mb-4">{selectedChoiceData?.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {selectedChoiceData?.isCorrect ? "🌤️ Correct!" : "🤔 Try Again!"}
-            </h2>
-
-            <div
-              className={`rounded-lg p-4 mb-4 ${
-                selectedChoiceData?.isCorrect ? "bg-green-500/20" : "bg-red-500/20"
-              }`}
-            >
-              <p className="text-white text-center">{current.explanation}</p>
-            </div>
-
-            {selectedChoiceData?.isCorrect ? (
-              <>
-                <p className="text-yellow-400 text-2xl font-bold text-center mb-6">
-                  +10 Coins 🪙
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about AI weather prediction!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand how AI uses data to predict weather accurately!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about AI weather prediction!
                 </p>
                 <button
-                  onClick={handleNextQuestion}
-                  className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
-                  Next Question →
+                  Try Again
                 </button>
-              </>
-            ) : (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about how AI uses data and patterns to predict weather.
+                </p>
+              </div>
             )}
           </div>
         )}

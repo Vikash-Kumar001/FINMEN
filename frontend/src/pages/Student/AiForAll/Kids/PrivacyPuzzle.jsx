@@ -1,205 +1,293 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const PrivacyPuzzle = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-kids-78";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
-  const scenarios = [
-    {
-      id: 1,
-      items: [
-        { id: 1, text: "Sharing password", correct: "Unsafe" },
-        { id: 2, text: "Keeping password secret", correct: "Safe" }
-      ]
-    },
-    {
-      id: 2,
-      items: [
-        { id: 1, text: "Giving personal info to strangers online", correct: "Unsafe" },
-        { id: 2, text: "Using strong passwords", correct: "Safe" }
-      ]
-    },
-    {
-      id: 3,
-      items: [
-        { id: 1, text: "Clicking suspicious links", correct: "Unsafe" },
-        { id: 2, text: "Updating software regularly", correct: "Safe" }
-      ]
-    },
-    {
-      id: 4,
-      items: [
-        { id: 1, text: "Sharing your location with everyone", correct: "Unsafe" },
-        { id: 2, text: "Sharing location only with trusted friends", correct: "Safe" }
-      ]
-    },
-    {
-      id: 5,
-      items: [
-        { id: 1, text: "Using public Wi-Fi for banking without VPN", correct: "Unsafe" },
-        { id: 2, text: "Using VPN on public Wi-Fi", correct: "Safe" }
-      ]
-    }
+  // Actions (left side)
+  const leftItems = [
+    { id: 1, name: 'Sharing password', emoji: '🔓', description: 'Telling others your password' },
+    { id: 2, name: 'Keeping password secret', emoji: '🔒', description: 'Not sharing your password' },
+    { id: 3, name: 'Giving personal info to strangers', emoji: '⚠️', description: 'Sharing private details online' },
+    { id: 4, name: 'Using strong passwords', emoji: '🛡️', description: 'Creating secure passwords' },
+    { id: 5, name: 'Sharing location with everyone', emoji: '📍', description: 'Making location public' }
   ];
 
-  const options = ["Safe", "Unsafe"];
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [matches, setMatches] = useState({});
-  const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
-  const [showResult, setShowResult] = useState(false);
+  // Safety levels (right side) - manually arranged to vary correct answer positions
+  const rightItems = [
+    { id: 2, name: 'Safe', emoji: '✅', description: 'Protects your privacy' }, // Matches left 2 (right position 1)
+    { id: 4, name: 'Safe', emoji: '✅', description: 'Keeps your data secure' }, // Matches left 4 (right position 2)
+    { id: 1, name: 'Unsafe', emoji: '❌', description: 'Risks your privacy' }, // Matches left 1 (right position 3)
+    { id: 5, name: 'Unsafe', emoji: '❌', description: 'Exposes your location' }, // Matches left 5 (right position 4)
+    { id: 3, name: 'Unsafe', emoji: '❌', description: 'Dangerous for privacy' } // Matches left 3 (right position 5)
+  ];
 
-  const scenarioData = scenarios[currentScenario];
+  // Correct matches - manually defined to split correct answers across different positions
+  const correctMatches = [
+    { leftId: 1, rightId: 1 }, // Sharing password → Unsafe (left 1st, right 3rd)
+    { leftId: 2, rightId: 2 }, // Keeping password secret → Safe (left 2nd, right 1st)
+    { leftId: 3, rightId: 3 }, // Giving personal info → Unsafe (left 3rd, right 5th)
+    { leftId: 4, rightId: 4 }, // Using strong passwords → Safe (left 4th, right 2nd)
+    { leftId: 5, rightId: 5 }  // Sharing location → Unsafe (left 5th, right 4th)
+  ];
 
-  const handleMatch = (itemId, option) => {
-    setMatches(prev => ({ ...prev, [itemId]: option }));
+  // Check if a left item is already matched
+  const isLeftItemMatched = (itemId) => {
+    return matches.some(match => match.leftId === itemId);
   };
 
-  const handleConfirm = () => {
-    let tempScore = 0;
-    scenarioData.items.forEach(item => {
-      if (matches[item.id] === item.correct) tempScore += 1;
-    });
-
-    setScore(tempScore);
-
-    if (tempScore === scenarioData.items.length) {
-      setCoins(prev => prev + 5);
-      showCorrectAnswerFeedback(5, false);
-    }
-
-    setShowResult(true);
+  // Check if a right item is already matched
+  const isRightItemMatched = (itemId) => {
+    return matches.some(match => match.rightId === itemId);
   };
 
-  const handleNextScenario = () => {
-    setMatches({});
-    setScore(0);
-    setShowResult(false);
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    if (isLeftItemMatched(item.id)) return;
+    setSelectedLeft(item);
+  };
 
-    if (currentScenario < scenarios.length - 1) {
-      setCurrentScenario(prev => prev + 1);
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    if (isRightItemMatched(item.id)) return;
+    setSelectedRight(item);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
+
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add coins and show feedback
+    if (newMatch.isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === leftItems.length) {
+      // Calculate final score
+      const correctCount = newMatches.filter(match => match.isCorrect).length;
+      setFinalScore(correctCount);
+      setShowResult(true);
+    }
+
+    // Reset selections
+    setSelectedLeft(null);
+    setSelectedRight(null);
+  };
+
+  // Get match result for a left item
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.leftId === itemId);
+    return match ? match.isCorrect : null;
+  };
+
+  // Get match result for a right item
+  const getRightMatchResult = (itemId) => {
+    const match = matches.find(m => m.rightId === itemId);
+    return match ? match.isCorrect : null;
   };
 
   const handleTryAgain = () => {
-    setMatches({});
-    setScore(0);
-    setCoins(0);
     setShowResult(false);
-    setCurrentScenario(0);
+    setMatches([]);
+    setSelectedLeft(null);
+    setSelectedRight(null);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
-  const handleFinish = () => {
-    navigate("/student/ai-for-all/kids/ai-bias-story"); // next game path
-  };
-
-  const isLastScenario = currentScenario === scenarios.length - 1;
+  // Log when game completes
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Privacy Puzzle game completed! Score: ${finalScore}/${leftItems.length}, gameId: ${gameId}`);
+    }
+  }, [showResult, finalScore, gameId, leftItems.length]);
 
   return (
     <GameShell
-      title="Privacy Puzzle"
-      subtitle={`Scenario ${currentScenario + 1} of ${scenarios.length}`}
-      onNext={handleFinish}
-      nextEnabled={isLastScenario && showResult && score === scenarioData.items.length}
-      showGameOver={isLastScenario && showResult && score === scenarioData.items.length}
+      title="Puzzle: Privacy"
       score={coins}
-      gameId="ai-kids-78"
-      gameType="ai"
-      totalLevels={100}
-      currentLevel={78}
-      showConfetti={isLastScenario && showResult && score === scenarioData.items.length}
-      maxScore={scenarios.length} // Max score is total number of questions (all correct)
+      subtitle={showResult ? "Game Complete!" : "Match actions with their safety levels"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      flashPoints={() => {}}
-      showAnswerConfetti={() => {}}
-      backPath="/games/ai-for-all/kids"
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
+      gameType="ai"
+      totalLevels={leftItems.length}
+      currentLevel={matches.length + 1}
+      maxScore={leftItems.length}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
     >
-      <div className="space-y-8">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-5xl mx-auto px-4 py-4">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">
-              Match each action to its safety level
-            </h3>
-
-            <div className="space-y-4 mb-6">
-              {scenarioData.items.map(item => (
-                <div key={item.id} className="flex items-center justify-between bg-blue-500/20 rounded-xl p-4">
-                  <span className="text-white font-semibold text-lg">{item.text}</span>
-                  <div className="flex gap-2">
-                    {options.map(option => (
-                      <button
-                        key={option}
-                        onClick={() => handleMatch(item.id, option)}
-                        className={`px-4 py-2 rounded-xl text-white font-bold transition ${
-                          matches[item.id] === option
-                            ? 'bg-purple-500/50 ring-2 ring-white'
-                            : 'bg-white/20 hover:bg-white/30'
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            {/* Left column - Actions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 text-center">Actions</h3>
+              <div className="space-y-3 md:space-y-4">
+                {leftItems.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleLeftSelect(item)}
+                    disabled={isLeftItemMatched(item.id)}
+                    className={`w-full p-3 md:p-4 rounded-lg md:rounded-xl text-left transition-all ${
+                      isLeftItemMatched(item.id)
+                        ? getMatchResult(item.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedLeft?.id === item.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    } disabled:cursor-not-allowed`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-xl md:text-2xl mr-2 md:mr-3">{item.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white text-sm md:text-base">{item.name}</h4>
+                        <p className="text-white/80 text-xs md:text-sm">{item.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <button
-              onClick={handleConfirm}
-              disabled={Object.keys(matches).length !== scenarioData.items.length}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                Object.keys(matches).length === scenarioData.items.length
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Matches
-            </button>
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20 text-center w-full">
+                <p className="text-white/80 mb-3 md:mb-4 text-sm md:text-base">
+                  {selectedLeft 
+                    ? `Selected: ${selectedLeft.name}` 
+                    : "Select an action"}
+                </p>
+                {selectedLeft && selectedRight && (
+                  <button
+                    onClick={handleMatch}
+                    className="w-full py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105 text-sm md:text-base"
+                  >
+                    Match!
+                  </button>
+                )}
+                {(!selectedLeft || !selectedRight) && (
+                  <div className="w-full py-2 md:py-3 px-4 md:px-6 rounded-full font-bold bg-gray-500/30 text-gray-400 cursor-not-allowed text-sm md:text-base">
+                    Match!
+                  </div>
+                )}
+                <div className="mt-3 md:mt-4 text-white/80 text-xs md:text-sm">
+                  <p>Coins: {coins}</p>
+                  <p>Matched: {matches.length}/{leftItems.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Safety Levels */}
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 text-center">Safety Levels</h3>
+              <div className="space-y-3 md:space-y-4">
+                {rightItems.map(item => {
+                  const isMatched = isRightItemMatched(item.id);
+                  const isCorrectMatch = getRightMatchResult(item.id);
+                  
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleRightSelect(item)}
+                      disabled={isMatched}
+                      className={`w-full p-3 md:p-4 rounded-lg md:rounded-xl text-left transition-all ${
+                        isMatched
+                          ? isCorrectMatch
+                            ? "bg-green-500/30 border-2 border-green-500"
+                            : "bg-red-500/30 border-2 border-red-500"
+                          : selectedRight?.id === item.id
+                          ? "bg-purple-500/50 border-2 border-purple-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                      } disabled:cursor-not-allowed`}
+                    >
+                      <div className="flex items-center">
+                        <div className="text-xl md:text-2xl mr-2 md:mr-3">{item.emoji}</div>
+                        <div>
+                          <h4 className="font-bold text-white text-sm md:text-base">{item.name}</h4>
+                          <p className="text-white/80 text-xs md:text-sm">{item.description}</p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {score === scenarioData.items.length ? "🎉 Well Done!" : "💪 Try Again!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You matched {score} out of {scenarioData.items.length} correctly!
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Keeping safe online habits protects your privacy!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold mb-4">
-              {score === scenarioData.items.length ? `You earned 5 Coins! 🪙` : "Match all correctly to earn coins!"}
-            </p>
-
-            {score === scenarioData.items.length ? (
-              !isLastScenario && (
-                <button
-                  onClick={handleNextScenario}
-                  className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition"
-                >
-                  Next Scenario
-                </button>
-              )
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Great Matching!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You correctly matched {finalScore} out of {leftItems.length} actions!
+                  You understand how to protect your privacy online!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  Keeping safe online habits protects your privacy!
+                </p>
+              </div>
             ) : (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You matched {finalScore} out of {leftItems.length} actions correctly.
+                  Remember, privacy protection is important!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to match each action with its safety level.
+                </p>
+              </div>
             )}
           </div>
         )}

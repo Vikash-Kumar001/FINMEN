@@ -1,117 +1,201 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const AirportScannerStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [score, setScore] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-41");
+  const gameId = gameData?.id || "ai-kids-41";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      emoji: "🛫",
-      title: "Airport Scanner AI",
-      situation:
-        "The airport scans bags. AI detects a forbidden knife. Who helps ensure safety?",
-      choices: [
-        { id: 1, text: "AI Scanner 🛡️", emoji: "🤖", isCorrect: true },
-        { id: 2, text: "Random Security Guard 👮", emoji: "👤", isCorrect: false },
-        { id: 3, text: "Traveler Himself ✈️", emoji: "🧳", isCorrect: false },
-      ],
+      text: "The airport scans bags. AI detects a forbidden knife. Who helps ensure safety?",
+      options: [
+        { 
+          id: "ai", 
+          text: "AI Scanner", 
+          emoji: "🛡️", 
+          description: "AI scanners help detect dangerous items to keep airports safe",
+          isCorrect: true
+        },
+        { 
+          id: "guard", 
+          text: "Random Security Guard", 
+          emoji: "👤", 
+          description: "AI scanners work with security to detect threats",
+          isCorrect: false
+        },
+        { 
+          id: "traveler", 
+          text: "Traveler Himself", 
+          emoji: "🧳", 
+          description: "AI scanners detect threats automatically",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      emoji: "🎒",
-      title: "AI Luggage Check",
-      situation:
-        "A bag contains electronics. AI flags it for a manual check. What is AI doing?",
-      choices: [
-        { id: 1, text: "Guessing randomly 🎯", emoji: "❌", isCorrect: false },
-        { id: 2, text: "Learning from patterns 🧠", emoji: "🤖", isCorrect: true },
-        { id: 3, text: "Ignoring it 🙈", emoji: "🙈", isCorrect: false },
-      ],
+      text: "A bag contains electronics. AI flags it for a manual check. What is AI doing?",
+      options: [
+        { 
+          id: "guess", 
+          text: "Guessing randomly", 
+          emoji: "❌", 
+          description: "AI learns from patterns to identify suspicious items",
+          isCorrect: false
+        },
+        { 
+          id: "ai", 
+          text: "Learning from patterns", 
+          emoji: "🤖", 
+          description: "AI learns from patterns to identify suspicious items accurately",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignoring it", 
+          emoji: "🙈", 
+          description: "AI actively flags suspicious items for review",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      emoji: "👁️",
-      title: "Facial Recognition",
-      situation:
-        "AI camera identifies a passenger using facial recognition. What’s the benefit?",
-      choices: [
-        { id: 1, text: "Faster check-in ⚡", emoji: "🚀", isCorrect: true },
-        { id: 2, text: "More paperwork 📝", emoji: "📄", isCorrect: false },
-        { id: 3, text: "Longer queues 🕒", emoji: "⏳", isCorrect: false },
-      ],
+      text: "AI camera identifies a passenger using facial recognition. What's the benefit?",
+      options: [
+        { 
+          id: "paperwork", 
+          text: "More paperwork", 
+          emoji: "📄", 
+          description: "AI facial recognition speeds up check-in",
+          isCorrect: false
+        },
+        { 
+          id: "queues", 
+          text: "Longer queues", 
+          emoji: "⏳", 
+          description: "AI makes check-in faster, not slower",
+          isCorrect: false
+        },
+        { 
+          id: "faster", 
+          text: "Faster check-in", 
+          emoji: "🚀", 
+          description: "AI facial recognition speeds up check-in and improves security",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
-      emoji: "📦",
-      title: "Cargo Scanner AI",
-      situation:
-        "AI detects suspicious shapes in a large cargo box. What happens next?",
-      choices: [
-        { id: 1, text: "Security team reviews it 🛡️", emoji: "👮‍♂️", isCorrect: true },
-        { id: 2, text: "AI ignores the alert 🚫", emoji: "🤷‍♂️", isCorrect: false },
-        { id: 3, text: "Cargo gets lost 🪶", emoji: "📦", isCorrect: false },
-      ],
+      text: "AI detects suspicious shapes in a large cargo box. What happens next?",
+      options: [
+        { 
+          id: "ai", 
+          text: "Security team reviews it", 
+          emoji: "👮‍♂️", 
+          description: "AI alerts security teams to review suspicious items",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "AI ignores the alert", 
+          emoji: "🤷‍♂️", 
+          description: "AI alerts security when suspicious items are detected",
+          isCorrect: false
+        },
+        { 
+          id: "lost", 
+          text: "Cargo gets lost", 
+          emoji: "📦", 
+          description: "AI helps security review items, not lose them",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      emoji: "🧳",
-      title: "Smart AI Gates",
-      situation:
-        "AI-powered gates scan boarding passes automatically. What does this improve?",
-      choices: [
-        { id: 1, text: "Speed and accuracy 🚀", emoji: "⚙️", isCorrect: true },
-        { id: 2, text: "Waiting time 🕒", emoji: "⌛", isCorrect: false },
-        { id: 3, text: "Confusion for travelers 😵", emoji: "😵", isCorrect: false },
-      ],
-    },
+      text: "AI-powered gates scan boarding passes automatically. What does this improve?",
+      options: [
+        { 
+          id: "waiting", 
+          text: "Waiting time", 
+          emoji: "⌛", 
+          description: "AI gates reduce waiting time",
+          isCorrect: false
+        },
+        { 
+          id: "confusion", 
+          text: "Confusion for travelers", 
+          emoji: "😵", 
+          description: "AI gates make travel easier, not more confusing",
+          isCorrect: false
+        },
+        { 
+          id: "speed", 
+          text: "Speed and accuracy", 
+          emoji: "⚙️", 
+          description: "AI-powered gates improve speed and accuracy of boarding",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const currentQ = questions[currentQuestion];
-  const [selectedChoice, setSelectedChoice] = useState(null);
-
-  const handleChoice = (id) => setSelectedChoice(id);
-
-  const handleConfirm = () => {
-    const selected = currentQ.choices.find((c) => c.id === selectedChoice);
-    if (selected.isCorrect) {
-      showCorrectAnswerFeedback(2, false);
-      setScore((prev) => prev + 1);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
+    
+    // Move to next question or show results
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
-        setSelectedChoice(null);
-        setCurrentQuestion((prev) => prev + 1);
-      }, 500);
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      if ((score + (selected.isCorrect ? 1 : 0)) >= 4) {
-        setCoins(5);
-      }
-      setScore((prev) => prev + (selected.isCorrect ? 1 : 0));
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
       setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
-    setCurrentQuestion(0);
-    setSelectedChoice(null);
-    setScore(0);
-    setCoins(0);
     setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
@@ -119,7 +203,7 @@ const AirportScannerStory = () => {
     navigate("/student/ai-for-all/kids/smart-farming-quiz");
   };
 
-  const selectedChoiceData = currentQ.choices.find((c) => c.id === selectedChoice);
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -127,87 +211,83 @@ const AirportScannerStory = () => {
       score={coins}
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && score >= 4}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && score >= 4}
+      showGameOver={showResult && finalScore >= 3}
       
-      gameId="ai-kids-41"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={41}
-      showConfetti={showResult && score >= 4}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/kids"
     >
       <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">{currentQ.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{currentQ.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg text-center">{currentQ.situation}</p>
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="space-y-3 mb-6">
-              {currentQ.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-3xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {score >= 4 ? "✅ Smart Airport Expert!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">
-              You answered {score} out of {questions.length} correctly!
-            </p>
-
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center">
-                💡 AI in airports helps scan, identify, and secure passengers and baggage — faster and safer!
-              </p>
-            </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              {score >= 4 ? "You earned 5 Coins! 🪙" : "Get 4 or more correct to earn coins!"}
-            </p>
-
-            {score < 4 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about AI in airport security!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand how AI helps keep airports safe and efficient!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about AI in airport security!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about how AI helps detect threats and improve airport security.
+                </p>
+              </div>
             )}
           </div>
         )}

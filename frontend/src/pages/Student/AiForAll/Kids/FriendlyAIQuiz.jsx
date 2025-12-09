@@ -1,195 +1,294 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const FriendlyAIQuiz = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-18");
+  const gameId = gameData?.id || "ai-kids-18";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // ✅ 5 sequential AI ethics questions
   const questions = [
     {
+      id: 1,
       text: "Should AI help people?",
-      emoji: "🤖",
-      choices: [
-        { id: 1, text: "Yes - AI should help us", emoji: "✅", isCorrect: true },
-        { id: 2, text: "No - AI should not help", emoji: "❌", isCorrect: false }
-      ],
-      feedback: "Yes! AI should help people! AI is created to make our lives better, easier, and safer."
+      options: [
+        { 
+          id: "yes", 
+          text: "Yes - AI should help us", 
+          emoji: "✅", 
+          description: "AI is created to make our lives better, easier, and safer",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No - AI should not help", 
+          emoji: "❌", 
+          description: "AI should help people - that's its main purpose",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI should definitely help people",
+          isCorrect: false
+        }
+      ]
     },
     {
+      id: 2,
       text: "Should AI be kind and fair to everyone?",
-      emoji: "💖",
-      choices: [
-        { id: 1, text: "Yes, it should be fair", emoji: "⚖️", isCorrect: true },
-        { id: 2, text: "No, it can be unfair", emoji: "🚫", isCorrect: false }
-      ],
-      feedback: "Correct! A good AI must treat everyone fairly and equally without bias!"
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI must treat everyone fairly and equally",
+          isCorrect: false
+        },
+        { 
+          id: "yes", 
+          text: "Yes, it should be fair", 
+          emoji: "⚖️", 
+          description: "A good AI must treat everyone fairly without bias",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No, it can be unfair", 
+          emoji: "🚫", 
+          description: "AI should always be fair to everyone",
+          isCorrect: false
+        }
+      ]
     },
     {
+      id: 3,
       text: "Should AI respect privacy?",
-      emoji: "🔒",
-      choices: [
-        { id: 1, text: "Yes - Keep data safe", emoji: "🛡️", isCorrect: true },
-        { id: 2, text: "No - Anyone can see it", emoji: "👀", isCorrect: false }
-      ],
-      feedback: "Right! AI should protect your data and respect privacy at all times."
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI should definitely protect your data and privacy",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No - Anyone can see it", 
+          emoji: "👀", 
+          description: "AI should protect your data and respect privacy",
+          isCorrect: false
+        },
+        { 
+          id: "yes", 
+          text: "Yes - Keep data safe", 
+          emoji: "🛡️", 
+          description: "AI should protect your data and respect privacy at all times",
+          isCorrect: true
+        }
+      ]
     },
     {
+      id: 4,
       text: "Should we teach AI what is right or wrong?",
-      emoji: "📚",
-      choices: [
-        { id: 1, text: "Yes - We must teach AI ethics", emoji: "👩‍🏫", isCorrect: true },
-        { id: 2, text: "No - AI learns alone", emoji: "🤷‍♀️", isCorrect: false }
-      ],
-      feedback: "Exactly! Humans must teach AI what’s right and wrong to make it helpful."
+      options: [
+        { 
+          id: "yes", 
+          text: "Yes - We must teach AI ethics", 
+          emoji: "👩‍🏫", 
+          description: "Humans must teach AI what's right and wrong to make it helpful",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No - AI learns alone", 
+          emoji: "🤷‍♀️", 
+          description: "Humans need to teach AI ethics and values",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "We must teach AI what's right and wrong",
+          isCorrect: false
+        }
+      ]
     },
     {
+      id: 5,
       text: "Should AI replace kindness and teamwork?",
-      emoji: "🧠",
-      choices: [
-        { id: 1, text: "No - Humans should still be kind", emoji: "❤️", isCorrect: true },
-        { id: 2, text: "Yes - Let AI do everything", emoji: "🤖", isCorrect: false }
-      ],
-      feedback: "Correct! AI can help, but kindness and teamwork are human superpowers!"
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI can help, but kindness and teamwork are human superpowers",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No - Humans should still be kind", 
+          emoji: "❤️", 
+          description: "AI can help, but kindness and teamwork are human superpowers",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes - Let AI do everything", 
+          emoji: "🤖", 
+          description: "AI can help, but humans should still be kind and work together",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const question = questions[currentQuestion];
-    const choice = question.choices.find(c => c.id === selectedChoice);
-    const isCorrect = choice.isCorrect;
-
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins((prev) => prev + 5);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
-    resetFeedback();
-    setSelectedChoice(null);
-    setShowFeedback(false);
-
+    
+    // Move to next question or show results
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      navigate("/student/ai-for-all/kids/robot-emotion-story"); // ✅ next game link
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
-  const selectedChoiceData = questions[currentQuestion].choices.find(
-    (c) => c.id === selectedChoice
-  );
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
 
-  const question = questions[currentQuestion];
+  const handleNext = () => {
+    navigate("/student/ai-for-all/kids/robot-emotion-story");
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Friendly AI Quiz"
-      subtitle="AI Ethics for Kids"
-      onNext={handleNextQuestion}
-      nextEnabled={showFeedback}
-      showGameOver={currentQuestion === questions.length - 1 && showFeedback}
       score={coins}
-      gameId="ai-kids-18"
-      gameType="ai"
-      totalLevels={100}
-      currentLevel={18}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      
+      gameId={gameId}
+      gameType="ai"
+      totalLevels={20}
+      currentLevel={18}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          // 🧩 Question UI
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto ">
-            <div className="text-9xl mb-4 text-center">{question.emoji}</div>
-            <p className="text-white text-2xl leading-relaxed text-center font-semibold mb-6">
-              {question.text}
-            </p>
-
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              {question.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`border-3 rounded-xl p-10 transition-all ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="text-6xl mb-2">{choice.emoji}</div>
-                  <div className="text-white font-bold text-xl text-center">{choice.text}</div>
-                </button>
-              ))}
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Answer
-            </button>
           </div>
         ) : (
-          // 🎉 Feedback UI
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-8xl mb-4">
-              {selectedChoiceData?.isCorrect ? "🌟" : "❌"}
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {selectedChoiceData?.isCorrect ? "Awesome!" : "Think Again..."}
-            </h2>
-
-            {selectedChoiceData?.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-lg">{question.feedback}</p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about AI ethics!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
                 </div>
-                <p className="text-yellow-400 text-2xl font-bold">+5 Coins 🪙</p>
-              </>
+                <p className="text-white/80">
+                  You understand how AI should be helpful and ethical!
+                </p>
+              </div>
             ) : (
-              <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                <p className="text-white text-lg">
-                  Not quite! {question.feedback}
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about AI ethics!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about how AI should help people fairly and safely.
                 </p>
               </div>
             )}
-
-            <button
-              onClick={handleNextQuestion}
-              className="mt-6 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              {currentQuestion < questions.length - 1 ? "Next Question →" : "Finish Quiz 🎯"}
-            </button>
           </div>
         )}
       </div>

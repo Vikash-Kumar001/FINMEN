@@ -1,175 +1,293 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const RobotMistakeStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [step, setStep] = useState(0);
-  const [score, setScore] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-52");
+  const gameId = gameData?.id || "ai-kids-52";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const storySteps = [
+  const questions = [
     {
       id: 1,
-      message: "🤖 Robot says: 'This is an apple!' (But it shows a banana)",
-      emoji: "🍌",
+      text: "🤖 Robot says: 'This is an apple!' (But it shows a banana). What should you do?",
       options: [
-        { text: "Correct the robot", value: "correct" },
-        { text: "Ignore the mistake", value: "ignore" },
-      ],
-      correct: "correct",
+        { 
+          id: "correct", 
+          text: "Correct the robot", 
+          emoji: "✅", 
+          description: "Correcting robot mistakes helps AI learn and improve",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore the mistake", 
+          emoji: "🙈", 
+          description: "Correcting mistakes helps robots learn better",
+          isCorrect: false
+        },
+        { 
+          id: "agree", 
+          text: "Agree with the robot", 
+          emoji: "👍", 
+          description: "We should correct mistakes to help AI learn",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      message: "🤖 Robot says: 'Dog says meow!'",
-      emoji: "🐶",
+      text: "🤖 Robot says: 'Dog says meow!'. What should you do?",
       options: [
-        { text: "Teach it correctly", value: "correct" },
-        { text: "Say nothing", value: "ignore" },
-      ],
-      correct: "correct",
+        { 
+          id: "nothing", 
+          text: "Say nothing", 
+          emoji: "😐", 
+          description: "Teaching robots correctly helps them learn",
+          isCorrect: false
+        },
+        { 
+          id: "teach", 
+          text: "Teach it correctly", 
+          emoji: "📚", 
+          description: "Teaching robots correctly helps them learn and improve",
+          isCorrect: true
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh at the robot", 
+          emoji: "😂", 
+          description: "We should help robots learn, not laugh at mistakes",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      message: "🤖 Robot says: '2 + 2 = 5'",
-      emoji: "🔢",
+      text: "🤖 Robot says: '2 + 2 = 5'. What should you do?",
       options: [
-        { text: "Correct it to 4", value: "correct" },
-        { text: "Let it be wrong", value: "ignore" },
-      ],
-      correct: "correct",
+        { 
+          id: "wrong", 
+          text: "Let it be wrong", 
+          emoji: "😐", 
+          description: "Correcting math mistakes helps AI learn",
+          isCorrect: false
+        },
+        { 
+          id: "correct", 
+          text: "Correct it to 4", 
+          emoji: "🔢", 
+          description: "Correcting math mistakes helps AI learn accurate information",
+          isCorrect: true
+        },
+        { 
+          id: "agree", 
+          text: "Agree with the robot", 
+          emoji: "👍", 
+          description: "We should correct math mistakes",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      message: "🤖 Robot calls the Sun 'the Moon'.",
-      emoji: "🌞",
+      text: "🤖 Robot calls the Sun 'the Moon'. What should you do?",
       options: [
-        { text: "Fix the label", value: "correct" },
-        { text: "Leave it", value: "ignore" },
-      ],
-      correct: "correct",
+        { 
+          id: "fix", 
+          text: "Fix the label", 
+          emoji: "🔧", 
+          description: "Fixing labels helps robots learn correct information",
+          isCorrect: true
+        },
+        { 
+          id: "leave", 
+          text: "Leave it", 
+          emoji: "😐", 
+          description: "Fixing mistakes helps robots learn better",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore the error", 
+          emoji: "🙈", 
+          description: "We should help robots learn correct labels",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      message: "🤖 Robot says: 'All cats are the same color!'",
-      emoji: "🐱",
+      text: "🤖 Robot says: 'All cats are the same color!'. What should you do?",
       options: [
-        { text: "Explain that cats have many colors", value: "correct" },
-        { text: "Agree blindly", value: "ignore" },
-      ],
-      correct: "correct",
-    },
+        { 
+          id: "agree", 
+          text: "Agree blindly", 
+          emoji: "👍", 
+          description: "We should explain that cats have many colors",
+          isCorrect: false
+        },
+        { 
+          id: "explain", 
+          text: "Explain that cats have many colors", 
+          emoji: "🎨", 
+          description: "Explaining correctly helps robots learn about diversity",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore the statement", 
+          emoji: "😐", 
+          description: "We should help robots understand diversity",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const currentStepData = storySteps[step];
-
-  const handleChoice = (choice) => {
-    const isCorrect = choice === currentStepData.correct;
-
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore((prev) => prev + 1);
-      setCoins((prev) => prev + 10);
-      showCorrectAnswerFeedback(10, true);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    if (step < storySteps.length - 1) {
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
-        setStep((prev) => prev + 1);
-        resetFeedback();
-      }, 600);
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
       setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setStep(0);
-    setScore(0);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
   const handleNext = () => {
-    navigate("/student/ai-for-all/kids/data-cleaning-puzzle"); // next game path
+    navigate("/student/ai-for-all/kids/data-cleaning-puzzle");
   };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Robot Mistake Story"
-      subtitle="Can you help the robot learn correctly?"
-      onNext={handleNext}
-      nextEnabled={showResult && score === storySteps.length}
-      showGameOver={showResult && score === storySteps.length}
       score={coins}
-      gameId="ai-kids-52"
-      gameType="ai"
-      totalLevels={100}
-      currentLevel={52}
-      showConfetti={showResult && score === storySteps.length}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      
+      gameId={gameId}
+      gameType="ai"
+      totalLevels={20}
+      currentLevel={52}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-6xl mb-4">{currentStepData.emoji}</div>
-            <h3 className="text-white text-xl font-bold mb-6">
-              {currentStepData.message}
-            </h3>
-
-            <div className="grid grid-cols-2 gap-4">
-              {currentStepData.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleChoice(option.value)}
-                  className="bg-blue-500/30 hover:bg-blue-500/50 border-3 border-blue-400 rounded-xl p-6 transition-all transform hover:scale-105"
-                >
-                  <div className="text-white font-bold text-xl">
-                    {option.text}
-                  </div>
-                </button>
-              ))}
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-            <p className="text-white/70 mt-6">
-              Step {step + 1} of {storySteps.length}
-            </p>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {score === storySteps.length
-                ? "✅ You fixed all the robot’s mistakes!"
-                : "⚠️ Try again to teach the robot better!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              AI learns from humans — thanks for teaching truth and accuracy.
-            </p>
-            {score === storySteps.length ? (
-              <p className="text-yellow-400 text-2xl font-bold">
-                You earned {coins} Coins! 🪙
-              </p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about correcting robot mistakes!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand how correcting mistakes helps AI learn and improve!
+                </p>
+              </div>
             ) : (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about helping robots learn!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about how correcting mistakes helps robots learn better.
+                </p>
+              </div>
             )}
           </div>
         )}

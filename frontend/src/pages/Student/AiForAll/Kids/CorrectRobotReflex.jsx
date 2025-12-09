@@ -1,151 +1,244 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const CorrectRobotReflex = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [step, setStep] = useState(0);
-  const [coins, setCoins] = useState(0);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-kids-66";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
-  // ⚡ 5 Reflex Questions
-  const reflexSteps = [
+  const questions = [
     {
       id: 1,
-      emoji: "🍎",
-      message: "🤖 Robot says: ‘This is a banana!’ (But it’s an apple)",
-      correctAction: "Correct the robot",
-      wrongAction: "Ignore the mistake",
+      question: "Robot says: 'This is a banana!' (But it's an apple). What should you do?",
+      correctAnswer: "Correct the robot",
+      options: [
+        { text: "Correct the robot", isCorrect: true, emoji: "✅" },
+        { text: "Ignore the mistake", isCorrect: false, emoji: "🙈" },
+        { text: "Agree with robot", isCorrect: false, emoji: "🤖" },
+        { text: "Turn off robot", isCorrect: false, emoji: "🔌" }
+      ]
     },
     {
       id: 2,
-      emoji: "🐱",
-      message: "🤖 Robot says: ‘This is a dog!’ (But it’s a cat)",
-      correctAction: "Correct the robot",
-      wrongAction: "Let it stay wrong",
+      question: "Robot says: 'This is a dog!' (But it's a cat). What should you do?",
+      correctAnswer: "Correct the robot",
+      options: [
+        { text: "Let it stay wrong", isCorrect: false, emoji: "😐" },
+        { text: "Correct the robot", isCorrect: true, emoji: "✅" },
+        { text: "Laugh at robot", isCorrect: false, emoji: "😂" },
+        { text: "Ignore completely", isCorrect: false, emoji: "🚫" }
+      ]
     },
     {
       id: 3,
-      emoji: "🔵",
-      message: "🤖 Robot says: ‘This is a triangle!’ (But it’s a circle)",
-      correctAction: "Fix the robot’s answer",
-      wrongAction: "Do nothing",
+      question: "Robot says: 'This is a triangle!' (But it's a circle). What should you do?",
+      correctAnswer: "Fix the robot's answer",
+      options: [
+        { text: "Do nothing", isCorrect: false, emoji: "😴" },
+        { text: "Agree anyway", isCorrect: false, emoji: "🤷" },
+        { text: "Fix the robot's answer", isCorrect: true, emoji: "🔧" },
+        { text: "Break the robot", isCorrect: false, emoji: "💥" }
+      ]
     },
     {
       id: 4,
-      emoji: "😊",
-      message: "🤖 Robot says: ‘This person is sad!’ (But they’re smiling)",
-      correctAction: "Help robot learn emotions",
-      wrongAction: "Ignore emotions",
+      question: "Robot says: 'This person is sad!' (But they're smiling). What should you do?",
+      correctAnswer: "Help robot learn emotions",
+      options: [
+        { text: "Help robot learn emotions", isCorrect: true, emoji: "💡" },
+        { text: "Ignore emotions", isCorrect: false, emoji: "😐" },
+        { text: "Get angry at robot", isCorrect: false, emoji: "😠" },
+        { text: "Delete the robot", isCorrect: false, emoji: "🗑️" }
+      ]
     },
     {
       id: 5,
-      emoji: "☀️",
-      message: "🤖 Robot says: ‘It’s nighttime!’ (But the sun is shining)",
-      correctAction: "Teach the robot the truth",
-      wrongAction: "Agree with the robot",
-    },
+      question: "Robot says: 'It's nighttime!' (But the sun is shining). What should you do?",
+      correctAnswer: "Teach the robot the truth",
+      options: [
+        { text: "Agree with the robot", isCorrect: false, emoji: "🤖" },
+        { text: "Teach the robot the truth", isCorrect: true, emoji: "📚" },
+        { text: "Ignore the weather", isCorrect: false, emoji: "☁️" },
+        { text: "Shut down robot", isCorrect: false, emoji: "⛔" }
+      ]
+    }
   ];
 
-  const currentStep = reflexSteps[step];
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
 
-  const handleChoice = (correct) => {
-    if (correct) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins((prev) => prev + 5);
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
-    setShowFeedback(true);
-  };
+  }, [currentRound, gameState]);
 
-  const handleNext = () => {
-    if (step < reflexSteps.length - 1) {
-      setStep(step + 1);
-      setShowFeedback(false);
-      resetFeedback();
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
     } else {
-      navigate("/student/ai-for-all/kids/bias-in-data-story"); // ✅ next game path
+      setGameState("finished");
     }
-  };
+  }, []);
 
-  const handleTryAgain = () => {
-    setShowFeedback(false);
+  // Timer effect
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
     resetFeedback();
   };
+
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const isCorrect = option.isCorrect;
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    setTimeout(() => {
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
+      } else {
+        setGameState("finished");
+      }
+    }, 500);
+  };
+
+  const finalScore = score;
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Correct the Robot Reflex"
-      subtitle="Fix the Robot’s Mistakes!"
-      onNext={handleNext}
-      nextEnabled={showFeedback}
-      showGameOver={showFeedback && step === reflexSteps.length - 1}
-      score={coins}
-      gameId="ai-kids-66"
-      gameType="ai"
-      totalLevels={100}
-      currentLevel={66}
-      showConfetti={showFeedback}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your robot correcting reflexes!` : "Test your robot correcting reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
+      score={finalScore}
+      gameId={gameId}
+      gameType="ai"
+      maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-8xl mb-4 animate-pulse">{currentStep.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4">
-              {currentStep.message}
-            </h2>
-            <p className="text-white/90 mb-6">
-              Choose the best action to help the robot learn.
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">🤖</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Answer questions about correcting robot mistakes!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice(true)}
-                className="bg-green-500/40 hover:bg-green-500/60 border-2 border-green-400 rounded-xl p-6 text-white font-bold text-lg transition-all transform hover:scale-105"
-              >
-                {currentStep.correctAction}
-              </button>
-
-              <button
-                onClick={() => handleChoice(false)}
-                className="bg-red-500/30 hover:bg-red-500/50 border-2 border-red-400 rounded-xl p-6 text-white font-bold text-lg transition-all transform hover:scale-105"
-              >
-                {currentStep.wrongAction}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-7xl mb-4">{currentStep.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              ✅ Robot Retrained!
-            </h2>
-            <p className="text-white/90 mb-4">
-              Great reflex! AI learns fast when you correct its mistakes.
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              +5 Coins 🪙
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
             </p>
             <button
-              onClick={handleNext}
-              className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-white hover:opacity-90 transition"
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
             >
-              {step === reflexSteps.length - 1 ? "Finish Game" : "Next Reflex →"}
+              Start Game
             </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>

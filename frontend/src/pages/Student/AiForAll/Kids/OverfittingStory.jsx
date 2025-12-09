@@ -1,111 +1,201 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const OverfittingStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [step, setStep] = useState(0);
-  const [score, setScore] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-55");
+  const gameId = gameData?.id || "ai-kids-55";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const storySteps = [
+  const questions = [
     {
-      title: "Red vs Green Apple 🍎🍏",
-      emoji: "🤖",
-      situation: "The robot was trained only on red apples. Now it sees a green apple and says 'Not an apple'. What should you do?",
-      choices: [
-        { id: 1, text: "Explain the robot its mistake", emoji: "🧠", isCorrect: true },
-        { id: 2, text: "Ignore it", emoji: "🙈", isCorrect: false },
-        { id: 3, text: "Tell the robot it's right", emoji: "👍", isCorrect: false },
-      ],
+      id: 1,
+      text: "The robot was trained only on red apples. Now it sees a green apple and says 'Not an apple'. What should you do?",
+      options: [
+        { 
+          id: "explain", 
+          text: "Explain the robot its mistake", 
+          emoji: "🧠", 
+          description: "Teaching robots about different varieties helps them learn better",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "🙈", 
+          description: "We should help robots learn about different varieties",
+          isCorrect: false
+        },
+        { 
+          id: "agree", 
+          text: "Tell the robot it's right", 
+          emoji: "👍", 
+          description: "We should correct mistakes to help robots learn",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Dog vs Cat Confusion 🐶🐱",
-      emoji: "🤖",
-      situation: "The AI saw only pictures of dogs and now thinks every animal is a dog. What should you do?",
-      choices: [
-        { id: 1, text: "Show it pictures of cats too", emoji: "📸", isCorrect: true },
-        { id: 2, text: "Say 'good job' to AI", emoji: "👏", isCorrect: false },
-        { id: 3, text: "Ignore the error", emoji: "🙈", isCorrect: false },
-      ],
+      id: 2,
+      text: "The AI saw only pictures of dogs and now thinks every animal is a dog. What should you do?",
+      options: [
+        { 
+          id: "good", 
+          text: "Say 'good job' to AI", 
+          emoji: "👏", 
+          description: "Showing diverse examples helps AI learn better",
+          isCorrect: false
+        },
+        { 
+          id: "show", 
+          text: "Show it pictures of cats too", 
+          emoji: "📸", 
+          description: "Showing diverse examples helps AI learn to distinguish different animals",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore the error", 
+          emoji: "🙈", 
+          description: "We should help AI learn about different animals",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "School Data Problem 🏫",
-      emoji: "🤖",
-      situation: "AI only trained on one school's students. It struggles to predict grades for another school. What do you do?",
-      choices: [
-        { id: 1, text: "Add data from more schools", emoji: "📚", isCorrect: true },
-        { id: 2, text: "Keep using the same data", emoji: "🔁", isCorrect: false },
-        { id: 3, text: "Stop training AI", emoji: "✋", isCorrect: false },
-      ],
+      id: 3,
+      text: "AI only trained on one school's students. It struggles to predict grades for another school. What do you do?",
+      options: [
+        { 
+          id: "same", 
+          text: "Keep using the same data", 
+          emoji: "🔁", 
+          description: "Adding diverse data helps AI work better",
+          isCorrect: false
+        },
+        { 
+          id: "add", 
+          text: "Add data from more schools", 
+          emoji: "📚", 
+          description: "Adding data from more schools helps AI learn to work with different situations",
+          isCorrect: true
+        },
+        { 
+          id: "stop", 
+          text: "Stop training AI", 
+          emoji: "✋", 
+          description: "Adding diverse data is better than stopping",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Weather Prediction 🌦️",
-      emoji: "🤖",
-      situation: "AI was trained only in sunny weather, so it fails when it rains. What’s the fix?",
-      choices: [
-        { id: 1, text: "Add rainy and cloudy weather data", emoji: "🌧️", isCorrect: true },
-        { id: 2, text: "Delete sunny data", emoji: "☀️", isCorrect: false },
-        { id: 3, text: "Do nothing", emoji: "🙅‍♂️", isCorrect: false },
-      ],
+      id: 4,
+      text: "AI was trained only in sunny weather, so it fails when it rains. What's the fix?",
+      options: [
+        { 
+          id: "ai", 
+          text: "Add rainy and cloudy weather data", 
+          emoji: "🌧️", 
+          description: "Adding diverse weather data helps AI work in all conditions",
+          isCorrect: true
+        },
+        { 
+          id: "delete", 
+          text: "Delete sunny data", 
+          emoji: "☀️", 
+          description: "We should add diverse data, not delete existing data",
+          isCorrect: false
+        },
+        { 
+          id: "nothing", 
+          text: "Do nothing", 
+          emoji: "🙅‍♂️", 
+          description: "Adding diverse data helps AI work better",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Voice Recognition 🎤",
-      emoji: "🤖",
-      situation: "AI only learned adult voices. It fails to recognize children. What should you do?",
-      choices: [
-        { id: 1, text: "Train it with diverse voices", emoji: "🗣️", isCorrect: true },
-        { id: 2, text: "Ignore the issue", emoji: "🙈", isCorrect: false },
-        { id: 3, text: "Turn off voice input", emoji: "🔇", isCorrect: false },
-      ],
-    },
+      id: 5,
+      text: "AI only learned adult voices. It fails to recognize children. What should you do?",
+      options: [
+        { 
+          id: "ignore", 
+          text: "Ignore the issue", 
+          emoji: "🙈", 
+          description: "Training with diverse voices helps AI work better",
+          isCorrect: false
+        },
+        { 
+          id: "train", 
+          text: "Train it with diverse voices", 
+          emoji: "🗣️", 
+          description: "Training with diverse voices helps AI recognize everyone",
+          isCorrect: true
+        },
+        { 
+          id: "off", 
+          text: "Turn off voice input", 
+          emoji: "🔇", 
+          description: "Training with diverse data is better than turning it off",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const currentStep = storySteps[step];
-  const selectedChoiceData = currentStep.choices.find(c => c.id === selectedChoice);
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedChoice) return;
-    const choice = currentStep.choices.find(c => c.id === selectedChoice);
-
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(10, true);
-      setScore((prev) => prev + 1);
-      setCoins((prev) => prev + 10);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    setShowFeedback(true);
-  };
-
-  const handleNextStep = () => {
-    resetFeedback();
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    if (step < storySteps.length - 1) {
-      setStep((prev) => prev + 1);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      // Game complete
-      setStep(storySteps.length);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
@@ -113,119 +203,92 @@ const OverfittingStory = () => {
     navigate("/student/ai-for-all/kids/data-labeling-game");
   };
 
-  const isGameComplete = step === storySteps.length - 1 && showFeedback;
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Overfitting Story"
-      subtitle="Understanding AI Mistakes"
-      onNext={handleNext}
-      nextEnabled={isGameComplete && score === storySteps.length}
-      showGameOver={isGameComplete && score === storySteps.length}
       score={coins}
-      gameId="ai-kids-55"
-      gameType="ai"
-      totalLevels={100}
-      currentLevel={55}
-      showConfetti={isGameComplete && score === storySteps.length}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      
+      gameId={gameId}
+      gameType="ai"
+      totalLevels={20}
+      currentLevel={55}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">{currentStep.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              {currentStep.title}
-            </h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">
-                {currentStep.situation}
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
               </p>
-            </div>
-
-            <h3 className="text-white font-bold mb-4">What should you do?</h3>
-
-            <div className="space-y-3 mb-6">
-              {currentStep.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">
-                      {choice.text}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <div className="flex flex-col items-center">
-              <p className="text-white/70 mb-3">
-                Step {step + 1} of {storySteps.length}
-              </p>
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedChoice}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedChoice
-                    ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                    : "bg-gray-500/50 cursor-not-allowed"
-                }`}
-              >
-                Confirm Choice
-              </button>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-7xl mb-4">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {selectedChoiceData.isCorrect
-                ? "🌟 Great Job!"
-                : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {selectedChoiceData.isCorrect
-                ? "You corrected the AI and helped it learn from new data."
-                : "Overfitting happens when AI sees too little variety in training."}
-            </p>
-
-            {selectedChoiceData.isCorrect ? (
-              <p className="text-yellow-400 text-2xl font-bold mb-6">
-                +10 Coins 🪙
-              </p>
-            ) : null}
-
-            <div className="flex justify-center">
-              {selectedChoiceData.isCorrect || step === storySteps.length - 1 ? (
-                <button
-                  onClick={handleNextStep}
-                  className="mt-4 bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  {step === storySteps.length - 1 ? "See Results" : "Next"}
-                </button>
-              ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about overfitting in AI!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand how diverse training data helps AI work better!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about overfitting!
+                </p>
                 <button
                   onClick={handleTryAgain}
-                  className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              )}
-            </div>
+                <p className="text-white/80 text-sm">
+                  Try to think about how diverse training data helps AI work in different situations.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

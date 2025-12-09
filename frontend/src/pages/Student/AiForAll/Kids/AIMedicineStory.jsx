@@ -1,185 +1,293 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const AIMedicineStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-95");
+  const gameId = gameData?.id || "ai-kids-95";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
-      question: "AI finds a possible disease in a patient. Who gives the final diagnosis?",
-      emoji: "🩺",
-      choices: [
-        { id: 1, text: "AI alone", emoji: "🤖", isCorrect: false },
-        { id: 2, text: "Doctor", emoji: "👨‍⚕️", isCorrect: true },
-        { id: 3, text: "Patient decides", emoji: "👤", isCorrect: false }
+      id: 1,
+      text: "AI finds a possible disease in a patient. Who gives the final diagnosis?",
+      options: [
+        { 
+          id: "ai", 
+          text: "AI alone", 
+          emoji: "🤖", 
+          description: "Doctors make final diagnoses, AI assists them",
+          isCorrect: false
+        },
+        { 
+          id: "doctor", 
+          text: "Doctor", 
+          emoji: "👨‍⚕️", 
+          description: "Doctors make final diagnoses, AI assists them in making decisions",
+          isCorrect: true
+        },
+        { 
+          id: "patient", 
+          text: "Patient decides", 
+          emoji: "👤", 
+          description: "Doctors make final diagnoses with AI assistance",
+          isCorrect: false
+        }
       ]
     },
     {
-      question: "AI suggests a treatment plan. Who approves it?",
-      emoji: "💊",
-      choices: [
-        { id: 1, text: "AI automatically", emoji: "🤖", isCorrect: false },
-        { id: 2, text: "Doctor approval required", emoji: "👨‍⚕️", isCorrect: true },
-        { id: 3, text: "Patient decides alone", emoji: "👤", isCorrect: false }
+      id: 2,
+      text: "AI suggests a treatment plan. Who approves it?",
+      options: [
+        { 
+          id: "ai", 
+          text: "AI automatically", 
+          emoji: "🤖", 
+          description: "Doctors must approve treatment plans, AI only suggests",
+          isCorrect: false
+        },
+        { 
+          id: "doctor", 
+          text: "Doctor approval required", 
+          emoji: "👨‍⚕️", 
+          description: "Doctors must approve treatment plans, AI only suggests options",
+          isCorrect: true
+        },
+        { 
+          id: "patient", 
+          text: "Patient decides alone", 
+          emoji: "👤", 
+          description: "Doctors approve treatment plans with AI assistance",
+          isCorrect: false
+        }
       ]
     },
     {
-      question: "AI detects a medication allergy. What should happen next?",
-      emoji: "⚠️",
-      choices: [
-        { id: 1, text: "Ignore AI warning", emoji: "❌", isCorrect: false },
-        { id: 2, text: "Doctor reviews and informs patient", emoji: "👨‍⚕️", isCorrect: true },
-        { id: 3, text: "AI automatically adjusts dosage", emoji: "🤖", isCorrect: false }
+      id: 3,
+      text: "AI detects a medication allergy. What should happen next?",
+      options: [
+        { 
+          id: "ignore", 
+          text: "Ignore AI warning", 
+          emoji: "❌", 
+          description: "Doctors should review AI warnings and inform patients",
+          isCorrect: false
+        },
+        { 
+          id: "doctor", 
+          text: "Doctor reviews and informs patient", 
+          emoji: "👨‍⚕️", 
+          description: "Doctors should review AI warnings and inform patients about allergies",
+          isCorrect: true
+        },
+        { 
+          id: "ai", 
+          text: "AI automatically adjusts dosage", 
+          emoji: "🤖", 
+          description: "Doctors must review and make decisions, not AI alone",
+          isCorrect: false
+        }
       ]
     },
     {
-      question: "AI predicts patient recovery chances. Who decides treatment?",
-      emoji: "📈",
-      choices: [
-        { id: 1, text: "AI decides alone", emoji: "🤖", isCorrect: false },
-        { id: 2, text: "Doctor in consultation with AI", emoji: "👨‍⚕️", isCorrect: true },
-        { id: 3, text: "Patient alone", emoji: "👤", isCorrect: false }
+      id: 4,
+      text: "AI predicts patient recovery chances. Who decides treatment?",
+      options: [
+        { 
+          id: "ai", 
+          text: "AI decides alone", 
+          emoji: "🤖", 
+          description: "Doctors decide treatment with AI assistance",
+          isCorrect: false
+        },
+        { 
+          id: "doctor", 
+          text: "Doctor in consultation with AI", 
+          emoji: "👨‍⚕️", 
+          description: "Doctors decide treatment in consultation with AI predictions",
+          isCorrect: true
+        },
+        { 
+          id: "patient", 
+          text: "Patient alone", 
+          emoji: "👤", 
+          description: "Doctors decide treatment with AI and patient input",
+          isCorrect: false
+        }
       ]
     },
     {
-      question: "AI recommends preventive checkups. Who schedules them?",
-      emoji: "🩹",
-      choices: [
-        { id: 1, text: "AI automatically schedules", emoji: "🤖", isCorrect: false },
-        { id: 2, text: "Doctor confirms schedule with patient", emoji: "👨‍⚕️", isCorrect: true },
-        { id: 3, text: "Patient decides without doctor", emoji: "👤", isCorrect: false }
+      id: 5,
+      text: "AI recommends preventive checkups. Who schedules them?",
+      options: [
+        { 
+          id: "ai", 
+          text: "AI automatically schedules", 
+          emoji: "🤖", 
+          description: "Doctors confirm schedules with patients",
+          isCorrect: false
+        },
+        { 
+          id: "doctor", 
+          text: "Doctor confirms schedule with patient", 
+          emoji: "👨‍⚕️", 
+          description: "Doctors confirm AI-recommended schedules with patients",
+          isCorrect: true
+        },
+        { 
+          id: "patient", 
+          text: "Patient decides without doctor", 
+          emoji: "👤", 
+          description: "Doctors should be involved in scheduling checkups",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [coins, setCoins] = useState(0);
-  const [showFeedback, setShowFeedback] = useState(false);
-
-  const question = questions[currentQuestion];
-  const selectedChoiceData = question.choices.find(c => c.id === selectedChoice);
-  const isLastQuestion = currentQuestion === questions.length - 1;
-
-  const handleChoice = (choiceId) => setSelectedChoice(choiceId);
-
-  const handleConfirm = () => {
-    const choice = question.choices.find(c => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      setCoins(prev => prev + 10);
-      showCorrectAnswerFeedback(10, true);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-    setShowFeedback(true);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
+    }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
   const handleNext = () => {
-    if (!isLastQuestion) {
-      setCurrentQuestion(prev => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-    } else {
-      navigate("/student/ai-for-all/kids/dangerous-robot-story"); // Next game path
-    }
+    navigate("/student/ai-for-all/kids/dangerous-robot-story");
   };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="AI in Medicine Story"
+      score={coins}
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showFeedback && selectedChoiceData?.isCorrect}
-      showGameOver={isLastQuestion && showFeedback && selectedChoiceData?.isCorrect}
-      score={coins}
-      gameId={`ai-kids-95-${currentQuestion + 1}`}
-      gameType="ai"
-      totalLevels={100}
-      currentLevel={95 + currentQuestion}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      flashPoints={() => {}}
-      showAnswerConfetti={() => {}}
-      backPath="/games/ai-for-all/kids"
+      showGameOver={showResult && finalScore >= 3}
+      
+      gameId={gameId}
+      gameType="ai"
+      totalLevels={20}
+      currentLevel={95}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-9xl mb-4 text-center">{question.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{question.question}</h2>
-
-            <div className="space-y-3 mb-6">
-              {question.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-5xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Answer
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "✅ Correct!" : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <p className="text-yellow-400 text-2xl font-bold text-center">You earned 10 Coins! 🪙</p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about AI in medicine!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand how doctors and AI work together in medicine!
+                </p>
+              </div>
             ) : (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
-
-            {selectedChoiceData.isCorrect && (
-              <button
-                onClick={handleNext}
-                className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                {isLastQuestion ? "Finish" : "Next Question"}
-              </button>
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about AI in medicine!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about how doctors and AI work together in medicine.
+                </p>
+              </div>
             )}
           </div>
         )}

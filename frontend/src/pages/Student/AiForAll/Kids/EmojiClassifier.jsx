@@ -21,12 +21,7 @@ const EmojiClassifier = () => {
     { id: 2, emoji: "😢", type: "sad", correct: "sad" },
     { id: 3, emoji: "😃", type: "happy", correct: "happy" },
     { id: 4, emoji: "😭", type: "sad", correct: "sad" },
-    { id: 5, emoji: "😄", type: "happy", correct: "happy" },
-    { id: 6, emoji: "😔", type: "sad", correct: "sad" },
-    { id: 7, emoji: "🥳", type: "happy", correct: "happy" },
-    { id: 8, emoji: "🥺", type: "sad", correct: "sad" },
-    { id: 9, emoji: "😁", type: "happy", correct: "happy" },
-    { id: 10, emoji: "😞", type: "sad", correct: "sad" }
+    { id: 5, emoji: "😄", type: "happy", correct: "happy" }
   ];
 
   const currentEmojiData = emojis[currentEmoji];
@@ -66,7 +61,7 @@ const EmojiClassifier = () => {
   return (
     <GameShell
       title="Emoji Classifier"
-      score={coins}
+      score={score}
       subtitle={`Emoji ${currentEmoji + 1} of ${emojis.length}`}
       onNext={handleNext}
       nextEnabled={showResult && accuracy >= 70}
@@ -74,11 +69,11 @@ const EmojiClassifier = () => {
       totalCoins={totalCoins}
       totalXp={totalXp}
       showGameOver={showResult && accuracy >= 70}
-      
+      maxScore={emojis.length}
       gameId="ai-kids-5"
       gameType="ai"
-      totalLevels={20}
-      currentLevel={5}
+      totalLevels={emojis.length}
+      currentLevel={currentEmoji + 1}
       showConfetti={showResult && accuracy >= 70}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}

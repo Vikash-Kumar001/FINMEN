@@ -1,191 +1,293 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SafeAIQuiz = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-80");
+  const gameId = gameData?.id || "ai-kids-80";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // 5 Safe AI questions
   const questions = [
     {
       id: 1,
       text: "Should you tell a robot your home address?",
-      emoji: "🏠🤖",
-      choices: [
-        { id: 1, text: "Yes", emoji: "✅", isCorrect: false },
-        { id: 2, text: "No", emoji: "🚫", isCorrect: true },
-      ],
+      options: [
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "🚫", 
+          description: "Never share your home address with robots or AI - it's private information",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "You should never share your home address with robots",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "You should never share your home address - it's private",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "Should AI know your passwords?",
-      emoji: "🔑🤖",
-      choices: [
-        { id: 1, text: "Yes", emoji: "✅", isCorrect: false },
-        { id: 2, text: "No", emoji: "🚫", isCorrect: true },
-      ],
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI should never know your passwords - keep them private",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "🚫", 
+          description: "Never share your passwords with AI - keep them private and secure",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "You should never share your passwords with AI",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "Can a robot access your private photos without permission?",
-      emoji: "📷🤖",
-      choices: [
-        { id: 1, text: "Yes", emoji: "❌", isCorrect: false },
-        { id: 2, text: "No", emoji: "✔️", isCorrect: true },
-      ],
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "Robots should never access your private photos without permission",
+          isCorrect: false
+        },
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "❌", 
+          description: "Robots should never access your private photos without permission",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "✔️", 
+          description: "Robots should never access your private photos without your permission",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
       text: "Should AI share your personal data with strangers?",
-      emoji: "💻🤖",
-      choices: [
-        { id: 1, text: "Yes", emoji: "❌", isCorrect: false },
-        { id: 2, text: "No", emoji: "✔️", isCorrect: true },
-      ],
+      options: [
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "✔️", 
+          description: "AI should never share your personal data with strangers - it's private",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "❌", 
+          description: "AI should never share your personal data with strangers",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI should never share your personal data - it's private",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       text: "Is it safe to let a robot track your location without consent?",
-      emoji: "📍🤖",
-      choices: [
-        { id: 1, text: "Yes", emoji: "❌", isCorrect: false },
-        { id: 2, text: "No", emoji: "✔️", isCorrect: true },
-      ],
-    },
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "Robots should never track your location without your consent",
+          isCorrect: false
+        },
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "❌", 
+          description: "Robots should never track your location without your consent",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "✔️", 
+          description: "Robots should never track your location without your consent - it's not safe",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-
-  const question = questions[currentQuestion];
-  const selectedChoiceData = question.choices.find((c) => c.id === selectedChoice);
-  const isLastQuestion = currentQuestion === questions.length - 1;
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = question.choices.find((c) => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, false);
-      setCoins((prev) => prev + 5);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-    setShowFeedback(true);
-  };
-
-  const handleNext = () => {
-    if (!isLastQuestion) {
-      setCurrentQuestion((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      navigate("/student/ai-for-all/kids/robot-helper-or-villain"); // next game
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
+
+  const handleNext = () => {
+    navigate("/student/ai-for-all/kids/robot-helper-or-villain");
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Safe AI Quiz"
+      score={coins}
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showFeedback && selectedChoiceData?.isCorrect}
-      showGameOver={isLastQuestion && showFeedback && selectedChoiceData?.isCorrect}
-      score={coins}
-      gameId={`ai-kids-80-${currentQuestion + 1}`}
-      gameType="ai"
-      totalLevels={100}
-      currentLevel={80 + currentQuestion}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      flashPoints={() => {}}
-      showAnswerConfetti={() => {}}
-      backPath="/games/ai-for-all/kids"
+      showGameOver={showResult && finalScore >= 3}
+      
+      gameId={gameId}
+      gameType="ai"
+      totalLevels={20}
+      currentLevel={80}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-6 text-center">{question.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-8">
-              <p className="text-white text-2xl leading-relaxed text-center font-semibold">
-                {question.text}
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {question.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`border-3 rounded-xl p-10 transition-all ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : choice.isCorrect
-                      ? "bg-green-500/20 border-green-400 hover:bg-green-500/30"
-                      : "bg-red-500/20 border-red-400 hover:bg-red-500/30"
-                  }`}
-                >
-                  <div className="text-6xl mb-2">{choice.emoji}</div>
-                  <div className="text-white font-bold text-3xl">{choice.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Answer
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">{selectedChoiceData?.isCorrect ? "🔒" : "⚠️"}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "Smart Choice!" : "Think Again..."}
-            </h2>
-
-            {selectedChoiceData?.isCorrect ? (
-              <p className="text-yellow-400 text-2xl font-bold text-center">You earned 5 Coins! 🪙</p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about AI safety!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand how to stay safe when using AI!
+                </p>
+              </div>
             ) : (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
-
-            {selectedChoiceData?.isCorrect && (
-              <button
-                onClick={handleNext}
-                className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition"
-              >
-                {isLastQuestion ? "Finish" : "Next Question"}
-              </button>
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about AI safety!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about what information should be kept private from AI.
+                </p>
+              </div>
             )}
           </div>
         )}

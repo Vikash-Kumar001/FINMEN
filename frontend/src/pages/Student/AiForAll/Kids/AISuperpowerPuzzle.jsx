@@ -1,169 +1,294 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const AISuperpowerPuzzle = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
-  const puzzles = [
-    ["AI", "is", "Powerful", "but", "Needs", "Rules"],
-    ["AI", "can", "Learn", "from", "Data"],
-    ["AI", "helps", "Humans", "solve", "Problems"],
-    ["AI", "needs", "Ethics", "and", "Guidelines"],
-    ["AI", "is", "Fast", "Accurate", "and", "Helpful"]
-  ];
-
-  const shuffledPuzzles = [
-    ["Needs", "AI", "Powerful", "Rules", "is", "but"],
-    ["Learn", "can", "from", "AI", "Data"],
-    ["Humans", "solve", "AI", "helps", "Problems"],
-    ["and", "Ethics", "AI", "needs", "Guidelines"],
-    ["Fast", "AI", "Helpful", "Accurate", "and", "is"]
-  ];
-
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [currentOrder, setCurrentOrder] = useState([]);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-kids-90";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [coins, setCoins] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
-  const correctOrder = puzzles[currentPuzzle];
-  const shuffledWords = shuffledPuzzles[currentPuzzle];
+  // AI concepts (left side)
+  const leftItems = [
+    { id: 1, name: 'AI is Powerful', emoji: '⚡', description: 'AI has great capabilities' },
+    { id: 2, name: 'AI can Learn', emoji: '🧠', description: 'AI learns from data' },
+    { id: 3, name: 'AI helps Humans', emoji: '🤝', description: 'AI assists people' },
+    { id: 4, name: 'AI needs Ethics', emoji: '⚖️', description: 'AI requires guidelines' },
+    { id: 5, name: 'AI is Fast', emoji: '🚀', description: 'AI processes quickly' }
+  ];
 
-  const isLastPuzzle = currentPuzzle === puzzles.length - 1;
+  // Completions (right side) - manually arranged to vary correct answer positions
+  const rightItems = [
+    { id: 2, name: 'from Data', emoji: '📊', description: 'AI learns from information' }, // Matches left 2 (right position 1)
+    { id: 4, name: 'and Guidelines', emoji: '📋', description: 'AI needs rules to follow' }, // Matches left 4 (right position 2)
+    { id: 1, name: 'but Needs Rules', emoji: '🛡️', description: 'AI needs boundaries' }, // Matches left 1 (right position 3)
+    { id: 5, name: 'Accurate and Helpful', emoji: '✅', description: 'AI is precise and useful' }, // Matches left 5 (right position 4)
+    { id: 3, name: 'solve Problems', emoji: '💡', description: 'AI helps with solutions' } // Matches left 3 (right position 5)
+  ];
 
-  const handleSelectWord = (word) => {
-    if (!currentOrder.includes(word)) {
-      setCurrentOrder([...currentOrder, word]);
-    }
+  // Correct matches - manually defined to split correct answers across different positions
+  const correctMatches = [
+    { leftId: 1, rightId: 1 }, // AI is Powerful → but Needs Rules (left 1st, right 3rd)
+    { leftId: 2, rightId: 2 }, // AI can Learn → from Data (left 2nd, right 1st)
+    { leftId: 3, rightId: 3 }, // AI helps Humans → solve Problems (left 3rd, right 5th)
+    { leftId: 4, rightId: 4 }, // AI needs Ethics → and Guidelines (left 4th, right 2nd)
+    { leftId: 5, rightId: 5 }  // AI is Fast → Accurate and Helpful (left 5th, right 4th)
+  ];
+
+  // Check if a left item is already matched
+  const isLeftItemMatched = (itemId) => {
+    return matches.some(match => match.leftId === itemId);
   };
 
-  const handleConfirm = () => {
-    const isCorrect = JSON.stringify(currentOrder) === JSON.stringify(correctOrder);
+  // Check if a right item is already matched
+  const isRightItemMatched = (itemId) => {
+    return matches.some(match => match.rightId === itemId);
+  };
 
-    if (isCorrect) {
-      setCoins((prev) => prev + 5);
-      showCorrectAnswerFeedback(5, true);
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    if (isLeftItemMatched(item.id)) return;
+    setSelectedLeft(item);
+  };
+
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    if (isRightItemMatched(item.id)) return;
+    setSelectedRight(item);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
+
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add coins and show feedback
+    if (newMatch.isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    setShowResult(true);
+    // Check if all items are matched
+    if (newMatches.length === leftItems.length) {
+      // Calculate final score
+      const correctCount = newMatches.filter(match => match.isCorrect).length;
+      setFinalScore(correctCount);
+      setShowResult(true);
+    }
+
+    // Reset selections
+    setSelectedLeft(null);
+    setSelectedRight(null);
+  };
+
+  // Get match result for a left item
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.leftId === itemId);
+    return match ? match.isCorrect : null;
+  };
+
+  // Get match result for a right item
+  const getRightMatchResult = (itemId) => {
+    const match = matches.find(m => m.rightId === itemId);
+    return match ? match.isCorrect : null;
   };
 
   const handleTryAgain = () => {
-    setCurrentOrder([]);
     setShowResult(false);
+    setMatches([]);
+    setSelectedLeft(null);
+    setSelectedRight(null);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    if (!isLastPuzzle) {
-      setCurrentPuzzle((prev) => prev + 1);
-      setCurrentOrder([]);
-      setShowResult(false);
-    } else {
-      navigate("/student/ai-for-all/kids/robot-spy-story");
+  // Log when game completes
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 AI Superpower Puzzle game completed! Score: ${finalScore}/${leftItems.length}, gameId: ${gameId}`);
     }
-  };
+  }, [showResult, finalScore, gameId, leftItems.length]);
 
   return (
     <GameShell
-      title="AI Superpower Puzzle"
+      title="Puzzle: AI Superpower"
       score={coins}
-      subtitle={`Puzzle ${currentPuzzle + 1} of ${puzzles.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && coins > 0}
+      subtitle={showResult ? "Game Complete!" : "Match AI concepts with their completions"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={isLastPuzzle && showResult && coins > 0}
-      
-      gameId={`ai-kids-90-${currentPuzzle + 1}`}
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
       gameType="ai"
-      totalLevels={100}
-      currentLevel={90 + currentPuzzle}
-      showConfetti={showResult && coins > 0}
-      flashPoints={() => {}}
-      showAnswerConfetti={() => {}}
-      backPath="/games/ai-for-all/kids"
+      totalLevels={leftItems.length}
+      currentLevel={matches.length + 1}
+      maxScore={leftItems.length}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
     >
-      <div className="space-y-8">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-5xl mx-auto px-4 py-4">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">
-              Arrange the words to form a sentence:
-            </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            {/* Left column - AI Concepts */}
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 text-center">AI Concepts</h3>
+              <div className="space-y-3 md:space-y-4">
+                {leftItems.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleLeftSelect(item)}
+                    disabled={isLeftItemMatched(item.id)}
+                    className={`w-full p-3 md:p-4 rounded-lg md:rounded-xl text-left transition-all ${
+                      isLeftItemMatched(item.id)
+                        ? getMatchResult(item.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedLeft?.id === item.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    } disabled:cursor-not-allowed`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-xl md:text-2xl mr-2 md:mr-3">{item.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white text-sm md:text-base">{item.name}</h4>
+                        <p className="text-white/80 text-xs md:text-sm">{item.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-            <div className="bg-blue-500/20 rounded-lg p-6 mb-6 min-h-[100px] flex flex-wrap gap-2 justify-center items-center">
-              {currentOrder.map((word, idx) => (
-                <div
-                  key={idx}
-                  className="bg-purple-500/50 text-white px-4 py-2 rounded-lg font-semibold text-lg"
-                >
-                  {word}
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20 text-center w-full">
+                <p className="text-white/80 mb-3 md:mb-4 text-sm md:text-base">
+                  {selectedLeft 
+                    ? `Selected: ${selectedLeft.name}` 
+                    : "Select a concept"}
+                </p>
+                {selectedLeft && selectedRight && (
+                  <button
+                    onClick={handleMatch}
+                    className="w-full py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105 text-sm md:text-base"
+                  >
+                    Match!
+                  </button>
+                )}
+                {(!selectedLeft || !selectedRight) && (
+                  <div className="w-full py-2 md:py-3 px-4 md:px-6 rounded-full font-bold bg-gray-500/30 text-gray-400 cursor-not-allowed text-sm md:text-base">
+                    Match!
+                  </div>
+                )}
+                <div className="mt-3 md:mt-4 text-white/80 text-xs md:text-sm">
+                  <p>Coins: {coins}</p>
+                  <p>Matched: {matches.length}/{leftItems.length}</p>
                 </div>
-              ))}
+              </div>
             </div>
 
-            <h3 className="text-white font-bold mb-4 text-center">Select a word:</h3>
-
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              {shuffledWords.map((word, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSelectWord(word)}
-                  disabled={currentOrder.includes(word)}
-                  className={`border-2 rounded-xl p-4 transition-all ${
-                    currentOrder.includes(word)
-                      ? "bg-gray-500/50 cursor-not-allowed"
-                      : "bg-green-500/30 border-green-400 hover:bg-green-500/50"
-                  }`}
-                >
-                  <div className="text-white font-bold text-lg">{word}</div>
-                </button>
-              ))}
+            {/* Right column - Completions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 text-center">Completions</h3>
+              <div className="space-y-3 md:space-y-4">
+                {rightItems.map(item => {
+                  const isMatched = isRightItemMatched(item.id);
+                  const isCorrectMatch = getRightMatchResult(item.id);
+                  
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleRightSelect(item)}
+                      disabled={isMatched}
+                      className={`w-full p-3 md:p-4 rounded-lg md:rounded-xl text-left transition-all ${
+                        isMatched
+                          ? isCorrectMatch
+                            ? "bg-green-500/30 border-2 border-green-500"
+                            : "bg-red-500/30 border-2 border-red-500"
+                          : selectedRight?.id === item.id
+                          ? "bg-purple-500/50 border-2 border-purple-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                      } disabled:cursor-not-allowed`}
+                    >
+                      <div className="flex items-center">
+                        <div className="text-xl md:text-2xl mr-2 md:mr-3">{item.emoji}</div>
+                        <div>
+                          <h4 className="font-bold text-white text-sm md:text-base">{item.name}</h4>
+                          <p className="text-white/80 text-xs md:text-sm">{item.description}</p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={currentOrder.length !== correctOrder.length}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                currentOrder.length === correctOrder.length
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Sentence
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {coins > 0 ? "🎉 Perfect!" : "💪 Try Again!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              {coins > 0
-                ? "You arranged the sentence correctly!"
-                : `The correct sentence was: '${correctOrder.join(" ")}'`}
-            </p>
-
-            {coins > 0 ? (
-              <p className="text-yellow-400 text-2xl font-bold text-center mb-4">
-                You earned 5 Coins! 🪙
-              </p>
-            ) : null}
-
-            <button
-              onClick={coins > 0 ? handleNext : handleTryAgain}
-              className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              {isLastPuzzle ? "Finish" : coins > 0 ? "Next Puzzle" : "Try Again"}
-            </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Great Matching!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You correctly matched {finalScore} out of {leftItems.length} concepts!
+                  You understand AI's superpowers and its need for rules!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  AI is powerful, fast, and helpful, but it needs ethics and guidelines to work safely!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You matched {finalScore} out of {leftItems.length} concepts correctly.
+                  Remember, AI has superpowers but needs rules!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to match each AI concept with its completion.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

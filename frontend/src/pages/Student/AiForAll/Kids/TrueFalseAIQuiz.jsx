@@ -1,218 +1,293 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const TrueFalseAIQuiz = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [score, setScore] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-4");
+  const gameId = gameData?.id || "ai-kids-4";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // ✅ 5 True/False Questions
   const questions = [
     {
+      id: 1,
       text: "AI means Artificial Intelligence.",
-      emoji: "🤖",
-      correct: "true",
+      options: [
+        { 
+          id: "true", 
+          text: "True", 
+          emoji: "✓", 
+          description: "AI stands for Artificial Intelligence",
+          isCorrect: true
+        },
+        { 
+          id: "false", 
+          text: "False", 
+          emoji: "✗", 
+          description: "This statement is actually true",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI definitely means Artificial Intelligence",
+          isCorrect: false
+        }
+      ]
     },
     {
+      id: 2,
       text: "Robots and AI are exactly the same thing.",
-      emoji: "🦾",
-      correct: "false",
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "Robots and AI are different things",
+          isCorrect: false
+        },
+        { 
+          id: "false", 
+          text: "False", 
+          emoji: "✗", 
+          description: "Robots are machines, AI is intelligence - they're different",
+          isCorrect: true
+        },
+        { 
+          id: "true", 
+          text: "True", 
+          emoji: "✓", 
+          description: "Robots and AI are not the same thing",
+          isCorrect: false
+        }
+      ]
     },
     {
+      id: 3,
       text: "AI can help doctors find diseases early.",
-      emoji: "🏥",
-      correct: "true",
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI definitely helps doctors detect diseases early",
+          isCorrect: false
+        },
+        { 
+          id: "false", 
+          text: "False", 
+          emoji: "✗", 
+          description: "AI is used to help doctors find diseases early",
+          isCorrect: false
+        },
+        { 
+          id: "true", 
+          text: "True", 
+          emoji: "✓", 
+          description: "AI can analyze medical data to detect diseases early",
+          isCorrect: true
+        }
+      ]
     },
     {
+      id: 4,
       text: "AI never makes mistakes.",
-      emoji: "🚫",
-      correct: "false",
+      options: [
+        { 
+          id: "false", 
+          text: "False", 
+          emoji: "✗", 
+          description: "AI can make mistakes, just like humans",
+          isCorrect: true
+        },
+        { 
+          id: "true", 
+          text: "True", 
+          emoji: "✓", 
+          description: "AI systems can make errors",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI is not perfect and can make mistakes",
+          isCorrect: false
+        }
+      ]
     },
     {
+      id: 5,
       text: "AI can learn from data and experience.",
-      emoji: "📊",
-      correct: "true",
-    },
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI definitely learns from data and experience",
+          isCorrect: false
+        },
+        { 
+          id: "false", 
+          text: "False", 
+          emoji: "✗", 
+          description: "Learning from data is a key feature of AI",
+          isCorrect: false
+        },
+        { 
+          id: "true", 
+          text: "True", 
+          emoji: "✓", 
+          description: "AI uses machine learning to learn from data",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const question = questions[currentQuestion];
-
-  const handleChoice = (choice) => {
-    setSelectedChoice(choice);
-  };
-
-  const handleConfirm = () => {
-    const isCorrect = selectedChoice === question.correct;
-
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore((prev) => prev + 1);
-      showCorrectAnswerFeedback(5, true);
-      setCoins((prev) => prev + 5);
-      
-      // Automatically move to next question after a short delay
-      setTimeout(() => {
-        resetFeedback();
-        setSelectedChoice(null);
-        
-        if (currentQuestion < questions.length - 1) {
-          setCurrentQuestion(currentQuestion + 1);
-        } else {
-          // All questions done → show game over
-          setShowFeedback(true);
-        }
-      }, 500);
-    } else {
-      // Show feedback only for wrong answers
-      setShowFeedback(true);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
-
-  const handleNextQuestion = () => {
-    resetFeedback();
-    setSelectedChoice(null);
-    setShowFeedback(false);
-
+    
+    // Move to next question or show results
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0); // Delay if correct to show animation
     } else {
-      // ✅ All questions done → move to next game
-      navigate("/student/ai-for-all/kids/emoji-classifier");
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
+
+  const handleNext = () => {
+    navigate("/student/ai-for-all/kids/emoji-classifier");
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="True or False AI Quiz"
-      score={score}
+      score={coins}
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={() => navigate("/student/ai-for-all/kids/emoji-classifier")}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      nextEnabled={showFeedback && currentQuestion === questions.length - 1}
-      showGameOver={showFeedback && currentQuestion === questions.length - 1}
+      showGameOver={showResult && finalScore >= 3}
       
-      gameId="ai-kids-4"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={questions.length}
-      maxScore={questions.length}
+      totalLevels={20}
       currentLevel={4}
-      showConfetti={showFeedback && coins > 0}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/kids"
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-6 text-center">{question.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-8">
-              <p className="text-white text-2xl leading-relaxed text-center font-semibold">
-                {question.text}
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice("true")}
-                className={`border-3 rounded-xl p-8 transition-all ${
-                  selectedChoice === "true"
-                    ? "bg-green-500/50 border-green-400 ring-2 ring-white"
-                    : "bg-green-500/20 border-green-400 hover:bg-green-500/30"
-                }`}
-              >
-                <div className="text-5xl mb-2">✓</div>
-                <div className="text-white font-bold text-2xl">TRUE</div>
-              </button>
-              <button
-                onClick={() => handleChoice("false")}
-                className={`border-3 rounded-xl p-8 transition-all ${
-                  selectedChoice === "false"
-                    ? "bg-red-500/50 border-red-400 ring-2 ring-white"
-                    : "bg-red-500/20 border-red-400 hover:bg-red-500/30"
-                }`}
-              >
-                <div className="text-5xl mb-2">✗</div>
-                <div className="text-white font-bold text-2xl">FALSE</div>
-              </button>
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Answer
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            {selectedChoice !== question.correct ? (
-              <>
-                <div className="text-8xl mb-4 text-center">❌</div>
-                <h2 className="text-3xl font-bold text-white mb-4 text-center">
-                  Not Quite...
-                </h2>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Oops! That's not right — remember, {question.correct === "true"
-                      ? "this statement is TRUE."
-                      : "this statement is FALSE."}
-                  </p>
-                </div>
-                <div className="flex justify-center gap-4 mt-6">
-                  <button
-                    onClick={handleTryAgain}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="text-8xl mb-4 text-center">✨</div>
-                <h2 className="text-3xl font-bold text-white mb-4 text-center">
-                  Quiz Complete! 🎉
-                </h2>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Great job understanding AI concepts! 🌟
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center mb-6">
-                  Total Coins Earned: {coins} 🪙
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about AI concepts!
                 </p>
-                <div className="flex justify-center gap-4 mt-6">
-                  <button
-                    onClick={handleNextQuestion}
-                    className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                  >
-                    Continue →
-                  </button>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
                 </div>
-              </>
+                <p className="text-white/80">
+                  You understand the basics of Artificial Intelligence!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about AI!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to think carefully about each statement about AI.
+                </p>
+              </div>
             )}
           </div>
         )}

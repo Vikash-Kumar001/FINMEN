@@ -1,227 +1,303 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const DataCollectorSimulation = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-kids-74";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const [coins, setCoins] = useState(0);
+  const [currentScenario, setCurrentScenario] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // 🧠 5 questions — all based on “Data Collection for AI”
-  const questions = [
+  const scenarios = [
     {
       id: 1,
-      emoji: "🖼️",
       title: "Image Collector",
-      situation: "You are collecting photos for an AI to identify fruits. Which image should you choose?",
+      description: "You are collecting photos for an AI to identify fruits. Which image should you choose?",
       choices: [
-        { id: 1, text: "A clear photo of an apple", emoji: "🍎", isCorrect: true },
-        { id: 2, text: "A blurry image", emoji: "🌫️", isCorrect: false },
-        { id: 3, text: "A cartoon of a banana", emoji: "🍌", isCorrect: false },
-      ],
-      feedback: "Great! Clear, real images help AI models learn objects correctly.",
+        { 
+          id: "clear_apple", 
+          text: "A clear photo of an apple", 
+          emoji: "🍎", 
+          description: "Clear, real images help AI learn correctly",
+          isCorrect: true
+        },
+        { 
+          id: "blurry", 
+          text: "A blurry image", 
+          emoji: "🌫️", 
+          description: "Blurry images don't help AI learn",
+          isCorrect: false
+        },
+        { 
+          id: "cartoon", 
+          text: "A cartoon of a banana", 
+          emoji: "🍌", 
+          description: "Cartoons are not real data for training",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      emoji: "🎵",
       title: "Sound Recorder",
-      situation: "AI is learning animal sounds. Which data is correct?",
+      description: "AI is learning animal sounds. Which data is correct?",
       choices: [
-        { id: 1, text: "A recording of a cat’s meow", emoji: "🐱", isCorrect: true },
-        { id: 2, text: "A random background noise", emoji: "📢", isCorrect: false },
-        { id: 3, text: "A person saying 'meow'", emoji: "🗣️", isCorrect: false },
-      ],
-      feedback: "Right! Authentic sound data helps AI recognize real patterns.",
+        { 
+          id: "background", 
+          text: "A random background noise", 
+          emoji: "📢", 
+          description: "Background noise is not useful data",
+          isCorrect: false
+        },
+        { 
+          id: "cat_meow", 
+          text: "A recording of a cat's meow", 
+          emoji: "🐱", 
+          description: "Authentic sound data helps AI recognize patterns",
+          isCorrect: true
+        },
+        { 
+          id: "person_meow", 
+          text: "A person saying 'meow'", 
+          emoji: "🗣️", 
+          description: "Human imitation is not real animal sound",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      emoji: "📄",
       title: "Text Collector",
-      situation: "You are training an AI chatbot. Which text should you collect?",
+      description: "You are training an AI chatbot. Which text should you collect?",
       choices: [
-        { id: 1, text: "Polite and correct sentences", emoji: "💬", isCorrect: true },
-        { id: 2, text: "Spam messages", emoji: "🚫", isCorrect: false },
-        { id: 3, text: "Broken text with symbols", emoji: "❌", isCorrect: false },
-      ],
-      feedback: "Exactly! Clean, polite text data improves chatbot behavior.",
+        { 
+          id: "spam", 
+          text: "Spam messages", 
+          emoji: "🚫", 
+          description: "Spam is not good training data",
+          isCorrect: false
+        },
+        { 
+          id: "broken", 
+          text: "Broken text with symbols", 
+          emoji: "❌", 
+          description: "Broken text doesn't help AI learn",
+          isCorrect: false
+        },
+        { 
+          id: "polite", 
+          text: "Polite and correct sentences", 
+          emoji: "💬", 
+          description: "Clean, polite text improves chatbot behavior",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
-      emoji: "📸",
       title: "Diversity Matters",
-      situation: "To make AI fair, what kind of images should be collected?",
+      description: "To make AI fair, what kind of images should be collected?",
       choices: [
-        { id: 1, text: "Images from many people and places", emoji: "🌍", isCorrect: true },
-        { id: 2, text: "Only from one country", emoji: "🇮🇳", isCorrect: false },
-        { id: 3, text: "Only of famous people", emoji: "⭐", isCorrect: false },
-      ],
-      feedback: "Perfect! Diverse datasets help AI be unbiased and fair.",
+        { 
+          id: "diverse", 
+          text: "Images from many people and places", 
+          emoji: "🌍", 
+          description: "Diverse datasets help AI be unbiased and fair",
+          isCorrect: true
+        },
+        { 
+          id: "one_country", 
+          text: "Only from one country", 
+          emoji: "🇮🇳", 
+          description: "Limited diversity creates bias",
+          isCorrect: false
+        },
+        { 
+          id: "famous", 
+          text: "Only of famous people", 
+          emoji: "⭐", 
+          description: "Limited diversity doesn't help fairness",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      emoji: "💾",
       title: "Data Safety",
-      situation: "Before uploading data, what must you do?",
+      description: "Before uploading data, what must you do?",
       choices: [
-        { id: 1, text: "Remove personal details", emoji: "🔒", isCorrect: true },
-        { id: 2, text: "Share full contact info", emoji: "📱", isCorrect: false },
-        { id: 3, text: "Post on social media", emoji: "📢", isCorrect: false },
-      ],
-      feedback: "Excellent! Data privacy is vital when collecting information for AI.",
-    },
+        { 
+          id: "share_contact", 
+          text: "Share full contact info", 
+          emoji: "📱", 
+          description: "Sharing personal info is unsafe",
+          isCorrect: false
+        },
+        { 
+          id: "remove_personal", 
+          text: "Remove personal details", 
+          emoji: "🔒", 
+          description: "Data privacy is vital when collecting information",
+          isCorrect: true
+        },
+        { 
+          id: "social_media", 
+          text: "Post on social media", 
+          emoji: "📢", 
+          description: "Posting data publicly is unsafe",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const currentQuestion = questions[currentQuestionIndex];
-  const selectedChoiceData = currentQuestion.choices.find(c => c.id === selectedChoice);
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = currentQuestion.choices.find(c => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(10, true);
-      setCoins(10);
-      setTotalCoins((prev) => prev + 10);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      scenarioId: scenarios[currentScenario].id, 
+      choice: selectedChoice,
+      isCorrect: scenarios[currentScenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = scenarios[currentScenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setCoins(0);
+      showCorrectAnswerFeedback(0, false);
     }
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      setCoins(0);
-      resetFeedback();
+    
+    // Move to next scenario or show results
+    if (currentScenario < scenarios.length - 1) {
+      setTimeout(() => {
+        setCurrentScenario(prev => prev + 1);
+      }, isCorrect ? 1000 : 500);
     } else {
-      navigate("/student/ai-for-all/kids/training-hero-badge");
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentScenario(0);
+    setChoices([]);
     setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
+  const getCurrentScenario = () => scenarios[currentScenario];
+
+  // Log when game completes
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Data Collector Simulation game completed! Score: ${finalScore}/${scenarios.length}, gameId: ${gameId}`);
+    }
+  }, [showResult, finalScore, gameId, scenarios.length]);
+
   return (
     <GameShell
-      title="Data Collector Simulation"
+      title="Simulation: Data Collector"
       score={coins}
-      subtitle={`Question ${currentQuestionIndex + 1} of ${questions.length}`}
-      onNext={handleNextQuestion}
-      nextEnabled={showFeedback && coins > 0}
+      subtitle={`Scenario ${currentScenario + 1} of ${scenarios.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showFeedback && currentQuestionIndex === questions.length - 1 && coins > 0}
-      
-      gameId="ai-kids-data-collector-74"
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
       gameType="ai"
-      totalLevels={100}
-      currentLevel={74}
-      showConfetti={showFeedback && coins > 0}
+      totalLevels={scenarios.length}
+      currentLevel={currentScenario + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/kids"
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-9xl mb-4 text-center">{currentQuestion.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              {currentQuestion.title}
-            </h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-xl leading-relaxed text-center font-semibold">
-                {currentQuestion.situation}
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Scenario {currentScenario + 1}/{scenarios.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{getCurrentScenario().title}</h3>
+              <p className="text-white text-lg mb-6">
+                {getCurrentScenario().description}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentScenario().choices.map(choice => (
+                  <button
+                    key={choice.id}
+                    onClick={() => handleChoice(choice.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-center"
+                  >
+                    <div className="flex flex-col items-center">
+                      <div className="text-3xl mb-3">{choice.emoji}</div>
+                      <h4 className="font-bold text-lg mb-2">{choice.text}</h4>
+                      <p className="text-white/90 text-sm">{choice.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="space-y-3 mb-6">
-              {currentQuestion.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "✅ Correct Data!" : "❌ Not the Right Data!"}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">{currentQuestion.feedback}</p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Data Collection!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You made {finalScore} smart data collection decisions out of {scenarios.length} scenarios!
+                  You're learning how to collect quality data for AI training!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
                 </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 10 Coins! 🪙
+                <p className="text-white/80">
+                  You understand that data should be accurate, diverse, clean, and safe before training AI!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You made {finalScore} smart data collection decisions out of {scenarios.length} scenarios.
+                  Remember, quality data helps AI learn correctly!
                 </p>
                 <button
-                  onClick={handleNextQuestion}
-                  className="mt-6 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  {currentQuestionIndex < questions.length - 1
-                    ? "Next Question ➡️"
-                    : "Finish Simulation ✅"}
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Remember: Data should be accurate, diverse, and clean before training AI!
-                  </p>
-                </div>
-                <button
                   onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that collects accurate, diverse, clean, and safe data.
+                </p>
+              </div>
             )}
           </div>
         )}

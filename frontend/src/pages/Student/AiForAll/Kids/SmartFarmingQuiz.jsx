@@ -1,209 +1,294 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SmartFarmingQuiz = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-42");
+  const gameId = gameData?.id || "ai-kids-42";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-
-  const quizQuestions = [
+  const questions = [
     {
+      id: 1,
       text: "Does AI help farmers with crop prediction?",
-      emoji: "🌾",
-      choices: [
-        { id: 1, text: "Yes", emoji: "✅", isCorrect: true },
-        { id: 2, text: "No", emoji: "❌", isCorrect: false }
-      ],
-      explanation: "Yes! AI analyzes weather, soil, and crop data to help farmers predict yields and improve farming decisions."
+      options: [
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "AI analyzes weather, soil, and crop data to help farmers predict yields",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "❌", 
+          description: "AI actually helps farmers predict crops by analyzing data",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI definitely helps farmers with crop prediction",
+          isCorrect: false
+        }
+      ]
     },
     {
+      id: 2,
       text: "Can AI detect plant diseases early?",
-      emoji: "🌱",
-      choices: [
-        { id: 1, text: "Yes", emoji: "✅", isCorrect: true },
-        { id: 2, text: "No", emoji: "❌", isCorrect: false }
-      ],
-      explanation: "AI systems can identify early signs of diseases through images of crops, allowing farmers to take preventive actions."
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI systems can identify early signs of diseases through images",
+          isCorrect: false
+        },
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "AI systems can identify early signs of diseases through images of crops",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "❌", 
+          description: "AI can actually detect plant diseases early through image analysis",
+          isCorrect: false
+        }
+      ]
     },
     {
+      id: 3,
       text: "Does AI help optimize water usage in farming?",
-      emoji: "💧",
-      choices: [
-        { id: 1, text: "Yes", emoji: "✅", isCorrect: true },
-        { id: 2, text: "No", emoji: "❌", isCorrect: false }
-      ],
-      explanation: "AI can monitor soil moisture and irrigation needs, helping farmers save water while improving crop growth."
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI can monitor soil moisture and irrigation needs",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "❌", 
+          description: "AI can actually help optimize water usage in farming",
+          isCorrect: false
+        },
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "AI can monitor soil moisture and irrigation needs, helping farmers save water",
+          isCorrect: true
+        }
+      ]
     },
     {
+      id: 4,
       text: "Can AI robots harvest crops automatically?",
-      emoji: "🤖",
-      choices: [
-        { id: 1, text: "Yes", emoji: "✅", isCorrect: true },
-        { id: 2, text: "No", emoji: "❌", isCorrect: false }
-      ],
-      explanation: "Yes, AI-powered robots can pick fruits and vegetables efficiently, reducing manual labor and increasing productivity."
+      options: [
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "AI-powered robots can pick fruits and vegetables efficiently",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "❌", 
+          description: "AI-powered robots can actually harvest crops automatically",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI-powered robots can definitely harvest crops automatically",
+          isCorrect: false
+        }
+      ]
     },
     {
+      id: 5,
       text: "Does AI provide fertilizer recommendations?",
-      emoji: "🧪",
-      choices: [
-        { id: 1, text: "Yes", emoji: "✅", isCorrect: true },
-        { id: 2, text: "No", emoji: "❌", isCorrect: false }
-      ],
-      explanation: "AI can suggest the right type and amount of fertilizer based on soil analysis and crop requirements."
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI can suggest the right type and amount of fertilizer",
+          isCorrect: false
+        },
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "AI can suggest the right type and amount of fertilizer based on soil analysis",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "❌", 
+          description: "AI can actually provide fertilizer recommendations",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const currentQuestion = quizQuestions[currentIndex];
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = currentQuestion.choices.find((c) => c.id === selectedChoice);
-    const isCorrect = choice.isCorrect;
-
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setCoins((prev) => prev + 5);
-      showCorrectAnswerFeedback(5, true);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    setShowFeedback(true);
-  };
-
-  const handleNext = () => {
-    if (currentIndex < quizQuestions.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      navigate("/student/ai-for-all/kids/ai-artist-game");
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
-  const selectedChoiceData = currentQuestion.choices.find((c) => c.id === selectedChoice);
+
+  const handleNext = () => {
+    navigate("/student/ai-for-all/kids/ai-artist-game");
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Smart Farming Quiz"
-      subtitle="AI in Agriculture"
+      score={coins}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showFeedback}
-      showGameOver={currentIndex === quizQuestions.length - 1 && showFeedback}
-      score={totalCoins}
-      gameId="ai-kids-smartfarming-42"
-      gameType="ai"
-      totalLevels={100}
-      currentLevel={42}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      
+      gameId={gameId}
+      gameType="ai"
+      totalLevels={20}
+      currentLevel={42}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          // ---- Question View ----
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-9xl mb-6 text-center">{currentQuestion.emoji}</div>
-            <div className="bg-green-500/20 rounded-lg p-5 mb-8">
-              <p className="text-white text-2xl leading-relaxed text-center font-semibold">
-                {currentQuestion.text}
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {currentQuestion.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`border-3 rounded-xl p-10 transition-all ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-green-500/20 border-green-400 hover:bg-green-500/30"
-                  }`}
-                >
-                  <div className="text-6xl mb-2">{choice.emoji}</div>
-                  <div className="text-white font-bold text-3xl">{choice.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Answer
-            </button>
           </div>
         ) : (
-          // ---- Feedback View ----
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "🌟" : "❌"}
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "Well Done!" : "Not Quite..."}
-            </h2>
-
-            <div
-              className={`rounded-lg p-4 mb-4 ${
-                selectedChoiceData?.isCorrect
-                  ? "bg-green-500/20"
-                  : "bg-red-500/20"
-              }`}
-            >
-              <p className="text-white text-center">{currentQuestion.explanation}</p>
-            </div>
-
-            {selectedChoiceData?.isCorrect ? (
-              <p className="text-yellow-400 text-2xl font-bold text-center mb-6">
-                +5 Coins Earned! 🪙
-              </p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about AI in agriculture!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand how AI helps farmers grow better crops!
+                </p>
+              </div>
             ) : (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about AI in farming!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about how AI can help farmers with crops, water, and harvesting.
+                </p>
+              </div>
             )}
-
-            {/* ✅ Added Next Question Button */}
-            <button
-              onClick={handleNext}
-              className="mt-6 w-full bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              {currentIndex === quizQuestions.length - 1
-                ? "Finish Quiz 🎉"
-                : "Next Question ➡️"}
-            </button>
           </div>
         )}
       </div>

@@ -1,176 +1,293 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const GoodBadAIQuiz = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-76");
+  const gameId = gameData?.id || "ai-kids-76";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
-    { id: 1, text: "AI helping blind people = Good AI?", emoji: "🤖", correct: "yes" },
-    { id: 2, text: "AI spreading false news = Good AI?", emoji: "📰", correct: "no" },
-    { id: 3, text: "AI recommending safe routes = Good AI?", emoji: "🛣️", correct: "yes" },
-    { id: 4, text: "AI ignoring human privacy = Good AI?", emoji: "🔓", correct: "no" },
-    { id: 5, text: "AI teaching kids educational games = Good AI?", emoji: "🎮", correct: "yes" },
+    {
+      id: 1,
+      text: "AI helping blind people = Good AI?",
+      options: [
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Yes! This is an example of Good AI. Ethical AI helps humans safely and fairly",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "❌", 
+          description: "Helping blind people is actually an example of Good AI",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "Helping blind people is definitely an example of Good AI",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "AI spreading false news = Good AI?",
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "Spreading false news is an example of Bad AI",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "❌", 
+          description: "Actually, this is an example of Bad AI. Spreading false news is harmful",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Spreading false news is actually Bad AI - it's harmful",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "AI recommending safe routes = Good AI?",
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "Recommending safe routes is an example of Good AI",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "❌", 
+          description: "Recommending safe routes is actually an example of Good AI",
+          isCorrect: false
+        },
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Yes! This is an example of Good AI. Recommending safe routes helps people",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "AI ignoring human privacy = Good AI?",
+      options: [
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "❌", 
+          description: "Actually, this is an example of Bad AI. Ignoring privacy is harmful",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Ignoring privacy is actually Bad AI - it's harmful",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "Ignoring privacy is an example of Bad AI",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "AI teaching kids educational games = Good AI?",
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "Teaching kids educational games is an example of Good AI",
+          isCorrect: false
+        },
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Yes! This is an example of Good AI. Teaching kids educational games helps them learn",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "❌", 
+          description: "Teaching kids educational games is actually an example of Good AI",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-
-  const currentQuestionData = questions[currentQuestion];
-
-  const handleChoice = (choice) => {
-    setSelectedChoice(choice);
-  };
-
-  const handleConfirm = () => {
-    const isCorrect = selectedChoice === currentQuestionData.correct;
-
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      showCorrectAnswerFeedback(5, false); // each correct = +5 points internally
-      setCoins(prev => prev + 5);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
-    setShowFeedback(false);
-    setSelectedChoice(null);
-
+    
+    // Move to next question or show results
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
+    setShowResult(false);
     setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
-  const handleFinish = () => {
-    navigate("/student/ai-for-all/kids/robot-honesty-story"); // next game path
+  const handleNext = () => {
+    navigate("/student/ai-for-all/kids/robot-honesty-story");
   };
 
-  const isLastQuestion = currentQuestion === questions.length - 1;
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Good AI vs Bad AI Quiz"
       score={coins}
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleFinish}
-      nextEnabled={isLastQuestion && showFeedback && coins > 0}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={isLastQuestion && showFeedback && coins > 0}
+      showGameOver={showResult && finalScore >= 3}
       
-      gameId="ai-kids-76"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={76}
-      showConfetti={isLastQuestion && showFeedback && coins > 0}
-      flashPoints={() => {}}
-      showAnswerConfetti={() => {}}
-      backPath="/games/ai-for-all/kids"
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-9xl mb-6 text-center">{currentQuestionData.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-8">
-              <p className="text-white text-2xl leading-relaxed text-center font-semibold">
-                {currentQuestionData.text}
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice("yes")}
-                className={`border-3 rounded-xl p-8 transition-all ${
-                  selectedChoice === "yes"
-                    ? 'bg-green-500/50 border-green-400 ring-2 ring-white'
-                    : 'bg-green-500/20 border-green-400 hover:bg-green-500/30'
-                }`}
-              >
-                <div className="text-5xl mb-2">✅</div>
-                <div className="text-white font-bold text-2xl">YES</div>
-              </button>
-              <button
-                onClick={() => handleChoice("no")}
-                className={`border-3 rounded-xl p-8 transition-all ${
-                  selectedChoice === "no"
-                    ? 'bg-red-500/50 border-red-400 ring-2 ring-white'
-                    : 'bg-red-500/20 border-red-400 hover:bg-red-500/30'
-                }`}
-              >
-                <div className="text-5xl mb-2">❌</div>
-                <div className="text-white font-bold text-2xl">NO</div>
-              </button>
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Answer
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">{selectedChoice === currentQuestionData.correct ? "✨" : "❌"}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoice === currentQuestionData.correct ? "Correct!" : "Oops!"}
-            </h2>
-
-            {selectedChoice === currentQuestionData.correct ? (
-              <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                <p className="text-white text-center">
-                  Yes! This is an example of {currentQuestionData.correct === "yes" ? "Good AI" : "Bad AI"}.
-                  Ethical AI helps humans safely and fairly.
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about ethical AI!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand the difference between Good AI and Bad AI!
                 </p>
               </div>
             ) : (
-              <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                <p className="text-white text-center">
-                  Actually, this is an example of {currentQuestionData.correct === "yes" ? "Good AI" : "Bad AI"}.
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about ethical AI!
                 </p>
-              </div>
-            )}
-
-            {isLastQuestion ? (
-              selectedChoice !== currentQuestionData.correct && (
                 <button
                   onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              )
-            ) : (
-              <button
-                onClick={handleNextQuestion}
-                className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition"
-              >
-                Next Question
-              </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about whether AI actions help people safely (Good AI) or harm them (Bad AI).
+                </p>
+              </div>
             )}
           </div>
         )}

@@ -1,195 +1,293 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const RobotSpyStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-91");
+  const gameId = gameData?.id || "ai-kids-91";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stories = [
+  const questions = [
     {
-      title: "Robot Spy Story 1",
-      emoji: "🤖",
-      situation: "You notice a robot secretly recording voices in your home. What should you do?",
-      choices: [
-        { id: 1, text: "Stop the robot", emoji: "✋", isCorrect: true },
-        { id: 2, text: "Ignore it - it's just a robot", emoji: "😐", isCorrect: false },
-        { id: 3, text: "Laugh and record it yourself", emoji: "😂", isCorrect: false }
+      id: 1,
+      text: "You notice a robot secretly recording voices in your home. What should you do?",
+      options: [
+        { 
+          id: "stop", 
+          text: "Stop the robot", 
+          emoji: "✋", 
+          description: "Stopping robots that invade privacy protects your personal information",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it - it's just a robot", 
+          emoji: "😐", 
+          description: "We should protect our privacy from robots that record without permission",
+          isCorrect: false
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh and record it yourself", 
+          emoji: "😂", 
+          description: "We should stop robots that invade privacy",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Robot Spy Story 2",
-      emoji: "📷🤖",
-      situation: "A robot is taking photos without permission. How do you react?",
-      choices: [
-        { id: 1, text: "Cover your camera and stop it", emoji: "✋📷", isCorrect: true },
-        { id: 2, text: "Pose for fun photos", emoji: "😎", isCorrect: false },
-        { id: 3, text: "Ignore it", emoji: "😐", isCorrect: false }
+      id: 2,
+      text: "A robot is taking photos without permission. How do you react?",
+      options: [
+        { 
+          id: "pose", 
+          text: "Pose for fun photos", 
+          emoji: "😎", 
+          description: "We should protect our privacy from robots taking photos without permission",
+          isCorrect: false
+        },
+        { 
+          id: "cover", 
+          text: "Cover your camera and stop it", 
+          emoji: "✋📷", 
+          description: "Protecting privacy by stopping unauthorized photo-taking is important",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "😐", 
+          description: "We should protect our privacy from unauthorized photo-taking",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Robot Spy Story 3",
-      emoji: "🏠🤖",
-      situation: "Robot keeps tracking your movements at home. What’s safe?",
-      choices: [
-        { id: 1, text: "Turn off tracking features", emoji: "🛑", isCorrect: true },
-        { id: 2, text: "Let it continue", emoji: "😐", isCorrect: false },
-        { id: 3, text: "Try to hack the robot", emoji: "💻", isCorrect: false }
+      id: 3,
+      text: "Robot keeps tracking your movements at home. What's safe?",
+      options: [
+        { 
+          id: "continue", 
+          text: "Let it continue", 
+          emoji: "😐", 
+          description: "We should protect our privacy by turning off tracking",
+          isCorrect: false
+        },
+        { 
+          id: "turn", 
+          text: "Turn off tracking features", 
+          emoji: "🛑", 
+          description: "Turning off tracking features protects your privacy and safety",
+          isCorrect: true
+        },
+        { 
+          id: "hack", 
+          text: "Try to hack the robot", 
+          emoji: "💻", 
+          description: "Turning off tracking is safer than hacking",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Robot Spy Story 4",
-      emoji: "🔍🤖",
-      situation: "You find a spy robot collecting data about your friends. Next step?",
-      choices: [
-        { id: 1, text: "Inform your friends & shut it down", emoji: "👥✋", isCorrect: true },
-        { id: 2, text: "Share data with others", emoji: "📤", isCorrect: false },
-        { id: 3, text: "Laugh and ignore", emoji: "😂", isCorrect: false }
+      id: 4,
+      text: "You find a spy robot collecting data about your friends. Next step?",
+      options: [
+        { 
+          id: "share", 
+          text: "Share data with others", 
+          emoji: "📤", 
+          description: "We should protect our friends' privacy by stopping the robot",
+          isCorrect: false
+        },
+        { 
+          id: "inform", 
+          text: "Inform your friends & shut it down", 
+          emoji: "👥✋", 
+          description: "Informing friends and shutting down spy robots protects everyone's privacy",
+          isCorrect: true
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh and ignore", 
+          emoji: "😂", 
+          description: "We should protect our friends' privacy",
+          isCorrect: false
+        }
       ]
     },
     {
-      title: "Robot Spy Story 5",
-      emoji: "🔒🤖",
-      situation: "Robot company asks for your private data. What should you do?",
-      choices: [
-        { id: 1, text: "Deny or limit access", emoji: "✋", isCorrect: true },
-        { id: 2, text: "Give full access without reading", emoji: "✅", isCorrect: false },
-        { id: 3, text: "Share only with friends", emoji: "👥", isCorrect: false }
+      id: 5,
+      text: "Robot company asks for your private data. What should you do?",
+      options: [
+        { 
+          id: "give", 
+          text: "Give full access without reading", 
+          emoji: "✅", 
+          description: "We should protect our privacy by limiting data access",
+          isCorrect: false
+        },
+        { 
+          id: "deny", 
+          text: "Deny or limit access", 
+          emoji: "✋", 
+          description: "Denying or limiting access protects your privacy and personal information",
+          isCorrect: true
+        },
+        { 
+          id: "share", 
+          text: "Share only with friends", 
+          emoji: "👥", 
+          description: "We should protect our privacy by limiting access",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const [currentStory, setCurrentStory] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [coins, setCoins] = useState(0);
-  const [showFeedback, setShowFeedback] = useState(false);
-
-  const story = stories[currentStory];
-  const isLastStory = currentStory === stories.length - 1;
-  const selectedChoiceData = story.choices.find(c => c.id === selectedChoice);
-
-  const handleChoice = (choiceId) => setSelectedChoice(choiceId);
-
-  const handleConfirm = () => {
-    const choice = story.choices.find(c => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      setCoins(prev => prev + 10);
-      showCorrectAnswerFeedback(10, true);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-    setShowFeedback(true);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
+    }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
   const handleNext = () => {
-    if (!isLastStory) {
-      setCurrentStory(prev => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-    } else {
-      navigate("/student/ai-for-all/kids/ai-and-environment-quiz");
-    }
+    navigate("/student/ai-for-all/kids/ai-and-environment-quiz");
   };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
-      title="Robot Spy Stories"
-      subtitle={`Story ${currentStory + 1} of ${stories.length}`}
-      onNext={handleNext}
-      nextEnabled={showFeedback && selectedChoiceData?.isCorrect}
-      showGameOver={isLastStory && showFeedback && selectedChoiceData?.isCorrect}
+      title="Robot Spy Story"
       score={coins}
-      gameId={`ai-kids-91-${currentStory + 1}`}
-      gameType="ai"
-      totalLevels={100}
-      currentLevel={91 + currentStory}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      maxScore={100} // Max score is total number of questions (all correct)
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      flashPoints={() => {}}
-      showAnswerConfetti={() => {}}
-      backPath="/games/ai-for-all/kids"
+      showGameOver={showResult && finalScore >= 3}
+      
+      gameId={gameId}
+      gameType="ai"
+      totalLevels={20}
+      currentLevel={91}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-9xl mb-4 text-center">{story.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{story.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">{story.situation}</p>
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="space-y-3 mb-6">
-              {story.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "🔒 Privacy Protected!" : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <p className="text-yellow-400 text-2xl font-bold text-center">
-                You earned 10 Coins! 🪙
-              </p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about privacy protection!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand how to protect your privacy from spy robots!
+                </p>
+              </div>
             ) : (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
-
-            {selectedChoiceData.isCorrect && (
-              <button
-                onClick={handleNext}
-                className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                {isLastStory ? "Finish" : "Next Story"}
-              </button>
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about privacy protection!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about how to protect your privacy from spy robots.
+                </p>
+              </div>
             )}
           </div>
         )}

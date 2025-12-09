@@ -1,211 +1,294 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const AIMistakeQuiz = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-69");
+  const gameId = gameData?.id || "ai-kids-69";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Can AI always be right?",
-      emoji: "🤖",
-      choices: [
-        { id: 1, text: "Yes", emoji: "✅", isCorrect: false },
-        { id: 2, text: "No", emoji: "❌", isCorrect: true },
-      ],
-      correctFeedback:
-        "Right! AI is not always correct. It can make mistakes, so humans must check its output.",
-      incorrectFeedback:
-        "AI is powerful but not perfect. Always verify AI's answers—it can make mistakes!",
+      options: [
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "❌", 
+          description: "AI is not always correct. It can make mistakes, so humans must check its output",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "AI is powerful but not perfect - it can make mistakes",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI is not always correct - always verify AI's answers",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "Why can AI make mistakes?",
-      emoji: "💭",
-      choices: [
-        { id: 1, text: "Because data can be biased or incomplete", emoji: "📊", isCorrect: true },
-        { id: 2, text: "Because AI is lazy", emoji: "😴", isCorrect: false },
-      ],
-      correctFeedback:
-        "Exactly! If the data AI learns from is biased or incomplete, its answers can be wrong.",
-      incorrectFeedback:
-        "AI doesn’t have feelings like laziness. Mistakes happen due to poor or biased data.",
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "If the data AI learns from is biased or incomplete, its answers can be wrong",
+          isCorrect: false
+        },
+        { 
+          id: "data", 
+          text: "Because data can be biased or incomplete", 
+          emoji: "📊", 
+          description: "If the data AI learns from is biased or incomplete, its answers can be wrong",
+          isCorrect: true
+        },
+        { 
+          id: "lazy", 
+          text: "Because AI is lazy", 
+          emoji: "😴", 
+          description: "AI doesn't have feelings like laziness - mistakes happen due to poor data",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "What should we do when AI gives a wrong answer?",
-      emoji: "🧠",
-      choices: [
-        { id: 1, text: "Believe it anyway", emoji: "🙈", isCorrect: false },
-        { id: 2, text: "Check and correct it", emoji: "🔍", isCorrect: true },
-      ],
-      correctFeedback:
-        "Perfect! Always double-check AI answers and correct them when needed.",
-      incorrectFeedback:
-        "We shouldn’t blindly believe AI. Always verify and fix its mistakes.",
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "Always double-check AI answers and correct them when needed",
+          isCorrect: false
+        },
+        { 
+          id: "believe", 
+          text: "Believe it anyway", 
+          emoji: "🙈", 
+          description: "We shouldn't blindly believe AI - always verify and fix mistakes",
+          isCorrect: false
+        },
+        { 
+          id: "check", 
+          text: "Check and correct it", 
+          emoji: "🔍", 
+          description: "Perfect! Always double-check AI answers and correct them when needed",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
       text: "Can AI understand emotions like humans?",
-      emoji: "💬",
-      choices: [
-        { id: 1, text: "No, it only recognizes patterns", emoji: "🧩", isCorrect: true },
-        { id: 2, text: "Yes, it has real feelings", emoji: "❤️", isCorrect: false },
-      ],
-      correctFeedback:
-        "Correct! AI doesn’t truly feel emotions—it only detects patterns like facial expressions or tone.",
-      incorrectFeedback:
-        "AI doesn’t have real feelings. It can only recognize emotional patterns, not feel them.",
+      options: [
+        { 
+          id: "no", 
+          text: "No, it only recognizes patterns", 
+          emoji: "🧩", 
+          description: "AI doesn't truly feel emotions - it only detects patterns like facial expressions",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes, it has real feelings", 
+          emoji: "❤️", 
+          description: "AI doesn't have real feelings - it only recognizes emotional patterns",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI doesn't truly feel emotions - it only recognizes patterns",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       text: "How can we make AI better?",
-      emoji: "🚀",
-      choices: [
-        { id: 1, text: "Give it more diverse and fair data", emoji: "🌍", isCorrect: true },
-        { id: 2, text: "Hide its mistakes", emoji: "🙈", isCorrect: false },
-      ],
-      correctFeedback:
-        "Awesome! AI improves when trained on diverse, fair, and high-quality data.",
-      incorrectFeedback:
-        "Hiding mistakes won’t help. AI learns better when trained with more fair, diverse data.",
-    },
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "AI improves when trained on diverse, fair, and high-quality data",
+          isCorrect: false
+        },
+        { 
+          id: "data", 
+          text: "Give it more diverse and fair data", 
+          emoji: "🌍", 
+          description: "AI improves when trained on diverse, fair, and high-quality data",
+          isCorrect: true
+        },
+        { 
+          id: "hide", 
+          text: "Hide its mistakes", 
+          emoji: "🙈", 
+          description: "Hiding mistakes won't help - AI learns better with fair, diverse data",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const currentQuestion = questions[currentQuestionIndex];
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = currentQuestion.choices.find((c) => c.id === selectedChoice);
-    if (!choice) return;
-
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
-      setTotalCoins((prev) => prev + 5);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      setCoins(0);
-      resetFeedback();
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      navigate("/student/ai-for-all/kids/train-robot-shapes"); // final next route
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
-  const selectedChoiceData = currentQuestion.choices.find((c) => c.id === selectedChoice);
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const handleNext = () => {
+    navigate("/student/ai-for-all/kids/train-robot-shapes");
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="AI Mistake Quiz"
-      subtitle={`Question ${currentQuestionIndex + 1} of ${questions.length}`}
-      onNext={handleNextQuestion}
-      nextEnabled={showFeedback}
-      showGameOver={showFeedback && currentQuestionIndex === questions.length - 1}
-      score={totalCoins}
-      gameId="ai-kids-69"
-      gameType="ai"
-      totalLevels={100}
-      currentLevel={69}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      score={coins}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      
+      gameId={gameId}
+      gameType="ai"
+      totalLevels={20}
+      currentLevel={69}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-9xl mb-6 text-center">{currentQuestion.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-8">
-              <p className="text-white text-2xl leading-relaxed text-center font-semibold">
-                {currentQuestion.text}
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {currentQuestion.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`border-3 rounded-xl p-10 transition-all ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="text-6xl mb-2">{choice.emoji}</div>
-                  <div className="text-white font-bold text-2xl text-center">{choice.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Answer
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "💡" : "❌"}
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "Correct!" : "Think Again..."}
-            </h2>
-
-            {selectedChoiceData?.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">{currentQuestion.correctFeedback}</p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙 (Total: {totalCoins})
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about AI limitations!
                 </p>
-              </>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand that AI can make mistakes and needs good data!
+                </p>
+              </div>
             ) : (
-              <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                <p className="text-white text-center">{currentQuestion.incorrectFeedback}</p>
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about AI mistakes!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about why AI makes mistakes and how to improve it.
+                </p>
               </div>
             )}
-
-            <button
-              onClick={handleNextQuestion}
-              className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              {currentQuestionIndex === questions.length - 1 ? "Finish Quiz" : "Next Question →"}
-            </button>
           </div>
         )}
       </div>

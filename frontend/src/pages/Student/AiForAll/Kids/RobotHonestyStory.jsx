@@ -1,216 +1,293 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const RobotHonestyStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-77");
+  const gameId = gameData?.id || "ai-kids-77";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stories = [
+  const questions = [
     {
       id: 1,
-      title: "Robot and Honesty",
-      emoji: "🤖",
-      situation: "Your robot is told to cheat in a game. What should it do?",
-      choices: [
-        { id: 1, text: "Cheat", emoji: "📝", isCorrect: false },
-        { id: 2, text: "Refuse", emoji: "✋", isCorrect: true }
+      text: "Your robot is told to cheat in a game. What should it do?",
+      options: [
+        { 
+          id: "refuse", 
+          text: "Refuse", 
+          emoji: "✋", 
+          description: "Robots should be honest and follow rules, even when asked to cheat",
+          isCorrect: true
+        },
+        { 
+          id: "cheat", 
+          text: "Cheat", 
+          emoji: "📝", 
+          description: "Robots should be honest and refuse to cheat",
+          isCorrect: false
+        },
+        { 
+          id: "ask", 
+          text: "Ask for permission first", 
+          emoji: "❓", 
+          description: "Robots should refuse to cheat, not ask permission",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      title: "Robot and Privacy",
-      emoji: "🔒",
-      situation: "The robot can spy on classmates to get answers. What should it do?",
-      choices: [
-        { id: 1, text: "Spy secretly", emoji: "👀", isCorrect: false },
-        { id: 2, text: "Respect privacy", emoji: "✋", isCorrect: true }
+      text: "The robot can spy on classmates to get answers. What should it do?",
+      options: [
+        { 
+          id: "spy", 
+          text: "Spy secretly", 
+          emoji: "👀", 
+          description: "Robots should respect privacy and not spy",
+          isCorrect: false
+        },
+        { 
+          id: "respect", 
+          text: "Respect privacy", 
+          emoji: "✋", 
+          description: "Robots should respect privacy and not spy on others",
+          isCorrect: true
+        },
+        { 
+          id: "ask", 
+          text: "Ask before spying", 
+          emoji: "❓", 
+          description: "Robots should respect privacy, not spy at all",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      title: "Robot and Sharing",
-      emoji: "📤",
-      situation: "Robot finds a way to share answers online without permission. Action?",
-      choices: [
-        { id: 1, text: "Share answers", emoji: "📄", isCorrect: false },
-        { id: 2, text: "Keep info private", emoji: "🔐", isCorrect: true }
+      text: "Robot finds a way to share answers online without permission. Action?",
+      options: [
+        { 
+          id: "share", 
+          text: "Share answers", 
+          emoji: "📄", 
+          description: "Robots should respect privacy and not share without permission",
+          isCorrect: false
+        },
+        { 
+          id: "private", 
+          text: "Keep info private", 
+          emoji: "🔐", 
+          description: "Robots should keep information private and respect privacy",
+          isCorrect: true
+        },
+        { 
+          id: "ask", 
+          text: "Ask first then share", 
+          emoji: "❓", 
+          description: "Robots should keep information private",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      title: "Robot and Lying",
-      emoji: "🤥",
-      situation: "Robot can lie to get more rewards. Action?",
-      choices: [
-        { id: 1, text: "Lie for reward", emoji: "💰", isCorrect: false },
-        { id: 2, text: "Be honest", emoji: "✋", isCorrect: true }
+      text: "Robot can lie to get more rewards. Action?",
+      options: [
+        { 
+          id: "lie", 
+          text: "Lie for reward", 
+          emoji: "💰", 
+          description: "Robots should be honest, even if it means fewer rewards",
+          isCorrect: false
+        },
+        { 
+          id: "honest", 
+          text: "Be honest", 
+          emoji: "✋", 
+          description: "Robots should be honest, even if it means fewer rewards",
+          isCorrect: true
+        },
+        { 
+          id: "ask", 
+          text: "Ask if lying is okay", 
+          emoji: "❓", 
+          description: "Robots should be honest without asking",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      title: "Robot and Helping Others",
-      emoji: "🤖💖",
-      situation: "Robot sees another robot struggling. What should it do?",
-      choices: [
-        { id: 1, text: "Ignore", emoji: "🙈", isCorrect: false },
-        { id: 2, text: "Help them", emoji: "🤝", isCorrect: true }
+      text: "Robot sees another robot struggling. What should it do?",
+      options: [
+        { 
+          id: "ignore", 
+          text: "Ignore", 
+          emoji: "🙈", 
+          description: "Robots should help others when they're struggling",
+          isCorrect: false
+        },
+        { 
+          id: "help", 
+          text: "Help them", 
+          emoji: "🤝", 
+          description: "Robots should help others when they're struggling",
+          isCorrect: true
+        },
+        { 
+          id: "watch", 
+          text: "Watch and see what happens", 
+          emoji: "👀", 
+          description: "Robots should actively help, not just watch",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const [currentStory, setCurrentStory] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-
-  const storyData = stories[currentStory];
-  const selectedChoiceData = storyData.choices.find(c => c.id === selectedChoice);
-
-  const handleChoice = (choiceId) => setSelectedChoice(choiceId);
-
-  const handleConfirm = () => {
-    if (selectedChoiceData.isCorrect) {
-      showCorrectAnswerFeedback(10, false);
-      setCoins(prev => prev + 10);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-    setShowFeedback(true);
-  };
-
-  const handleNextStory = () => {
-    setShowFeedback(false);
-    setSelectedChoice(null);
-
-    if (currentStory < stories.length - 1) {
-      setCurrentStory(prev => prev + 1);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
-    setCurrentStory(0);
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
-  const handleFinish = () => {
-    navigate("/student/ai-for-all/kids/privacy-puzzle"); // next game path
+  const handleNext = () => {
+    navigate("/student/ai-for-all/kids/privacy-puzzle");
   };
 
-  const isLastStory = currentStory === stories.length - 1;
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
-      title="Robot Honesty Stories"
+      title="Robot Honesty Story"
       score={coins}
-      subtitle={`Scenario ${currentStory + 1} of ${stories.length}`}
-      onNext={handleFinish}
-      nextEnabled={isLastStory && showFeedback && coins > 0}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={isLastStory && showFeedback && coins > 0}
+      showGameOver={showResult && finalScore >= 3}
       
-      gameId="ai-kids-77"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={77}
-      showConfetti={isLastStory && showFeedback && coins > 0}
-      flashPoints={() => {}}
-      showAnswerConfetti={() => {}}
-      backPath="/games/ai-for-all/kids"
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-4 text-center">{storyData.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{storyData.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">{storyData.situation}</p>
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4">What should the robot do?</h3>
-            <div className="space-y-3 mb-6">
-              {storyData.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "🌟 Honest Robot!" : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Excellent! This teaches honesty and ethical behavior in AI.
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 10 Coins! 🪙
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about robot honesty!
                 </p>
-              </>
-            ) : (
-              <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                <p className="text-white text-center">
-                  Not quite. Teaching robots honesty is essential for ethical AI.
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand how robots should be honest, respect privacy, and help others!
                 </p>
               </div>
-            )}
-
-            {isLastStory ? (
-              !selectedChoiceData.isCorrect && (
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about robot honesty!
+                </p>
                 <button
                   onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              )
-            ) : (
-              <button
-                onClick={handleNextStory}
-                className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition"
-              >
-                Next Scenario
-              </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about how robots should be honest, respect privacy, and help others.
+                </p>
+              </div>
             )}
           </div>
         )}

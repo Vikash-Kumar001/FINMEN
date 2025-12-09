@@ -1,126 +1,201 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const GarbageInGarbageOutStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-59");
+  const gameId = gameData?.id || "ai-kids-59";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const [totalScore, setTotalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stories = [
+  const questions = [
     {
-      title: "Garbage In, Garbage Out",
-      emoji: "🤖",
-      situation:
-        "The robot learned from wrong labels and is now failing its tasks. What should you do?",
-      choices: [
-        { id: 1, text: "Fix the data and correct labels", emoji: "🛠️", isCorrect: true },
-        { id: 2, text: "Let it continue using wrong data", emoji: "😐", isCorrect: false },
-        { id: 3, text: "Turn the robot off permanently", emoji: "⏻", isCorrect: false }
-      ],
-      explanation:
-        "AI learns from data. If data is wrong, AI’s output will be wrong too! Always correct the labels."
+      id: 1,
+      text: "The robot learned from wrong labels and is now failing its tasks. What should you do?",
+      options: [
+        { 
+          id: "fix", 
+          text: "Fix the data and correct labels", 
+          emoji: "🛠️", 
+          description: "AI learns from data - if data is wrong, AI's output will be wrong too",
+          isCorrect: true
+        },
+        { 
+          id: "continue", 
+          text: "Let it continue using wrong data", 
+          emoji: "😐", 
+          description: "We should fix wrong data to help AI learn correctly",
+          isCorrect: false
+        },
+        { 
+          id: "off", 
+          text: "Turn the robot off permanently", 
+          emoji: "⏻", 
+          description: "Fixing data is better than turning off the robot",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Messy Photos",
-      emoji: "📸",
-      situation:
-        "AI was trained on blurry and incomplete images. Now it can't recognize objects. What’s your move?",
-      choices: [
-        { id: 1, text: "Collect clear and complete images", emoji: "🖼️", isCorrect: true },
-        { id: 2, text: "Use blurry ones anyway", emoji: "😶", isCorrect: false },
-        { id: 3, text: "Stop using images", emoji: "🚫", isCorrect: false }
-      ],
-      explanation:
-        "Better quality data = better AI results. Blurry data confuses the model!"
+      id: 2,
+      text: "AI was trained on blurry and incomplete images. Now it can't recognize objects. What's your move?",
+      options: [
+        { 
+          id: "blurry", 
+          text: "Use blurry ones anyway", 
+          emoji: "😶", 
+          description: "Better quality data leads to better AI results",
+          isCorrect: false
+        },
+        { 
+          id: "collect", 
+          text: "Collect clear and complete images", 
+          emoji: "🖼️", 
+          description: "Better quality data leads to better AI results - clear images help AI learn",
+          isCorrect: true
+        },
+        { 
+          id: "stop", 
+          text: "Stop using images", 
+          emoji: "🚫", 
+          description: "Using clear images is better than stopping",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Wrong Numbers",
-      emoji: "🔢",
-      situation:
-        "The AI gets data with missing and false numbers. What’s the best fix?",
-      choices: [
-        { id: 1, text: "Clean and verify all data", emoji: "🧹", isCorrect: true },
-        { id: 2, text: "Ignore errors", emoji: "🙈", isCorrect: false },
-        { id: 3, text: "Guess random values", emoji: "🎲", isCorrect: false }
-      ],
-      explanation:
-        "Always clean data before training AI. Bad data = bad predictions."
+      id: 3,
+      text: "The AI gets data with missing and false numbers. What's the best fix?",
+      options: [
+        { 
+          id: "ignore", 
+          text: "Ignore errors", 
+          emoji: "🙈", 
+          description: "Cleaning data before training helps AI learn correctly",
+          isCorrect: false
+        },
+        { 
+          id: "clean", 
+          text: "Clean and verify all data", 
+          emoji: "🧹", 
+          description: "Always clean data before training AI - bad data leads to bad predictions",
+          isCorrect: true
+        },
+        { 
+          id: "guess", 
+          text: "Guess random values", 
+          emoji: "🎲", 
+          description: "Cleaning and verifying data is better than guessing",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Mixed Emotions",
-      emoji: "😊😠",
-      situation:
-        "AI trained on angry comments only and now mislabels positive ones as negative. What’s the fix?",
-      choices: [
-        { id: 1, text: "Add balanced happy + sad comments", emoji: "⚖️", isCorrect: true },
-        { id: 2, text: "Keep angry comments only", emoji: "😡", isCorrect: false },
-        { id: 3, text: "Stop emotion analysis", emoji: "🚫", isCorrect: false }
-      ],
-      explanation:
-        "Balanced data helps AI understand all emotions. Too much bias = wrong predictions!"
+      id: 4,
+      text: "AI trained on angry comments only and now mislabels positive ones as negative. What's the fix?",
+      options: [
+        { 
+          id: "ai", 
+          text: "Add balanced happy + sad comments", 
+          emoji: "⚖️", 
+          description: "Balanced data helps AI understand all emotions - too much bias leads to wrong predictions",
+          isCorrect: true
+        },
+        { 
+          id: "keep", 
+          text: "Keep angry comments only", 
+          emoji: "😡", 
+          description: "We need balanced data to help AI understand all emotions",
+          isCorrect: false
+        },
+        { 
+          id: "stop", 
+          text: "Stop emotion analysis", 
+          emoji: "🚫", 
+          description: "Adding balanced data is better than stopping",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Robot Chef",
-      emoji: "👩‍🍳🤖",
-      situation:
-        "A cooking AI learned from wrong recipes. It now adds salt instead of sugar! What should you do?",
-      choices: [
-        { id: 1, text: "Train again with correct recipes", emoji: "📚", isCorrect: true },
-        { id: 2, text: "Let it serve salty desserts", emoji: "🍰🧂", isCorrect: false },
-        { id: 3, text: "Delete all recipes", emoji: "🗑️", isCorrect: false }
-      ],
-      explanation:
-        "Garbage in = Garbage out! Correct data helps AI cook perfectly next time!"
+      id: 5,
+      text: "A cooking AI learned from wrong recipes. It now adds salt instead of sugar! What should you do?",
+      options: [
+        { 
+          id: "serve", 
+          text: "Let it serve salty desserts", 
+          emoji: "🍰🧂", 
+          description: "Training with correct recipes helps AI learn properly",
+          isCorrect: false
+        },
+        { 
+          id: "train", 
+          text: "Train again with correct recipes", 
+          emoji: "📚", 
+          description: "Garbage in = Garbage out - correct data helps AI cook perfectly",
+          isCorrect: true
+        },
+        { 
+          id: "delete", 
+          text: "Delete all recipes", 
+          emoji: "🗑️", 
+          description: "Training with correct recipes is better than deleting everything",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const currentStory = stories[currentIndex];
-  const isLast = currentIndex === stories.length - 1;
-
-  const handleChoice = (id) => {
-    setSelectedChoice(id);
-  };
-
-  const handleConfirm = () => {
-    const choice = currentStory.choices.find((c) => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(10, true);
-      setCoins(10);
-      setTotalScore((prev) => prev + 10);
-    } else {
-      setCoins(0);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
-    if (!isLast) {
-      setCurrentIndex((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      setCoins(0);
-      resetFeedback();
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
-    setCurrentIndex(0);
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
-    setTotalScore(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
@@ -128,120 +203,91 @@ const GarbageInGarbageOutStory = () => {
     navigate("/student/ai-for-all/kids/ai-training-badge");
   };
 
-  const selectedChoiceData = currentStory.choices.find((c) => c.id === selectedChoice);
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Garbage In, Garbage Out Story"
       score={coins}
-      subtitle="Bad Data = Bad AI"
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={isLast && showFeedback && coins > 0}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={isLast && showFeedback}
+      showGameOver={showResult && finalScore >= 3}
       
-      gameId="ai-kids-59"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={59}
-      showConfetti={isLast && showFeedback && totalScore >= 30}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/kids"
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">{currentStory.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              {currentStory.title}
-            </h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg text-center">{currentStory.situation}</p>
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4 text-center">
-              What should you do?
-            </h3>
-
-            <div className="space-y-3 mb-6">
-              {currentStory.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-7xl mb-4">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {selectedChoiceData.isCorrect ? "✅ Correct!" : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">{currentStory.explanation}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <p className="text-yellow-400 text-2xl font-bold mb-4">
-                You earned 10 Coins! 🪙
-              </p>
-            ) : (
-              <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                <p className="text-white text-center">
-                  Wrong choice! Always check and clean data before training AI.
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about data quality in AI!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand that good data leads to good AI results!
                 </p>
               </div>
-            )}
-
-            {!isLast ? (
-              <button
-                onClick={handleNextQuestion}
-                className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Next Question →
-              </button>
             ) : (
-              <>
-                <p className="text-white text-xl mb-4">
-                  🎯 Final Score: {totalScore} Coins
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about data quality!
                 </p>
                 <button
-                  onClick={handleNext}
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Continue
-                </button>
-                <button
                   onClick={handleTryAgain}
-                  className="mt-3 w-full bg-white/20 text-white px-6 py-3 rounded-full font-semibold hover:bg-white/30 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
-                  Play Again
+                  Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  Try to think about how good quality data helps AI learn correctly.
+                </p>
+              </div>
             )}
           </div>
         )}

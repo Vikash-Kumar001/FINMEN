@@ -1,136 +1,201 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const AINewsStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [score, setScore] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-47");
+  const gameId = gameData?.id || "ai-kids-47";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // 🧠 5 Story Questions
   const questions = [
     {
-      title: "AI Recommends News",
-      emoji: "📰",
-      situation:
-        "A student opens a news app, and it shows articles about science and space. Who recommends these articles?",
-      choices: [
-        { id: 1, text: "AI News Recommender 🤖", emoji: "🧠", isCorrect: true },
-        { id: 2, text: "School Teacher 👩‍🏫", emoji: "👩‍🏫", isCorrect: false },
-        { id: 3, text: "Random Newspapers 🗞️", emoji: "🗞️", isCorrect: false },
-        { id: 4, text: "Friends' Suggestions 🧑‍🤝‍🧑", emoji: "👥", isCorrect: false },
-        { id: 5, text: "TV News Anchor 📺", emoji: "📺", isCorrect: false },
-      ],
-      correctMsg: "Yes! AI studies what you read and shows news you’re interested in.",
-      wrongMsg: "Teachers or friends don’t recommend app articles — AI does!",
+      id: 1,
+      text: "A student opens a news app, and it shows articles about science and space. Who recommends these articles?",
+      options: [
+        { 
+          id: "ai", 
+          text: "AI News Recommender", 
+          emoji: "🧠", 
+          description: "AI studies what you read and shows news you're interested in",
+          isCorrect: true
+        },
+        { 
+          id: "teacher", 
+          text: "School Teacher", 
+          emoji: "👩‍🏫", 
+          description: "AI, not teachers, recommends app articles automatically",
+          isCorrect: false
+        },
+        { 
+          id: "random", 
+          text: "Random Newspapers", 
+          emoji: "🗞️", 
+          description: "AI personalizes news based on your interests",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Breaking News Timing",
-      emoji: "⏰",
-      situation: "A news app instantly notifies you about breaking events. How does it do that?",
-      choices: [
-        { id: 1, text: "AI detects trending topics 🔥", emoji: "🤖", isCorrect: true },
-        { id: 2, text: "Manual updates by teachers 🧑‍🏫", emoji: "🧑‍🏫", isCorrect: false },
-        { id: 3, text: "Friends send the alerts 💬", emoji: "💬", isCorrect: false },
-        { id: 4, text: "Random notifications 📱", emoji: "📱", isCorrect: false },
-        { id: 5, text: "TV channel updates 📺", emoji: "📺", isCorrect: false },
-      ],
-      correctMsg: "Correct! AI scans social media and websites to find trending events fast.",
-      wrongMsg: "Nope! AI, not humans, scans for trending topics automatically.",
+      id: 2,
+      text: "A news app instantly notifies you about breaking events. How does it do that?",
+      options: [
+        { 
+          id: "manual", 
+          text: "Manual updates by teachers", 
+          emoji: "🧑‍🏫", 
+          description: "AI scans for trending topics automatically",
+          isCorrect: false
+        },
+        { 
+          id: "ai", 
+          text: "AI detects trending topics", 
+          emoji: "🤖", 
+          description: "AI scans social media and websites to find trending events fast",
+          isCorrect: true
+        },
+        { 
+          id: "friends", 
+          text: "Friends send the alerts", 
+          emoji: "💬", 
+          description: "AI automatically detects and alerts about breaking news",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Language of News",
-      emoji: "🌐",
-      situation: "A user reads news in Hindi, and the app automatically translates English articles. Which tech is behind it?",
-      choices: [
-        { id: 1, text: "AI Language Translator 🌎", emoji: "🤖", isCorrect: true },
-        { id: 2, text: "Manual Translator 🧑‍🏫", emoji: "🧑‍🏫", isCorrect: false },
-        { id: 3, text: "Google Maps 🗺️", emoji: "🗺️", isCorrect: false },
-        { id: 4, text: "Weather System ☁️", emoji: "☁️", isCorrect: false },
-        { id: 5, text: "Dictionary 📘", emoji: "📘", isCorrect: false },
-      ],
-      correctMsg: "Exactly! AI translation models convert news into your language instantly.",
-      wrongMsg: "No, it’s not manual translation — AI handles it in real-time.",
+      id: 3,
+      text: "A user reads news in Hindi, and the app automatically translates English articles. Which tech is behind it?",
+      options: [
+        { 
+          id: "manual", 
+          text: "Manual Translator", 
+          emoji: "🧑‍🏫", 
+          description: "AI translation models convert news into your language instantly",
+          isCorrect: false
+        },
+        { 
+          id: "maps", 
+          text: "Google Maps", 
+          emoji: "🗺️", 
+          description: "AI language translation handles this automatically",
+          isCorrect: false
+        },
+        { 
+          id: "ai", 
+          text: "AI Language Translator", 
+          emoji: "🌎", 
+          description: "AI translation models convert news into your language instantly",
+          isCorrect: true
+        }
+      ]
     },
     {
-      title: "Fake News Check",
-      emoji: "🔍",
-      situation: "Some apps warn you if a news article might be fake. Who helps them detect that?",
-      choices: [
-        { id: 1, text: "AI Fact Checker 🤖", emoji: "🤖", isCorrect: true },
-        { id: 2, text: "Newsreader 👀", emoji: "👀", isCorrect: false },
-        { id: 3, text: "Random Algorithm 🎲", emoji: "🎲", isCorrect: false },
-        { id: 4, text: "TV Editor 📰", emoji: "📰", isCorrect: false },
-        { id: 5, text: "School Library 📚", emoji: "📚", isCorrect: false },
-      ],
-      correctMsg: "Correct! AI checks articles for misinformation using data and patterns.",
-      wrongMsg: "Nope! AI, not editors, verifies fake or real news automatically.",
+      id: 4,
+      text: "Some apps warn you if a news article might be fake. Who helps them detect that?",
+      options: [
+        { 
+          id: "ai", 
+          text: "AI Fact Checker", 
+          emoji: "🤖", 
+          description: "AI checks articles for misinformation using data and patterns",
+          isCorrect: true
+        },
+        { 
+          id: "reader", 
+          text: "Newsreader", 
+          emoji: "👀", 
+          description: "AI, not humans, verifies fake or real news automatically",
+          isCorrect: false
+        },
+        { 
+          id: "random", 
+          text: "Random Algorithm", 
+          emoji: "🎲", 
+          description: "AI uses data and patterns to detect fake news",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Smart Headlines",
-      emoji: "🧠",
-      situation: "Your app highlights top stories you might like every morning. How does it know your interests?",
-      choices: [
-        { id: 1, text: "AI tracks your reading habits 📖", emoji: "🤖", isCorrect: true },
-        { id: 2, text: "Random headlines 🎯", emoji: "🎯", isCorrect: false },
-        { id: 3, text: "Manual selection 🧑‍💻", emoji: "🧑‍💻", isCorrect: false },
-        { id: 4, text: "By horoscope 🔮", emoji: "🔮", isCorrect: false },
-        { id: 5, text: "By luck 🍀", emoji: "🍀", isCorrect: false },
-      ],
-      correctMsg: "Right! AI learns your reading behavior to show stories you’ll enjoy.",
-      wrongMsg: "No, luck or horoscope doesn’t pick headlines — AI personalization does!",
-    },
+      id: 5,
+      text: "Your app highlights top stories you might like every morning. How does it know your interests?",
+      options: [
+        { 
+          id: "random", 
+          text: "Random headlines", 
+          emoji: "🎯", 
+          description: "AI learns your reading behavior to personalize news",
+          isCorrect: false
+        },
+        { 
+          id: "manual", 
+          text: "Manual selection", 
+          emoji: "🧑‍💻", 
+          description: "AI tracks your reading habits automatically",
+          isCorrect: false
+        },
+        { 
+          id: "ai", 
+          text: "AI tracks your reading habits", 
+          emoji: "📖", 
+          description: "AI learns your reading behavior to show stories you'll enjoy",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const current = questions[currentQuestion];
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = current.choices.find((c) => c.id === selectedChoice);
-
-    if (choice.isCorrect) {
-      setScore((prev) => prev + 1);
-      showCorrectAnswerFeedback(2, false);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
+    
+    // Move to next question or show results
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      // Final Result
-      const earnedCoins = score >= 3 ? 10 : 0;
-      setCoins(earnedCoins);
-      setShowFeedback(false);
-      setCurrentQuestion(questions.length);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
+    setShowResult(false);
     setCurrentQuestion(0);
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setScore(0);
+    setChoices([]);
     setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
@@ -138,143 +203,91 @@ const AINewsStory = () => {
     navigate("/student/ai-for-all/kids/ai-doctor-quiz");
   };
 
-  // Game finished
-  const isGameOver = currentQuestion >= questions.length;
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="AI News Story"
       score={coins}
-      subtitle={
-        isGameOver
-          ? "Game Complete!"
-          : `Story ${currentQuestion + 1} of ${questions.length}`
-      }
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={isGameOver && coins > 0}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={isGameOver && coins > 0}
+      showGameOver={showResult && finalScore >= 3}
       
-      gameId="ai-kids-47"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={47}
-      showConfetti={isGameOver && coins > 0}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/kids"
     >
       <div className="space-y-8">
-        {!isGameOver ? (
-          !showFeedback ? (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-              <div className="text-9xl mb-4 text-center">{current.emoji}</div>
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">
-                {current.title}
-              </h2>
-              <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-                <p className="text-white text-xl leading-relaxed text-center font-semibold">
-                  {current.situation}
-                </p>
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
               </div>
-
-              <div className="space-y-3 mb-6">
-                {current.choices.map((choice) => (
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
                   <button
-                    key={choice.id}
-                    onClick={() => handleChoice(choice.id)}
-                    className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                      selectedChoice === choice.id
-                        ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                        : "bg-white/20 border-white/40 hover:bg-white/30"
-                    }`}
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="text-4xl">{choice.emoji}</div>
-                      <div className="text-white font-semibold text-lg">
-                        {choice.text}
-                      </div>
-                    </div>
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>
-
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedChoice}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedChoice
-                    ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                    : "bg-gray-500/50 cursor-not-allowed"
-                }`}
-              >
-                Confirm Choice
-              </button>
             </div>
-          ) : (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-              <div className="text-7xl mb-4 text-center">
-                {
-                  current.choices.find((c) => c.id === selectedChoice)?.emoji
-                }
-              </div>
-              <h2 className="text-3xl font-bold text-white mb-4 text-center">
-                {
-                  current.choices.find((c) => c.id === selectedChoice)
-                    ?.isCorrect
-                    ? "🎉 Correct!"
-                    : "❌ Not Quite!"
-                }
-              </h2>
-              <p className="text-white/90 text-lg mb-6 text-center">
-                {current.choices.find((c) => c.id === selectedChoice)?.text}
-              </p>
-
-              {current.choices.find((c) => c.id === selectedChoice)?.isCorrect ? (
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">{current.correctMsg}</p>
-                </div>
-              ) : (
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">{current.wrongMsg}</p>
-                </div>
-              )}
-
-              <button
-                onClick={handleNextQuestion}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Next Story
-              </button>
-            </div>
-          )
+          </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <h2 className="text-4xl font-bold text-white mb-4">
-              🧠 AI News Genius!
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You answered {score} out of {questions.length} stories correctly.
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-sm">
-                📰 AI helps deliver personalized, real-time, and trustworthy news!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold">
-              {coins > 0
-                ? "You earned 10 Coins! 🪙"
-                : "Get at least 3 correct to earn coins!"}
-            </p>
-            {coins === 0 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-pink-500 to-red-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about AI in news!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand how AI recommends, translates, and fact-checks news!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about AI in news!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about how AI helps with news recommendations, translations, and fact-checking.
+                </p>
+              </div>
             )}
           </div>
         )}

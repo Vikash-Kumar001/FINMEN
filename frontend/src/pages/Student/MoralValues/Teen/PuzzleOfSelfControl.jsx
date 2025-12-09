@@ -39,11 +39,11 @@ const PuzzleOfSelfControl = () => {
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Discipline → Success (pos 1)
-    { leftId: 2, rightId: 2 }, // Laziness → Failure (pos 2)
-    { leftId: 3, rightId: 3 }, // Consistency → Achievement (pos 3)
-    { leftId: 4, rightId: 4 }, // Procrastination → Missed Goals (pos 4)
-    { leftId: 5, rightId: 5 }  // Focus → Progress (pos 5)
+    { leftId: 1, rightId: 3 }, // Discipline → Achievement
+    { leftId: 2, rightId: 4 }, // Laziness → Missed Goals
+    { leftId: 3, rightId: 5 }, // Consistency → Progress
+    { leftId: 4, rightId: 2 }, // Procrastination → Failure
+    { leftId: 5, rightId: 1 }  // Focus → Success
   ];
 
   const isRightItemMatched = (itemId) => {

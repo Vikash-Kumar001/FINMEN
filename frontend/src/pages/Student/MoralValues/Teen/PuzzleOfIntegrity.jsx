@@ -39,11 +39,11 @@ const PuzzleOfIntegrity = () => {
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Integrity → Doing right even when no one is watching (pos 1)
-    { leftId: 2, rightId: 2 }, // Lost Wallet → Return it to the owner or authorities (pos 2)
-    { leftId: 3, rightId: 3 }, // Exam Honesty → Attempting honestly even if it's hard (pos 3)
-    { leftId: 4, rightId: 4 }, // Friend Blames → Speak honestly and explain what happened (pos 4)
-    { leftId: 5, rightId: 5 }  // True Quote → 'Character is who you are when no one's watching.' (pos 5)
+    { leftId: 1, rightId: 3 }, // Integrity → Attempting honestly even if it's hard
+    { leftId: 2, rightId: 4 }, // Lost Wallet → Speak honestly and explain what happened
+    { leftId: 3, rightId: 1 }, // Exam Honesty → Doing right even when no one is watching
+    { leftId: 4, rightId: 5 }, // Friend Blames → 'Character is who you are when no one's watching.'
+    { leftId: 5, rightId: 2 }  // True Quote → Return it to the owner or authorities
   ];
 
   const isRightItemMatched = (itemId) => {

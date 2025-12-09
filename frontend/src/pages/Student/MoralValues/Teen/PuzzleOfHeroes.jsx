@@ -22,28 +22,28 @@ const PuzzleOfHeroes = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const leftItems = [
-    { id: 1, name: "Mahatma Gandhi", emoji: "🕉️", description: "Indian leader" },
-    { id: 2, name: "Malala Yousafzai", emoji: "📚", description: "Education activist" },
-    { id: 3, name: "Mother Teresa", emoji: "💒", description: "Nun and humanitarian" },
-    { id: 4, name: "Nelson Mandela", emoji: "✊", description: "South African leader" },
-    { id: 5, name: "Abdul Kalam", emoji: "🚀", description: "Indian scientist" },
+    { id: 1, name: "Mahatma Gandhi", emoji: "🕉️", description: "Indian leader" }, // Matches with "Non-violence and truth" (rightId: 9)
+    { id: 2, name: "Malala Yousafzai", emoji: "📚", description: "Education activist" }, // Matches with "Education and girls' rights" (rightId: 7)
+    { id: 3, name: "Mother Teresa", emoji: "💒", description: "Nun and humanitarian" }, // Matches with "Helping the poor and sick" (rightId: 10)
+    { id: 4, name: "Nelson Mandela", emoji: "✊", description: "South African leader" }, // Matches with "Freedom and equality" (rightId: 6)
+    { id: 5, name: "Abdul Kalam", emoji: "🚀", description: "Indian scientist" }, // Matches with "Inspiring youth through science" (rightId: 8)
   ];
 
-  // Right items with correct matches in different positions: Q1: pos 1, Q2: pos 2, Q3: pos 3, Q4: pos 1, Q5: pos 2
+  // Right items with correct matches in different positions: manually shuffled to avoid direct positional matching
   const rightItems = [
-    { id: 1, name: "Non-violence and truth", emoji: "🕊️", description: "Peaceful resistance" },
-    { id: 2, name: "Education and girls' rights", emoji: "👧", description: "Learning for all" },
-    { id: 3, name: "Helping the poor and sick", emoji: "🏥", description: "Service to others" },
-    { id: 4, name: "Freedom and equality", emoji: "🌍", description: "Equal rights" },
-    { id: 5, name: "Inspiring youth through science", emoji: "🔬", description: "Scientific progress" },
+    { id: 6, name: "Freedom and equality", emoji: "🌍", description: "Equal rights" },     // Mandela's value (originally id: 4)
+    { id: 7, name: "Education and girls' rights", emoji: "👧", description: "Learning for all" }, // Malala's value (originally id: 2)
+    { id: 8, name: "Inspiring youth through science", emoji: "🔬", description: "Scientific progress" }, // Kalam's value (originally id: 5)
+    { id: 9, name: "Non-violence and truth", emoji: "🕊️", description: "Peaceful resistance" }, // Gandhi's value (originally id: 1)
+    { id: 10, name: "Helping the poor and sick", emoji: "🏥", description: "Service to others" }, // Mother Teresa's value (originally id: 3)
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Gandhi → Non-violence and truth (pos 1)
-    { leftId: 2, rightId: 2 }, // Malala → Education and girls' rights (pos 2)
-    { leftId: 3, rightId: 3 }, // Mother Teresa → Helping the poor and sick (pos 3)
-    { leftId: 4, rightId: 4 }, // Mandela → Freedom and equality (pos 4)
-    { leftId: 5, rightId: 5 }  // Kalam → Inspiring youth through science (pos 5)
+    { leftId: 1, rightId: 9 }, // Gandhi → Non-violence and truth (id: 1 → 9, now at pos 4)
+    { leftId: 2, rightId: 7 }, // Malala → Education and girls' rights (id: 2 → 7, pos 2)
+    { leftId: 3, rightId: 10 }, // Mother Teresa → Helping the poor and sick (id: 3 → 10, now at pos 5)
+    { leftId: 4, rightId: 6 }, // Mandela → Freedom and equality (id: 4 → 6, now at pos 1)
+    { leftId: 5, rightId: 8 }  // Kalam → Inspiring youth through science (id: 5 → 8, now at pos 3)
   ];
 
   const isRightItemMatched = (itemId) => {

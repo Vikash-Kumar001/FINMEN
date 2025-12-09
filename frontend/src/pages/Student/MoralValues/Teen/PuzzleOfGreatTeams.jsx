@@ -22,28 +22,28 @@ const PuzzleOfGreatTeams = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const leftItems = [
-    { id: 1, name: "Wright Brothers", emoji: "✈️", description: "Aviation pioneers" },
-    { id: 2, name: "Cricket Team", emoji: "🏏", description: "Sports team" },
-    { id: 3, name: "Avengers", emoji: "🦸", description: "Superhero team" },
-    { id: 4, name: "Bees", emoji: "🐝", description: "Nature's workers" },
-    { id: 5, name: "Musicians", emoji: "🎵", description: "Music creators" },
+    { id: 1, name: "Wright Brothers", emoji: "✈️", description: "Aviation pioneers" }, // Matches with "Airplane" (rightId: 6)
+    { id: 2, name: "Cricket Team", emoji: "🏏", description: "Sports team" }, // Matches with "Victory" (rightId: 7)
+    { id: 3, name: "Avengers", emoji: "🦸", description: "Superhero team" }, // Matches with "Saving the World" (rightId: 8)
+    { id: 4, name: "Bees", emoji: "🐝", description: "Nature's workers" }, // Matches with "Making Honey Together" (rightId: 9)
+    { id: 5, name: "Musicians", emoji: "🎵", description: "Music creators" }, // Matches with "Creating Harmony" (rightId: 10)
   ];
 
-  // Right items with correct matches in different positions: Q1: pos 1, Q2: pos 2, Q3: pos 3, Q4: pos 1, Q5: pos 2
+  // Right items with correct matches in different positions: manually shuffled to avoid direct positional matching
   const rightItems = [
-    { id: 1, name: "Airplane", emoji: "🛫", description: "Flying machine" },
-    { id: 2, name: "Victory", emoji: "🏆", description: "Winning together" },
-    { id: 3, name: "Saving the World", emoji: "🌍", description: "Protecting all" },
-    { id: 4, name: "Making Honey Together", emoji: "🍯", description: "Sweet teamwork" },
-    { id: 5, name: "Creating Harmony", emoji: "🎶", description: "Beautiful music" },
+    { id: 6, name: "Making Honey Together", emoji: "🍯", description: "Sweet teamwork" }, // Bees' achievement (originally id: 4)
+    { id: 7, name: "Victory", emoji: "🏆", description: "Winning together" }, // Cricket Team's achievement (originally id: 2)
+    { id: 8, name: "Creating Harmony", emoji: "🎶", description: "Beautiful music" }, // Musicians' achievement (originally id: 5)
+    { id: 9, name: "Airplane", emoji: "🛫", description: "Flying machine" }, // Wright Brothers' achievement (originally id: 1)
+    { id: 10, name: "Saving the World", emoji: "🌍", description: "Protecting all" }, // Avengers' achievement (originally id: 3)
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Wright Brothers → Airplane (pos 1)
-    { leftId: 2, rightId: 2 }, // Cricket Team → Victory (pos 2)
-    { leftId: 3, rightId: 3 }, // Avengers → Saving the World (pos 3)
-    { leftId: 4, rightId: 4 }, // Bees → Making Honey Together (pos 4)
-    { leftId: 5, rightId: 5 }  // Musicians → Creating Harmony (pos 5)
+    { leftId: 1, rightId: 9 }, // Wright Brothers → Airplane (id: 1 → 9, now at pos 4)
+    { leftId: 2, rightId: 7 }, // Cricket Team → Victory (id: 2 → 7, pos 2)
+    { leftId: 3, rightId: 10 }, // Avengers → Saving the World (id: 3 → 10, now at pos 5)
+    { leftId: 4, rightId: 6 }, // Bees → Making Honey Together (id: 4 → 6, now at pos 1)
+    { leftId: 5, rightId: 8 }  // Musicians → Creating Harmony (id: 5 → 8, now at pos 3)
   ];
 
   const isRightItemMatched = (itemId) => {

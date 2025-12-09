@@ -22,28 +22,28 @@ const PuzzleOfResolution = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const leftItems = [
-    { id: 1, name: "Talk", emoji: "💬", description: "Communication" },
-    { id: 2, name: "Violence", emoji: "⚔️", description: "Harmful action" },
-    { id: 3, name: "Listen", emoji: "👂", description: "Hearing others" },
-    { id: 4, name: "Blame", emoji: "😠", description: "Fault-finding" },
-    { id: 5, name: "Forgive", emoji: "🤝", description: "Letting go" },
+    { id: 1, name: "Talk", emoji: "💬", description: "Communication" }, // Matches with "Solution" (rightId: 6)
+    { id: 2, name: "Violence", emoji: "⚔️", description: "Harmful action" }, // Matches with "Problem" (rightId: 7)
+    { id: 3, name: "Listen", emoji: "👂", description: "Hearing others" }, // Matches with "Peace" (rightId: 8)
+    { id: 4, name: "Blame", emoji: "😠", description: "Fault-finding" }, // Matches with "Conflict" (rightId: 9)
+    { id: 5, name: "Forgive", emoji: "🤝", description: "Letting go" }, // Matches with "Healing" (rightId: 10)
   ];
 
-  // Right items with correct matches in different positions: Q1: pos 1, Q2: pos 2, Q3: pos 3, Q4: pos 1, Q5: pos 2
+  // Right items with correct matches in different positions: manually shuffled to avoid direct positional matching
   const rightItems = [
-    { id: 1, name: "Solution", emoji: "🌈", description: "Problem solved" },
-    { id: 2, name: "Problem", emoji: "💢", description: "Issue created" },
-    { id: 3, name: "Peace", emoji: "🕊️", description: "Harmony" },
-    { id: 4, name: "Conflict", emoji: "🔥", description: "Disagreement" },
-    { id: 5, name: "Healing", emoji: "💖", description: "Recovery" },
+    { id: 6, name: "Conflict", emoji: "🔥", description: "Disagreement" }, // Blame's outcome (originally id: 4)
+    { id: 7, name: "Problem", emoji: "💢", description: "Issue created" }, // Violence's outcome (originally id: 2)
+    { id: 8, name: "Healing", emoji: "💖", description: "Recovery" }, // Forgive's outcome (originally id: 5)
+    { id: 9, name: "Solution", emoji: "🌈", description: "Problem solved" }, // Talk's outcome (originally id: 1)
+    { id: 10, name: "Peace", emoji: "🕊️", description: "Harmony" }, // Listen's outcome (originally id: 3)
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Talk → Solution (pos 1)
-    { leftId: 2, rightId: 2 }, // Violence → Problem (pos 2)
-    { leftId: 3, rightId: 3 }, // Listen → Peace (pos 3)
-    { leftId: 4, rightId: 4 }, // Blame → Conflict (pos 4)
-    { leftId: 5, rightId: 5 }  // Forgive → Healing (pos 5)
+    { leftId: 1, rightId: 9 }, // Talk → Solution (id: 1 → 9, now at pos 4)
+    { leftId: 2, rightId: 7 }, // Violence → Problem (id: 2 → 7, pos 2)
+    { leftId: 3, rightId: 10 }, // Listen → Peace (id: 3 → 10, now at pos 5)
+    { leftId: 4, rightId: 6 }, // Blame → Conflict (id: 4 → 6, now at pos 1)
+    { leftId: 5, rightId: 8 }  // Forgive → Healing (id: 5 → 8, now at pos 3)
   ];
 
   const isRightItemMatched = (itemId) => {

@@ -39,11 +39,11 @@ const PuzzleOfGratitude = () => {
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Thanks → Smile (pos 1)
-    { leftId: 2, rightId: 2 }, // Say Thank You → Happy Helper (pos 2)
-    { leftId: 3, rightId: 3 }, // Say 'Wow, thanks!' → Giver feels happy (pos 3)
-    { leftId: 4, rightId: 4 }, // Appreciate teammates → Team feels valued (pos 4)
-    { leftId: 5, rightId: 5 }  // Say thanks to parents → Parents feel loved (pos 5)
+    { leftId: 1, rightId: 3 }, // Thanks → Giver feels happy
+    { leftId: 2, rightId: 5 }, // Say Thank You → Parents feel loved
+    { leftId: 3, rightId: 2 }, // Say 'Wow, thanks!' → Happy Helper
+    { leftId: 4, rightId: 1 }, // Appreciate teammates → Smile
+    { leftId: 5, rightId: 4 }  // Say thanks to parents → Team feels valued
   ];
 
   const isRightItemMatched = (itemId) => {

@@ -12,29 +12,168 @@ const RobotLearningBar = () => {
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentTask, setCurrentTask] = useState(0);
   const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Tasks for progression game
+  // Tasks for progression game with 3 options each
   const tasks = [
-    { id: 1, description: "Robot correctly identifies a cat", correct: true },
-    { id: 2, description: "Robot correctly identifies a dog", correct: true },
-    { id: 3, description: "Robot correctly identifies a bird", correct: true },
-    { id: 4, description: "Robot guesses incorrectly", correct: false },
-    { id: 5, description: "Robot skips a training step", correct: false }
+    {
+      id: 1,
+      description: "Robot is learning to identify animals. Which approach is best?",
+      options: [
+        { 
+          id: "supervised", 
+          text: "Supervised Learning", 
+          emoji: "📚", 
+          description: "Teaching the robot with labeled examples of cats, dogs, birds",
+          isCorrect: true
+        },
+        { 
+          id: "random", 
+          text: "Random Guessing", 
+          emoji: "❓", 
+          description: "Making guesses without any training data",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore Examples", 
+          emoji: "🚫", 
+          description: "Skipping training examples reduces learning effectiveness",
+          isCorrect: false
+        }
+      ],
+      correct: "supervised"
+    },
+    {
+      id: 2,
+      description: "Robot sees a new animal. How should it classify it?",
+      options: [
+        { 
+          id: "same", 
+          text: "Call it a Dog", 
+          emoji: "🐕", 
+          description: "Assuming everything is a dog ignores diversity",
+          isCorrect: false
+        },
+        { 
+          id: "patterns", 
+          text: "Recognize Patterns", 
+          emoji: "🔍", 
+          description: "Compare features with learned examples to classify",
+          isCorrect: true
+        },
+        { 
+          id: "skip", 
+          text: "Skip Classification", 
+          emoji: "⏭️", 
+          description: "Skipping prevents the robot from learning new things",
+          isCorrect: false
+        }
+      ],
+      correct: "patterns"
+    },
+    {
+      id: 3,
+      description: "Robot makes a wrong identification. What should happen?",
+      options: [
+        { 
+          id: "learn", 
+          text: "Learn from Mistake", 
+          emoji: "🧠", 
+          description: "Use the error to improve future identifications",
+          isCorrect: true
+        },
+        { 
+          id: "repeat", 
+          text: "Repeat Same Error", 
+          emoji: "🔄", 
+          description: "Repeating errors prevents learning progress",
+          isCorrect: false
+        },
+        { 
+          id: "stop", 
+          text: "Stop Learning", 
+          emoji: "⏹️", 
+          description: "Stopping prevents improvement from mistakes",
+          isCorrect: false
+        }
+      ],
+      correct: "learn"
+    },
+    {
+      id: 4,
+      description: "How should the robot handle rare animals it hasn't seen?",
+      options: [
+        { 
+          id: "guess", 
+          text: "Force a Guess", 
+          emoji: "🎯", 
+          description: "Forced guessing leads to incorrect classifications",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore Completely", 
+          emoji: "🙈", 
+          description: "Ignoring prevents learning about rare animals",
+          isCorrect: false
+        },
+        { 
+          id: "ask", 
+          text: "Ask for Help", 
+          emoji: "🙋", 
+          description: "Request assistance to correctly identify unusual cases",
+          isCorrect: true
+        }
+      ],
+      correct: "ask"
+    },
+    {
+      id: 5,
+      description: "What's the best way to improve the robot's accuracy?",
+      options: [
+        { 
+          id: "practice", 
+          text: "More Practice Examples", 
+          emoji: "📈", 
+          description: "Additional diverse examples improve recognition skills",
+          isCorrect: true
+        },
+        { 
+          id: "same", 
+          text: "Repeat Same Images", 
+          emoji: "🔂", 
+          description: "Repetition without variety doesn't expand knowledge",
+          isCorrect: false
+        },
+        { 
+          id: "reduce", 
+          text: "Reduce Training", 
+          emoji: "📉", 
+          description: "Less training reduces the robot's capability",
+          isCorrect: false
+        }
+      ],
+      correct: "practice"
+    }
   ];
 
-  const currentTaskData = tasks[currentTask];
-  const knowledgeBar = Math.min(Math.round((score / tasks.length) * 100), 100);
+  // Function to get options without rotation - keeping actual positions fixed
+  const getRotatedOptions = (options, taskIndex) => {
+    // Return options without any rotation to keep their actual positions fixed
+    return options;
+  };
 
-  const handleChoice = (choice) => {
-    const isCorrect = choice === currentTaskData.correct;
+  const currentTaskData = tasks[currentTask];
+  const displayOptions = getRotatedOptions(currentTaskData.options, currentTask);
+
+  const handleChoice = (choiceId) => {
+    const isCorrect = choiceId === currentTaskData.correct;
 
     if (isCorrect) {
       setScore(prev => prev + 1);
-      setCoins(prev => prev + 5); // +5 reward per correct
-      showCorrectAnswerFeedback(5, false);
+      showCorrectAnswerFeedback(1, false);
     }
 
     if (currentTask < tasks.length - 1) {
@@ -48,7 +187,6 @@ const RobotLearningBar = () => {
     setShowResult(false);
     setCurrentTask(0);
     setScore(0);
-    setCoins(0);
     resetFeedback();
   };
 
@@ -61,7 +199,7 @@ const RobotLearningBar = () => {
   return (
     <GameShell
       title="Robot Learning Bar"
-      score={coins}
+      score={score}
       subtitle={`Training Task ${currentTask + 1} of ${tasks.length}`}
       onNext={handleNext}
       nextEnabled={showResult && accuracy >= 70}
@@ -72,7 +210,7 @@ const RobotLearningBar = () => {
       
       gameId="ai-kids-68"
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={68}
       showConfetti={showResult && accuracy >= 70}
       flashPoints={flashPoints}
@@ -81,67 +219,69 @@ const RobotLearningBar = () => {
     >
       <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">
-              Train the AI Robot!
-            </h3>
-
-            {/* Knowledge Bar */}
-            <div className="bg-gradient-to-r from-blue-400/30 to-purple-500/30 rounded-xl p-6 mb-6">
-              <div className="text-white font-bold text-center mb-2">Knowledge Bar</div>
-              <div className="w-full bg-white/20 rounded-full h-6">
-                <div
-                  className="bg-green-500 h-6 rounded-full transition-all"
-                  style={{ width: `${knowledgeBar}%` }}
-                ></div>
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Task {currentTask + 1}/{tasks.length}</span>
+                <span className="text-yellow-400 font-bold">Points: {score}</span>
               </div>
-              <p className="text-white/90 text-center mt-2">{knowledgeBar}% Learned</p>
-            </div>
-
-            {/* Task Description */}
-            <div className="bg-white/10 rounded-lg p-6 mb-6 text-center text-white font-semibold text-lg">
-              {currentTaskData.description}
-            </div>
-
-            {/* Choice Buttons */}
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice(true)}
-                className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-6 transition-all transform hover:scale-105"
-              >
-                ✅ Correct
-              </button>
-              <button
-                onClick={() => handleChoice(false)}
-                className="bg-red-500/30 hover:bg-red-500/50 border-3 border-red-400 rounded-xl p-6 transition-all transform hover:scale-105"
-              >
-                ❌ Wrong
-              </button>
+              
+              {/* Task Description */}
+              <p className="text-white text-lg mb-6">
+                {currentTaskData.description}
+              </p>
+              
+              {/* Choice Buttons - 3 column grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {displayOptions.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {accuracy >= 70 ? "🎉 Robot Learned Well!" : "💪 Keep Training!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You completed {score} out of {tasks.length} tasks correctly! ({accuracy}%)
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm text-center">
-                💡 Each correct answer fills the Knowledge Bar, visualizing the robot's growth.
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned {coins} Coins! 🪙
-            </p>
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {accuracy >= 70 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Robot Learned Well!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You completed {score} out of {tasks.length} tasks correctly! ({accuracy}%)
+                  You're learning how robots improve through machine learning!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Points</span>
+                </div>
+                <p className="text-white/80">
+                  💡 Robots learn by recognizing patterns and improving from their mistakes!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Training!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You completed {score} out of {tasks.length} tasks correctly. ({accuracy}%)
+                  Keep practicing to learn more about how robots learn!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Think about how robots learn from examples and improve over time.
+                </p>
+              </div>
             )}
           </div>
         )}

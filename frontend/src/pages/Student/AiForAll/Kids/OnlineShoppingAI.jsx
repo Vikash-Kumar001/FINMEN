@@ -12,7 +12,6 @@ const OnlineShoppingAI = () => {
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentItem, setCurrentItem] = useState(0);
   const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
     useGameFeedback();
@@ -22,63 +21,155 @@ const OnlineShoppingAI = () => {
       id: 1,
       name: "You buy running shoes 👟. What will AI recommend next?",
       options: [
-        "Sports socks 🧦",
-        "Cooking pan 🍳",
-        "Phone charger 🔌",
-        "Painting brush 🎨"
+        { 
+          id: "socks", 
+          text: "Sports socks", 
+          emoji: "🧦", 
+          description: "AI recommends complementary items like socks for runners",
+          isCorrect: true
+        },
+        { 
+          id: "pan", 
+          text: "Cooking pan", 
+          emoji: "🍳", 
+          description: "Cooking pans aren't related to running shoes",
+          isCorrect: false
+        },
+        { 
+          id: "charger", 
+          text: "Phone charger", 
+          emoji: "🔌", 
+          description: "Phone chargers aren't directly related to running shoes",
+          isCorrect: false
+        }
       ],
-      correct: "Sports socks 🧦",
+      correct: "socks"
     },
     {
       id: 2,
       name: "You search for school bags 🎒. What item is AI likely to show?",
       options: [
-        "Pencil case ✏️",
-        "Garden hose 🌿",
-        "Car tires 🚗",
-        "TV remote 📺"
+        { 
+          id: "hose", 
+          text: "Garden hose", 
+          emoji: "🌿", 
+          description: "Garden hoses aren't related to school bags",
+          isCorrect: false
+        },
+        { 
+          id: "pencil", 
+          text: "Pencil case", 
+          emoji: "✏️", 
+          description: "AI suggests related school supplies like pencil cases",
+          isCorrect: true
+        },
+        { 
+          id: "tires", 
+          text: "Car tires", 
+          emoji: "🚗", 
+          description: "Car tires aren't related to school supplies",
+          isCorrect: false
+        }
       ],
-      correct: "Pencil case ✏️",
+      correct: "pencil"
     },
     {
       id: 3,
       name: "You order a mobile phone 📱. What suggestion makes the most sense?",
       options: [
-        "Phone case 📔",
-        "Flower pot 🌸",
-        "Book 📖",
-        "Chair 💺"
+        { 
+          id: "case", 
+          text: "Phone case", 
+          emoji: "📔", 
+          description: "AI recommends protective accessories for your new phone",
+          isCorrect: true
+        },
+        { 
+          id: "flower", 
+          text: "Flower pot", 
+          emoji: "🌸", 
+          description: "Flower pots aren't related to mobile phones",
+          isCorrect: false
+        },
+        { 
+          id: "book", 
+          text: "Book", 
+          emoji: "📖", 
+          description: "Books aren't directly related to phone purchases",
+          isCorrect: false
+        }
       ],
-      correct: "Phone case 📔",
+      correct: "case"
     },
     {
       id: 4,
       name: "You add a yoga mat 🧘‍♀️ to your cart. What will AI recommend?",
       options: [
-        "Water bottle 💧",
-        "Laptop 💻",
-        "Cooking oil 🧴",
-        "Earphones 🎧"
+        { 
+          id: "laptop", 
+          text: "Laptop", 
+          emoji: "💻", 
+          description: "Laptops aren't directly related to yoga mats",
+          isCorrect: false
+        },
+        { 
+          id: "oil", 
+          text: "Cooking oil", 
+          emoji: "🧴", 
+          description: "Cooking oil isn't related to yoga equipment",
+          isCorrect: false
+        },
+        { 
+          id: "water", 
+          text: "Water bottle", 
+          emoji: "💧", 
+          description: "AI suggests hydration essentials for yoga practice",
+          isCorrect: true
+        }
       ],
-      correct: "Water bottle 💧",
+      correct: "water"
     },
     {
       id: 5,
       name: "You browse winter jackets 🧥. What’s the best AI suggestion?",
       options: [
-        "Woolen gloves 🧤",
-        "Beach slippers 🩴",
-        "Sunglasses 🕶️",
-        "Raincoat ☔"
+        { 
+          id: "gloves", 
+          text: "Woolen gloves", 
+          emoji: "🧤", 
+          description: "AI recommends matching cold-weather accessories",
+          isCorrect: true
+        },
+        { 
+          id: "slippers", 
+          text: "Beach slippers", 
+          emoji: "🩴", 
+          description: "Beach slippers aren't suitable for winter",
+          isCorrect: false
+        },
+        { 
+          id: "sunglasses", 
+          text: "Sunglasses", 
+          emoji: "🕶️", 
+          description: "Sunglasses aren't specifically related to winter jackets",
+          isCorrect: false
+        }
       ],
-      correct: "Woolen gloves 🧤",
+      correct: "gloves"
     },
   ];
 
-  const currentItemData = items[currentItem];
+  // Function to get options without rotation - keeping actual positions fixed
+  const getRotatedOptions = (options, itemIndex) => {
+    // Return options without any rotation to keep their actual positions fixed
+    return options;
+  };
 
-  const handleChoice = (choice) => {
-    const isCorrect = choice === currentItemData.correct;
+  const currentItemData = items[currentItem];
+  const displayOptions = getRotatedOptions(currentItemData.options, currentItem);
+
+  const handleChoice = (choiceId) => {
+    const isCorrect = choiceId === currentItemData.correct;
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
@@ -88,13 +179,8 @@ const OnlineShoppingAI = () => {
     if (currentItem < items.length - 1) {
       setTimeout(() => {
         setCurrentItem((prev) => prev + 1);
-      }, 500);
+      }, 300);
     } else {
-      const finalScore = score + (isCorrect ? 1 : 0);
-      if (finalScore >= 4) {
-        setCoins(5);
-      }
-      setScore(finalScore);
       setShowResult(true);
     }
   };
@@ -103,7 +189,6 @@ const OnlineShoppingAI = () => {
     setShowResult(false);
     setCurrentItem(0);
     setScore(0);
-    setCoins(0);
     resetFeedback();
   };
 
@@ -111,76 +196,92 @@ const OnlineShoppingAI = () => {
     navigate("/student/ai-for-all/kids/airport-scanner-story");
   };
 
+  const accuracy = Math.round((score / items.length) * 100);
+
   return (
     <GameShell
       title="Online Shopping AI"
-      score={coins}
+      score={score}
       subtitle={`Question ${currentItem + 1} of ${items.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && score >= 4}
+      nextEnabled={showResult && accuracy >= 70}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && score >= 4}
+      showGameOver={showResult && accuracy >= 70}
       
       gameId="ai-kids-40"
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={40}
-      showConfetti={showResult && score >= 4}
+      showConfetti={showResult && accuracy >= 70}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
     >
       <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-6xl mb-4 text-center">🛒</div>
-            <h3 className="text-white text-xl font-bold mb-6 text-center">
-              Choose the most logical AI shopping suggestion!
-            </h3>
-
-            <div className="bg-gray-800/50 rounded-xl p-8 mb-6">
-              <p className="text-2xl text-white text-center">
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentItem + 1}/{items.length}</span>
+                <span className="text-yellow-400 font-bold">Points: {score}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
                 {currentItemData.name}
               </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {currentItemData.options.map((opt, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleChoice(opt)}
-                  className="bg-white/20 hover:bg-green-500/40 border border-white/40 rounded-xl p-4 text-white font-semibold text-lg transition-all hover:scale-105"
-                >
-                  {opt}
-                </button>
-              ))}
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {displayOptions.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {score >= 4 ? "🎉 Smart Shopper!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You chose correctly {score} out of {items.length} times!
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm text-center">
-                💡 E-commerce AIs recommend related products based on your searches and preferences — making your shopping smarter!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              {score >= 4 ? "You earned 5 Coins! 🪙" : "Get 4 or more correct to earn coins!"}
-            </p>
-            {score < 4 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {accuracy >= 70 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Smart Shopper!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You chose correctly {score} out of {items.length} times! ({accuracy}%)
+                  You're learning how AI makes smart shopping suggestions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Points</span>
+                </div>
+                <p className="text-white/80">
+                  💡 E-commerce AIs recommend related products based on your searches and preferences — making your shopping smarter!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You chose correctly {score} out of {items.length} times. ({accuracy}%)
+                  Keep practicing to learn more about AI shopping recommendations!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about which items logically go together when shopping online.
+                </p>
+              </div>
             )}
           </div>
         )}

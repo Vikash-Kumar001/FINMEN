@@ -12,7 +12,6 @@ const SmartwatchGame = () => {
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentAlert, setCurrentAlert] = useState(0);
   const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
     useGameFeedback();
@@ -21,39 +20,159 @@ const SmartwatchGame = () => {
     {
       id: 1,
       message: "Your heart rate is high after running. What should you do?",
-      options: ["Slow down and rest 😌", "Keep running faster 🏃‍♂️", "Ignore it 🙈", "Eat sweets 🍬"],
-      correct: "Slow down and rest 😌",
+      options: [
+        { 
+          id: "rest", 
+          text: "Slow down and rest", 
+          emoji: "😌", 
+          description: "Resting helps your heart rate return to normal",
+          isCorrect: true
+        },
+        { 
+          id: "faster", 
+          text: "Keep running faster", 
+          emoji: "🏃‍♂️", 
+          description: "Running faster will increase your heart rate more",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "🙈", 
+          description: "Ignoring high heart rate can be dangerous",
+          isCorrect: false
+        }
+      ],
+      correct: "rest"
     },
     {
       id: 2,
       message: "The watch says 'You’ve been sitting too long.' What’s the best action?",
-      options: ["Get up and stretch 🙆‍♀️", "Keep sitting 🪑", "Take a nap 😴", "Turn off the alert 🔕"],
-      correct: "Get up and stretch 🙆‍♀️",
+      options: [
+        { 
+          id: "stretch", 
+          text: "Get up and stretch", 
+          emoji: "🙆‍♀️", 
+          description: "Stretching improves blood circulation after sitting",
+          isCorrect: true
+        },
+        { 
+          id: "sit", 
+          text: "Keep sitting", 
+          emoji: "🪑", 
+          description: "Staying seated won't solve the problem",
+          isCorrect: false
+        },
+        { 
+          id: "nap", 
+          text: "Take a nap", 
+          emoji: "😴", 
+          description: "Napping isn't the solution for prolonged sitting",
+          isCorrect: false
+        }
+      ],
+      correct: "stretch"
     },
     {
       id: 3,
       message: "It says ‘Low battery!’. What should you do?",
-      options: ["Charge it 🔋", "Ignore it 🚫", "Shake it 🤨", "Restart phone 📱"],
-      correct: "Charge it 🔋",
+      options: [
+        
+        { 
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "🚫", 
+          description: "Ignoring will lead to device shutdown",
+          isCorrect: false
+        },
+        { 
+          id: "shake", 
+          text: "Shake it", 
+          emoji: "🤨", 
+          description: "Shaking won't charge the battery",
+          isCorrect: false
+        },
+        { 
+          id: "charge", 
+          text: "Charge it", 
+          emoji: "🔋", 
+          description: "Charging replenishes the smartwatch battery",
+          isCorrect: true
+        }
+      ],
+      correct: "charge"
     },
     {
       id: 4,
       message: "You got a sleep alert: ‘You slept only 4 hours.’ What’s the right response?",
-      options: ["Sleep earlier tonight 🌙", "Drink coffee ☕", "Stay awake all night 😵", "Skip breakfast 🍞"],
-      correct: "Sleep earlier tonight 🌙",
+      options: [
+        { 
+          id: "sleep", 
+          text: "Sleep earlier tonight", 
+          emoji: "🌙", 
+          description: "Going to bed earlier improves sleep duration",
+          isCorrect: true
+        },
+        { 
+          id: "coffee", 
+          text: "Drink coffee", 
+          emoji: "☕", 
+          description: "Coffee provides temporary energy but doesn't fix sleep",
+          isCorrect: false
+        },
+        { 
+          id: "awake", 
+          text: "Stay awake all night", 
+          emoji: "😵", 
+          description: "Staying awake worsens sleep deprivation",
+          isCorrect: false
+        }
+      ],
+      correct: "sleep"
     },
     {
       id: 5,
       message: "Your smartwatch says ‘Take deep breaths to relax.’ What should you do?",
-      options: ["Take deep breaths 🌬️", "Ignore and scroll phone 📱", "Run quickly 🏃", "Complain to AI 🤖"],
-      correct: "Take deep breaths 🌬️",
+      options: [
+        { 
+          id: "breath", 
+          text: "Take deep breaths", 
+          emoji: "🌬️", 
+          description: "Deep breathing activates relaxation response",
+          isCorrect: true
+        },
+        { 
+          id: "run", 
+          text: "Run quickly", 
+          emoji: "🏃", 
+          description: "Running increases stress rather than reducing it",
+          isCorrect: false
+        },
+        { 
+          id: "phone", 
+          text: "Scroll phone", 
+          text: "Ignore and scroll phone", 
+          emoji: "📱", 
+          description: "Phone scrolling increases stress",
+          isCorrect: false
+        }
+        
+      ],
+      correct: "breath"
     },
   ];
 
-  const currentAlertData = alerts[currentAlert];
+  // Function to get options without rotation - keeping actual positions fixed
+  const getRotatedOptions = (options, alertIndex) => {
+    // Return options without any rotation to keep their actual positions fixed
+    return options;
+  };
 
-  const handleChoice = (choice) => {
-    const isCorrect = choice === currentAlertData.correct;
+  const currentAlertData = alerts[currentAlert];
+  const displayOptions = getRotatedOptions(currentAlertData.options, currentAlert);
+
+  const handleChoice = (choiceId) => {
+    const isCorrect = choiceId === currentAlertData.correct;
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
@@ -63,13 +182,8 @@ const SmartwatchGame = () => {
     if (currentAlert < alerts.length - 1) {
       setTimeout(() => {
         setCurrentAlert((prev) => prev + 1);
-      }, 500);
+      }, 300);
     } else {
-      const finalScore = score + (isCorrect ? 1 : 0);
-      if (finalScore >= 4) {
-        setCoins(5);
-      }
-      setScore(finalScore);
       setShowResult(true);
     }
   };
@@ -78,7 +192,6 @@ const SmartwatchGame = () => {
     setShowResult(false);
     setCurrentAlert(0);
     setScore(0);
-    setCoins(0);
     resetFeedback();
   };
 
@@ -86,76 +199,92 @@ const SmartwatchGame = () => {
     navigate("/student/ai-for-all/kids/online-shopping-ai");
   };
 
+  const accuracy = Math.round((score / alerts.length) * 100);
+
   return (
     <GameShell
       title="Smartwatch Game"
-      score={coins}
+      score={score}
       subtitle={`Alert ${currentAlert + 1} of ${alerts.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && score >= 4}
+      nextEnabled={showResult && accuracy >= 70}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && score >= 4}
+      showGameOver={showResult && accuracy >= 70}
       
       gameId="ai-kids-39"
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={39}
-      showConfetti={showResult && score >= 4}
+      showConfetti={showResult && accuracy >= 70}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
     >
       <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-6xl mb-4 text-center">⌚</div>
-            <h3 className="text-white text-xl font-bold mb-6 text-center">
-              Help your AI Smartwatch make the right decisions!
-            </h3>
-
-            <div className="bg-gray-800/50 rounded-xl p-8 mb-6">
-              <p className="text-2xl text-white text-center">
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Alert {currentAlert + 1}/{alerts.length}</span>
+                <span className="text-yellow-400 font-bold">Points: {score}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
                 {currentAlertData.message}
               </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {currentAlertData.options.map((opt, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleChoice(opt)}
-                  className="bg-white/20 hover:bg-green-500/40 border border-white/40 rounded-xl p-4 text-white font-semibold text-lg transition-all hover:scale-105"
-                >
-                  {opt}
-                </button>
-              ))}
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {displayOptions.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {score >= 4 ? "🎉 Healthy Response!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You answered {score} out of {alerts.length} correctly!
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm text-center">
-                💡 Smartwatches with AI help track health, suggest rest, and keep you active and balanced!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              {score >= 4 ? "You earned 5 Coins! 🪙" : "Get 4 or more correct to earn coins!"}
-            </p>
-            {score < 4 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {accuracy >= 70 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Healthy Response!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {score} out of {alerts.length} alerts correctly! ({accuracy}%)
+                  You're learning to make smart choices with your AI smartwatch!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Points</span>
+                </div>
+                <p className="text-white/80">
+                  💡 Smartwatches with AI help track health, suggest rest, and keep you active and balanced!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {score} out of {alerts.length} alerts correctly. ({accuracy}%)
+                  Keep practicing to learn more about making healthy choices!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about what the smartest health choice would be in each situation.
+                </p>
+              </div>
             )}
           </div>
         )}

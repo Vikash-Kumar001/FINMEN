@@ -12,7 +12,6 @@ const RobotVacuumGame = () => {
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentObstacle, setCurrentObstacle] = useState(0);
   const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
@@ -21,10 +20,7 @@ const RobotVacuumGame = () => {
     { id: 2, emoji: "🛋️", correctAction: "turn" },
     { id: 3, emoji: "🪞", correctAction: "stay" },
     { id: 4, emoji: "🛏️", correctAction: "turn" },
-    { id: 5, emoji: "🖼️", correctAction: "stay" },
-    { id: 6, emoji: "🪟", correctAction: "stay" },
-    { id: 7, emoji: "🪑", correctAction: "turn" },
-    { id: 8, emoji: "🛋️", correctAction: "turn" }
+    { id: 5, emoji: "🖼️", correctAction: "stay" }
   ];
 
   const currentObstacleData = obstacles[currentObstacle];
@@ -42,10 +38,6 @@ const RobotVacuumGame = () => {
         setCurrentObstacle(prev => prev + 1);
       }, 300);
     } else {
-      if ((score + (isCorrect ? 1 : 0)) >= 6) {
-        setCoins(5);
-      }
-      setScore(prev => prev + (isCorrect ? 1 : 0));
       setShowResult(true);
     }
   };
@@ -54,7 +46,6 @@ const RobotVacuumGame = () => {
     setShowResult(false);
     setCurrentObstacle(0);
     setScore(0);
-    setCoins(0);
     resetFeedback();
   };
 
@@ -62,23 +53,25 @@ const RobotVacuumGame = () => {
     navigate("/student/ai-for-all/kids/ai-translator-quiz"); // replace with actual next route
   };
 
+  const accuracy = Math.round((score / obstacles.length) * 100);
+
   return (
     <GameShell
       title="Robot Vacuum Game"
-      score={coins}
+      score={score}
       subtitle={`Obstacle ${currentObstacle + 1} of ${obstacles.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && score >= 6}
+      nextEnabled={showResult && accuracy >= 70}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && score >= 6}
+      showGameOver={showResult && accuracy >= 70}
       
       gameId="ai-kids-36"
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={36}
-      showConfetti={showResult && score >= 6}
+      showConfetti={showResult && accuracy >= 70}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
@@ -111,22 +104,22 @@ const RobotVacuumGame = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {score >= 6 ? "🎉 Obstacle Master!" : "💪 Keep Practicing!"}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <h2 className="text-3xl font-bold text-white mb-4 text-center">
+              {accuracy >= 70 ? "🎉 Obstacle Master!" : "💪 Keep Practicing!"}
             </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You avoided {score} out of {obstacles.length} obstacles!
+            <p className="text-white/90 text-xl mb-4 text-center">
+              You avoided {score} out of {obstacles.length} obstacles! ({accuracy}%)
             </p>
             <div className="bg-green-500/20 rounded-lg p-4 mb-4">
               <p className="text-white/90 text-sm">
                 💡 The robot vacuum uses AI to detect obstacles. You helped it navigate safely!
               </p>
             </div>
-            <p className="text-yellow-400 text-2xl font-bold">
-              {score >= 6 ? "You earned 5 Coins! 🪙" : "Get 6 or more correct to earn coins!"}
+            <p className="text-yellow-400 text-2xl font-bold text-center">
+              You earned {score} Points! 🪙
             </p>
-            {score < 6 && (
+            {accuracy < 70 && (
               <button
                 onClick={handleTryAgain}
                 className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"

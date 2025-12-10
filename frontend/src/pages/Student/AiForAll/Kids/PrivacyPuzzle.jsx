@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
@@ -11,10 +11,10 @@ const PrivacyPuzzle = () => {
   const gameId = "ai-kids-78";
   const gameData = getGameDataById(gameId);
   
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [coins, setCoins] = useState(0);
@@ -24,7 +24,7 @@ const PrivacyPuzzle = () => {
   const [showResult, setShowResult] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
 
-  // Actions (left side)
+  // Actions (left side) - reordered to vary correct answer positions
   const leftItems = [
     { id: 1, name: 'Sharing password', emoji: '🔓', description: 'Telling others your password' },
     { id: 2, name: 'Keeping password secret', emoji: '🔒', description: 'Not sharing your password' },
@@ -33,22 +33,22 @@ const PrivacyPuzzle = () => {
     { id: 5, name: 'Sharing location with everyone', emoji: '📍', description: 'Making location public' }
   ];
 
-  // Safety levels (right side) - manually arranged to vary correct answer positions
+  // Safety levels (right side) - shuffled to prevent direct correspondence with left items
   const rightItems = [
-    { id: 2, name: 'Safe', emoji: '✅', description: 'Protects your privacy' }, // Matches left 2 (right position 1)
-    { id: 4, name: 'Safe', emoji: '✅', description: 'Keeps your data secure' }, // Matches left 4 (right position 2)
-    { id: 1, name: 'Unsafe', emoji: '❌', description: 'Risks your privacy' }, // Matches left 1 (right position 3)
-    { id: 5, name: 'Unsafe', emoji: '❌', description: 'Exposes your location' }, // Matches left 5 (right position 4)
-    { id: 3, name: 'Unsafe', emoji: '❌', description: 'Dangerous for privacy' } // Matches left 3 (right position 5)
+    { id: 4, name: 'Protected', emoji: '🛡️', description: 'Provides good security' }, // Originally matches left 4
+    { id: 1, name: 'Risky', emoji: '⚠️', description: 'Could put your information at risk' }, // Originally matches left 1
+    { id: 5, name: 'Unsafe', emoji: '❌', description: 'Not safe for your privacy' }, // Originally matches left 5
+    { id: 3, name: 'Dangerous', emoji: '❗', description: 'May lead to serious problems' }, // Originally matches left 3
+    { id: 2, name: 'Secure', emoji: '🔒', description: 'Keeps your information safe' }  // Originally matches left 2
   ];
 
   // Correct matches - manually defined to split correct answers across different positions
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Sharing password → Unsafe (left 1st, right 3rd)
-    { leftId: 2, rightId: 2 }, // Keeping password secret → Safe (left 2nd, right 1st)
-    { leftId: 3, rightId: 3 }, // Giving personal info → Unsafe (left 3rd, right 5th)
-    { leftId: 4, rightId: 4 }, // Using strong passwords → Safe (left 4th, right 2nd)
-    { leftId: 5, rightId: 5 }  // Sharing location → Unsafe (left 5th, right 4th)
+    { leftId: 1, rightId: 1 }, // Sharing password → Risky
+    { leftId: 2, rightId: 2 }, // Keeping password secret → Secure
+    { leftId: 3, rightId: 3 }, // Giving personal info → Dangerous
+    { leftId: 4, rightId: 4 }, // Using strong passwords → Protected
+    { leftId: 5, rightId: 5 }  // Sharing location → Unsafe
   ];
 
   // Check if a left item is already matched
@@ -129,13 +129,6 @@ const PrivacyPuzzle = () => {
     setFinalScore(0);
     resetFeedback();
   };
-
-  // Log when game completes
-  useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Privacy Puzzle game completed! Score: ${finalScore}/${leftItems.length}, gameId: ${gameId}`);
-    }
-  }, [showResult, finalScore, gameId, leftItems.length]);
 
   return (
     <GameShell

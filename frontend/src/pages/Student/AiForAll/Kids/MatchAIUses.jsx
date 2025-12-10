@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -10,10 +10,11 @@ const MatchAIUses = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [matches, setMatches] = useState([]);
+  const [matches, setMatches] = useState([]); // Initialize as empty array
   const [score, setScore] = useState(0);
   const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [shuffledTargets, setShuffledTargets] = useState([]);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const items = [
@@ -32,6 +33,24 @@ const MatchAIUses = () => {
     { name: "Text translation", emoji: "🌐" }
   ];
 
+  // Shuffle targets without using Math.random()
+  const shuffleTargets = () => {
+    // Manually rearrange positions to shuffle targets
+    // This creates a deterministic shuffle that changes the positions
+    const shuffled = [
+      targets[3], // Netflix
+      targets[1], // Phone unlock
+      targets[4], // Text translation
+      targets[0], // Car
+      targets[2]  // Virtual assistant
+    ];
+    setShuffledTargets(shuffled);
+  };
+
+  useEffect(() => {
+    shuffleTargets();
+  }, []);
+
   const handleDrop = (item, target) => {
     const isCorrect = item.match === target.name;
     if (isCorrect) {
@@ -39,8 +58,10 @@ const MatchAIUses = () => {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
+    // Add the match to the matches array
     setMatches(prev => [...prev, { ...item, selected: target.name }]);
 
+    // Check if all items have been matched
     if (matches.length + 1 === items.length) {
       setTimeout(() => setShowResult(true), 500);
     }
@@ -52,17 +73,22 @@ const MatchAIUses = () => {
     setCoins(0);
     setShowResult(false);
     resetFeedback();
+    shuffleTargets(); // Reshuffle targets for new game
   };
 
   const handleNext = () => {
     navigate("/student/ai-for-all/kids/sorting-animals");
   };
 
+  // Calculate current question number (1-based indexing)
+  // If all questions are answered, show the total number of questions
+  const currentQuestion = matches.length >= items.length ? items.length : matches.length + 1;
+
   return (
     <GameShell
       title="Match AI Uses"
       score={coins}
-      subtitle={`Match ${matches.length + 1} of ${items.length}`}
+      subtitle={`Match ${matches.length} of ${items.length}`} // Show number of completed matches out of total
       onNext={handleNext}
       nextEnabled={showResult && score >= 4}
       coinsPerLevel={coinsPerLevel}
@@ -90,6 +116,7 @@ const MatchAIUses = () => {
               <div>
                 <h4 className="text-white font-semibold mb-4">AI Tools</h4>
                 <div className="space-y-4">
+                  {/* Only show items that haven't been matched yet */}
                   {items.map(item => !matches.find(m => m.id === item.id) && (
                     <div
                       key={item.id}
@@ -107,7 +134,8 @@ const MatchAIUses = () => {
               <div>
                 <h4 className="text-white font-semibold mb-4">Uses</h4>
                 <div className="space-y-4">
-                  {targets.map(target => (
+                  {/* Use shuffledTargets instead of targets */}
+                  {shuffledTargets.map(target => (
                     <div
                       key={target.name}
                       onDragOver={(e) => e.preventDefault()}

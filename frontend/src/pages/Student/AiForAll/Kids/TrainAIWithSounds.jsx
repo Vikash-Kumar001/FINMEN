@@ -1,186 +1,316 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-
-// ✅ Verified sound URLs (Pixabay)
-const dogBarkUrl = "https://cdn.pixabay.com/audio/2022/03/15/audio_89d51c8e9f.mp3"; // Dog
-const catMeowUrl = "https://cdn.pixabay.com/audio/2023/02/28/audio_9b4c9d2a76.mp3"; // Cat
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const TrainAIWithSounds = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentItem, setCurrentItem] = useState(0);
-  const [score, setScore] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-64");
+  const gameId = gameData?.id || "ai-kids-64";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [userInteracted, setUserInteracted] = useState(false); // 👈 track user interaction
-
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
     useGameFeedback();
 
-  // ✅ Sound items
-  const items = [
-    { id: 1, emoji: "🐶", sound: dogBarkUrl, correct: "Dog" },
-    { id: 2, emoji: "🐱", sound: catMeowUrl, correct: "Cat" },
-    { id: 3, emoji: "🐶", sound: dogBarkUrl, correct: "Dog" },
-    { id: 4, emoji: "🐱", sound: catMeowUrl, correct: "Cat" },
-    { id: 5, emoji: "🐶", sound: dogBarkUrl, correct: "Dog" },
-    { id: 6, emoji: "🐱", sound: catMeowUrl, correct: "Cat" },
-    { id: 7, emoji: "🐶", sound: dogBarkUrl, correct: "Dog" },
-    { id: 8, emoji: "🐱", sound: catMeowUrl, correct: "Cat" },
-    { id: 9, emoji: "🐶", sound: dogBarkUrl, correct: "Dog" },
-    { id: 10, emoji: "🐱", sound: catMeowUrl, correct: "Cat" },
+  // Questions about training AI with sounds (exactly 5 questions with 3 options each)
+  const questions = [
+    {
+      id: 1,
+      text: "How should we train AI to recognize dog barks?",
+      options: [
+        { 
+          id: "examples", 
+          text: "Provide many examples of dog barks 🐶", 
+          emoji: "📚", 
+          description: "AI needs numerous varied examples to learn patterns effectively.",
+          isCorrect: true
+        },
+        { 
+          id: "once", 
+          text: "Play one bark sound once 🎵", 
+          emoji: "🎵", 
+          description: "One example isn't enough for reliable AI learning.",
+          isCorrect: false
+        },
+        { 
+          id: "guess", 
+          text: "Let AI guess without examples 🤔", 
+          emoji: "🤔", 
+          description: "AI needs structured data, not random guessing.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "What's the best way to help AI distinguish between cat meows and dog barks?",
+      options: [
+        { 
+          id: "labels", 
+          text: "Label each sound correctly 🏷️", 
+          emoji: "🏷️", 
+          description: "Proper labeling helps AI form accurate associations.",
+          isCorrect: true
+        },
+        { 
+          id: "mix", 
+          text: "Mix all sounds together randomly 🔀", 
+          emoji: "🔀", 
+          description: "Random mixing without structure confuses AI learning.",
+          isCorrect: false
+        },
+        { 
+          id: "silent", 
+          text: "Train with silent recordings 🤫", 
+          emoji: "🤫", 
+          description: "Silent recordings provide no learning value to AI.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "Why is variety important when training AI with sounds?",
+      options: [
+        { 
+          id: "variety", 
+          text: "Different environments, pitches, and tones help AI generalize 🔄", 
+          emoji: "🔄", 
+          description: "Variety ensures AI works in real-world situations.",
+          isCorrect: true
+        },
+        { 
+          id: "same", 
+          text: "Using the same sound repeatedly is best 📻", 
+          emoji: "📻", 
+          description: "Repetition limits AI's ability to recognize variations.",
+          isCorrect: false
+        },
+        { 
+          id: "loud", 
+          text: "Only use extremely loud sounds 📢", 
+          emoji: "📢", 
+          description: "Volume alone doesn't help AI understand audio patterns.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "What helps AI learn to recognize sounds in noisy places?",
+      options: [
+        
+        { 
+          id: "quiet", 
+          text: "Only train in perfectly quiet rooms 🤫", 
+          emoji: "🤫", 
+          description: "Quiet-only training doesn't prepare AI for real environments.",
+          isCorrect: false
+        },
+        { 
+          id: "noise", 
+          text: "Train with background noise examples 🎧", 
+          emoji: "🎧", 
+          description: "Including noise helps AI filter and focus on target sounds.",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore background sounds completely 🚫", 
+          emoji: "🚫", 
+          description: "AI needs to learn filtering, not ignoring environmental factors.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "How often should we update AI's sound recognition training?",
+      options: [
+        
+        { 
+          id: "never", 
+          text: "Never update after initial training 🛑", 
+          emoji: "🛑", 
+          description: "Static training becomes outdated and inaccurate over time.",
+          isCorrect: false
+        },
+        { 
+          id: "random", 
+          text: "Update randomly without a plan 🔀", 
+          emoji: "🔀", 
+          description: "Structured updates are more effective than random changes.",
+          isCorrect: false
+        },
+        { 
+          id: "regular", 
+          text: "Regular updates with new sound examples 📅", 
+          emoji: "📅", 
+          description: "Continuous learning keeps AI accurate and up-to-date.",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const currentItemData = items[currentItem];
-
-  // ✅ Play sound manually
-  const playSound = (soundUrl) => {
-    setUserInteracted(true);
-    const audio = new Audio(soundUrl);
-    audio.volume = 1.0;
-    audio.play().catch(() => {
-      console.warn("🔇 Autoplay blocked. Please click a button first.");
-    });
+  // Function to get options without rotation - keeping actual positions fixed
+  const getRotatedOptions = (options, questionIndex) => {
+    // Return options without any rotation to keep their actual positions fixed
+    return options;
   };
 
-  // ✅ Auto-play only after user interacts (browser policy)
-  useEffect(() => {
-    if (userInteracted && currentItemData) {
-      const audio = new Audio(currentItemData.sound);
-      audio.play().catch(() => {
-        console.warn("Autoplay prevented. Use Play buttons.");
-      });
-    }
-  }, [currentItemData, userInteracted]);
+  const getCurrentQuestion = () => questions[currentQuestion];
+  const displayOptions = getRotatedOptions(getCurrentQuestion().options, currentQuestion);
 
-  const handleChoice = (choice) => {
-    const isCorrect = choice === currentItemData.correct;
-
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore((prev) => prev + 1);
-      setCoins((prev) => prev + 2);
-      showCorrectAnswerFeedback(2, false);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    if (currentItem < items.length - 1) {
-      setTimeout(() => setCurrentItem((prev) => prev + 1), 700);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
       setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentItem(0);
-    setScore(0);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
+    setFinalScore(0);
     resetFeedback();
-    setUserInteracted(false);
   };
 
   const handleNext = () => {
     navigate("/student/ai-for-all/kids/robot-exam-story");
   };
 
-  const accuracy = Math.round((score / items.length) * 100);
-
   return (
     <GameShell
       title="Train AI with Sounds"
       score={coins}
-      subtitle={`Item ${currentItem + 1} of ${items.length}`}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
+      showGameOver={showResult && finalScore >= 3}
       
-      gameId="ai-kids-64"
+      gameId={gameId}
       gameType="ai"
       totalLevels={100}
       currentLevel={64}
-      showConfetti={showResult && accuracy >= 70}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
     >
       <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">
-              🎧 Listen carefully and choose the correct animal sound!
-            </h3>
-
-            <div className="bg-gradient-to-br from-yellow-500/30 to-orange-500/30 rounded-xl p-16 mb-6 flex justify-center items-center">
-              <div className="text-9xl animate-bounce">{currentItemData.emoji}</div>
-            </div>
-
-            {/* ✅ Manual Sound Buttons */}
-            <div className="flex justify-center gap-6 mb-8">
-              <button
-                onClick={() => playSound(dogBarkUrl)}
-                className="bg-green-600/30 hover:bg-green-500/60 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2"
-              >
-                🐶 Play Dog Sound
-              </button>
-              <button
-                onClick={() => playSound(catMeowUrl)}
-                className="bg-blue-600/30 hover:bg-blue-500/60 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2"
-              >
-                🐱 Play Cat Sound
-              </button>
-            </div>
-
-            {/* ✅ Choice Buttons */}
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice("Dog")}
-                className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-6xl mb-2">🐶</div>
-                <div className="text-white font-bold text-xl">Dog</div>
-              </button>
-
-              <button
-                onClick={() => handleChoice("Cat")}
-                className="bg-blue-500/30 hover:bg-blue-500/50 border-3 border-blue-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-6xl mb-2">🐱</div>
-                <div className="text-white font-bold text-xl">Cat</div>
-              </button>
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {displayOptions.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          // ✅ Result Screen
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {accuracy >= 70 ? "🎉 Sound Recognition Pro!" : "💪 Keep Practicing!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You identified {score} out of {items.length} correctly ({accuracy}%)
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Recognizing animal sounds helps AI learn how to classify audio — just like you did!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold mb-4">
-              You earned {coins} Coins! 🪙
-            </p>
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again 🔄
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">👂</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Sound Training Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand how to train AI with sounds!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
+                  <p className="text-white/90 text-sm">
+                    🌟 Excellent! You know that training AI with sounds requires consistent examples, correct labels, variety, noise training, and regular updates!
+                  </p>
+                </div>
+                <p className="text-white/80">
+                  Your knowledge helps robots learn to recognize sounds in the real world!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about training AI with sounds!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
+                  <p className="text-white/90 text-sm">
+                    💡 Remember: Training AI with sounds works best with consistent examples, correct labels, variety, noise training, and regular updates!
+                  </p>
+                </div>
+                <p className="text-white/80 text-sm">
+                  Think about what helps AI learn to recognize sounds in various environments.
+                </p>
+              </div>
             )}
           </div>
         )}

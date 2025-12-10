@@ -12,7 +12,6 @@ const SortingAnimals = () => {
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [sortedItems, setSortedItems] = useState([]);
   const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
@@ -33,8 +32,7 @@ const SortingAnimals = () => {
     const isCorrect = animal.category === category.name;
     if (isCorrect) {
       setScore(prev => prev + 1);
-      setCoins(prev => prev + 2);
-      showCorrectAnswerFeedback(2, false);
+      showCorrectAnswerFeedback(1, false);
     }
     setSortedItems(prev => [...prev, { ...animal, selected: category.name }]);
 
@@ -46,7 +44,6 @@ const SortingAnimals = () => {
   const handleTryAgain = () => {
     setSortedItems([]);
     setScore(0);
-    setCoins(0);
     setShowResult(false);
     resetFeedback();
   };
@@ -55,23 +52,25 @@ const SortingAnimals = () => {
     navigate("/student/ai-for-all/kids/ai-basics-badge"); // Update next game path
   };
 
+  const accuracy = Math.round((score / animals.length) * 100);
+
   return (
     <GameShell
       title="Sorting Animals"
-      score={coins}
-      subtitle={`Sort ${sortedItems.length + 1} of ${animals.length}`}
+      score={score}
+      subtitle={`Sort ${sortedItems.length} of ${animals.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && score >= 3}
+      nextEnabled={showResult && accuracy >= 70}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && score >= 3}
+      showGameOver={showResult && accuracy >= 70}
       
       gameId="ai-kids-24"
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={24}
-      showConfetti={showResult && score >= 3}
+      showConfetti={showResult && accuracy >= 70}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
@@ -92,7 +91,7 @@ const SortingAnimals = () => {
                       key={animal.id}
                       draggable
                       onDragStart={(e) => e.dataTransfer.setData("text/plain", animal.id)}
-                      className="bg-green-500/30 p-4 rounded-xl text-white font-bold cursor-move select-none flex items-center justify-center gap-2"
+                      className="bg-green-500/30 hover:bg-green-500/50 p-4 rounded-xl text-white font-bold cursor-move select-none flex items-center justify-center gap-2 transition-all transform hover:scale-105"
                     >
                       <span className="text-2xl">{animal.emoji}</span>
                       <span>{animal.name}</span>
@@ -113,7 +112,7 @@ const SortingAnimals = () => {
                         const animal = animals.find(a => a.id === id);
                         handleDrop(animal, category);
                       }}
-                      className="bg-blue-500/30 p-4 rounded-xl text-white font-bold min-h-[50px] flex items-center justify-center gap-2"
+                      className="bg-blue-500/30 hover:bg-blue-500/50 p-4 rounded-xl text-white font-bold min-h-[50px] flex items-center justify-center gap-2 transition-all transform hover:scale-105"
                     >
                       <span className="text-2xl">{category.emoji}</span>
                       <span>{category.name}</span>
@@ -124,22 +123,22 @@ const SortingAnimals = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {score >= 3 ? "🎉 Data Sorting Pro!" : "💪 Keep Practicing!"}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <h2 className="text-3xl font-bold text-white mb-4 text-center">
+              {accuracy >= 70 ? "🎉 Data Sorting Pro!" : "💪 Keep Practicing!"}
             </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You sorted {score} out of {animals.length} correctly!
+            <p className="text-white/90 text-xl mb-4 text-center">
+              You sorted {score} out of {animals.length} correctly! ({accuracy}%)
             </p>
             <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
               <p className="text-white/90 text-sm">
-                💡 Sorting data correctly is how AI “learns.” You helped the robot learn!
+                💡 Sorting data correctly is how AI "learns." You helped the robot learn!
               </p>
             </div>
-            <p className="text-yellow-400 text-2xl font-bold">
-              {score >= 3 ? "You earned 6 Coins! 🪙" : "Score 3 or more to earn coins!"}
+            <p className="text-yellow-400 text-2xl font-bold text-center">
+              You earned {score} Points! 🪙
             </p>
-            {score < 3 && (
+            {accuracy < 70 && (
               <button
                 onClick={handleTryAgain}
                 className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"

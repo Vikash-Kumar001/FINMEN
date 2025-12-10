@@ -12,20 +12,16 @@ const FaceUnlockGame = () => {
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentFace, setCurrentFace] = useState(0);
   const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Array of faces: half correct, half incorrect
+  // Array of faces: exactly 5 as per project specification
   const faces = [
     { id: 1, emoji: "😊", correct: true },
     { id: 2, emoji: "😎", correct: false },
     { id: 3, emoji: "😇", correct: true },
     { id: 4, emoji: "😡", correct: false },
-    { id: 5, emoji: "🙂", correct: true },
-    { id: 6, emoji: "😈", correct: false },
-    { id: 7, emoji: "😃", correct: true },
-    { id: 8, emoji: "🤬", correct: false }
+    { id: 5, emoji: "🙂", correct: true }
   ];
 
   const currentFaceData = faces[currentFace];
@@ -43,10 +39,6 @@ const FaceUnlockGame = () => {
         setCurrentFace(prev => prev + 1);
       }, 300);
     } else {
-      if ((score + (isCorrect ? 1 : 0)) >= 4) {
-        setCoins(5);
-      }
-      setScore(prev => prev + (isCorrect ? 1 : 0));
       setShowResult(true);
     }
   };
@@ -55,7 +47,6 @@ const FaceUnlockGame = () => {
     setShowResult(false);
     setCurrentFace(0);
     setScore(0);
-    setCoins(0);
     resetFeedback();
   };
 
@@ -63,23 +54,25 @@ const FaceUnlockGame = () => {
     navigate("/student/ai-for-all/kids/ai-or-human-quiz"); // update next route as needed
   };
 
+  const accuracy = Math.round((score / faces.length) * 100);
+
   return (
     <GameShell
       title="Face Unlock Game"
-      score={coins}
+      score={score}
       subtitle={`Face ${currentFace + 1} of ${faces.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && score >= 4}
+      nextEnabled={showResult && accuracy >= 70}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && score >= 4}
+      showGameOver={showResult && accuracy >= 70}
       
       gameId="ai-kids-32"
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={32}
-      showConfetti={showResult && score >= 4}
+      showConfetti={showResult && accuracy >= 70}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
@@ -108,22 +101,22 @@ const FaceUnlockGame = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {score >= 4 ? "🎉 Phone Unlocked!" : "💪 Keep Practicing!"}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <h2 className="text-3xl font-bold text-white mb-4 text-center">
+              {accuracy >= 70 ? "🎉 Phone Unlocked!" : "💪 Keep Practicing!"}
             </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You recognized {score} out of {faces.length} faces correctly!
+            <p className="text-white/90 text-xl mb-4 text-center">
+              You recognized {score} out of {faces.length} faces correctly! ({accuracy}%)
             </p>
             <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
               <p className="text-white/90 text-sm">
                 💡 Facial recognition AI helps devices unlock securely. Good job noticing the right faces!
               </p>
             </div>
-            <p className="text-yellow-400 text-2xl font-bold">
-              {score >= 4 ? "You earned 5 Coins! 🪙" : "Get 4 or more correct to earn coins!"}
+            <p className="text-yellow-400 text-2xl font-bold text-center">
+              You earned {score} Points! 🪙
             </p>
-            {score < 4 && (
+            {accuracy < 70 && (
               <button
                 onClick={handleTryAgain}
                 className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"

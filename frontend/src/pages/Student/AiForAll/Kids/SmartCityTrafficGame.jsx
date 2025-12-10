@@ -2,133 +2,296 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SmartCityTrafficGame = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentSignal, setCurrentSignal] = useState(0);
-  const [score, setScore] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-46");
+  const gameId = gameData?.id || "ai-kids-46";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
     useGameFeedback();
 
-  // 🟢 5 Questions (Signals)
-  const signals = [
-    { id: 1, light: "🟥 Red Light", correct: "Stop" },
-    { id: 2, light: "🟡 Yellow Light", correct: "Slow Down" },
-    { id: 3, light: "🟢 Green Light", correct: "Go" },
-    { id: 4, light: "🚦 Flashing Signal", correct: "Wait" },
-    { id: 5, light: "🚗 Pedestrian Crossing", correct: "Stop" },
+  // 🟢 Questions with 3 options each
+  const questions = [
+    {
+      id: 1,
+      text: "What does the red traffic light mean?",
+      options: [
+        { 
+          id: "stop", 
+          text: "Stop Completely 🛑", 
+          emoji: "✋", 
+          description: "Red means stop! Wait for the light to change before moving.",
+          isCorrect: true
+        },
+        { 
+          id: "go", 
+          text: "Go Fast 🏃", 
+          emoji: "🏃", 
+          description: "Never go on red! This would be dangerous and illegal.",
+          isCorrect: false
+        },
+        { 
+          id: "slow", 
+          text: "Slow Down 🐢", 
+          emoji: "🐢", 
+          description: "Red means complete stop, not just slowing down.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "What does the yellow traffic light mean?",
+      options: [
+        { 
+          id: "stop", 
+          text: "Stop Completely 🛑", 
+          emoji: "✋", 
+          description: "If you can safely stop, you should. But yellow warns you to prepare to stop.",
+          isCorrect: false
+        },
+        { 
+          id: "prepare", 
+          text: "Prepare to Stop ⚠️", 
+          emoji: "⚠️", 
+          description: "Yellow warns drivers to prepare to stop as the light is changing to red.",
+          isCorrect: true
+        },
+        { 
+          id: "go", 
+          text: "Go Faster 🏃", 
+          emoji: "🏃", 
+          description: "Never speed up on yellow! This increases accident risk.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "What does the green traffic light mean?",
+      options: [
+        { 
+          id: "stop", 
+          text: "Stop Completely 🛑", 
+          emoji: "✋", 
+          description: "Green means go, not stop. Only stop if pedestrians are crossing.",
+          isCorrect: false
+        },
+        { 
+          id: "caution", 
+          text: "Proceed with Caution 🛡️", 
+          emoji: "🛡️", 
+          description: "Look both ways and proceed carefully when the light is green.",
+          isCorrect: false
+        },
+        { 
+          id: "go", 
+          text: "Go Safely ✅", 
+          emoji: "✅", 
+          description: "Green means go! Proceed safely in the direction of the arrow.",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "How does AI help traffic lights?",
+      options: [
+        { 
+          id: "random", 
+          text: "Changes Randomly 🎲", 
+          emoji: "🎲", 
+          description: "AI uses data, not randomness, to optimize traffic flow.",
+          isCorrect: false
+        },
+        { 
+          id: "optimize", 
+          text: "Optimizes Traffic Flow 🚦", 
+          emoji: "🚦", 
+          description: "AI analyzes traffic patterns to reduce wait times and congestion.",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignores Traffic 🚫", 
+          emoji: "🚫", 
+          description: "AI actively manages traffic, it doesn't ignore it.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "Why are smart traffic lights better?",
+      options: [
+        { 
+          id: "waste", 
+          text: "Waste More Time ⏳", 
+          emoji: "⏳", 
+          description: "Smart lights reduce wait times, not increase them.",
+          isCorrect: false
+        },
+        { 
+          id: "reduce", 
+          text: "Reduce Congestion 🚗", 
+          emoji: "🚗", 
+          description: "Smart lights adapt to traffic patterns to reduce congestion and wait times.",
+          isCorrect: true
+        },
+        { 
+          id: "confuse", 
+          text: "Confuse Drivers 🤔", 
+          emoji: "🤔", 
+          description: "Smart lights make driving easier and safer, not more confusing.",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const actions = ["Stop", "Go", "Slow Down", "Wait"];
-
-  const currentSignalData = signals[currentSignal];
-
-  const handleChoice = (choice) => {
-    const isCorrect = choice === currentSignalData.correct;
-
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore((prev) => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    // Move to next question or show result
-    if (currentSignal < signals.length - 1) {
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
-        setCurrentSignal((prev) => prev + 1);
-      }, 300);
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      const finalScore = score + (isCorrect ? 1 : 0);
-      if (finalScore >= 3) {
-        setCoins(5);
-      }
-      setScore(finalScore);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
       setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentSignal(0);
-    setScore(0);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
   const handleNext = () => {
-    navigate("/student/ai-for-all/kids/ai-news-story"); // update to next actual route
+    navigate("/student/ai-for-all/kids/ai-news-story");
   };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Smart City Traffic Game"
       score={coins}
-      subtitle={`Signal ${currentSignal + 1} of ${signals.length}`}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && score >= 3}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && score >= 3}
+      showGameOver={showResult && finalScore >= 3}
       
-      gameId="ai-kids-46"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={46}
-      showConfetti={showResult && score >= 3}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
     >
       <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-6xl mb-4 text-center">{currentSignalData.light}</div>
-            <h3 className="text-white text-xl font-bold mb-6 text-center">
-              Choose the correct action!
-            </h3>
-
-            <div className="grid grid-cols-2 gap-4">
-              {actions.map((action, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleChoice(action)}
-                  className="bg-blue-500/30 hover:bg-blue-500/50 border-3 border-blue-400 rounded-xl p-6 transition-all transform hover:scale-105"
-                >
-                  <div className="text-white font-bold text-xl text-center">{action}</div>
-                </button>
-              ))}
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {score >= 3 ? "🚦 Great Traffic Sense!" : "🛑 Try Again!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You followed the correct signals {score} out of {signals.length} times.
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 AI controls smart traffic lights to reduce congestion and prevent accidents!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold">
-              {score >= 3 ? "You earned 5 Coins! 🪙" : "Get at least 3 correct to earn coins!"}
-            </p>
-            {score < 3 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🚦</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Traffic Sense!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about smart city traffic!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand how AI helps control traffic lights to reduce congestion!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about smart city traffic!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about how AI helps traffic lights work smarter, not harder.
+                </p>
+              </div>
             )}
           </div>
         )}

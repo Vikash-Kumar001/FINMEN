@@ -13,8 +13,8 @@ const ChatbotFriend = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [userMessage, setUserMessage] = useState("");
   const [botReply, setBotReply] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   // 5 chatbot interaction questions
@@ -24,14 +24,14 @@ const ChatbotFriend = () => {
       question: "Chatbot: Say 'Hello' to start our chat!",
       correct: "hello",
       reply: "Hi, how are you?",
-      correctMsg: "Awesome! That’s how chatbots begin conversations.",
+      correctMsg: "Awesome! That's how chatbots begin conversations.",
     },
     {
       id: 2,
       question: "Chatbot: What's your favorite color? (Type 'blue')",
       correct: "blue",
       reply: "Nice! Blue is calming and smart — just like AI!",
-      correctMsg: "Perfect! You’re learning how AI understands text patterns.",
+      correctMsg: "Perfect! You're learning how AI understands text patterns.",
     },
     {
       id: 3,
@@ -61,67 +61,72 @@ const ChatbotFriend = () => {
   const handleSend = () => {
     const userAnswer = userMessage.trim().toLowerCase();
     const correctAnswer = currentChat.correct.toLowerCase();
+    let isCorrect = false;
 
     if (userAnswer === correctAnswer) {
+      isCorrect = true;
+      setScore(prev => prev + 1);
       setBotReply(currentChat.reply);
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
-      setTotalCoins(totalCoins + 5);
+      showCorrectAnswerFeedback(1, false);
     } else {
-      setBotReply("Hmm, I didn’t understand that. Try typing again!");
-      setCoins(0);
+      setBotReply("Hmm, I didn't understand that. Try typing again!");
     }
-    setShowFeedback(true);
+    
+    if (currentQuestion < chats.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+        setUserMessage("");
+        setBotReply("");
+      }, 1000);
+    } else {
+      setShowResult(true);
+    }
   };
 
   const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
     setUserMessage("");
     setBotReply("");
-    setShowFeedback(false);
-    setCoins(0);
+    setScore(0);
     resetFeedback();
   };
 
-  const handleNextQuestion = () => {
-    if (currentQuestion < chats.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setUserMessage("");
-      setBotReply("");
-      setShowFeedback(false);
-      setCoins(0);
-      resetFeedback();
-    } else {
-      navigate("/student/ai-for-all/kids/face-unlock-game");
-    }
+  const handleNext = () => {
+    navigate("/student/ai-for-all/kids/face-unlock-game");
   };
+
+  const accuracy = Math.round((score / chats.length) * 100);
 
   return (
     <GameShell
       title="Chatbot Friend"
-      score={coins}
-      subtitle="Interact with AI"
-      onNext={handleNextQuestion}
-      nextEnabled={showFeedback && coins > 0}
+      score={score}
+      subtitle={`Chat ${currentQuestion + 1} of ${chats.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && accuracy >= 70}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showFeedback && currentQuestion === chats.length - 1 && coins > 0}
+      showGameOver={showResult && accuracy >= 70}
       
       gameId="ai-kids-31"
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={31}
-      showConfetti={showFeedback && coins > 0}
+      showConfetti={showResult && accuracy >= 70}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">
-              {currentChat.question}
-            </h2>
+        {!showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <h3 className="text-white text-xl font-bold mb-6 text-center">Chat with AI</h3>
+            
+            <div className="bg-white/10 rounded-lg p-6 mb-6">
+              <p className="text-white text-xl font-semibold text-center">{currentChat.question}</p>
+            </div>
 
             <input
               type="text"
@@ -144,28 +149,22 @@ const ChatbotFriend = () => {
             </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {coins > 0 ? "🤖 Friendly Chat!" : "💬 Try Again"}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <h2 className="text-3xl font-bold text-white mb-4 text-center">
+              {accuracy >= 70 ? "🎉 Chat Expert!" : "💪 Keep Practicing!"}
             </h2>
-
-            <p className="text-white/90 text-lg mb-3">You: {userMessage}</p>
-            <p className="text-white/90 text-lg mb-6">AI: {botReply}</p>
-
-            {coins > 0 ? (
-              <>
-                <p className="text-green-400 mb-4 font-semibold">{currentChat.correctMsg}</p>
-                <p className="text-yellow-400 text-2xl font-bold mb-6">
-                  You earned 5 Coins! 🪙
-                </p>
-                <button
-                  onClick={handleNextQuestion}
-                  className="mt-2 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  {currentQuestion === chats.length - 1 ? "Finish Chat 🤝" : "Next Chat →"}
-                </button>
-              </>
-            ) : (
+            <p className="text-white/90 text-xl mb-4 text-center">
+              You completed {score} out of {chats.length} chats correctly! ({accuracy}%)
+            </p>
+            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
+              <p className="text-white/90 text-sm">
+                💡 Chatbots use AI to understand and respond to your messages!
+              </p>
+            </div>
+            <p className="text-yellow-400 text-2xl font-bold text-center">
+              You earned {score} Points! 🪙
+            </p>
+            {accuracy < 70 && (
               <button
                 onClick={handleTryAgain}
                 className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"

@@ -12,22 +12,163 @@ const RobotPracticeGame = () => {
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentTask, setCurrentTask] = useState(0);
   const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const tasks = [
-    { id: 1, description: "Pick up the ball", correct: true },
-    { id: 2, description: "Place the block in the box", correct: true },
-    { id: 3, description: "Wave to human", correct: true },
-    { id: 4, description: "Sort shapes correctly", correct: true },
-    { id: 5, description: "Push toy car forward", correct: true }
+    {
+      id: 1,
+      description: "Robot needs to pick up a ball. What's the best approach?",
+      options: [
+        { 
+          id: "gripper", 
+          text: "Use Gripper Arm", 
+          emoji: "💪", 
+          description: "Precision grippers are designed for picking up objects",
+          isCorrect: true
+        },
+        { 
+          id: "vacuum", 
+          text: "Use Vacuum Suction", 
+          emoji: "🧹", 
+          description: "Better for flat surfaces, not ideal for balls",
+          isCorrect: false
+        },
+        { 
+          id: "push", 
+          text: "Push with Wheel", 
+          emoji: "🦾", 
+          description: "Pushing won't securely grasp the ball",
+          isCorrect: false
+        }
+      ],
+      correct: "gripper"
+    },
+    {
+      id: 2,
+      description: "Robot needs to place a block in a box. What should it do?",
+      options: [
+        { 
+          id: "fast", 
+          text: "Move Quickly", 
+          emoji: "⚡", 
+          description: "Speed increases chance of dropping the block",
+          isCorrect: false
+        },
+        { 
+          id: "careful", 
+          text: "Move Carefully", 
+          emoji: "🦿", 
+          description: "Precise movements prevent dropping the block",
+          isCorrect: true
+        },
+        { 
+          id: "drop", 
+          text: "Drop from Height", 
+          emoji: "💥", 
+          description: "Dropping may damage the block or miss the box",
+          isCorrect: false
+        }
+      ],
+      correct: "careful"
+    },
+    {
+      id: 3,
+      description: "Robot meets a human. How should it respond?",
+      options: [
+        { 
+          id: "wave", 
+          text: "Friendly Wave", 
+          emoji: "👋", 
+          description: "Social gestures help human-robot interaction",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore Human", 
+          emoji: "🤐", 
+          description: "Ignoring reduces positive interaction",
+          isCorrect: false
+        },
+        { 
+          id: "back", 
+          text: "Back Away", 
+          emoji: "🚶", 
+          description: "Backing away seems unfriendly to humans",
+          isCorrect: false
+        }
+      ],
+      correct: "wave"
+    },
+    {
+      id: 4,
+      description: "Robot needs to sort shapes. What's the smart approach?",
+      options: [
+        { 
+          id: "random", 
+          text: "Sort Randomly", 
+          emoji: "🔀", 
+          description: "Random sorting defeats the purpose of sorting",
+          isCorrect: false
+        },
+        { 
+          id: "skip", 
+          text: "Skip Sorting", 
+          emoji: "⏭️", 
+          description: "Skipping means the task isn't completed",
+          isCorrect: false
+        },
+        { 
+          id: "vision", 
+          text: "Use Shape Recognition", 
+          emoji: "👁️", 
+          description: "Computer vision identifies shapes accurately",
+          isCorrect: true
+        }
+      ],
+      correct: "vision"
+    },
+    {
+      id: 5,
+      description: "Robot needs to push a toy car. How should it do it?",
+      options: [
+        { 
+          id: "steady", 
+          text: "Push Steadily", 
+          emoji: "✊", 
+          description: "Consistent force moves the car smoothly",
+          isCorrect: true
+        },
+        { 
+          id: "hard", 
+          text: "Push Very Hard", 
+          emoji: "💪", 
+          description: "Excessive force might damage the toy",
+          isCorrect: false
+        },
+        { 
+          id: "gentle", 
+          text: "Push Too Gently", 
+          emoji: "🫣", 
+          description: "Too little force won't move the car effectively",
+          isCorrect: false
+        }
+      ],
+      correct: "steady"
+    }
   ];
 
-  const currentTaskData = tasks[currentTask];
+  // Function to get options without rotation - keeping actual positions fixed
+  const getRotatedOptions = (options, taskIndex) => {
+    // Return options without any rotation to keep their actual positions fixed
+    return options;
+  };
 
-  const handleChoice = (completed) => {
-    const isCorrect = completed === currentTaskData.correct;
+  const currentTaskData = tasks[currentTask];
+  const displayOptions = getRotatedOptions(currentTaskData.options, currentTask);
+
+  const handleChoice = (choiceId) => {
+    const isCorrect = choiceId === currentTaskData.correct;
 
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -37,12 +178,8 @@ const RobotPracticeGame = () => {
     if (currentTask < tasks.length - 1) {
       setTimeout(() => {
         setCurrentTask(prev => prev + 1);
-      }, 500);
+      }, 300);
     } else {
-      if (score + (isCorrect ? 1 : 0) >= 4) {
-        setCoins(5);
-      }
-      setScore(prev => prev + (isCorrect ? 1 : 0));
       setShowResult(true);
     }
   };
@@ -51,7 +188,6 @@ const RobotPracticeGame = () => {
     setShowResult(false);
     setCurrentTask(0);
     setScore(0);
-    setCoins(0);
     resetFeedback();
   };
 
@@ -59,82 +195,96 @@ const RobotPracticeGame = () => {
     navigate("/student/ai-for-all/kids/data-collector-simulation"); // Update with actual next game path
   };
 
+  const accuracy = Math.round((score / tasks.length) * 100);
+
   return (
     <GameShell
       title="Robot Practice Game"
-      score={coins}
+      score={score}
       subtitle={`Task ${currentTask + 1} of ${tasks.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && score >= 4}
+      nextEnabled={showResult && accuracy >= 70}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && score >= 4}
+      showGameOver={showResult && accuracy >= 70}
       
-      gameId="ai-kids-robot-practice-73"
+      gameId="ai-kids-73"
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={73} // Update the current level appropriately
-      showConfetti={showResult && score >= 4}
+      showConfetti={showResult && accuracy >= 70}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
     >
       <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">
-              Train the robot by completing the task!
-            </h3>
-
-            <div className="bg-gray-800/50 rounded-xl p-12 mb-6 flex justify-center items-center">
-              <div className="text-6xl animate-pulse">🤖</div>
-            </div>
-
-            <p className="text-white text-center text-lg font-semibold mb-6">
-              {currentTaskData.description}
-            </p>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice(true)}
-                className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-5xl mb-2">✅</div>
-                <div className="text-white font-bold text-xl text-center">Completed</div>
-              </button>
-              <button
-                onClick={() => handleChoice(false)}
-                className="bg-red-500/30 hover:bg-red-500/50 border-3 border-red-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-5xl mb-2">❌</div>
-                <div className="text-white font-bold text-xl text-center">Missed</div>
-              </button>
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Task {currentTask + 1}/{tasks.length}</span>
+                <span className="text-yellow-400 font-bold">Points: {score}</span>
+              </div>
+              
+              <div className="bg-gray-800/50 rounded-xl p-8 mb-6 flex justify-center items-center">
+                <div className="text-6xl animate-pulse">🤖</div>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentTaskData.description}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {displayOptions.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {score >= 4 ? "🤖 Robot Improved!" : "💪 Keep Training!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You completed {score} out of {tasks.length} tasks correctly!
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm text-center">
-                💡 Practicing repeatedly helps AI learn better. Each correct task improves the robot's accuracy!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              {score >= 4 ? "You earned 5 Coins! 🪙" : "Complete 4 or more tasks to earn coins!"}
-            </p>
-            {score < 4 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {accuracy >= 70 ? (
+              <div>
+                <div className="text-5xl mb-4">🤖</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Robot Improved!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You completed {score} out of {tasks.length} tasks correctly! ({accuracy}%)
+                  You're learning how robots make smart decisions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Points</span>
+                </div>
+                <p className="text-white/80">
+                  💡 Practicing repeatedly helps AI learn better. Each correct task improves the robot's accuracy!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Training!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You completed {score} out of {tasks.length} tasks correctly. ({accuracy}%)
+                  Keep practicing to learn more about robotics!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Think about what would be the smartest approach for a robot in each situation.
+                </p>
+              </div>
             )}
           </div>
         )}

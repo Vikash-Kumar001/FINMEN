@@ -12,7 +12,6 @@ const MatchAITools = () => {
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentItem, setCurrentItem] = useState(0);
   const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
@@ -21,10 +20,7 @@ const MatchAITools = () => {
     { id: 2, name: "Pencil", emoji: "✏️", isAI: false },
     { id: 3, name: "Siri", emoji: "🔊", isAI: true },
     { id: 4, name: "Book", emoji: "📖", isAI: false },
-    { id: 5, name: "Netflix Recommendations", emoji: "📺", isAI: true },
-    { id: 6, name: "Ball", emoji: "⚽", isAI: false },
-    { id: 7, name: "Face Recognition", emoji: "📱", isAI: true },
-    { id: 8, name: "Chair", emoji: "🪑", isAI: false }
+    { id: 5, name: "Netflix Recommendations", emoji: "📺", isAI: true }
   ];
 
   const currentItemData = items[currentItem];
@@ -42,10 +38,6 @@ const MatchAITools = () => {
         setCurrentItem(prev => prev + 1);
       }, 300);
     } else {
-      if ((score + (isCorrect ? 1 : 0)) >= 6) {
-        setCoins(5);
-      }
-      setScore(prev => prev + (isCorrect ? 1 : 0));
       setShowResult(true);
     }
   };
@@ -54,7 +46,6 @@ const MatchAITools = () => {
     setShowResult(false);
     setCurrentItem(0);
     setScore(0);
-    setCoins(0);
     resetFeedback();
   };
 
@@ -62,23 +53,25 @@ const MatchAITools = () => {
     navigate("/student/ai-for-all/kids/pattern-music-game");
   };
 
+  const accuracy = Math.round((score / items.length) * 100);
+
   return (
     <GameShell
       title="Match AI Tools"
-      score={coins}
+      score={score}
       subtitle={`Item ${currentItem + 1} of ${items.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && score >= 6}
+      nextEnabled={showResult && accuracy >= 70}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && score >= 6}
+      showGameOver={showResult && accuracy >= 70}
       
       gameId="ai-kids-12"
       gameType="ai"
       totalLevels={20}
       currentLevel={12}
-      showConfetti={showResult && score >= 6}
+      showConfetti={showResult && accuracy >= 70}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
@@ -113,10 +106,10 @@ const MatchAITools = () => {
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
             <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {score >= 6 ? "🎉 AI Detective!" : "💪 Keep Learning!"}
+              {accuracy >= 70 ? "🎉 AI Detective!" : "💪 Keep Learning!"}
             </h2>
             <p className="text-white/90 text-xl mb-4 text-center">
-              You identified {score} out of {items.length} correctly!
+              You identified {score} out of {items.length} correctly! ({accuracy}%)
             </p>
             <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
               <p className="text-white/90 text-sm">
@@ -124,9 +117,9 @@ const MatchAITools = () => {
               </p>
             </div>
             <p className="text-yellow-400 text-2xl font-bold text-center">
-              {score >= 6 ? "You earned 5 Coins! 🪙" : "Get 6 or more correct to earn coins!"}
+              You earned {score} Points! 🪙
             </p>
-            {score < 6 && (
+            {accuracy < 70 && (
               <button
                 onClick={handleTryAgain}
                 className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
@@ -142,4 +135,3 @@ const MatchAITools = () => {
 };
 
 export default MatchAITools;
-

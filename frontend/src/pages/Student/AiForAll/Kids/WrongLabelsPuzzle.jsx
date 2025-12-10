@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
@@ -24,31 +24,32 @@ const WrongLabelsPuzzle = () => {
   const [showResult, setShowResult] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
 
-  // Items with wrong labels (left side)
+  // Actual items (left side) - what the items really are
   const leftItems = [
-    { id: 1, name: 'Apple', emoji: '🍎', description: 'Red fruit' },
-    { id: 2, name: 'Banana', emoji: '🍌', description: 'Yellow fruit' },
-    { id: 3, name: 'Strawberry', emoji: '🍓', description: 'Red berry' },
-    { id: 4, name: 'Cherry', emoji: '🍒', description: 'Small red fruit' },
-    { id: 5, name: 'Lemon', emoji: '🍋', description: 'Yellow citrus fruit' }
+    { id: 1, name: ' Red Apple', emoji: '🍎', description: 'Grows on trees, sweet and crunchy' },
+    { id: 2, name: ' Yellow Banana', emoji: '🍌', description: 'Tropical fruit, rich in potassium' },
+    { id: 3, name: ' Red Strawberry', emoji: '🍓', description: 'Berry with seeds on the outside' },
+    { id: 4, name: ' Red Cherry', emoji: '🍒', description: 'Small round stone fruit' },
+    { id: 5, name: ' Yellow Lemon', emoji: '🍋', description: 'Sour citrus fruit' }
   ];
 
-  // Correct labels (right side) - manually arranged to vary correct answer positions
+  // Labels (right side) - some correct, some incorrect
+  // Manually arranged to vary correct answer positions
   const rightItems = [
-    { id: 2, name: 'Banana', emoji: '🍌', description: 'Correct label for yellow fruit' }, // Matches left 2 (right position 1)
-    { id: 4, name: 'Cherry', emoji: '🍒', description: 'Correct label for small red fruit' }, // Matches left 4 (right position 2)
-    { id: 1, name: 'Apple', emoji: '🍎', description: 'Correct label for red fruit' }, // Matches left 1 (right position 3)
-    { id: 5, name: 'Lemon', emoji: '🍋', description: 'Correct label for yellow citrus' }, // Matches left 5 (right position 4)
-    { id: 3, name: 'Strawberry', emoji: '🍓', description: 'Correct label for red berry' } // Matches left 3 (right position 5)
+    { id: 6, name: 'Citrus Fruit', description: 'Sour yellow fruit with juice' }, // Correct for Lemon
+    { id: 7, name: 'Tropical Berry',  description: 'Red fruit with seeds on outside' }, // Correct for Strawberry
+    { id: 8, name: 'Tree Apple',  description: 'Grows on trees in orchards' }, // Correct for Apple
+    { id: 9, name: 'Stone Fruit', description: 'Small round fruit with pit' }, // Correct for Cherry
+    { id: 10, name: 'Potassium Fruit', description: 'Yellow curved tropical fruit' } // Correct for Banana
   ];
 
-  // Correct matches - manually defined to split correct answers across different positions
+  // Correct matches - each item with its correct label
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Apple → Apple (left 1st, right 3rd)
-    { leftId: 2, rightId: 2 }, // Banana → Banana (left 2nd, right 1st)
-    { leftId: 3, rightId: 3 }, // Strawberry → Strawberry (left 3rd, right 5th)
-    { leftId: 4, rightId: 4 }, // Cherry → Cherry (left 4th, right 2nd)
-    { leftId: 5, rightId: 5 }  // Lemon → Lemon (left 5th, right 4th)
+    { leftId: 1, rightId: 8 },  // Apple matches with Tree Apple
+    { leftId: 2, rightId: 10 }, // Banana matches with Potassium Fruit
+    { leftId: 3, rightId: 7 },  // Strawberry matches with Tropical Berry
+    { leftId: 4, rightId: 9 },  // Cherry matches with Stone Fruit
+    { leftId: 5, rightId: 6 }   // Lemon matches with Citrus Fruit
   ];
 
   // Check if a left item is already matched
@@ -139,7 +140,7 @@ const WrongLabelsPuzzle = () => {
 
   return (
     <GameShell
-      title="Puzzle: Wrong Labels"
+      title="Puzzle: Label Matching"
       score={coins}
       subtitle={showResult ? "Game Complete!" : "Match items with their correct labels"}
       coinsPerLevel={coinsPerLevel}
@@ -158,7 +159,7 @@ const WrongLabelsPuzzle = () => {
       <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-5xl mx-auto px-4 py-4">
         {!showResult ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-            {/* Left column - Items */}
+            {/* Left column - Actual Items */}
             <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
               <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 text-center">Items</h3>
               <div className="space-y-3 md:space-y-4">
@@ -178,10 +179,10 @@ const WrongLabelsPuzzle = () => {
                     } disabled:cursor-not-allowed`}
                   >
                     <div className="flex items-center">
-                      <div className="text-xl md:text-2xl mr-2 md:mr-3">{item.emoji}</div>
+                      <div className="text-2xl md:text-3xl mr-3 md:mr-4">{item.emoji}</div>
                       <div>
-                        <h4 className="font-bold text-white text-sm md:text-base">{item.name}</h4>
-                        <p className="text-white/80 text-xs md:text-sm">{item.description}</p>
+                        <h4 className="font-bold text-white text-base md:text-lg">{item.name}</h4>
+                        <p className="text-white/80 text-xs md:text-sm mt-1">{item.description}</p>
                       </div>
                     </div>
                   </button>
@@ -192,34 +193,48 @@ const WrongLabelsPuzzle = () => {
             {/* Middle column - Match button */}
             <div className="flex flex-col items-center justify-center">
               <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20 text-center w-full">
-                <p className="text-white/80 mb-3 md:mb-4 text-sm md:text-base">
+                <div className="mb-4">
+                  <div className="inline-block bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                    AI LEARNING GAME
+                  </div>
+                </div>
+                
+                <p className="text-white/90 mb-3 md:mb-4 text-base md:text-lg font-medium">
                   {selectedLeft 
                     ? `Selected: ${selectedLeft.name}` 
                     : "Select an item"}
                 </p>
+                
+                <div className="mb-4 p-3 bg-blue-500/20 rounded-lg">
+                  <p className="text-white/90 text-xs md:text-sm">
+                    Help AI learn by matching items with correct labels!
+                  </p>
+                </div>
+                
                 {selectedLeft && selectedRight && (
                   <button
                     onClick={handleMatch}
-                    className="w-full py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105 text-sm md:text-base"
+                    className="w-full py-3 md:py-4 px-4 md:px-6 rounded-full font-bold transition-all bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105 text-base md:text-lg shadow-lg"
                   >
-                    Match!
+                    Match Labels!
                   </button>
                 )}
                 {(!selectedLeft || !selectedRight) && (
-                  <div className="w-full py-2 md:py-3 px-4 md:px-6 rounded-full font-bold bg-gray-500/30 text-gray-400 cursor-not-allowed text-sm md:text-base">
-                    Match!
+                  <div className="w-full py-3 md:py-4 px-4 md:px-6 rounded-full font-bold bg-gray-500/30 text-gray-400 text-base md:text-lg">
+                    Match Labels!
                   </div>
                 )}
-                <div className="mt-3 md:mt-4 text-white/80 text-xs md:text-sm">
-                  <p>Coins: {coins}</p>
-                  <p>Matched: {matches.length}/{leftItems.length}</p>
+                
+                <div className="mt-4 p-3 bg-yellow-500/20 rounded-lg">
+                  <p className="text-yellow-300 text-sm md:text-base font-bold">Coins: {coins}/{leftItems.length}</p>
+                  <p className="text-white/80 text-xs mt-1">Matched: {matches.length}/{leftItems.length}</p>
                 </div>
               </div>
             </div>
 
-            {/* Right column - Correct Labels */}
+            {/* Right column - Labels */}
             <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
-              <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 text-center">Correct Labels</h3>
+              <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 text-center">Labels</h3>
               <div className="space-y-3 md:space-y-4">
                 {rightItems.map(item => {
                   const isMatched = isRightItemMatched(item.id);
@@ -241,10 +256,10 @@ const WrongLabelsPuzzle = () => {
                       } disabled:cursor-not-allowed`}
                     >
                       <div className="flex items-center">
-                        <div className="text-xl md:text-2xl mr-2 md:mr-3">{item.emoji}</div>
+                        <div className="text-2xl md:text-3xl mr-3 md:mr-4">{item.emoji}</div>
                         <div>
-                          <h4 className="font-bold text-white text-sm md:text-base">{item.name}</h4>
-                          <p className="text-white/80 text-xs md:text-sm">{item.description}</p>
+                          <h4 className="font-bold text-white text-base md:text-lg">{item.name}</h4>
+                          <p className="text-white/80 text-xs md:text-sm mt-1">{item.description}</p>
                         </div>
                       </div>
                     </button>
@@ -257,36 +272,48 @@ const WrongLabelsPuzzle = () => {
           <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
             {finalScore >= 3 ? (
               <div>
-                <div className="text-4xl md:text-5xl mb-4">🎉</div>
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Great Matching!</h3>
-                <p className="text-white/90 text-base md:text-lg mb-4">
-                  You correctly matched {finalScore} out of {leftItems.length} labels!
-                  You understand how accurate labeling helps AI learn correctly!
+                <div className="text-5xl md:text-6xl mb-4">🎉</div>
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Excellent Label Matching!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-6">
+                  You correctly matched {finalScore} out of {leftItems.length} items with their labels!
+                  You're helping AI learn the right way!
                 </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
-                  <span>+{coins} Coins</span>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 md:py-4 px-6 md:px-8 rounded-full inline-flex items-center gap-3 mb-6 text-lg md:text-xl font-bold shadow-lg">
+                  <span>🏆 +{coins} Coins Earned</span>
                 </div>
-                <p className="text-white/80 text-sm md:text-base">
-                  Accurate data labeling helps AI learn correctly. You trained the robot well!
-                </p>
+                <div className="bg-blue-500/20 rounded-xl p-5 mb-6">
+                  <p className="text-white/90 text-sm md:text-base">
+                    💡 In AI training, correct labels are crucial! Your matches help AI understand 
+                    what each item truly is. Great job being a data scientist!
+                  </p>
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all text-base md:text-lg shadow-lg"
+                >
+                  Play Again
+                </button>
               </div>
             ) : (
               <div>
-                <div className="text-4xl md:text-5xl mb-4">😔</div>
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
-                <p className="text-white/90 text-base md:text-lg mb-4">
-                  You matched {finalScore} out of {leftItems.length} labels correctly.
-                  Remember, correct labels help AI learn properly!
+                <div className="text-5xl md:text-6xl mb-4">😔</div>
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-6">
+                  You matched {finalScore} out of {leftItems.length} items with their labels correctly.
+                  Keep practicing to help AI learn better!
                 </p>
                 <button
                   onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-6 text-base md:text-lg shadow-lg"
                 >
                   Try Again
                 </button>
-                <p className="text-white/80 text-xs md:text-sm">
-                  Try to match each item with its correct label.
-                </p>
+                <div className="bg-blue-500/20 rounded-xl p-5">
+                  <p className="text-white/90 text-sm md:text-base">
+                    💡 AI learns from labeled examples. When items are correctly labeled, 
+                    AI can better recognize and categorize them in the future!
+                  </p>
+                </div>
               </div>
             )}
           </div>

@@ -10,8 +10,7 @@ const GoodBadAIQuiz = () => {
   
   // Get game data from game category folder (source of truth)
   const gameData = getGameDataById("ai-kids-76");
-  const gameId = gameData?.id || "ai-kids-76";
-  
+  const gameId = gameData?.id || "ai-kids-76";  
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;

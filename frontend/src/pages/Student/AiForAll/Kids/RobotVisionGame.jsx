@@ -12,7 +12,6 @@ const RobotVisionGame = () => {
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentImage, setCurrentImage] = useState(0);
   const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
@@ -21,12 +20,7 @@ const RobotVisionGame = () => {
     { id: 2, emoji: "🍌", type: "banana", correct: "banana" },
     { id: 3, emoji: "🍏", type: "apple", correct: "apple" },
     { id: 4, emoji: "🍌", type: "banana", correct: "banana" },
-    { id: 5, emoji: "🍎", type: "apple", correct: "apple" },
-    { id: 6, emoji: "🍌", type: "banana", correct: "banana" },
-    { id: 7, emoji: "🍏", type: "apple", correct: "apple" },
-    { id: 8, emoji: "🍌", type: "banana", correct: "banana" },
-    { id: 9, emoji: "🍎", type: "apple", correct: "apple" },
-    { id: 10, emoji: "🍌", type: "banana", correct: "banana" }
+    { id: 5, emoji: "🍎", type: "apple", correct: "apple" }
   ];
 
   const currentImageData = images[currentImage];
@@ -36,7 +30,6 @@ const RobotVisionGame = () => {
     
     if (isCorrect) {
       setScore(prev => prev + 1);
-      setCoins(prev => prev + 2);
       showCorrectAnswerFeedback(1, false);
     }
     
@@ -53,7 +46,6 @@ const RobotVisionGame = () => {
     setShowResult(false);
     setCurrentImage(0);
     setScore(0);
-    setCoins(0);
     resetFeedback();
   };
 
@@ -66,7 +58,7 @@ const RobotVisionGame = () => {
   return (
     <GameShell
       title="Robot Vision Game"
-      score={coins}
+      score={score}
       subtitle={`Image ${currentImage + 1} of ${images.length}`}
       onNext={handleNext}
       nextEnabled={showResult && accuracy >= 70}
@@ -127,7 +119,7 @@ const RobotVisionGame = () => {
               </p>
             </div>
             <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned {coins} Coins! 🪙
+              You earned {score} Points! 🪙
             </p>
             {accuracy < 70 && (
               <button
@@ -145,4 +137,3 @@ const RobotVisionGame = () => {
 };
 
 export default RobotVisionGame;
-

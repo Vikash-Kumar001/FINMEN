@@ -150,7 +150,6 @@ const SmartwatchGame = () => {
         },
         { 
           id: "phone", 
-          text: "Scroll phone", 
           text: "Ignore and scroll phone", 
           emoji: "📱", 
           description: "Phone scrolling increases stress",

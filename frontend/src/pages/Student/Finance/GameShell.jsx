@@ -251,7 +251,11 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
           setSubmissionComplete(true);
           
           // Use fullyCompleted from result, default to true if not provided
-          const fullyCompleted = result.fullyCompleted !== undefined ? result.fullyCompleted : true;
+          // IMPORTANT: If all answers are correct and it's a full completion, mark as fully completed
+          // Also check if the game was already fully completed (from database)
+          const fullyCompleted = result.fullyCompleted !== undefined 
+            ? result.fullyCompleted 
+            : (isFullCompletion && (result.allAnswersCorrect === true || calculatedAllCorrect));
           
           console.log('✅ Game completion result:', {
             gameId,
@@ -259,25 +263,47 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
             replayUnlocked: result.replayUnlocked,
             coinsEarned: result.coinsEarned,
             allAnswersCorrect: result.allAnswersCorrect,
-            fullyCompleted: fullyCompleted
+            fullyCompleted: fullyCompleted,
+            resultFullyCompleted: result.fullyCompleted,
+            isFullCompletion,
+            score,
+            totalCoins
           });
           
-          // Dispatch event with replay status - always dispatch even if coinsEarned is 0
-          console.log('📢 Dispatching gameCompleted event:', { 
-            gameId, 
-            fullyCompleted,
-            isReplay: result.isReplay === true,
-            replayUnlocked: result.replayUnlocked === true
-          });
-          window.dispatchEvent(new CustomEvent('gameCompleted', { 
-            detail: { 
+          // ALWAYS dispatch event if:
+          // 1. Game is fully completed (from result), OR
+          // 2. All answers are correct and it's a full completion
+          // This ensures the games page updates correctly even if coins weren't awarded
+          // CRITICAL: Dispatch even if game was already completed to ensure UI sync
+          const shouldDispatchEvent = fullyCompleted || (isFullCompletion && (result.allAnswersCorrect === true || calculatedAllCorrect));
+          
+          if (shouldDispatchEvent) {
+            console.log('📢 Dispatching gameCompleted event:', { 
               gameId, 
-              fullyCompleted: fullyCompleted,
+              fullyCompleted: true, // Always send true to ensure UI updates
               isReplay: result.isReplay === true,
-              replayUnlocked: result.replayUnlocked === true
-            } 
-          }));
-          console.log('✅ gameCompleted event dispatched successfully');
+              replayUnlocked: result.replayUnlocked === true,
+              coinsEarned: result.coinsEarned,
+              wasAlreadyCompleted: result.fullyCompleted === true && result.coinsEarned === 0
+            });
+            window.dispatchEvent(new CustomEvent('gameCompleted', { 
+              detail: { 
+                gameId, 
+                fullyCompleted: true, // Always send true if game should be marked as completed
+                isReplay: result.isReplay === true,
+                replayUnlocked: result.replayUnlocked === true
+              } 
+            }));
+            console.log('✅ gameCompleted event dispatched successfully');
+          } else {
+            console.log('⚠️ Game not fully completed, not dispatching event:', {
+              gameId,
+              fullyCompleted,
+              allAnswersCorrect: result.allAnswersCorrect,
+              calculatedAllCorrect,
+              isFullCompletion
+            });
+          }
           
           // If it was a replay, also dispatch a specific replay event
           if (result.isReplay === true) {

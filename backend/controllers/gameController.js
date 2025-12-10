@@ -910,27 +910,80 @@ export const completeUnifiedGame = async (req, res) => {
     
     console.log(`💰 Performance check - gameId: ${gameId}, coinsPerformance: ${coinsPerformance}, targetCoins: ${targetCoins}, allAnswersCorrect: ${allAnswersCorrect}`);
     
-    // Only award coins if all answers are correct AND it's a full completion AND not already fully completed
-    if (isFullCompletion && !gameProgress.fullyCompleted && allAnswersCorrect) {
+    // Calculate expected total coins
+    const expectedTotalCoins = totalCoins !== null && totalCoins !== undefined ? totalCoins : (coinsPerLevel || 5);
+    const currentCoinsEarned = gameProgress.totalCoinsEarned || 0;
+    
+    // FIX: If totalCoinsEarned is unreasonably high (likely from a bug), reset it
+    // A game should never earn more than 10x the expected coins (safety threshold)
+    const maxReasonableCoins = expectedTotalCoins * 10;
+    let adjustedCoinsEarned = currentCoinsEarned;
+    if (currentCoinsEarned > maxReasonableCoins) {
+      console.warn(`⚠️ totalCoinsEarned (${currentCoinsEarned}) is unreasonably high for game ${gameId}. Expected: ${expectedTotalCoins}. Resetting to 0.`);
+      adjustedCoinsEarned = 0;
+      gameProgress.totalCoinsEarned = 0;
+      // Clear coins history to prevent confusion
+      gameProgress.coinsEarnedHistory = [];
+    }
+    
+    const hasEarnedFullCoins = adjustedCoinsEarned >= expectedTotalCoins;
+    
+    // Debug logging
+    console.log(`💰 Coin award decision - gameId: ${gameId}, isFullCompletion: ${isFullCompletion}, allAnswersCorrect: ${allAnswersCorrect}, fullyCompleted: ${gameProgress.fullyCompleted}, totalCoinsEarned: ${currentCoinsEarned} (adjusted: ${adjustedCoinsEarned}), expectedTotalCoins: ${expectedTotalCoins}, hasEarnedFullCoins: ${hasEarnedFullCoins}`);
+    
+    // Award coins if:
+    // 1. All answers are correct AND it's a full completion AND not already fully completed, OR
+    // 2. Game is fully completed but coins weren't fully earned (edge case fix)
+    // IMPORTANT: If game is fully completed but coins weren't earned, we MUST award coins
+    const shouldAwardCoins = isFullCompletion && allAnswersCorrect && (
+      !gameProgress.fullyCompleted || !hasEarnedFullCoins
+    );
+    
+    console.log(`💰 shouldAwardCoins: ${shouldAwardCoins} (isFullCompletion: ${isFullCompletion}, allAnswersCorrect: ${allAnswersCorrect}, !fullyCompleted: ${!gameProgress.fullyCompleted}, !hasEarnedFullCoins: ${!hasEarnedFullCoins})`);
+    
+    // CRITICAL FIX: If game is fully completed but coins weren't earned, force award coins
+    if (gameProgress.fullyCompleted && !hasEarnedFullCoins && isFullCompletion && allAnswersCorrect) {
+      console.log(`🔧 FORCING coin award - game is fully completed but coins not earned. Current: ${adjustedCoinsEarned}, Expected: ${expectedTotalCoins}`);
+    }
+    
+    if (shouldAwardCoins) {
       // Always use totalCoins from game card - DO NOT use any fallback calculations
       // totalCoins should always be provided from game card via navigation state (typically 5)
-      console.log(`💰 Game completion - gameId: ${gameId}, totalCoins: ${totalCoins}, coinsPerLevel: ${coinsPerLevel}, totalLevels: ${totalLevels}, allAnswersCorrect: ${allAnswersCorrect}`);
+      console.log(`💰 Game completion - gameId: ${gameId}, totalCoins: ${totalCoins}, coinsPerLevel: ${coinsPerLevel}, totalLevels: ${totalLevels}, allAnswersCorrect: ${allAnswersCorrect}, fullyCompleted: ${gameProgress.fullyCompleted}, totalCoinsEarned: ${gameProgress.totalCoinsEarned || 0}, expectedTotalCoins: ${expectedTotalCoins}`);
       
       // STRICT: Use totalCoins if provided (even if 0), otherwise use coinsPerLevel, otherwise default to 5
       // DO NOT calculate coins based on totalLevels * coinsPerLevel or any other multiplication
       if (totalCoins !== null && totalCoins !== undefined) {
-        // Use the exact value from totalCoins (should be 5 from game card)
-        coinsToAward = Math.max(0, totalCoins); // Ensure non-negative
-        console.log(`✅ Using totalCoins from game card: ${coinsToAward}`);
+        // If game is already fully completed but coins weren't earned, award the remaining coins
+        if (gameProgress.fullyCompleted && !hasEarnedFullCoins) {
+          coinsToAward = Math.max(0, expectedTotalCoins - adjustedCoinsEarned);
+          console.log(`✅ Game already completed but coins not fully earned. Awarding remaining coins: ${coinsToAward} (expected: ${expectedTotalCoins}, already earned: ${adjustedCoinsEarned})`);
+        } else {
+          // Use the exact value from totalCoins (should be 5 from game card)
+          coinsToAward = Math.max(0, totalCoins); // Ensure non-negative
+          console.log(`✅ Using totalCoins from game card: ${coinsToAward}`);
+        }
       } else if (coinsPerLevel !== null && coinsPerLevel !== undefined && coinsPerLevel > 0) {
         // Fallback: use coinsPerLevel as single value (NOT multiplied by totalLevels)
-        coinsToAward = coinsPerLevel;
-        console.warn(`⚠️ totalCoins not provided for game ${gameId}, using coinsPerLevel: ${coinsToAward}`);
+        if (gameProgress.fullyCompleted && !hasEarnedFullCoins) {
+          coinsToAward = Math.max(0, coinsPerLevel - adjustedCoinsEarned);
+          console.log(`✅ Game already completed but coins not fully earned. Awarding remaining coins: ${coinsToAward}`);
+        } else {
+          coinsToAward = coinsPerLevel;
+          console.warn(`⚠️ totalCoins not provided for game ${gameId}, using coinsPerLevel: ${coinsToAward}`);
+        }
       } else {
         // Final fallback: default to 5 coins (should not normally happen)
-        coinsToAward = 5;
-        console.warn(`⚠️ Neither totalCoins nor coinsPerLevel provided for game ${gameId}, using default: ${coinsToAward}`);
+        if (gameProgress.fullyCompleted && !hasEarnedFullCoins) {
+          coinsToAward = Math.max(0, 5 - adjustedCoinsEarned);
+          console.log(`✅ Game already completed but coins not fully earned. Awarding remaining coins: ${coinsToAward}`);
+        } else {
+          coinsToAward = 5;
+          console.warn(`⚠️ Neither totalCoins nor coinsPerLevel provided for game ${gameId}, using default: ${coinsToAward}`);
+        }
       }
+      
+      console.log(`💰 Final coinsToAward: ${coinsToAward}`);
     } else if (!allAnswersCorrect && isFullCompletion && !gameProgress.fullyCompleted) {
       // Game completed but not all answers correct - no coins awarded
       console.log(`⚠️ Game completed but not all answers correct - gameId: ${gameId}, coinsPerformance: ${coinsPerformance}, targetCoins: ${targetCoins}`);
@@ -950,6 +1003,11 @@ export const completeUnifiedGame = async (req, res) => {
     gameProgress.maxScore = Math.max(gameProgress.maxScore, maxScore);
     gameProgress.totalTimePlayed += timePlayed;
     gameProgress.lastPlayedAt = new Date();
+    
+    // Ensure totalCoinsEarned is initialized
+    if (gameProgress.totalCoinsEarned === null || gameProgress.totalCoinsEarned === undefined) {
+      gameProgress.totalCoinsEarned = 0;
+    }
 
     // Mark as fully completed only if all answers are correct
     // This ensures users can replay if they didn't get all answers correct
@@ -1006,8 +1064,17 @@ export const completeUnifiedGame = async (req, res) => {
     
     if (coinsToAward > 0) {
       // Award XP: always use totalXp from game card if provided and isFullCompletion, otherwise calculate (2 XP per coin)
-      if (totalXp !== null && totalXp > 0 && isFullCompletion && !gameProgress.fullyCompleted) {
-        xpEarned = totalXp;
+      // If game is already fully completed but coins weren't earned, still award XP
+      if (totalXp !== null && totalXp > 0 && isFullCompletion) {
+        // If game was already completed but coins weren't earned, award full XP
+        // Otherwise, only award XP on first completion
+        if (gameProgress.fullyCompleted && !hasEarnedFullCoins) {
+          xpEarned = totalXp;
+        } else if (!gameProgress.fullyCompleted) {
+          xpEarned = totalXp;
+        } else {
+          xpEarned = Math.floor(coinsToAward * 2);
+        }
       } else {
         xpEarned = Math.floor(coinsToAward * 2);
       }
@@ -1091,7 +1158,8 @@ export const completeUnifiedGame = async (req, res) => {
 
     // Emit socket event for real-time updates
     const io = req.app.get('io');
-    if (io && coinsToAward > 0) {
+    // Always emit game completion event if game is fully completed, even if no coins awarded
+    if (io && (coinsToAward > 0 || gameProgress.fullyCompleted)) {
       // Emit game completion event
       io.to(userId.toString()).emit('game-completed', {
         gameId,
@@ -1103,14 +1171,17 @@ export const completeUnifiedGame = async (req, res) => {
         totalXP: userProgress.xp,
         gameStreak: gameProgress.currentStreak,
         achievements: gameProgress.achievements,
-        message: 'Game completed and rewards granted!'
+        fullyCompleted: gameProgress.fullyCompleted,
+        message: coinsToAward > 0 ? 'Game completed and rewards granted!' : 'Game completed!'
       });
       
-      // Emit wallet update event for real-time wallet balance update
-      io.to(userId.toString()).emit('wallet:updated', {
-        balance: newBalance,
-        coinsEarned: coinsToAward
-      });
+      // Emit wallet update event only if coins were awarded
+      if (coinsToAward > 0) {
+        io.to(userId.toString()).emit('wallet:updated', {
+          balance: newBalance,
+          coinsEarned: coinsToAward
+        });
+      }
     }
 
     res.status(200).json({
@@ -1122,6 +1193,8 @@ export const completeUnifiedGame = async (req, res) => {
       totalLevelsCompleted: gameProgress.levelsCompleted,
       fullyCompleted: gameProgress.fullyCompleted,
       allAnswersCorrect: allAnswersCorrect, // Include in response for frontend
+      isReplay: isReplayAttempt, // Include replay status
+      replayUnlocked: gameProgress.replayUnlocked, // Include replay unlock status
       newBalance,
       streak: userProgress.streak,
       level: userProgress.level,
@@ -1319,6 +1392,9 @@ export const getBatchGameProgress = async (req, res) => {
       normalizedPrefix = categoryPrefix.replace('moral-teens', 'moral-teen');
     } else if (categoryPrefix.includes('ai-for-all-teens')) {
       normalizedPrefix = categoryPrefix.replace('ai-for-all-teens', 'ai-for-all-teen');
+    } else if (categoryPrefix.includes('ai-teens')) {
+      // Handle "ai-teens" -> "ai-teen" (frontend sends "ai-teens" for "ai-for-all" category)
+      normalizedPrefix = categoryPrefix.replace('ai-teens', 'ai-teen');
     } else if (categoryPrefix.includes('ehe-teens')) {
       normalizedPrefix = categoryPrefix.replace('ehe-teens', 'ehe-teen');
     } else if (categoryPrefix.includes('civic-responsibility-teens')) {
@@ -1340,10 +1416,14 @@ export const getBatchGameProgress = async (req, res) => {
     // Match either normalized or original prefix
     const regex = new RegExp(`^(${escapedPrefix}|${escapedOriginal})-\\d+$`);
     
+    console.log(`🔍 Batch progress query - categoryPrefix: ${categoryPrefix}, normalizedPrefix: ${normalizedPrefix}, regex: ${regex}`);
+    
     const allProgress = await UnifiedGameProgress.find({
       userId,
       gameId: { $regex: regex }
     });
+    
+    console.log(`📊 Found ${allProgress.length} progress records for prefix ${categoryPrefix} (normalized: ${normalizedPrefix})`);
     
     // Convert array to object keyed by gameId for easy frontend access
     const progressMap = {};

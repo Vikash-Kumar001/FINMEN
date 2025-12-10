@@ -1,184 +1,337 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { getGameDataById } from '../../../../utils/getGameData';
+import { getAiTeenGames } from '../../../../pages/Games/GameCategories/AiForAll/teenGamesData';
 
 const CyberbullyingStoryy = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-teen-81";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : "/student/ai-for-all/teen/ethics-in-ai-quiz",
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: "/student/ai-for-all/teen/ethics-in-ai-quiz", nextGameId: null };
+  }, [location.state, gameId]);
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const questions = [
     {
-      situation: "A robot posts a mean comment about your classmate online. What should you do?",
-      choices: [
-        { id: 1, text: "Report the post", emoji: "📣", isCorrect: true },
-        { id: 2, text: "Like the post", emoji: "👍", isCorrect: false },
-        { id: 3, text: "Ignore and share it", emoji: "📤", isCorrect: false }
+      id: 1,
+      text: "A robot posts a mean comment about your classmate online. What should you do?",
+      options: [
+        { 
+          id: "report", 
+          text: "Report the post", 
+          emoji: "📣", 
+          description: "Reporting cyberbullying helps platform moderators take action to stop harassment",
+          isCorrect: true
+        },
+        { 
+          id: "like", 
+          text: "Like the post", 
+          emoji: "👍", 
+          description: "Engaging with harmful content, even seemingly positively, can encourage more of it",
+          isCorrect: false
+        },
+        { 
+          id: "share", 
+          text: "Ignore and share it", 
+          emoji: "📤", 
+          description: "Sharing harmful content spreads the bullying to more people",
+          isCorrect: false
+        }
       ]
     },
     {
-      situation: "The robot spreads rumors about a friend. How should you act?",
-      choices: [
-        { id: 1, text: "Report the robot", emoji: "📣", isCorrect: true },
-        { id: 2, text: "Forward the rumors", emoji: "📤", isCorrect: false },
-        { id: 3, text: "Laugh at it", emoji: "😂", isCorrect: false }
+      id: 2,
+      text: "The robot spreads rumors about a friend. How should you act?",
+      options: [
+        { 
+          id: "report", 
+          text: "Report the robot", 
+          emoji: "📣", 
+          description: "Reporting malicious accounts helps protect others from similar harassment",
+          isCorrect: true
+        },
+        { 
+          id: "forward", 
+          text: "Forward the rumors", 
+          emoji: "📤", 
+          description: "Spreading rumors, even unintentionally, contributes to the harm",
+          isCorrect: false
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh at it", 
+          emoji: "😂", 
+          description: "Laughing at someone else's expense can encourage the bully to continue",
+          isCorrect: false
+        }
       ]
     },
     {
-      situation: "You see a robot tagging someone in hurtful messages. Your action?",
-      choices: [
-        { id: 1, text: "Report to platform", emoji: "📣", isCorrect: true },
-        { id: 2, text: "Join the bullying", emoji: "👎", isCorrect: false },
-        { id: 3, text: "Ignore it", emoji: "🙈", isCorrect: false }
+      id: 3,
+      text: "You see a robot tagging someone in hurtful messages. Your action?",
+      options: [
+        { 
+          id: "platform", 
+          text: "Report to platform", 
+          emoji: "📣", 
+          description: "Platform reporting systems are designed to handle cyberbullying effectively",
+          isCorrect: true
+        },
+        { 
+          id: "join", 
+          text: "Join the bullying", 
+          emoji: "👎", 
+          description: "Participating in harassment makes you complicit in the harm",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "🙈", 
+          description: "Ignoring cyberbullying allows it to continue unchecked",
+          isCorrect: false
+        }
       ]
     },
     {
-      situation: "Robot posts a fake negative review about your friend. What do you do?",
-      choices: [
-        { id: 1, text: "Report the post", emoji: "📣", isCorrect: true },
-        { id: 2, text: "Comment negatively too", emoji: "💬", isCorrect: false },
-        { id: 3, text: "Share to others", emoji: "📤", isCorrect: false }
+      id: 4,
+      text: "Robot posts a fake negative review about your friend. What do you do?",
+      options: [
+        { 
+          id: "report", 
+          text: "Report the post", 
+          emoji: "📣", 
+          description: "Reporting false reviews helps maintain the integrity of online platforms",
+          isCorrect: true
+        },
+        { 
+          id: "comment", 
+          text: "Comment negatively too", 
+          emoji: "💬", 
+          description: "Responding with negativity often escalates conflicts rather than resolving them",
+          isCorrect: false
+        },
+        { 
+          id: "share", 
+          text: "Share to others", 
+          emoji: "📤", 
+          description: "Sharing harmful content amplifies its reach and impact",
+          isCorrect: false
+        }
       ]
     },
     {
-      situation: "Robot sends harmful messages to multiple users. How should a teen respond?",
-      choices: [
-        { id: 1, text: "Report the robot", emoji: "📣", isCorrect: true },
-        { id: 2, text: "Copy the messages", emoji: "📤", isCorrect: false },
-        { id: 3, text: "React angrily", emoji: "😡", isCorrect: false }
+      id: 5,
+      text: "Robot sends harmful messages to multiple users. How should a teen respond?",
+      options: [
+        { 
+          id: "report", 
+          text: "Report the robot", 
+          emoji: "📣", 
+          description: "Reporting abusive accounts helps platforms identify and stop systematic harassment",
+          isCorrect: true
+        },
+        { 
+          id: "copy", 
+          text: "Copy the messages", 
+          emoji: "📤", 
+          description: "Copying harmful content, even to expose it, can spread the bullying further",
+          isCorrect: false
+        },
+        { 
+          id: "react", 
+          text: "React angrily", 
+          emoji: "😡", 
+          description: "Angry reactions can escalate situations and may be used against you later",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const currentQData = questions[currentQuestion];
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = currentQData.choices.find(c => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(2, true); // reward +2 per correct
-      setCoins(prev => prev + 2);
-    }
-    setShowFeedback(true);
-  };
-
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      navigate("/student/ai-for-all/teen/ethics-in-ai-quiz"); // update next path
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
-  const selectedChoiceData = currentQData.choices.find(c => c.id === selectedChoice);
+  const getCurrentQuestion = () => questions[currentQuestion];
+
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Cyberbullying Story game completed! Score: ${finalScore}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, questions.length]);
 
   return (
     <GameShell
       title="Cyberbullying Story"
-      subtitle="Practice Online Empathy"
-      onNext={handleNext}
-      nextEnabled={showFeedback && selectedChoiceData?.isCorrect}
-      showGameOver={showFeedback && selectedChoiceData?.isCorrect && currentQuestion === questions.length - 1}
       score={coins}
-      gameId="ai-teen-77"
-      gameType="ai"
-      totalLevels={20}
-      currentLevel={77}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect && currentQuestion === questions.length - 1}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/teens"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">{currentQData.situation}</p>
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
+      gameType="ai"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+    >
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="space-y-3 mb-6">
-              {currentQData.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Action
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-7xl mb-4">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {selectedChoiceData.isCorrect ? "✅ Good Choice!" : "❌ Wrong Choice!"}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <p className="text-yellow-400 text-2xl font-bold">
-                +2 Coins Earned 🪙
-              </p>
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">✅</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Good Choice!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  Reporting cyberbullying helps create a safer online environment for everyone.
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  Great work! 🧠 You understand how to respond appropriately to cyberbullying. Standing up against online harassment makes the internet safer for everyone! 🚀
+                </p>
+              </div>
             ) : (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again 🔁
-              </button>
-            )}
-
-            {selectedChoiceData.isCorrect && currentQuestion < questions.length - 1 && (
-              <button
-                onClick={handleNext}
-                className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-xl font-bold hover:opacity-90 transition"
-              >
-                Next ➡️
-              </button>
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Responding appropriately to cyberbullying helps protect others online. Try again!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try again to reinforce your understanding of how to respond to cyberbullying!
+                </p>
+              </div>
             )}
           </div>
         )}

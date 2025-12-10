@@ -1,160 +1,317 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getAiTeenGames } from "../../../../pages/Games/GameCategories/AiForAll/teenGamesData";
 
 const AIInSmartphonesQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
-  const question = {
-    text: "Does facial recognition unlock use AI?",
-    emoji: "📱",
-    choices: [
-      { id: 1, text: "Yes", emoji: "✓", isCorrect: true },
-      { id: 2, text: "No", emoji: "✗", isCorrect: false }
-    ]
-  };
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = question.choices.find(c => c.id === selectedChoice);
-    
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-teen-13";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
     }
     
-    setShowFeedback(true);
-  };
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
+  const questions = [
+    {
+      id: 1,
+      text: "Does facial recognition unlock use AI?",
+      emoji: "📱",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✓", 
+          description: "Correct - Face unlock uses computer vision AI",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "✗", 
+          description: "Incorrect - Face unlock does use AI technology",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Only on iPhones", 
+          emoji: "🍎", 
+          description: "Partially correct but not the best answer",
+          isCorrect: false
+        }
+      ],
+      explanation: "Yes! Face unlock uses AI and biometric technology to recognize your unique facial features. It's computer vision AI working in real-time!"
+    },
+    {
+      id: 2,
+      text: "Does predictive text use AI?",
+      emoji: "💬",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Correct - Predictive text uses machine learning",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "❌", 
+          description: "Incorrect - Predictive text is powered by AI",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Only with internet", 
+          emoji: "🌐", 
+          description: "Partially correct but not entirely accurate",
+          isCorrect: false
+        }
+      ],
+      explanation: "Predictive text uses AI to analyze your typing patterns, vocabulary, and context to suggest the next word. It learns from your usage to provide more accurate suggestions over time."
+    },
+    {
+      id: 3,
+      text: "Does voice assistant use AI?",
+      emoji: "🗣️",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "🔊", 
+          description: "Correct - Voice assistants use NLP and machine learning",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "🔇", 
+          description: "Incorrect - Voice assistants are AI-powered",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Only when connected", 
+          emoji: "📶", 
+          description: "Partially correct but misses the main point",
+          isCorrect: false
+        }
+      ],
+      explanation: "Voice assistants like Siri, Google Assistant, and Alexa use AI technologies including natural language processing (NLP) and machine learning to understand voice commands and provide relevant responses."
+    },
+    {
+      id: 4,
+      text: "Does photo tagging use AI?",
+      emoji: "📸",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "🏷️", 
+          description: "Correct - Photo tagging uses computer vision AI",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "❌", 
+          description: "Incorrect - Photo tagging is AI-powered",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Only on social media", 
+          emoji: "📱", 
+          description: "Too narrow - AI tagging is used in many apps",
+          isCorrect: false
+        }
+      ],
+      explanation: "Photo tagging uses computer vision AI to recognize faces, objects, and scenes in images. This technology can identify people you know, pets, landmarks, and even categorize photos automatically."
+    },
+    {
+      id: 5,
+      text: "Does adaptive brightness use AI?",
+      emoji: "🔆",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "🧠", 
+          description: "Correct - Adaptive brightness uses machine learning",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "❌", 
+          description: "Incorrect - Adaptive brightness is AI-powered",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Only on Android", 
+          emoji: "🤖", 
+          description: "Incorrect - Both platforms use this technology",
+          isCorrect: false
+        }
+      ],
+      explanation: "Adaptive brightness uses AI to learn your preferences and environmental lighting conditions. It adjusts screen brightness based on sensor data and your past behavior to optimize battery life and viewing comfort."
+    }
+  ];
+
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedOption(optionId);
     resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/student/ai-for-all/teen/prediction-story");
-  };
-
-  const selectedChoiceData = question.choices.find(c => c.id === selectedChoice);
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="AI in Smartphones Quiz"
-      score={coins}
-      subtitle="Real-Life AI Awareness"
-      onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showFeedback && coins > 0}
-      
-      gameId="ai-teen-13"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={20}
-      currentLevel={13}
-      showConfetti={showFeedback && coins > 0}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/teens"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-6 text-center">{question.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-8">
-              <p className="text-white text-2xl leading-relaxed text-center font-semibold">
-                {question.text}
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {question.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`border-3 rounded-xl p-10 transition-all ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : choice.isCorrect
-                      ? 'bg-green-500/20 border-green-400 hover:bg-green-500/30'
-                      : 'bg-red-500/20 border-red-400 hover:bg-red-500/30'
-                  }`}
-                >
-                  <div className="text-6xl mb-2">{choice.emoji}</div>
-                  <div className="text-white font-bold text-3xl">{choice.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Answer
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">{coins > 0 ? "🌟" : "❌"}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {coins > 0 ? "Perfect!" : "Not Quite..."}
-            </h2>
-            
-            {coins > 0 ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {answered && (
+                <div className={`rounded-lg p-4 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
                   <p className="text-white text-center">
-                    Yes! Face unlock uses AI and biometric technology to recognize your unique facial 
-                    features. It's computer vision AI working in real-time!
+                    {currentQuestionData.explanation}
                   </p>
                 </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Face unlock DOES use AI! It uses computer vision and neural networks to map your 
-                    face in 3D and recognize you even with different expressions!
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
+              )}
+            </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default AIInSmartphonesQuiz;
-

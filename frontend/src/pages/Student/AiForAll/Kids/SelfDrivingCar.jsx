@@ -14,41 +14,94 @@ const SelfDrivingCar = () => {
   const [score, setScore] = useState(0);
   const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [choices, setChoices] = useState([]);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const signals = [
-    { id: 1, light: "red", emoji: "🔴", correct: "brake" },
-    { id: 2, light: "green", emoji: "🟢", correct: "go" },
-    { id: 3, light: "red", emoji: "🔴", correct: "brake" },
-    { id: 4, light: "green", emoji: "🟢", correct: "go" },
-    { id: 5, light: "red", emoji: "🔴", correct: "brake" }
+    {
+      id: 1,
+      light: "green",
+      emoji: "🟢",
+      choices: [
+        { id: 1, text: "Go", emoji: "▶️", isCorrect: true },
+        { id: 2, text: "Brake", emoji: "🛑", isCorrect: false },
+        { id: 3, text: "Slow Down", emoji: "⚠️", isCorrect: false }
+      ]
+    },
+    {
+      id: 2,
+      light: "red",
+      emoji: "🔴",
+      choices: [
+        { id: 1, text: "Speed Up", emoji: "⚡", isCorrect: false },
+        { id: 2, text: "Brake", emoji: "🛑", isCorrect: true },
+        { id: 3, text: "Go", emoji: "▶️", isCorrect: false }
+      ]
+    },
+    {
+      id: 3,
+      light: "green",
+      emoji: "🟢",
+      choices: [
+        { id: 1, text: "Stop", emoji: "✋", isCorrect: false },
+        { id: 2, text: "Slow Down", emoji: "⚠️", isCorrect: false },
+        { id: 3, text: "Go", emoji: "▶️", isCorrect: true }
+      ]
+    },
+    {
+      id: 4,
+      light: "red",
+      emoji: "🔴",
+      choices: [
+        { id: 1, text: "Go", emoji: "▶️", isCorrect: false },
+        { id: 2, text: "Honk", emoji: "📢", isCorrect: false },
+        { id: 3, text: "Brake", emoji: "🛑", isCorrect: true }
+      ]
+    },
+    {
+      id: 5,
+      light: "red",
+      emoji: "🔴",
+      choices: [
+        { id: 1, text: "Brake", emoji: "🛑", isCorrect: true },
+        { id: 2, text: "Go", emoji: "▶️", isCorrect: false },
+        { id: 3, text: "Turn Left", emoji: "⬅️", isCorrect: false }
+      ]
+    }
   ];
 
   const currentSignalData = signals[currentSignal];
 
-  const handleChoice = (choice) => {
-    const isCorrect = choice === currentSignalData.correct;
-    const isLastQuestion = currentSignal === signals.length - 1;
+  const handleChoice = (choiceId) => {
+    const choice = currentSignalData.choices.find((c) => c.id === choiceId);
+    const isCorrect = choice.isCorrect;
+    
+    const newChoices = [...choices, { 
+      questionId: currentSignalData.id, 
+      choice: choiceId,
+      isCorrect: isCorrect
+    }];
+    
+    setChoices(newChoices);
     
     if (isCorrect) {
-      setScore(prev => {
-        const newScore = prev + 1;
-        if (isLastQuestion && newScore >= 3) {
-          setCoins(5);
-        }
-        return newScore;
-      });
-      showCorrectAnswerFeedback(1, false);
+      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
-    if (isLastQuestion) {
-      setTimeout(() => {
-        setShowResult(true);
-      }, 500);
-    } else {
+    if (currentSignal < signals.length - 1) {
       setTimeout(() => {
         setCurrentSignal(prev => prev + 1);
-      }, 300);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
@@ -57,6 +110,8 @@ const SelfDrivingCar = () => {
     setCurrentSignal(0);
     setScore(0);
     setCoins(0);
+    setChoices([]);
+    setFinalScore(0);
     resetFeedback();
   };
 
@@ -64,25 +119,23 @@ const SelfDrivingCar = () => {
     navigate("/student/ai-for-all/kids/pattern-finder-puzzle");
   };
 
-  const accuracy = Math.round((score / signals.length) * 100);
-
   return (
     <GameShell
       title="Self-Driving Car Game"
       score={score}
-      subtitle={`Signal ${currentSignal + 1} of ${signals.length}`}
+      subtitle={showResult ? "Game Complete!" : `Signal ${currentSignal + 1} of ${signals.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && score >= 3}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && score >= 3}
+      showGameOver={showResult && finalScore >= 3}
       maxScore={signals.length}
       gameId="ai-kids-6"
       gameType="ai"
       totalLevels={signals.length}
       currentLevel={currentSignal + 1}
-      showConfetti={showResult && score >= 3}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
@@ -90,53 +143,60 @@ const SelfDrivingCar = () => {
       <div className="space-y-8">
         {!showResult ? (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <h3 className="text-white text-xl font-bold mb-6 text-center">What should the self-driving car do?</h3>
             <div className="text-6xl mb-4 text-center">🚗</div>
-            <h3 className="text-white text-xl font-bold mb-6 text-center">Help the AI car decide!</h3>
             
             <div className="bg-gray-800/50 rounded-xl p-12 mb-6 flex justify-center items-center">
               <div className="text-9xl animate-pulse">{currentSignalData.emoji}</div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice("brake")}
-                className="bg-red-500/30 hover:bg-red-500/50 border-3 border-red-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-5xl mb-2">🛑</div>
-                <div className="text-white font-bold text-xl">BRAKE</div>
-              </button>
-              <button
-                onClick={() => handleChoice("go")}
-                className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-5xl mb-2">▶️</div>
-                <div className="text-white font-bold text-xl">GO</div>
-              </button>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {currentSignalData.choices.map((choice) => (
+                <button
+                  key={choice.id}
+                  onClick={() => handleChoice(choice.id)}
+                  className="bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-800 hover:to-black text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                >
+                  <div className="text-2xl mb-2">{choice.emoji}</div>
+                  <h3 className="font-bold text-xl mb-2">{choice.text}</h3>
+                </button>
+              ))}
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {score >= 3 ? "🎉 Safe Driver!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You made {score} out of {signals.length} correct decisions! ({accuracy}%)
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Self-driving cars use AI to make decisions! They recognize traffic lights and drive safely!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              {score >= 3 ? "You earned 5 Coins! 🪙" : "Get 3 or more correct to earn coins!"}
-            </p>
-            {score < 3 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Safe Driver!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {signals.length} correctly! ({Math.round((finalScore / signals.length) * 100)}%)
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  💡 Self-driving cars use AI to make decisions! They recognize traffic lights and drive safely!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {signals.length} correctly. ({Math.round((finalScore / signals.length) * 100)}%)
+                  Keep practicing to learn more about self-driving cars!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  💡 Self-driving cars use AI to make decisions! They recognize traffic lights and drive safely!
+                </p>
+              </div>
             )}
           </div>
         )}

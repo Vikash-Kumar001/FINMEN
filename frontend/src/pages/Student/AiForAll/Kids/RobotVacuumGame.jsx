@@ -12,33 +12,91 @@ const RobotVacuumGame = () => {
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentObstacle, setCurrentObstacle] = useState(0);
   const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [choices, setChoices] = useState([]);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const obstacles = [
-    { id: 1, emoji: "🪑", correctAction: "turn" },
-    { id: 2, emoji: "🛋️", correctAction: "turn" },
-    { id: 3, emoji: "🪞", correctAction: "stay" },
-    { id: 4, emoji: "🛏️", correctAction: "turn" },
-    { id: 5, emoji: "🖼️", correctAction: "stay" }
+    {
+      id: 1,
+      emoji: "🪑",
+      choices: [
+        { id: 1, text: "Turn Around", isCorrect: true },
+        { id: 2, text: "Stay Still", isCorrect: false },
+        { id: 3, text: "Speed Up", isCorrect: false }
+      ]
+    },
+    {
+      id: 2,
+      emoji: "🛋️",
+      choices: [
+        { id: 1, text: "Stay Still", isCorrect: false },
+        { id: 2, text: "Turn Around", isCorrect: true },
+        { id: 3, text: "Back Up", isCorrect: false }
+      ]
+    },
+    {
+      id: 3,
+      emoji: "🪞",
+      choices: [
+        { id: 1, text: "Speed Up", isCorrect: false },
+        { id: 2, text: "Stay Still", isCorrect: true },
+        { id: 3, text: "Turn Around", isCorrect: false }
+      ]
+    },
+    {
+      id: 4,
+      emoji: "🛏️",
+      choices: [
+        { id: 1, text: "Turn Around", isCorrect: true },
+        { id: 2, text: "Speed Up", isCorrect: false },
+        { id: 3, text: "Stay Still", isCorrect: false }
+      ]
+    },
+    {
+      id: 5,
+      emoji: "🖼️",
+      choices: [
+        { id: 1, text: "Back Up", isCorrect: false },
+        { id: 2, text: "Stay Still", isCorrect: true },
+        { id: 3, text: "Turn Around", isCorrect: false }
+      ]
+    }
   ];
 
   const currentObstacleData = obstacles[currentObstacle];
 
-  const handleChoice = (action) => {
-    const isCorrect = action === currentObstacleData.correctAction;
-
+  const handleChoice = (choiceId) => {
+    const choice = currentObstacleData.choices.find((c) => c.id === choiceId);
+    const isCorrect = choice.isCorrect;
+    
+    const newChoices = [...choices, { 
+      questionId: currentObstacleData.id, 
+      choice: choiceId,
+      isCorrect: isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
     if (isCorrect) {
       setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
+    
     if (currentObstacle < obstacles.length - 1) {
       setTimeout(() => {
         setCurrentObstacle(prev => prev + 1);
-      }, 300);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setShowResult(true);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
@@ -46,6 +104,9 @@ const RobotVacuumGame = () => {
     setShowResult(false);
     setCurrentObstacle(0);
     setScore(0);
+    setCoins(0);
+    setChoices([]);
+    setFinalScore(0);
     resetFeedback();
   };
 
@@ -53,25 +114,23 @@ const RobotVacuumGame = () => {
     navigate("/student/ai-for-all/kids/ai-translator-quiz"); // replace with actual next route
   };
 
-  const accuracy = Math.round((score / obstacles.length) * 100);
-
   return (
     <GameShell
       title="Robot Vacuum Game"
       score={score}
-      subtitle={`Obstacle ${currentObstacle + 1} of ${obstacles.length}`}
+      subtitle={showResult ? "Game Complete!" : `Obstacle ${currentObstacle + 1} of ${obstacles.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
-      
+      showGameOver={showResult && finalScore >= 3}
+      maxScore={obstacles.length}
       gameId="ai-kids-36"
       gameType="ai"
-      totalLevels={20}
-      currentLevel={36}
-      showConfetti={showResult && accuracy >= 70}
+      totalLevels={obstacles.length}
+      currentLevel={currentObstacle + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
@@ -86,46 +145,52 @@ const RobotVacuumGame = () => {
               <div className="text-9xl animate-pulse">{currentObstacleData.emoji}</div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice("turn")}
-                className="bg-yellow-500/30 hover:bg-yellow-500/50 border-3 border-yellow-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-5xl mb-2">↩️</div>
-                <div className="text-white font-bold text-xl">TURN</div>
-              </button>
-              <button
-                onClick={() => handleChoice("stay")}
-                className="bg-blue-500/30 hover:bg-blue-500/50 border-3 border-blue-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-5xl mb-2">⬇️</div>
-                <div className="text-white font-bold text-xl">STAY</div>
-              </button>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {currentObstacleData.choices.map((choice) => (
+                <button
+                  key={choice.id}
+                  onClick={() => handleChoice(choice.id)}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                >
+                  <h3 className="font-bold text-xl mb-2">{choice.text}</h3>
+                </button>
+              ))}
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {accuracy >= 70 ? "🎉 Obstacle Master!" : "💪 Keep Practicing!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You avoided {score} out of {obstacles.length} obstacles! ({accuracy}%)
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 The robot vacuum uses AI to detect obstacles. You helped it navigate safely!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned {score} Points! 🪙
-            </p>
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Obstacle Master!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You avoided {finalScore} out of {obstacles.length} obstacles correctly! ({Math.round((finalScore / obstacles.length) * 100)}%)
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  💡 The robot vacuum uses AI to detect obstacles. You helped it navigate safely!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You avoided {finalScore} out of {obstacles.length} obstacles correctly. ({Math.round((finalScore / obstacles.length) * 100)}%)
+                  Keep practicing to learn more about obstacle detection!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  💡 The robot vacuum uses AI to detect obstacles. You helped it navigate safely!
+                </p>
+              </div>
             )}
           </div>
         )}

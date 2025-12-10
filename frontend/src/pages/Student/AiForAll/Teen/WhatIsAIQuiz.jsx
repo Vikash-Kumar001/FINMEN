@@ -1,246 +1,297 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getAiTeenGames } from "../../../../pages/Games/GameCategories/AiForAll/teenGamesData";
 
 const WhatIsAIQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-teen-1";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  // ✅ 5 Questions
   const questions = [
     {
       id: 1,
       text: "What does AI stand for?",
       emoji: "🤖",
-      choices: [
-        { id: 1, text: "Artificial Icecream", emoji: "🍦", isCorrect: false },
-        { id: 2, text: "Artificial Intelligence", emoji: "🧠", isCorrect: true },
-        { id: 3, text: "Alien Idea", emoji: "👽", isCorrect: false },
+      options: [
+        { 
+          id: 1, 
+          text: "Artificial Icecream", 
+          emoji: "🍦", 
+          description: "Incorrect - This is just a play on words",
+          isCorrect: false
+        },
+        { 
+          id: 2, 
+          text: "Artificial Intelligence", 
+          emoji: "🧠", 
+          description: "Correct - AI stands for Artificial Intelligence",
+          isCorrect: true
+        },
+        { 
+          id: 3, 
+          text: "Alien Idea", 
+          emoji: "👽", 
+          description: "Incorrect - This is not what AI stands for",
+          isCorrect: false
+        },
       ],
     },
     {
       id: 2,
       text: "Which of these is an example of AI?",
       emoji: "📱",
-      choices: [
-        { id: 1, text: "Siri or Alexa", emoji: "🎙️", isCorrect: true },
-        { id: 2, text: "A regular calculator", emoji: "🧮", isCorrect: false },
-        { id: 3, text: "A simple lamp", emoji: "💡", isCorrect: false },
+      options: [
+        { 
+          id: 1, 
+          text: "Siri or Alexa", 
+          emoji: "🎙️", 
+          description: "Correct - Voice assistants use AI to understand and respond to commands",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "A regular calculator", 
+          emoji: "🧮", 
+          description: "Incorrect - Calculators follow fixed rules, not AI",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "A simple lamp", 
+          emoji: "💡", 
+          description: "Incorrect - Lamps just turn on/off, no intelligence involved",
+          isCorrect: false
+        },
       ],
     },
     {
       id: 3,
       text: "What helps AI learn and make decisions?",
       emoji: "📊",
-      choices: [
-        { id: 1, text: "Magic", emoji: "✨", isCorrect: false },
-        { id: 2, text: "Data", emoji: "💾", isCorrect: true },
-        { id: 3, text: "Luck", emoji: "🍀", isCorrect: false },
+      options: [
+        { 
+          id: 1, 
+          text: "Magic", 
+          emoji: "✨", 
+          description: "Incorrect - AI doesn't use magic, it uses data and algorithms",
+          isCorrect: false
+        },
+        { 
+          id: 2, 
+          text: "Data", 
+          emoji: "💾", 
+          description: "Correct - AI systems learn from data to make predictions and decisions",
+          isCorrect: true
+        },
+        { 
+          id: 3, 
+          text: "Luck", 
+          emoji: "🍀", 
+          description: "Incorrect - AI relies on data and algorithms, not luck",
+          isCorrect: false
+        },
       ],
     },
     {
       id: 4,
       text: "Which skill is most similar to what AI does?",
       emoji: "🧠",
-      choices: [
-        { id: 1, text: "Learning from experience", emoji: "📘", isCorrect: true },
-        { id: 2, text: "Sleeping", emoji: "😴", isCorrect: false },
-        { id: 3, text: "Cooking", emoji: "🍳", isCorrect: false },
+      options: [
+        { 
+          id: 1, 
+          text: "Learning from experience", 
+          emoji: "📘", 
+          description: "Correct - Like humans, AI systems improve by learning from data/experiences",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "Sleeping", 
+          emoji: "😴", 
+          description: "Incorrect - Sleeping is a biological process, not related to AI",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Cooking", 
+          emoji: "🍳", 
+          description: "Incorrect - While AI can help with recipes, cooking itself isn't what AI does",
+          isCorrect: false
+        },
       ],
     },
     {
       id: 5,
       text: "Where do we use AI in daily life?",
       emoji: "🏠",
-      choices: [
-        { id: 1, text: "Voice assistants like Alexa", emoji: "🎧", isCorrect: true },
-        { id: 2, text: "Shoes and socks", emoji: "👟", isCorrect: false },
-        { id: 3, text: "Plain notebooks", emoji: "📓", isCorrect: false },
+      options: [
+        { 
+          id: 1, 
+          text: "Voice assistants like Alexa", 
+          emoji: "🎧", 
+          description: "Correct - Voice assistants use AI to understand and respond to spoken commands",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "Shoes and socks", 
+          emoji: "👟", 
+          description: "Incorrect - Regular shoes/socks don't use AI technology",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Plain notebooks", 
+          emoji: "📓", 
+          description: "Incorrect - Regular notebooks are just paper, no AI involved",
+          isCorrect: false
+        },
       ],
     },
   ];
 
-  // ✅ States
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [correctAnswers, setCorrectAnswers] = useState(0);
-
-  const question = questions[currentQuestion];
-  const selectedChoiceData = question.choices.find((c) => c.id === selectedChoice);
-
-  // ✅ Handle Choice Selection
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  // ✅ Confirm Answer
-  const handleConfirm = () => {
-    const choice = question.choices.find((c) => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      setCoins((prev) => prev + 5);
-      setCorrectAnswers((prev) => prev + 1);
-      showCorrectAnswerFeedback(5, true);
-    }
-    setShowFeedback(true);
-  };
-
-  // ✅ Next Question
-  const handleNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
-    }
-  };
-
-  // ✅ Restart Quiz
-  const handleTryAgain = () => {
-    setCurrentQuestion(0);
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
-    setCorrectAnswers(0);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedOption(optionId);
     resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  // ✅ Move to Next Game
-  const handleNextGame = () => {
-    navigate("/student/ai-for-all/teen/pattern-prediction-puzzle");
-  };
-
-  // ✅ All done?
-  const isQuizCompleted = currentQuestion === questions.length - 1 && showFeedback;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="What is AI? Quiz 🤖"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNextGame}
-      nextEnabled={isQuizCompleted}
-      showGameOver={isQuizCompleted}
-      score={coins}
-      gameId="ai-teen-1"
-      gameType="quiz"
-      totalLevels={100}
-      currentLevel={1}
-      showConfetti={isQuizCompleted}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/teens"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {/* ✅ Question UI */}
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-9xl mb-6 text-center">{question.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-8">
-              <p className="text-white text-2xl leading-relaxed text-center font-semibold">
-                {question.text}
-              </p>
-            </div>
-
-            <div className="space-y-3 mb-6">
-              {question.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-5xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">
-                      {choice.text}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Answer
-            </button>
-          </div>
-        ) : (
-          // ✅ Feedback Section
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <div className="text-8xl mb-4">
-              {selectedChoiceData?.isCorrect ? "🎉" : "❌"}
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {selectedChoiceData?.isCorrect ? "Correct!" : "Not Quite..."}
-            </h2>
-
-            <div
-              className={`rounded-lg p-4 mb-4 ${
-                selectedChoiceData?.isCorrect
-                  ? "bg-green-500/20"
-                  : "bg-red-500/20"
-              }`}
-            >
-              <p className="text-white text-center">
-                {selectedChoiceData?.isCorrect
-                  ? "Yes! AI stands for Artificial Intelligence — technology that can learn and solve problems like humans!"
-                  : "AI means Artificial Intelligence — it’s not magic or aliens, but machines learning from data!"}
-              </p>
-            </div>
-
-            {selectedChoiceData?.isCorrect ? (
-              <p className="text-yellow-400 text-2xl font-bold mb-4">
-                +5 Coins! 🪙
-              </p>
-            ) : null}
-
-            {/* ✅ Navigation Buttons */}
-            {isQuizCompleted ? (
-              <div className="space-y-4">
-                <p className="text-white text-xl font-semibold">
-                  You finished all 5 questions! 🎯
-                </p>
-                <p className="text-yellow-400 text-2xl font-bold">
-                  Total Coins: {coins} 🪙
-                </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again 🔁
-                </button>
+      totalXp={totalXp}
+      gameId={gameId}
+      gameType="ai"
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
+    >
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
-            ) : (
-              <button
-                onClick={handleNextQuestion}
-                className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Next Question ➡️
-              </button>
-            )}
+              
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

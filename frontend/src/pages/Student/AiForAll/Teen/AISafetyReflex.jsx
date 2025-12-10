@@ -1,144 +1,209 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const AISafetyReflex = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentAction, setCurrentAction] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-teen-80";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
   const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
-  // 🤖 Reflex challenges — choose safe action “Help people”
+  // 🤖 Reflex challenges — choose safe action "Help people"
   const actions = [
     { id: 1, emoji: "🤖", action: "Help people" },
     { id: 2, emoji: "🤖", action: "Steal phone" },
     { id: 3, emoji: "🤖", action: "Help people" },
     { id: 4, emoji: "🤖", action: "Steal phone" },
-    { id: 5, emoji: "🤖", action: "Help people" },
-    { id: 6, emoji: "🤖", action: "Steal phone" },
-    { id: 7, emoji: "🤖", action: "Help people" },
-    { id: 8, emoji: "🤖", action: "Steal phone" },
-    { id: 9, emoji: "🤖", action: "Help people" },
-    { id: 10, emoji: "🤖", action: "Steal phone" }
+    { id: 5, emoji: "🤖", action: "Help people" }
   ];
 
   const options = ["Help people", "Steal phone"];
-  const currentActionData = actions[currentAction];
 
-  const handleChoice = (choice) => {
-    const isCorrect = choice === "Help people" && currentActionData.action === "Help people";
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
 
-    if (isCorrect) {
-      setScore((prev) => prev + 1);
-      setCoins((prev) => prev + 2); // Each correct = +2 coins
-      showCorrectAnswerFeedback(2, false);
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
+  }, [currentRound, gameState]);
 
-    if (currentAction < actions.length - 1) {
-      setTimeout(() => setCurrentAction((prev) => prev + 1), 300);
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
     } else {
-      setShowResult(true);
+      setGameState("finished");
     }
-  };
+  }, []);
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentAction(0);
+  // Timer effect
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
     setScore(0);
-    setCoins(0);
+    setCurrentRound(1);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/student/ai-for-all/teen/cyberbullying-storyy"); // 🔗 update with actual next path
+  const handleChoice = (choice) => {
+    if (answered || gameState !== "playing") return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const currentActionData = actions[currentRound - 1];
+    const isCorrect = choice === "Help people" && currentActionData.action === "Help people";
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    setTimeout(() => {
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
+      } else {
+        setGameState("finished");
+      }
+    }, 500);
   };
 
-  const accuracy = Math.round((score / actions.length) * 100);
+  const finalScore = score;
+  const currentActionData = actions[currentRound - 1];
+  const accuracy = Math.round((score / TOTAL_ROUNDS) * 100);
 
   return (
     <GameShell
       title="AI Safety Reflex 🤖"
-      score={coins}
-      subtitle={`Action ${currentAction + 1} of ${actions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
+      subtitle={gameState === "playing" ? `Action ${currentRound}/${TOTAL_ROUNDS}: Click quickly! Choose the safe action 🤖` : "Test your AI safety reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
-      
-      gameId="ai-teen-80"
-      gameType="ai"
-      totalLevels={40}
-      currentLevel={80}
-      showConfetti={showResult && accuracy >= 70}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && accuracy >= 70}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="ai"
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       backPath="/games/ai-for-all/teens"
     >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">
-              Click quickly! Choose the safe action 🤖
-            </h3>
-
-            <div className="bg-gradient-to-br from-green-500/30 to-blue-500/30 rounded-xl p-12 mb-6 text-center">
-              <div className="text-8xl mb-3">{currentActionData.emoji}</div>
-              <p className="text-white text-3xl font-bold">{currentActionData.action}</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {options.map((opt, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleChoice(opt)}
-                  className="bg-blue-500/30 hover:bg-blue-500/50 border-3 border-blue-400 rounded-xl p-6 transition-all transform hover:scale-105"
-                >
-                  <div className="text-white font-bold text-xl">
-                    {opt === "Help people" && "🟢 "} {opt}
-                    {opt === "Steal phone" && "🔴 "} {opt}
-                  </div>
-                </button>
-              ))}
-            </div>
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">🛡️</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Choose safe actions for the AI!<br />
+              You have {ROUND_TIME} seconds for each action.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} actions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {accuracy >= 70 ? "🤖 Reflex Champion!" : "💪 Keep Practicing!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You chose safe actions correctly {score} out of {actions.length} times ({accuracy}%)
-            </p>
+        )}
 
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 AI should always take safe and ethical actions — choosing to help people ensures safety and trust!
-              </p>
+        {gameState === "playing" && currentActionData && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Action:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
             </div>
 
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned {coins} Coins! 🪙
-            </p>
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+              <h3 className="text-white text-xl font-bold mb-6 text-center">
+                Click quickly! Choose the safe action 🤖
+              </h3>
 
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again 🔁
-              </button>
-            )}
+              <div className="bg-gradient-to-br from-green-500/30 to-blue-500/30 rounded-xl p-12 mb-6 text-center">
+                <div className="text-8xl mb-3">{currentActionData.emoji}</div>
+                <p className="text-white text-3xl font-bold">{currentActionData.action}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {options.map((opt, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleChoice(opt)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <div className="text-white font-bold text-xl">
+                      {opt === "Help people" && "🟢 "} {opt}
+                      {opt === "Steal phone" && "🔴 "} {opt}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>

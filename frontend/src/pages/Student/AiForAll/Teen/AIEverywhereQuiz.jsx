@@ -1,174 +1,317 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getAiTeenGames } from "../../../../pages/Games/GameCategories/AiForAll/teenGamesData";
 
 const AIEverywhereQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
-  const question = {
-    text: "Is AI only in robots?",
-    emoji: "🌍",
-    choices: [
-      { id: 1, text: "Yes - AI is only in robots", emoji: "🤖", isCorrect: false },
-      { id: 2, text: "No - AI is everywhere!", emoji: "🌐", isCorrect: true }
-    ]
-  };
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = question.choices.find(c => c.id === selectedChoice);
-    
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-teen-20";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
     }
     
-    setShowFeedback(true);
-  };
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
+  const questions = [
+    {
+      id: 1,
+      text: "Is AI only in robots?",
+      emoji: "🌍",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes - AI is only in robots", 
+          emoji: "🤖", 
+          description: "Incorrect - AI is much more widespread than just robots",
+          isCorrect: false
+        },
+        { 
+          id: 2, 
+          text: "No - AI is everywhere!", 
+          emoji: "🌐", 
+          description: "Correct - AI is integrated into many aspects of daily life",
+          isCorrect: true
+        },
+        { 
+          id: 3, 
+          text: "Only in science fiction", 
+          emoji: "📚", 
+          description: "Incorrect - AI is a real technology in everyday use",
+          isCorrect: false
+        }
+      ],
+      explanation: "Absolutely correct! AI is EVERYWHERE:\n\n📱 Your Phone: Face unlock, voice assistants, predictive text\n🎬 Entertainment: Netflix, YouTube, Spotify recommendations\n🛒 Shopping: Amazon, online stores, personalized ads\n🚗 Transportation: GPS navigation, self-driving cars\n🏥 Healthcare: Disease diagnosis, drug discovery\n🎮 Gaming: Smart NPCs, procedural generation\n🏠 Home: Smart devices, thermostats, security\n💬 Communication: Email filters, translation, chatbots\n📸 Photos: Face recognition, filters, image enhancement\n🔍 Search: Google, Bing use AI to understand your queries\n\nAI is integrated into almost every aspect of modern life!"
+    },
+    {
+      id: 2,
+      text: "Is AI only used in big tech companies?",
+      emoji: "🏢",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes - Only big companies use AI", 
+          emoji: "💼", 
+          description: "Incorrect - AI is used across many industries and sizes",
+          isCorrect: false
+        },
+        { 
+          id: 2, 
+          text: "No - Many industries use AI", 
+          emoji: "🏭", 
+          description: "Correct - AI is used in healthcare, agriculture, education, etc.",
+          isCorrect: true
+        },
+        { 
+          id: 3, 
+          text: "Only in research labs", 
+          emoji: "🔬", 
+          description: "Incorrect - AI has practical commercial applications",
+          isCorrect: false
+        }
+      ],
+      explanation: "AI is used across many industries including healthcare (diagnosis), agriculture (crop monitoring), education (personalized learning), finance (fraud detection), manufacturing (quality control), and more. Small businesses also use AI through cloud services and apps."
+    },
+    {
+      id: 3,
+      text: "Is AI only for adults?",
+      emoji: "🧑‍🤝‍🧑",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes - Only adults use AI", 
+          emoji: "👨‍💼", 
+          description: "Incorrect - Children regularly interact with AI",
+          isCorrect: false
+        },
+        { 
+          id: 2, 
+          text: "No - Kids use AI too", 
+          emoji: "🧒", 
+          description: "Correct - Children use AI in games, apps, and devices",
+          isCorrect: true
+        },
+        { 
+          id: 3, 
+          text: "Only for experts", 
+          emoji: "🤓", 
+          description: "Incorrect - AI is designed to be user-friendly for everyone",
+          isCorrect: false
+        }
+      ],
+      explanation: "Children interact with AI daily through voice assistants (Alexa, Siri), recommendation systems (YouTube, Netflix), educational apps, smart toys, and gaming. AI is designed to be accessible to users of all ages."
+    },
+    {
+      id: 4,
+      text: "Is AI only in software?",
+      emoji: "💻",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes - Only in software", 
+          emoji: "🖥️", 
+          description: "Incorrect - AI is also in hardware devices",
+          isCorrect: false
+        },
+        { 
+          id: 2, 
+          text: "No - Hardware uses AI too", 
+          emoji: "🔧", 
+          description: "Correct - AI chips and specialized hardware exist",
+          isCorrect: true
+        },
+        { 
+          id: 3, 
+          text: "Only in the cloud", 
+          emoji: "☁️", 
+          description: "Incorrect - AI runs on local devices as well",
+          isCorrect: false
+        }
+      ],
+      explanation: "AI exists in both software and hardware. Specialized AI chips (like Google's TPU, Apple's Neural Engine) are built into phones, cars, and other devices. IoT devices, drones, and robots combine AI software with dedicated hardware for real-time processing."
+    },
+    {
+      id: 5,
+      text: "Is AI only for entertainment?",
+      emoji: "🎭",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes - Just for fun", 
+          emoji: "🎮", 
+          description: "Incorrect - AI has serious practical applications",
+          isCorrect: false
+        },
+        { 
+          id: 2, 
+          text: "No - Serious applications too", 
+          emoji: "🏥", 
+          description: "Correct - AI saves lives and solves critical problems",
+          isCorrect: true
+        },
+        { 
+          id: 3, 
+          text: "Only for business", 
+          emoji: "💼", 
+          description: "Incorrect - AI benefits society in many ways",
+          isCorrect: false
+        }
+      ],
+      explanation: "AI tackles serious global challenges: climate modeling, disease diagnosis, disaster prediction, accessibility tools for disabilities, scientific research, space exploration, and more. Entertainment is just one small application among many life-changing uses."
+    }
+  ];
+
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedOption(optionId);
     resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleFinish = () => {
-    navigate("/games/ai-for-all/teens/spam-filter-reflex");
-  };
-
-  const selectedChoiceData = question.choices.find(c => c.id === selectedChoice);
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="AI Everywhere Quiz"
-      score={coins}
-      subtitle="Understanding AI's Reach"
-      onNext={handleFinish}
-      nextEnabled={showFeedback && coins > 0}
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showFeedback && coins > 0}
-      
-      gameId="ai-teen-20"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={20}
-      currentLevel={20}
-      showConfetti={showFeedback && coins > 0}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/teens"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-6 text-center">{question.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-8">
-              <p className="text-white text-2xl leading-relaxed text-center font-semibold">
-                {question.text}
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
-            </div>
-
-            <div className="space-y-4">
-              {question.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-6 transition-all ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-5xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Answer
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">{coins > 0 ? "🌟" : "❌"}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {coins > 0 ? "Perfect Understanding!" : "Think Bigger..."}
-            </h2>
-            
-            {coins > 0 ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-5 mb-4">
-                  <p className="text-white text-center mb-4">
-                    Absolutely correct! AI is EVERYWHERE:
-                  </p>
-                  <ul className="text-white/90 text-sm space-y-2 text-left">
-                    <li>📱 <strong>Your Phone:</strong> Face unlock, voice assistants, predictive text</li>
-                    <li>🎬 <strong>Entertainment:</strong> Netflix, YouTube, Spotify recommendations</li>
-                    <li>🛒 <strong>Shopping:</strong> Amazon, online stores, personalized ads</li>
-                    <li>🚗 <strong>Transportation:</strong> GPS navigation, self-driving cars</li>
-                    <li>🏥 <strong>Healthcare:</strong> Disease diagnosis, drug discovery</li>
-                    <li>🎮 <strong>Gaming:</strong> Smart NPCs, procedural generation</li>
-                    <li>🏠 <strong>Home:</strong> Smart devices, thermostats, security</li>
-                    <li>💬 <strong>Communication:</strong> Email filters, translation, chatbots</li>
-                    <li>📸 <strong>Photos:</strong> Face recognition, filters, image enhancement</li>
-                    <li>🔍 <strong>Search:</strong> Google, Bing use AI to understand your queries</li>
-                  </ul>
-                  <p className="text-white/80 text-sm text-center mt-4">
-                    AI is integrated into almost every aspect of modern life!
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {answered && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {currentQuestionData.explanation}
                   </p>
                 </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    AI is NOT just in robots! AI is in your phone, apps, games, smart home devices, 
-                    cars, healthcare, education, and countless other places. It's all around us!
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
+              )}
+            </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default AIEverywhereQuiz;
-

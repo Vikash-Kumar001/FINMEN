@@ -12,33 +12,96 @@ const MatchAITools = () => {
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentItem, setCurrentItem] = useState(0);
   const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [choices, setChoices] = useState([]);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const items = [
-    { id: 1, name: "Google Maps", emoji: "🗺️", isAI: true },
-    { id: 2, name: "Pencil", emoji: "✏️", isAI: false },
-    { id: 3, name: "Siri", emoji: "🔊", isAI: true },
-    { id: 4, name: "Book", emoji: "📖", isAI: false },
-    { id: 5, name: "Netflix Recommendations", emoji: "📺", isAI: true }
+    {
+      id: 1,
+      name: "Google Maps",
+      emoji: "🗺️",
+      choices: [
+        { id: 1, text: "AI Tool", emoji: "🤖", isCorrect: true },
+        { id: 2, text: "Regular Tool", emoji: "🔧", isCorrect: false },
+        { id: 3, text: "Game", emoji: "🎮", isCorrect: false }
+      ]
+    },
+    {
+      id: 2,
+      name: "Pencil",
+      emoji: "✏️",
+      choices: [
+        { id: 1, text: "AI Tool", emoji: "🤖", isCorrect: false },
+        { id: 2, text: "Regular Tool", emoji: "🔧", isCorrect: true },
+        { id: 3, text: "App", emoji: "📱", isCorrect: false }
+      ]
+    },
+    {
+      id: 3,
+      name: "Siri",
+      emoji: "🔊",
+      choices: [
+        { id: 1, text: "Regular Tool", emoji: "🔧", isCorrect: false },
+        { id: 2, text: "AI Tool", emoji: "🤖", isCorrect: true },
+        { id: 3, text: "Book", emoji: "📖", isCorrect: false }
+      ]
+    },
+    {
+      id: 4,
+      name: "Book",
+      emoji: "📖",
+      choices: [
+        { id: 1, text: "Game", emoji: "🎮", isCorrect: false },
+        { id: 2, text: "Regular Tool", emoji: "🔧", isCorrect: true },
+        { id: 3, text: "AI Tool", emoji: "🤖", isCorrect: false }
+      ]
+    },
+    {
+      id: 5,
+      name: "Netflix Recommendations",
+      emoji: "📺",
+      choices: [
+        { id: 1, text: "Regular Tool", emoji: "🔧", isCorrect: false },
+        { id: 2, text: "Game", emoji: "🎮", isCorrect: false },
+        { id: 3, text: "AI Tool", emoji: "🤖", isCorrect: true }
+      ]
+    }
   ];
 
   const currentItemData = items[currentItem];
 
-  const handleChoice = (choice) => {
-    const isCorrect = choice === currentItemData.isAI;
+  const handleChoice = (choiceId) => {
+    const choice = currentItemData.choices.find((c) => c.id === choiceId);
+    const isCorrect = choice.isCorrect;
+    
+    const newChoices = [...choices, { 
+      questionId: currentItemData.id, 
+      choice: choiceId,
+      isCorrect: isCorrect
+    }];
+    
+    setChoices(newChoices);
     
     if (isCorrect) {
       setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
     if (currentItem < items.length - 1) {
       setTimeout(() => {
         setCurrentItem(prev => prev + 1);
-      }, 300);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setShowResult(true);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
@@ -46,6 +109,9 @@ const MatchAITools = () => {
     setShowResult(false);
     setCurrentItem(0);
     setScore(0);
+    setCoins(0);
+    setChoices([]);
+    setFinalScore(0);
     resetFeedback();
   };
 
@@ -53,25 +119,23 @@ const MatchAITools = () => {
     navigate("/student/ai-for-all/kids/pattern-music-game");
   };
 
-  const accuracy = Math.round((score / items.length) * 100);
-
   return (
     <GameShell
       title="Match AI Tools"
       score={score}
-      subtitle={`Item ${currentItem + 1} of ${items.length}`}
+      subtitle={showResult ? "Game Complete!" : `Item ${currentItem + 1} of ${items.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
-      
+      showGameOver={showResult && finalScore >= 3}
+      maxScore={items.length}
       gameId="ai-kids-12"
       gameType="ai"
-      totalLevels={20}
-      currentLevel={12}
-      showConfetti={showResult && accuracy >= 70}
+      totalLevels={items.length}
+      currentLevel={currentItem + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
@@ -79,53 +143,60 @@ const MatchAITools = () => {
       <div className="space-y-8">
         {!showResult ? (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">Is this an AI tool?</h3>
+            <h3 className="text-white text-xl font-bold mb-6 text-center">What type of tool is this?</h3>
             
             <div className="bg-gradient-to-br from-cyan-500/30 to-blue-500/30 rounded-xl p-12 mb-6">
               <div className="text-9xl mb-3 text-center">{currentItemData.emoji}</div>
               <p className="text-white text-2xl font-bold text-center">{currentItemData.name}</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice(true)}
-                className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-5xl mb-2">🤖</div>
-                <div className="text-white font-bold text-xl">AI Tool</div>
-              </button>
-              <button
-                onClick={() => handleChoice(false)}
-                className="bg-gray-500/30 hover:bg-gray-500/50 border-3 border-gray-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-5xl mb-2">🔧</div>
-                <div className="text-white font-bold text-xl">Not AI</div>
-              </button>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {currentItemData.choices.map((choice) => (
+                <button
+                  key={choice.id}
+                  onClick={() => handleChoice(choice.id)}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                >
+                  <div className="text-2xl mb-2">{choice.emoji}</div>
+                  <h3 className="font-bold text-xl mb-2">{choice.text}</h3>
+                </button>
+              ))}
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {accuracy >= 70 ? "🎉 AI Detective!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You identified {score} out of {items.length} correctly! ({accuracy}%)
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 AI is in many tools we use daily! Google Maps, Siri, and Netflix all use AI!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned {score} Points! 🪙
-            </p>
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">AI Detective!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {items.length} correctly! ({Math.round((finalScore / items.length) * 100)}%)
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  💡 AI is in many tools we use daily! Google Maps, Siri, and Netflix all use AI!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {items.length} correctly. ({Math.round((finalScore / items.length) * 100)}%)
+                  Keep practicing to learn more about AI tools!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  💡 AI is in many tools we use daily! Google Maps, Siri, and Netflix all use AI!
+                </p>
+              </div>
             )}
           </div>
         )}

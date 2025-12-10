@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -6,123 +6,326 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const AIArtistSimulation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentPrompt, setCurrentPrompt] = useState(0);
+  
+  const { showCorrectAnswerFeedback } = useGameFeedback();
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [finalScore, setFinalScore] = useState(0);
 
-  const prompts = [
-    { id: 1, text: "Draw a mountain 🏔️" },
-    { id: 2, text: "Draw a sunset 🌅" },
-    { id: 3, text: "Draw a robot 🤖" },
-    { id: 4, text: "Draw a cat 🐱" },
-    { id: 5, text: "Draw a spaceship 🛸" },
+  const questions = [
+    {
+      id: 1,
+      text: "What is the primary function of generative AI in art creation?",
+      options: [
+        { 
+          id: "copy", 
+          text: "Copy existing artworks", 
+          emoji: "🖼️", 
+          description: "Replicate famous paintings",
+          isCorrect: false
+        },
+        { 
+          id: "create", 
+          text: "Create new artistic content", 
+          emoji: "✨", 
+          description: "Generate original artwork from prompts",
+          isCorrect: true
+        },
+        { 
+          id: "analyze", 
+          text: "Analyze art styles", 
+          emoji: "🔍", 
+          description: "Examine artistic techniques",
+          isCorrect: false
+        },
+        { 
+          id: "sell", 
+          text: "Sell digital art", 
+          emoji: "💰", 
+          description: "Marketplace for NFTs",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "Which technology enables AI to understand text prompts for image generation?",
+      options: [
+        { 
+          id: "nlp", 
+          text: "Natural Language Processing", 
+          emoji: "🔤", 
+          description: "Interpret human language",
+          isCorrect: true
+        },
+        { 
+          id: "cv", 
+          text: "Computer Vision", 
+          emoji: "👁️", 
+          description: "Analyze visual content",
+          isCorrect: false
+        },
+        { 
+          id: "ml", 
+          text: "Machine Learning", 
+          emoji: "🤖", 
+          description: "Learn from data patterns",
+          isCorrect: false
+        },
+        { 
+          id: "dl", 
+          text: "Deep Learning", 
+          emoji: "🧠", 
+          description: "Neural networks with multiple layers",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "What is a key ethical consideration when using AI-generated art?",
+      options: [
+        { 
+          id: "quality", 
+          text: "Image quality", 
+          emoji: "📷", 
+          description: "Resolution and clarity",
+          isCorrect: false
+        },
+        { 
+          id: "attribution", 
+          text: "Proper attribution and ownership", 
+          emoji: "📝", 
+          description: "Credit and copyright considerations",
+          isCorrect: true
+        },
+        { 
+          id: "speed", 
+          text: "Generation speed", 
+          emoji: "⏱️", 
+          description: "Time to create images",
+          isCorrect: false
+        },
+        { 
+          id: "cost", 
+          text: "Computational cost", 
+          emoji: "💸", 
+          description: "Resource requirements",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "How do AI art generators typically learn to create images?",
+      options: [
+        { 
+          id: "examples", 
+          text: "Training on vast image datasets", 
+          emoji: "📚", 
+          description: "Learning from millions of examples",
+          isCorrect: true
+        },
+        { 
+          id: "programming", 
+          text: "Explicit programming rules", 
+          emoji: "⌨️", 
+          description: "Manual coding of artistic rules",
+          isCorrect: false
+        },
+        { 
+          id: "internet", 
+          text: "Browsing the internet", 
+          emoji: "🌐", 
+          description: "Searching online content",
+          isCorrect: false
+        },
+        { 
+          id: "humans", 
+          text: "Direct human instruction", 
+          emoji: "👩‍🏫", 
+          description: "Being taught by artists",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "What is a limitation of current AI art generation systems?",
+      options: [
+        { 
+          id: "creativity", 
+          text: "Lack of true creativity", 
+          emoji: "🤔", 
+          description: "Cannot originate truly novel concepts",
+          isCorrect: true
+        },
+        { 
+          id: "interface", 
+          text: "Complex user interfaces", 
+          emoji: "🖥️", 
+          description: "Difficult to use platforms",
+          isCorrect: false
+        },
+        { 
+          id: "hardware", 
+          text: "Hardware requirements", 
+          emoji: "💻", 
+          description: "Need powerful computers",
+          isCorrect: false
+        },
+        { 
+          id: "cost", 
+          text: "High subscription fees", 
+          emoji: "💳", 
+          description: "Expensive service costs",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const currentPromptData = prompts[currentPrompt];
-
-  const handleGenerate = () => {
-    // Each generated drawing gives 10 coins
-    setCoins(prev => prev + 10);
-    showCorrectAnswerFeedback(10, false);
-
-    if (currentPrompt < prompts.length - 1) {
-      setTimeout(() => setCurrentPrompt(prev => prev + 1), 500);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentPrompt(0);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
-    resetFeedback();
+    setFinalScore(0);
   };
 
+  const getCurrentQuestion = () => questions[currentQuestion];
+
   const handleNext = () => {
-    navigate("/student/ai-for-all/teen/online-safety-quiz"); // Update with actual next game path
+    navigate("/student/ai-for-all/teen/online-safety-quiz");
   };
 
   return (
     <GameShell
       title="AI Artist Simulation"
-      subtitle={`Prompt ${currentPrompt + 1} of ${prompts.length}`}
+      subtitle={showResult ? "Simulation Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult}
-      showGameOver={showResult}
+      showGameOver={showResult && finalScore >= 3}
       score={coins}
       gameId="ai-teen-41"
       gameType="ai"
-      totalLevels={20}
-      currentLevel={41}
-      showConfetti={showResult}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       backPath="/games/ai-for-all/teens"
-    
-      maxScore={20} // Max score is total number of questions (all correct)
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">🎨</div>
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">
-              What should AI draw?
-            </h2>
-
-            <div className="bg-gradient-to-br from-pink-500/30 to-purple-500/30 rounded-xl p-12 mb-6">
-              <p className="text-4xl text-white font-bold text-center">{currentPromptData.text}</p>
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-4 md:mb-6 text-center">Understanding AI Art Generation</h3>
+              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
+                <p className="text-base md:text-lg lg:text-xl font-semibold text-white text-center">"{getCurrentQuestion().text}"</p>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                  >
+                    <div className="flex items-start">
+                      <div className="text-2xl md:text-3xl mr-3">{option.emoji}</div>
+                      <div>
+                        <h5 className="font-bold text-white text-sm md:text-base mb-1">{option.text}</h5>
+                        <p className="text-white/80 text-xs md:text-sm">{option.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <button
-              onClick={handleGenerate}
-              className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90 transition"
-            >
-              Generate Drawing 🎨
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">🎨</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              🖌️ AI Artist Completed!
-            </h2>
-            <p className="text-white/90 text-xl mb-6 text-center">
-              You generated {prompts.length} AI drawings successfully!
-            </p>
-
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm mb-3">
-                💡 Generative AI can create images, art, and content from text prompts. 
-                Each drawing gives you rewards and shows how AI can bring ideas to life!
-              </p>
-            </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned {coins} Coins! 🪙
-            </p>
-
-            <button
-              onClick={handleNext}
-              className="mt-6 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              Next Game ➡️
-            </button>
-
-            <button
-              onClick={handleTryAgain}
-              className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              Try Again 🔁
-            </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Excellent!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand how AI generates art!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  💡 Generative AI can create images, art, and content from text prompts. 
+                  These systems learn from vast datasets to bring creative ideas to life!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  AI art generators use machine learning to create images from text descriptions!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to focus on how AI uses natural language processing to understand prompts and generate art.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

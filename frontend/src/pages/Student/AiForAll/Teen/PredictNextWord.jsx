@@ -1,180 +1,316 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getAiTeenGames } from "../../../../pages/Games/GameCategories/AiForAll/teenGamesData";
 
 const PredictNextWord = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentSentence, setCurrentSentence] = useState(0);
-  const [userAnswer, setUserAnswer] = useState("");
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-teen-5";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
   const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [feedback, setFeedback] = useState("");
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const sentences = [
-    { id: 1, text: "The sun rises in the", correct: "east", alternatives: ["East", "EAST"] },
-    { id: 2, text: "Water boils at 100 degrees", correct: "celsius", alternatives: ["Celsius", "CELSIUS", "centigrade"] },
-    { id: 3, text: "The capital of France is", correct: "paris", alternatives: ["Paris", "PARIS"] },
-    { id: 4, text: "There are 7 days in a", correct: "week", alternatives: ["Week", "WEEK"] },
-    { id: 5, text: "The opposite of hot is", correct: "cold", alternatives: ["Cold", "COLD"] },
-    { id: 6, text: "AI stands for Artificial", correct: "intelligence", alternatives: ["Intelligence", "INTELLIGENCE"] },
-    { id: 7, text: "The brain of a computer is the", correct: "cpu", alternatives: ["CPU", "processor", "Processor"] },
-    { id: 8, text: "Self-driving cars use", correct: "sensors", alternatives: ["Sensors", "SENSORS"] },
-    { id: 9, text: "ChatGPT can generate human-like", correct: "text", alternatives: ["Text", "TEXT", "responses"] },
-    { id: 10, text: "AI learns by finding", correct: "patterns", alternatives: ["Patterns", "PATTERNS"] },
+  const questions = [
+    {
+      id: 1,
+      text: "Complete the sentence: The sun rises in the ___",
+      emoji: "🌅",
+      options: [
+        { 
+          id: 1, 
+          text: "East", 
+          emoji: "➡️", 
+          description: "Correct - The sun rises in the east",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "West", 
+          emoji: "⬅️", 
+          description: "Incorrect - The sun sets in the west",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "North", 
+          emoji: "⬆️", 
+          description: "Incorrect - Not the direction of sunrise",
+          isCorrect: false
+        }
+      ],
+      explanation: "East! The sun always rises in the east due to Earth's rotation. AI language models learn these factual patterns from vast amounts of text data, allowing them to predict common phrases and factual information."
+    },
+    {
+      id: 2,
+      text: "Complete the sentence: Water boils at 100 degrees ___",
+      emoji: "💧",
+      options: [
+        { 
+          id: 1, 
+          text: "Celsius", 
+          emoji: "🌡️", 
+          description: "Correct - Standard boiling point measurement",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "Fahrenheit", 
+          emoji: "🔥", 
+          description: "Incorrect - That would be 212°F",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Kelvin", 
+          emoji: "❄️", 
+          description: "Incorrect - That would be 373K",
+          isCorrect: false
+        }
+      ],
+      explanation: "Celsius! At sea level, water boils at 100°C. AI models trained on scientific texts learn these specific facts and can predict them accurately. This demonstrates how AI can understand and reproduce factual knowledge."
+    },
+    {
+      id: 3,
+      text: "Complete the sentence: The capital of France is ___",
+      emoji: "🇫🇷",
+      options: [
+        { 
+          id: 1, 
+          text: "Paris", 
+          emoji: "🗼", 
+          description: "Correct - Paris is France's capital",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "London", 
+          emoji: "🇬🇧", 
+          description: "Incorrect - That's England's capital",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Berlin", 
+          emoji: "🇩🇪", 
+          description: "Incorrect - That's Germany's capital",
+          isCorrect: false
+        }
+      ],
+      explanation: "Paris! AI language models learn geographical facts from training data, allowing them to correctly predict country-capital relationships. This shows how AI can store and recall factual information like a vast encyclopedia."
+    },
+    {
+      id: 4,
+      text: "Complete the sentence: There are 7 days in a ___",
+      emoji: "📅",
+      options: [
+        { 
+          id: 1, 
+          text: "Week", 
+          emoji: "📆", 
+          description: "Correct - Standard time measurement",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "Month", 
+          emoji: "🗓️", 
+          description: "Incorrect - Months have 28-31 days",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Year", 
+          emoji: "🗓", 
+          description: "Incorrect - Years have 365 days",
+          isCorrect: false
+        }
+      ],
+      explanation: "Week! This is a fundamental time concept that AI learns from common text patterns. Language models recognize these standard measurements and can predict them because they appear frequently in training data."
+    },
+    {
+      id: 5,
+      text: "How do AI language models predict the next word?",
+      emoji: "🤖",
+      options: [
+        { 
+          id: 1, 
+          text: "Pattern recognition", 
+          emoji: "🧩", 
+          description: "Correct - AI identifies text patterns",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "Random guessing", 
+          emoji: "🎲", 
+          description: "Incorrect - AI uses data-driven approaches",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Human input", 
+          emoji: "🧑", 
+          description: "Incorrect - Models work autonomously",
+          isCorrect: false
+        }
+      ],
+      explanation: "Pattern recognition! AI language models analyze billions of text examples to learn common word sequences and relationships. When you type, the AI predicts what word might come next based on these learned patterns, making suggestions feel intuitive and helpful."
+    }
   ];
 
-  const currentSentenceData = sentences[currentSentence];
-
-  const handleSubmit = () => {
-    const answer = userAnswer.trim().toLowerCase();
-    const correctAnswer = currentSentenceData.correct.toLowerCase();
-    const alternatives = currentSentenceData.alternatives.map((a) => a.toLowerCase());
-
-    const isCorrect = answer === correctAnswer || alternatives.includes(answer);
-
-    if (isCorrect) {
-      setScore((prev) => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-      setFeedback("Correct!");
-    } else {
-      setFeedback(`Incorrect. The answer is: ${currentSentenceData.correct}`);
-    }
-
-    setTimeout(() => {
-      if (currentSentence < sentences.length - 1) {
-        setCurrentSentence((prev) => prev + 1);
-        setUserAnswer("");
-        setFeedback("");
-      } else {
-        if ((score + (isCorrect ? 1 : 0)) >= 7) {
-          setCoins(5);
-        }
-        setScore((prev) => prev + (isCorrect ? 1 : 0));
-        setShowResult(true);
-      }
-    }, 1500);
-  };
-
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentSentence(0);
-    setUserAnswer("");
-    setScore(0);
-    setCoins(0);
-    setFeedback("");
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedOption(optionId);
     resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/student/ai-for-all/teen/self-driving-car-reflex");
-  };
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Predict the Next Word"
-      score={coins}
-      subtitle={`Sentence ${currentSentence + 1} of ${sentences.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && score >= 7}
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && score >= 7}
-      
-      gameId="ai-teen-5"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={100}
-      currentLevel={5}
-      showConfetti={showResult && score >= 7}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/teens"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">
-              Complete the sentence!
-            </h3>
-
-            <div className="bg-blue-500/20 rounded-lg p-6 mb-6">
-              <p className="text-white text-2xl font-semibold text-center mb-4">
-                {currentSentenceData.text} ___
-              </p>
-            </div>
-
-            <input
-              type="text"
-              value={userAnswer}
-              onChange={(e) => setUserAnswer(e.target.value)}
-              onKeyPress={(e) =>
-                e.key === "Enter" && userAnswer.trim() && handleSubmit()
-              }
-              placeholder="Type your answer..."
-              disabled={feedback !== ""}
-              className="w-full px-4 py-3 bg-white/10 border-2 border-white/40 rounded-xl text-white text-lg placeholder-white/50 focus:border-purple-400 focus:outline-none mb-4"
-            />
-
-            {feedback && (
-              <div
-                className={`p-3 rounded-lg mb-4 ${
-                  feedback === "Correct!" ? "bg-green-500/20" : "bg-red-500/20"
-                }`}
-              >
-                <p className="text-white text-center font-semibold">{feedback}</p>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
-            )}
-
-            <button
-              onClick={handleSubmit}
-              disabled={!userAnswer.trim() || feedback !== ""}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                userAnswer.trim() && feedback === ""
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Submit Answer
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {score >= 7 ? "🎉 Prediction Pro!" : "💪 Keep Practicing!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You predicted {score} out of {sentences.length} correctly!
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 This is how AI language models like ChatGPT work! They predict
-                the next word based on billions of learned text patterns.
-              </p>
+              
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <div className="bg-blue-500/20 rounded-lg p-6 mb-6">
+                <p className="text-white text-xl font-semibold text-center">
+                  {currentQuestionData.text}
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {answered && (
+                <div className={`rounded-lg p-4 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white text-center">
+                    {currentQuestionData.explanation}
+                  </p>
+                </div>
+              )}
             </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              {score >= 7
-                ? "You earned 5 Coins! 🪙"
-                : "Get 7 or more correct to earn coins!"}
-            </p>
-            {score < 7 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

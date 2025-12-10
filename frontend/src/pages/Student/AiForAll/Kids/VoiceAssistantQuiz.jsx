@@ -30,14 +30,14 @@ const VoiceAssistantQuiz = () => {
       options: [
         { 
           id: "yes", 
-          text: "Yes, they are AI 🤖", 
+          text: "Yes, they are AI ", 
           emoji: "✅", 
           description: "Siri and Alexa are AI voice assistants that listen, understand, and help us",
           isCorrect: true
         },
         { 
           id: "no", 
-          text: "No, they are not AI ❌", 
+          text: "No, they are not AI ", 
           emoji: "❌", 
           description: "Siri and Alexa are actually AI voice assistants",
           isCorrect: false
@@ -64,14 +64,14 @@ const VoiceAssistantQuiz = () => {
         },
         { 
           id: "echo", 
-          text: "Amazon Echo 🟣", 
+          text: "Amazon Echo ", 
           emoji: "🟣", 
           description: "Alexa is mostly found in Amazon Echo devices - smart speakers",
           isCorrect: true
         },
         { 
           id: "washing", 
-          text: "Washing Machine 🧺", 
+          text: "Washing Machine ", 
           emoji: "🧺", 
           description: "Alexa is in smart speakers, not washing machines",
           isCorrect: false
@@ -91,14 +91,14 @@ const VoiceAssistantQuiz = () => {
         },
         { 
           id: "no", 
-          text: "No, they stay the same always 🚫", 
+          text: "No, they stay the same always ", 
           emoji: "🚫", 
           description: "Voice assistants improve their understanding over time",
           isCorrect: false
         },
         { 
           id: "yes", 
-          text: "Yes, they improve with use 💡", 
+          text: "Yes, they improve with use ", 
           emoji: "💡", 
           description: "Voice assistants use machine learning to improve based on your voice patterns",
           isCorrect: true
@@ -111,21 +111,21 @@ const VoiceAssistantQuiz = () => {
       options: [
         { 
           id: "photoshop", 
-          text: "Photoshop 🎨", 
+          text: "Photoshop ", 
           emoji: "🎨", 
           description: "Photoshop is a design tool, not a voice assistant",
           isCorrect: true
         },
         { 
           id: "siri", 
-          text: "Siri 🍎", 
+          text: "Siri ", 
           emoji: "🍎", 
           description: "Siri is an AI voice assistant",
           isCorrect: false
         },
         { 
           id: "google", 
-          text: "Google Assistant 🔍", 
+          text: "Google Assistant ", 
           emoji: "🔍", 
           description: "Google Assistant is an AI voice assistant",
           isCorrect: false
@@ -145,14 +145,14 @@ const VoiceAssistantQuiz = () => {
         },
         { 
           id: "lights", 
-          text: "Control smart lights 💡", 
+          text: "Control smart lights ", 
           emoji: "💡", 
           description: "Voice assistants can control smart lights",
           isCorrect: false
         },
         { 
           id: "cook", 
-          text: "Cook food 🍳", 
+          text: "Cook food ", 
           emoji: "🍳", 
           description: "Voice assistants can't cook food, but can help with timers and recipes",
           isCorrect: true

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -6,145 +6,326 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const AICreativitySimulation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentExercise, setCurrentExercise] = useState(0);
-  const [userInput, setUserInput] = useState("");
-  const [showResult, setShowResult] = useState(false);
+  
+  const { showCorrectAnswerFeedback } = useGameFeedback();
   const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
-  const exercises = [
+  const questions = [
     {
       id: 1,
-      title: "Poem Generation",
-      emoji: "📝",
-      instruction: "Type a short poem. AI will generate a poem too. Reflect if it's creative."
+      text: "What is a key difference between human and AI creativity?",
+      options: [
+        { 
+          id: "experience", 
+          text: "Personal experiences", 
+          emoji: "👤", 
+          description: "Unique life events shaping creativity",
+          isCorrect: true
+        },
+        { 
+          id: "speed", 
+          text: "Processing speed", 
+          emoji: "⚡", 
+          description: "Rate of generating outputs",
+          isCorrect: false
+        },
+        { 
+          id: "data", 
+          text: "Data availability", 
+          emoji: "💾", 
+          description: "Amount of information accessed",
+          isCorrect: false
+        },
+        { 
+          id: "patterns", 
+          text: "Pattern recognition", 
+          emoji: "🔍", 
+          description: "Identifying recurring structures",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      title: "Story Starter",
-      emoji: "📖",
-      instruction: "Write the first paragraph of a story. Compare it with AI's version."
+      text: "Which approach helps AI generate creative content?",
+      options: [
+        { 
+          id: "training", 
+          text: "Training on diverse datasets", 
+          emoji: "📚", 
+          description: "Learning from varied examples",
+          isCorrect: true
+        },
+        { 
+          id: "rules", 
+          text: "Following strict rules", 
+          emoji: "📏", 
+          description: "Adhering to fixed guidelines",
+          isCorrect: false
+        },
+        { 
+          id: "random", 
+          text: "Pure randomness", 
+          emoji: "🎲", 
+          description: "Completely unpredictable outputs",
+          isCorrect: false
+        },
+        { 
+          id: "copy", 
+          text: "Copying existing works", 
+          emoji: "📋", 
+          description: "Duplicating known content",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      title: "Art Prompt",
-      emoji: "🎨",
-      instruction: "Describe a painting idea. AI generates a similar visual description."
+      text: "What is a limitation of AI in creative fields?",
+      options: [
+        { 
+          id: "originality", 
+          text: "True originality", 
+          emoji: "🆕", 
+          description: "Creating genuinely new concepts",
+          isCorrect: true
+        },
+        { 
+          id: "speed", 
+          text: "Generation speed", 
+          emoji: "⏱️", 
+          description: "Time to produce content",
+          isCorrect: false
+        },
+        { 
+          id: "volume", 
+          text: "Output volume", 
+          emoji: "📊", 
+          description: "Quantity of creations",
+          isCorrect: false
+        },
+        { 
+          id: "format", 
+          text: "Format variety", 
+          emoji: "📁", 
+          description: "Different content types",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      title: "Joke Writing",
-      emoji: "😂",
-      instruction: "Write a short joke. See what AI comes up with. Reflect on humor creativity."
+      text: "How can humans and AI collaborate creatively?",
+      options: [
+        { 
+          id: "partnership", 
+          text: "Partnership approach", 
+          emoji: "🤝", 
+          description: "Working together synergistically",
+          isCorrect: true
+        },
+        { 
+          id: "competition", 
+          text: "Competitive rivalry", 
+          emoji: "⚔️", 
+          description: "Opposing each other",
+          isCorrect: false
+        },
+        { 
+          id: "replacement", 
+          text: "Full replacement", 
+          emoji: "🔄", 
+          description: "AI substituting humans",
+          isCorrect: false
+        },
+        { 
+          id: "isolation", 
+          text: "Working in isolation", 
+          emoji: "🔇", 
+          description: "Independent operations",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      title: "Song Lyrics",
-      emoji: "🎵",
-      instruction: "Write a few lines of song lyrics. Compare with AI-generated lines."
+      text: "What is essential for evaluating AI-generated creative work?",
+      options: [
+        { 
+          id: "criteria", 
+          text: "Clear evaluation criteria", 
+          emoji: "✅", 
+          description: "Defined standards for assessment",
+          isCorrect: true
+        },
+        { 
+          id: "quantity", 
+          text: "High quantity", 
+          emoji: "🔢", 
+          description: "Large volume of outputs",
+          isCorrect: false
+        },
+        { 
+          id: "speed", 
+          text: "Fast production", 
+          emoji: "🏃", 
+          description: "Quick generation times",
+          isCorrect: false
+        },
+        { 
+          id: "automation", 
+          text: "Full automation", 
+          emoji: "🤖", 
+          description: "No human involvement",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const currentData = exercises[currentExercise];
-
-  const handleSubmit = () => {
-    if (userInput.trim() !== "") {
-      showCorrectAnswerFeedback(2, true); // 2 coins per exercise for total 10
-      setCoins(prev => prev + 2);
-      setShowResult(true);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentExercise < exercises.length - 1) {
-      setCurrentExercise(prev => prev + 1);
-      setUserInput("");
-      setShowResult(false);
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      navigate("/student/ai-for-all/teen/empathy-ai-roleplay");
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
   const handleTryAgain = () => {
-    setUserInput("");
     setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
-    setCurrentExercise(0);
-    resetFeedback();
+    setFinalScore(0);
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
+
+  const handleNext = () => {
+    navigate("/student/ai-for-all/teen/empathy-ai-roleplay");
   };
 
   return (
     <GameShell
       title="AI & Creativity Simulation"
-      subtitle={`Exercise ${currentExercise + 1} of ${exercises.length}`}
+      subtitle={showResult ? "Simulation Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult}
-      showGameOver={showResult && currentExercise === exercises.length - 1}
+      showGameOver={showResult && finalScore >= 3}
       score={coins}
       gameId="ai-teen-20"
       gameType="ai"
-      totalLevels={20}
-      currentLevel={20}
-      showConfetti={showResult}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       backPath="/games/ai-for-all/teens"
-    
-      maxScore={20} // Max score is total number of questions (all correct)
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">{currentData.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{currentData.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg text-center">{currentData.instruction}</p>
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-4 md:mb-6 text-center">Understanding AI & Human Creativity</h3>
+              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
+                <p className="text-base md:text-lg lg:text-xl font-semibold text-white text-center">"{getCurrentQuestion().text}"</p>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                  >
+                    <div className="flex items-start">
+                      <div className="text-2xl md:text-3xl mr-3">{option.emoji}</div>
+                      <div>
+                        <h5 className="font-bold text-white text-sm md:text-base mb-1">{option.text}</h5>
+                        <p className="text-white/80 text-xs md:text-sm">{option.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <textarea
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              placeholder="Type your creative input here..."
-              className="w-full p-4 rounded-lg bg-white/20 text-white placeholder-white/70 mb-4 resize-none h-32 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-
-            <button
-              onClick={handleSubmit}
-              disabled={userInput.trim() === ""}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                userInput.trim()
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Submit & Reflect
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">{currentData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">Reflection Time!</h2>
-            
-            <div className="bg-green-500/20 rounded-lg p-5 mb-4">
-              <p className="text-white text-center">
-                You explored creativity! Compare your input with AI’s suggestions and reflect on what was uniquely human.
-              </p>
-            </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned 2 Coins! 🪙
-            </p>
-
-            <button
-              onClick={handleNext}
-              className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              Next Exercise
-            </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Creative Mastery!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand the relationship between AI and human creativity!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  💡 AI can assist with creative tasks, but human experiences, emotions, and original thinking remain uniquely valuable. 
+                  The future lies in human-AI creative collaboration!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Exploring!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  AI can assist with creative tasks, but human experiences and original thinking are uniquely valuable!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to focus on how humans and AI can work together creatively.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -33,21 +33,21 @@ const SmartHomeLightsGame = () => {
       options: [
         { 
           id: "ai", 
-          text: "AI sensors detected movement 🤖", 
+          text: "AI sensors detected movement ", 
           emoji: "📡", 
           description: "Motion sensors connected to AI detect your presence and automatically turn on lights.",
           isCorrect: true
         },
         { 
           id: "magic", 
-          text: "Magic spell ✨", 
+          text: "Magic spell ", 
           emoji: "🪄", 
           description: "While magic would be cool, smart homes use technology, not magic!",
           isCorrect: false
         },
         { 
           id: "person", 
-          text: "Someone hiding and switching lights 🧍", 
+          text: "Someone hiding and switching lights ", 
           emoji: "🧍", 
           description: "Smart homes work automatically without needing someone to manually operate switches.",
           isCorrect: false
@@ -60,21 +60,21 @@ const SmartHomeLightsGame = () => {
       options: [
         { 
           id: "ghost", 
-          text: "Ghost in the room 👻", 
+          text: "Ghost in the room ", 
           emoji: "👻", 
           description: "Smart homes use technology, not supernatural forces!",
           isCorrect: false
         },
         { 
           id: "ai", 
-          text: "AI learns your comfort pattern 🌡️", 
+          text: "AI learns your comfort pattern ", 
           emoji: "🌡️", 
           description: "AI analyzes when you're usually home and what temperatures you prefer.",
           isCorrect: true
         },
         { 
           id: "random", 
-          text: "It guesses randomly 🎲", 
+          text: "It guesses randomly ", 
           emoji: "🎲", 
           description: "AI uses data about your habits, not random guessing.",
           isCorrect: false
@@ -87,21 +87,21 @@ const SmartHomeLightsGame = () => {
       options: [
         { 
           id: "voice", 
-          text: "AI Voice Recognition 🎤", 
+          text: "AI Voice Recognition ", 
           emoji: "🎤", 
           description: "Natural language processing helps devices understand voice commands.",
           isCorrect: true
         },
         { 
           id: "telepathy", 
-          text: "Telepathy 🧠", 
+          text: "Telepathy ", 
           emoji: "🧠", 
           description: "Devices use microphones and AI, not mind reading!",
           isCorrect: false
         },
         { 
           id: "luck", 
-          text: "Pure luck 🍀", 
+          text: "Pure luck ", 
           emoji: "🍀", 
           description: "Devices use sophisticated AI algorithms, not chance.",
           isCorrect: false
@@ -114,21 +114,21 @@ const SmartHomeLightsGame = () => {
       options: [
         { 
           id: "person", 
-          text: "A person inside checking 🧍‍♂️", 
+          text: "A person inside checking ", 
           emoji: "🧍", 
           description: "Smart fridges work automatically without human intervention.",
           isCorrect: false
         },
         { 
           id: "guess", 
-          text: "It makes wild guesses 🔮", 
+          text: "It makes wild guesses ", 
           emoji: "🔮", 
           description: "AI uses actual sensor data, not guesses.",
           isCorrect: false
         },
         { 
           id: "sensors", 
-          text: "AI + Smart Sensors 🧠", 
+          text: "AI + Smart Sensors ", 
           emoji: "🧠", 
           description: "Cameras and weight sensors connected to AI track inventory levels.",
           isCorrect: true
@@ -141,21 +141,21 @@ const SmartHomeLightsGame = () => {
       options: [
         { 
           id: "facial", 
-          text: "AI Facial Recognition 📸", 
+          text: "AI Facial Recognition ", 
           emoji: "📸", 
           description: "Computer vision algorithms identify known faces and detect new visitors.",
           isCorrect: true
         },
         { 
           id: "luck", 
-          text: "By luck 🍀", 
+          text: "By luck ", 
           emoji: "🍀", 
           description: "AI uses advanced computer vision technology, not chance.",
           isCorrect: false
         },
         { 
           id: "magic", 
-          text: "Magic mirror 🪞", 
+          text: "Magic mirror ", 
           emoji: "🪞", 
           description: "Smart cameras use technology, not fairy tales!",
           isCorrect: false

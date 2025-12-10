@@ -2,173 +2,240 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getAiTeenGames } from '../../../../pages/Games/GameCategories/AiForAll/teenGamesData';
 
 const NewsRecommendationGame = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentStep, setCurrentStep] = useState(0);
-  const [score, setScore] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-teen-37");
+  const gameId = gameData?.id || "ai-teen-37";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
+    useGameFeedback();
 
-  // 5 scenario questions (each with AI recommendations)
   const questions = [
     {
       id: 1,
-      title: "You select 🧠 ‘Technology’ as your favorite topic.",
-      options: [
-        { label: "AI News 🤖", isCorrect: true },
-        { label: "Sports Updates ⚽", isCorrect: false },
-        { label: "Cooking Recipes 🍳", isCorrect: false },
-        { label: "Fashion Trends 👗", isCorrect: false },
+      title: "News Recommendation",
+      emoji: "📰",
+      question: "What technology suggests personalized news articles?",
+      choices: [
+        { id: 1, text: "Recommender AI", emoji: "🤖", isCorrect: true },
+        { id: 2, text: "Manual curation", emoji: "✋", isCorrect: false },
+        { id: 3, text: "Random selection", emoji: "🎲", isCorrect: false },
       ],
     },
     {
       id: 2,
-      title: "You choose 🎮 ‘Gaming’ category.",
-      options: [
-        { label: "Game Launch News 🕹️", isCorrect: true },
-        { label: "Stock Market 📈", isCorrect: false },
-        { label: "Gardening Tips 🌿", isCorrect: false },
-        { label: "Political News 🏛️", isCorrect: false },
+      title: "Data Analysis",
+      emoji: "📊",
+      question: "What does AI analyze to recommend news articles?",
+      choices: [
+        { id: 1, text: "Reading habits", emoji: "👀", isCorrect: true },
+        { id: 2, text: "Publication date", emoji: "📅", isCorrect: false },
+        { id: 3, text: "Article length", emoji: "📏", isCorrect: false },
       ],
     },
     {
       id: 3,
-      title: "You click on 🌍 ‘Environment’ topic.",
-      options: [
-        { label: "Climate Change Articles 🌦️", isCorrect: true },
-        { label: "Celebrity Gossip 💃", isCorrect: false },
-        { label: "Car Reviews 🚗", isCorrect: false },
-        { label: "Movie Ratings 🎬", isCorrect: false },
+      title: "Algorithm Goal",
+      emoji: "⚙️",
+      question: "Why do news platforms use recommendation algorithms?",
+      choices: [
+        { id: 1, text: "Increase engagement", emoji: "📈", isCorrect: true },
+        { id: 2, text: "Reduce writers", emoji: "✂️", isCorrect: false },
+        { id: 3, text: "Save storage", emoji: "💾", isCorrect: false },
       ],
     },
     {
       id: 4,
-      title: "You prefer 📚 ‘Education’ stories.",
-      options: [
-        { label: "Learning Apps News 📱", isCorrect: true },
-        { label: "Football Scores ⚽", isCorrect: false },
-        { label: "Makeup Tutorials 💄", isCorrect: false },
-        { label: "Music Albums 🎵", isCorrect: false },
+      title: "Content Diversity",
+      emoji: "🌍",
+      question: "What's a challenge with news recommendation systems?",
+      choices: [
+        { id: 1, text: "Echo chambers", emoji: "🌀", isCorrect: true },
+        { id: 2, text: "Too many topics", emoji: "🤯", isCorrect: false },
+        { id: 3, text: "Slow loading", emoji: "🐢", isCorrect: false },
       ],
     },
     {
       id: 5,
-      title: "You select 🚀 ‘Space Exploration’.",
-      options: [
-        { label: "NASA Discoveries 🌌", isCorrect: true },
-        { label: "Cooking Blogs 🍰", isCorrect: false },
-        { label: "Video Game Reviews 🎮", isCorrect: false },
-        { label: "Fashion Week 👠", isCorrect: false },
+      title: "User Control",
+      emoji: "🎛️",
+      question: "How can users improve their news recommendations?",
+      choices: [
+        { id: 1, text: "Rate articles", emoji: "⭐", isCorrect: true },
+        { id: 2, text: "Share on social", emoji: "📤", isCorrect: false },
+        { id: 3, text: "Read faster", emoji: "⚡", isCorrect: false },
       ],
     },
   ];
 
-  const currentQuestion = questions[currentStep];
+  const getCurrentQuestion = () => questions[currentQuestion];
 
-  const handleChoice = (isCorrect) => {
+  const handleChoice = (choiceId) => {
+    const currentQ = getCurrentQuestion();
+    const choice = currentQ.choices.find((c) => c.id === choiceId);
+    const isCorrect = choice.isCorrect;
+    
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: choiceId,
+      isCorrect: isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
     if (isCorrect) {
-      setScore((prev) => prev + 1);
-      setCoins((prev) => prev + 1); // Each correct choice = 1 coin
-      showCorrectAnswerFeedback(1, false);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    if (currentStep < questions.length - 1) {
-      setTimeout(() => setCurrentStep((prev) => prev + 1), 400);
+    
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setShowResult(true);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentStep(0);
-    setScore(0);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
   const handleNext = () => {
-    navigate("/student/ai-for-all/teen/self-driving-car-reflexx"); // next path
+    // Find next game path
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        if (nextGame) {
+          navigate(nextGame.path);
+        } else {
+          navigate("/student/ai-for-all/teen/self-driving-car-reflexx");
+        }
+      } else {
+        navigate("/student/ai-for-all/teen/self-driving-car-reflexx");
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+      navigate("/student/ai-for-all/teen/self-driving-car-reflexx");
+    }
   };
 
-  const accuracy = Math.round((score / questions.length) * 100);
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
-      title="News Recommendation Game 📰"
-      score={coins}
-      subtitle={`Question ${currentStep + 1} of ${questions.length}`}
+      title="News Recommendation Game"
+      subtitle={showResult ? "Game Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
-      
-      gameId="ai-teen-37"
+      nextEnabled={showResult && finalScore >= 3}
+      showGameOver={showResult && finalScore >= 3}
+      score={coins}
+      gameId={gameId}
       gameType="ai"
-      totalLevels={40}
-      currentLevel={37}
-      showConfetti={showResult && accuracy >= 70}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/teens"
-    >
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">
-              {currentQuestion.title}
-            </h3>
-
-            <div className="grid grid-cols-2 gap-4">
-              {currentQuestion.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleChoice(option.isCorrect)}
-                  className="bg-blue-500/30 hover:bg-blue-500/50 border border-blue-300 rounded-xl p-6 text-white font-semibold text-lg transition-all transform hover:scale-105"
-                >
-                  {option.label}
-                </button>
-              ))}
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <div className="text-6xl mb-3 text-center">{currentQuestionData.emoji}</div>
+              <h2 className="text-white text-xl font-bold mb-4 text-center">
+                {currentQuestionData.title}
+              </h2>
+              <p className="text-white text-lg mb-6 text-center">
+                "{currentQuestionData.question}"
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.choices.map((choice) => (
+                  <button
+                    key={choice.id}
+                    onClick={() => handleChoice(choice.id)}
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{choice.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{choice.text}</h3>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {accuracy >= 70 ? "🎯 News Guru!" : "📰 Keep Exploring!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You got {score} out of {questions.length} right! ({accuracy}%)
-            </p>
-
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 AI recommends personalized news based on your interests — like Technology or Space! The more it learns, the better it suggests what you’ll enjoy reading.
-              </p>
-            </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned {coins} Coins! 🪙
-            </p>
-
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+        ) : showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">News Recommendation Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {questions.length} correctly! ({Math.round((finalScore / questions.length) * 100)}%)
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  💡 AI recommends personalized news based on your interests. The more it learns, the better it suggests what you'll enjoy reading!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {questions.length} correctly. ({Math.round((finalScore / questions.length) * 100)}%)
+                  Keep practicing to learn more about news recommendation systems!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  💡 AI recommends personalized news based on your interests. The more it learns, the better it suggests what you'll enjoy reading!
+                </p>
+              </div>
             )}
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

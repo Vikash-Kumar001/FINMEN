@@ -1,152 +1,314 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getAiTeenGames } from "../../../../pages/Games/GameCategories/AiForAll/teenGamesData";
 
 const AIVsToolsQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
-  const question = {
-    text: "Is a microwave an AI system?",
-    emoji: "🍲",
-    choices: [
-      { id: 1, text: "Yes", emoji: "✓", isCorrect: false },
-      { id: 2, text: "No", emoji: "✗", isCorrect: true }
-    ]
-  };
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = question.choices.find(c => c.id === selectedChoice);
-    
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-teen-23";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
     }
     
-    setShowFeedback(true);
-  };
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
+  const questions = [
+    {
+      id: 1,
+      text: "Is a microwave an AI system?",
+      emoji: "🍲",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✓", 
+          description: "Incorrect - Microwaves follow pre-set instructions, not AI",
+          isCorrect: false
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "✗", 
+          description: "Correct - Microwaves are automated tools, not AI systems",
+          isCorrect: true
+        },
+        { 
+          id: 3, 
+          text: "Sometimes", 
+          emoji: "🤔", 
+          description: "Incorrect - Microwaves are consistently non-AI tools",
+          isCorrect: false
+        }
+      ],
+      explanation: "Correct! A microwave is a tool, not AI. AI involves systems that learn, adapt, and make intelligent decisions, unlike simple automated devices. 🤖❌"
+    },
+    {
+      id: 2,
+      text: "Is a calculator an AI system?",
+      emoji: "🧮",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✓", 
+          description: "Incorrect - Calculators follow fixed mathematical rules",
+          isCorrect: false
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "✗", 
+          description: "Correct - Calculators are deterministic tools, not AI",
+          isCorrect: true
+        },
+        { 
+          id: 3, 
+          text: "Sometimes", 
+          emoji: "🤔", 
+          description: "Incorrect - Calculators consistently operate without AI",
+          isCorrect: false
+        }
+      ],
+      explanation: "Right! A calculator follows fixed mathematical rules and doesn't learn or adapt, so it's not AI. AI systems can improve their performance over time. 🧮"
+    },
+    {
+      id: 3,
+      text: "Is Siri an AI system?",
+      emoji: "📱",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✓", 
+          description: "Correct - Siri uses natural language processing, a form of AI",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "✗", 
+          description: "Incorrect - Siri does use AI to understand and respond",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Sometimes", 
+          emoji: "🤔", 
+          description: "Incorrect - Siri consistently uses AI technology",
+          isCorrect: false
+        }
+      ],
+      explanation: "Exactly! Siri uses natural language processing and machine learning to understand and respond to voice commands, making it an AI system. 🗣️"
+    },
+    {
+      id: 4,
+      text: "Is a thermostat an AI system?",
+      emoji: "🌡️",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✓", 
+          description: "Incorrect - Traditional thermostats follow simple rules",
+          isCorrect: false
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "✗", 
+          description: "Correct - Basic thermostats are rule-based, not AI",
+          isCorrect: true
+        },
+        { 
+          id: 3, 
+          text: "Sometimes", 
+          emoji: "🤔", 
+          description: "Partially correct - Smart thermostats may use AI, but basic ones don't",
+          isCorrect: false
+        }
+      ],
+      explanation: "Correct! A basic thermostat simply follows programmed rules to control temperature. While smart thermostats may use AI, traditional ones are not AI systems. 🌡️"
+    },
+    {
+      id: 5,
+      text: "Is a self-driving car an AI system?",
+      emoji: "🚗",
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✓", 
+          description: "Correct - Autonomous vehicles use multiple AI technologies",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "✗", 
+          description: "Incorrect - Self-driving cars heavily rely on AI",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Sometimes", 
+          emoji: "🤔", 
+          description: "Incorrect - Self-driving capability requires consistent AI use",
+          isCorrect: false
+        }
+      ],
+      explanation: "Absolutely! Self-driving cars use computer vision, sensor fusion, and machine learning to navigate roads, making them complex AI systems. 🚗"
+    }
+  ];
+
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedOption(optionId);
     resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/student/ai-for-all/teen/future-of-ai-reflection"); // Update with next game path
-  };
-
-  const selectedChoiceData = question.choices.find(c => c.id === selectedChoice);
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="AI vs Tools Quiz"
-      score={coins}
-      subtitle="Separating AI from Automation"
-      onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showFeedback && coins > 0}
-      
-      gameId="ai-teen-23"
-      gameType="quiz"
-      totalLevels={20}
-      currentLevel={23}
-      showConfetti={showFeedback && coins > 0}
+      gameId={gameId}
+      gameType="ai"
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/teens"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-6 text-center">{question.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-8">
-              <p className="text-white text-2xl leading-relaxed text-center font-semibold">
-                {question.text}
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {question.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`border-3 rounded-xl p-10 transition-all ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="text-6xl mb-2">{choice.emoji}</div>
-                  <div className="text-white font-bold text-3xl">{choice.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Answer
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">{coins > 0 ? "🌟" : "❌"}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {coins > 0 ? "Correct!" : "Not Quite..."}
-            </h2>
-            
-            {coins > 0 ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {answered && (
+                <div className={`rounded-lg p-4 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
                   <p className="text-white text-center">
-                    Correct! A microwave is a tool, not AI. AI involves systems that learn, adapt, and make intelligent decisions, unlike simple automated devices. 🤖❌
+                    {currentQuestionData.explanation}
                   </p>
                 </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Remember: Tools like microwaves are automated but not AI. AI learns and adapts, while tools follow pre-set instructions. 🔧
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
+              )}
+            </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

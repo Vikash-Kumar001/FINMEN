@@ -1,155 +1,337 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { getGameDataById } from '../../../../utils/getGameData';
+import { getAiTeenGames } from '../../../../pages/Games/GameCategories/AiForAll/teenGamesData';
 
 const AIInGamingStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
-  const story = {
-    title: "Smart Enemy AI",
-    emoji: "🎮",
-    situation: "You're playing a video game. The enemy characters move strategically, hide behind cover, and adapt to your tactics. Who controls these smart enemies?",
-    choices: [
-      { id: 1, text: "Artificial Intelligence", emoji: "🤖", isCorrect: true },
-      { id: 2, text: "Another human player online", emoji: "👤", isCorrect: false },
-      { id: 3, text: "The game developer controlling them", emoji: "👨‍💻", isCorrect: false }
-    ]
-  };
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = story.choices.find(c => c.id === selectedChoice);
-    
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-teen-10";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
     }
     
-    setShowFeedback(true);
+    // Fallback: find next game from game data
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : "/student/ai-for-all/teen/pattern-music-reflex",
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: "/student/ai-for-all/teen/pattern-music-reflex", nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+
+  const questions = [
+    {
+      id: 1,
+      text: "You're playing a video game. The enemy characters move strategically, hide behind cover, and adapt to your tactics. Who controls these smart enemies?",
+      options: [
+        { 
+          id: "ai", 
+          text: "Artificial Intelligence", 
+          emoji: "🤖", 
+          description: "Modern games use sophisticated AI that can learn from your playing style and adapt strategies",
+          isCorrect: true
+        },
+        { 
+          id: "human", 
+          text: "Another human player online", 
+          emoji: "👤", 
+          description: "While humans can play online, the strategic enemies are controlled by AI systems",
+          isCorrect: false
+        },
+        { 
+          id: "developer", 
+          text: "The game developer controlling them", 
+          emoji: "👨‍💻", 
+          description: "Developers create the AI systems, but the AI itself makes decisions in real-time",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "Which of these is NOT typically controlled by AI in video games?",
+      options: [
+        { 
+          id: "npc", 
+          text: "Non-Player Characters (NPCs)", 
+          emoji: "👥", 
+          description: "NPCs like shopkeepers, quest givers, and townspeople are usually controlled by AI",
+          isCorrect: false
+        },
+        { 
+          id: "environment", 
+          text: "Weather and environmental effects", 
+          emoji: "🌦️", 
+          description: "Dynamic weather and environmental changes are often controlled by AI systems",
+          isCorrect: false
+        },
+        { 
+          id: "player", 
+          text: "Human player characters", 
+          emoji: "🎮", 
+          description: "Human players control their own characters, not AI",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "What makes modern game AI more challenging than older game AI?",
+      options: [
+        { 
+          id: "predictable", 
+          text: "It follows predictable patterns", 
+          emoji: "🔁", 
+          description: "Older AI was more predictable, making it easier to exploit",
+          isCorrect: false
+        },
+        { 
+          id: "adaptive", 
+          text: "It adapts to your play style", 
+          emoji: "🔄", 
+          description: "Modern AI can learn from your actions and adjust difficulty accordingly",
+          isCorrect: true
+        },
+        { 
+          id: "simple", 
+          text: "It uses simpler algorithms", 
+          emoji: "⚙️", 
+          description: "Modern AI uses more complex algorithms than older games",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "In racing games, what does AI typically control?",
+      options: [
+        { 
+          id: "opponents", 
+          text: "Opponent drivers", 
+          emoji: "🏎️", 
+          description: "AI controls opponent racers to provide challenging competition",
+          isCorrect: true
+        },
+        { 
+          id: "track", 
+          text: "The physical track layout", 
+          emoji: "🛣️", 
+          description: "Track layouts are designed by developers, not controlled by AI in real-time",
+          isCorrect: false
+        },
+        { 
+          id: "playercar", 
+          text: "Your car's steering", 
+          emoji: "方向盘", 
+          description: "Players control their own vehicles, not AI",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "Why do game developers use AI for opponents instead of human players?",
+      options: [
+        { 
+          id: "cost", 
+          text: "It's cheaper than hiring actors", 
+          emoji: "💰", 
+          description: "While cost is a factor, the main reasons are availability and consistency",
+          isCorrect: false
+        },
+        { 
+          id: "availability", 
+          text: "AI is always available and consistent", 
+          emoji: "24/7", 
+          description: "AI opponents can play anytime without needing to schedule human players",
+          isCorrect: true
+        },
+        { 
+          id: "simple", 
+          text: "AI is simpler to program", 
+          emoji: "💻", 
+          description: "Modern game AI is actually quite complex to develop",
+          isCorrect: false
+        }
+      ]
+    }
+  ];
+
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/student/ai-for-all/teen/pattern-music-reflex");
-  };
+  const getCurrentQuestion = () => questions[currentQuestion];
 
-  const selectedChoiceData = story.choices.find(c => c.id === selectedChoice);
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 AI Gaming Story game completed! Score: ${finalScore}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, questions.length]);
 
   return (
     <GameShell
       title="AI in Gaming Story"
       score={coins}
-      subtitle="AI in Entertainment"
-      onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showFeedback && coins > 0}
-      
-      gameId="ai-teen-10"
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
       gameType="ai"
-      totalLevels={20}
-      currentLevel={10}
-      showConfetti={showFeedback && coins > 0}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/teens"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-4 text-center">{story.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{story.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">{story.situation}</p>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="space-y-3 mb-6">
-              {story.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "🎮 Gaming Expert!" : "Try Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-            
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Correct! Game AI (NPC AI) controls non-player characters. Modern games use sophisticated 
-                    AI that can learn from your playing style and adapt strategies to make gameplay challenging!
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎮</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Gaming Expert!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand how AI powers modern gaming experiences!
                 </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    AI controls the enemies! Game developers program AI systems that make NPCs (Non-Player Characters) 
-                    act intelligently without human control. Advanced game AI can even learn and adapt!
-                  </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
                 </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  You know that game AI controls non-player characters and can learn from your playing style to make gameplay challenging!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, AI controls the enemies in games, not human players!
+                </p>
                 <button
                   onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
                 >
                   Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows how AI creates intelligent gaming experiences.
+                </p>
+              </div>
             )}
           </div>
         )}
@@ -159,4 +341,3 @@ const AIInGamingStory = () => {
 };
 
 export default AIInGamingStory;
-

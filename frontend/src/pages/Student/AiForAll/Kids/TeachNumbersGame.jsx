@@ -32,21 +32,21 @@ const TeachNumbersGame = () => {
       options: [
         { 
           id: "examples", 
-          text: "Show many examples of 1, 2, and 3 📚", 
+          text: "Show many examples of 1, 2, and 3 ", 
           emoji: "📚", 
           description: "Showing various examples helps robots understand the concept of numbers.",
           isCorrect: true
         },
         { 
           id: "once", 
-          text: "Show each number only once 📷", 
+          text: "Show each number only once ", 
           emoji: "📷", 
           description: "One example isn't enough for AI to learn patterns reliably.",
           isCorrect: false
         },
         { 
           id: "mixed", 
-          text: "Mix up the numbers randomly 🎲", 
+          text: "Mix up the numbers randomly ", 
           emoji: "🎲", 
           description: "Random mixing without structure confuses AI learning.",
           isCorrect: false
@@ -59,21 +59,21 @@ const TeachNumbersGame = () => {
       options: [
         { 
           id: "same", 
-          text: "Always show 2 as the same picture 🖼️", 
+          text: "Always show 2 as the same picture ", 
           emoji: "🖼️", 
           description: "Same representation limits AI's ability to recognize 2 in different contexts.",
           isCorrect: false
         },
         { 
           id: "different", 
-          text: "Show 2 in different styles (dots, fingers, blocks) 🔄", 
+          text: "Show 2 in different styles (dots, fingers, blocks) ", 
           emoji: "🔄", 
           description: "Various representations help AI recognize the concept regardless of appearance.",
           isCorrect: true
         },
         { 
           id: "fast", 
-          text: "Flash images of 2 very quickly ⚡", 
+          text: "Flash images of 2 very quickly ", 
           emoji: "⚡", 
           description: "Speed without clarity doesn't help AI learn effectively.",
           isCorrect: false
@@ -86,21 +86,21 @@ const TeachNumbersGame = () => {
       options: [
         { 
           id: "learn", 
-          text: "So AI learns the right associations ✅", 
+          text: "So AI learns the right associations ", 
           emoji: "✅", 
           description: "Correct labels help AI form accurate connections between symbols and quantities.",
           isCorrect: true
         },
         { 
           id: "any", 
-          text: "Any label works the same 🤷", 
+          text: "Any label works the same ", 
           emoji: "🤷", 
           description: "Incorrect labels mislead AI and cause it to make mistakes.",
           isCorrect: false
         },
         { 
           id: "skip", 
-          text: "We can skip labeling to save time ⏭️", 
+          text: "We can skip labeling to save time ⏭", 
           emoji: "⏭️", 
           description: "Without labels, AI can't learn to recognize numbers at all.",
           isCorrect: false
@@ -113,21 +113,21 @@ const TeachNumbersGame = () => {
       options: [
         { 
           id: "separate", 
-          text: "Teach numbers completely separately 🚫", 
+          text: "Teach numbers completely separately ", 
           emoji: "🚫", 
           description: "Separate teaching prevents AI from understanding numerical relationships.",
           isCorrect: false
         },
         { 
           id: "words", 
-          text: "Just tell it verbally without visuals 🗣️", 
+          text: "Just tell it verbally without visuals ", 
           emoji: "🗣️", 
           description: "Visual examples are crucial for AI to understand abstract concepts like quantity.",
           isCorrect: false
         },
         { 
           id: "compare", 
-          text: "Show groups of items to compare 📊", 
+          text: "Show groups of items to compare ", 
           emoji: "📊", 
           description: "Visual comparison helps AI grasp numerical relationships and quantities.",
           isCorrect: true
@@ -140,21 +140,21 @@ const TeachNumbersGame = () => {
       options: [
         { 
           id: "regular", 
-          text: "Practice regularly with new examples 📅", 
+          text: "Practice regularly with new examples ", 
           emoji: "📅", 
           description: "Regular practice with variety reinforces learning and improves AI performance.",
           isCorrect: true
         },
         { 
           id: "once", 
-          text: "Teach once and never repeat 🛑", 
+          text: "Teach once and never repeat ", 
           emoji: "🛑", 
           description: "Single exposure isn't enough for AI to retain and generalize knowledge.",
           isCorrect: false
         },
         { 
           id: "random", 
-          text: "Practice randomly with no pattern 🔀", 
+          text: "Practice randomly with no pattern ", 
           emoji: "🔀", 
           description: "Structured practice is more effective than random repetition.",
           isCorrect: false

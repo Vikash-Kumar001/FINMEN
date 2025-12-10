@@ -10,181 +10,281 @@ const FakeNewsDetector = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "News: ‘Aliens landed today!’ Is this Real or Fake?",
-      emoji: "👽🗞️",
-      choices: [
-        { id: 1, text: "Real", emoji: "✅", isCorrect: false },
-        { id: 2, text: "Fake", emoji: "❌", isCorrect: true },
+      text: "News: 'Aliens landed today!' How can you verify this claim?",
+      options: [
+        { 
+          id: "check", 
+          text: "Check Reliable Sources", 
+          emoji: "🔍", 
+          description: "Cross-reference with trusted news outlets and official statements",
+          isCorrect: true
+        },
+        { 
+          id: "share", 
+          text: "Share Immediately", 
+          emoji: "📤", 
+          description: "Sharing without verification spreads misinformation",
+          isCorrect: false
+        },
+        { 
+          id: "believe", 
+          text: "Believe Headline", 
+          emoji: "💭", 
+          description: "Extraordinary claims require extraordinary evidence",
+          isCorrect: false
+        }
       ],
+      correct: "check"
     },
     {
       id: 2,
-      text: "Headline: ‘Chocolate cures all diseases!’ Real or Fake?",
-      emoji: "🍫📰",
-      choices: [
-        { id: 1, text: "Real", emoji: "✅", isCorrect: false },
-        { id: 2, text: "Fake", emoji: "❌", isCorrect: true },
+      text: "Headline: 'Chocolate cures all diseases!' What should you do?",
+      options: [
+        { 
+          id: "buy", 
+          text: "Buy Chocolate", 
+          emoji: "🛒", 
+          description: "Buying based on false claims wastes money",
+          isCorrect: false
+        },
+        { 
+          id: "research", 
+          text: "Research Scientific Studies", 
+          emoji: "📚", 
+          description: "Look for peer-reviewed research and medical consensus",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore Health Info", 
+          emoji: "🙈", 
+          description: "Ignoring legitimate health information isn't wise",
+          isCorrect: false
+        }
       ],
+      correct: "research"
     },
     {
       id: 3,
-      text: "News: ‘Robot wins a singing competition’ Real or Fake?",
-      emoji: "🤖🎤",
-      choices: [
-        { id: 1, text: "Real", emoji: "✅", isCorrect: false },
-        { id: 2, text: "Fake", emoji: "❌", isCorrect: true },
+      text: "News: 'Robot wins a singing competition' How to spot fake news?",
+      options: [
+        { 
+          id: "facts", 
+          text: "Check Facts & Evidence", 
+          emoji: "✅", 
+          description: "Verify with factual evidence and multiple sources",
+          isCorrect: true
+        },
+        { 
+          id: "click", 
+          text: "Click for Views", 
+          emoji: "👀", 
+          description: "Clickbait headlines often mislead for engagement",
+          isCorrect: false
+        },
+        { 
+          id: "trust", 
+          text: "Trust All Headlines", 
+          emoji: "🙏", 
+          description: "Not all headlines are accurate or truthful",
+          isCorrect: false
+        }
       ],
+      correct: "facts"
     },
     {
       id: 4,
-      text: "Article: ‘Drinking water from TV screen boosts health’ Real or Fake?",
-      emoji: "📺💧",
-      choices: [
-        { id: 1, text: "Real", emoji: "✅", isCorrect: false },
-        { id: 2, text: "Fake", emoji: "❌", isCorrect: true },
+      text: "Article: 'Drinking water from TV screen boosts health' What's your approach?",
+      options: [
+        { 
+          id: "try", 
+          text: "Try the Method", 
+          emoji: "🧪", 
+          description: "Trying unproven methods can be harmful",
+          isCorrect: false
+        },
+        { 
+          id: "dismiss", 
+          text: "Dismiss All Articles", 
+          emoji: "🗑️", 
+          description: "Some articles contain valuable information",
+          isCorrect: false
+        },
+        { 
+          id: "skeptical", 
+          text: "Stay Skeptical", 
+          emoji: "🧐", 
+          description: "Question extraordinary health claims lacking scientific basis",
+          isCorrect: true
+        }
       ],
+      correct: "skeptical"
     },
     {
       id: 5,
-      text: "Headline: ‘Cats learn coding in 2 days’ Real or Fake?",
-      emoji: "🐱💻",
-      choices: [
-        { id: 1, text: "Real", emoji: "✅", isCorrect: false },
-        { id: 2, text: "Fake", emoji: "❌", isCorrect: true },
+      text: "Headline: 'Cats learn coding in 2 days' How to evaluate this?",
+      options: [
+        { 
+          id: "logic", 
+          text: "Apply Critical Thinking", 
+          emoji: "🧠", 
+          description: "Use logic and reasoning to assess plausibility",
+          isCorrect: true
+        },
+        { 
+          id: "excited", 
+          text: "Get Excited", 
+          emoji: "🤩", 
+          description: "Emotional reactions can cloud judgment",
+          isCorrect: false
+        },
+        { 
+          id: "accept", 
+          text: "Accept at Face Value", 
+          emoji: "👍", 
+          description: "Not all claims should be accepted without scrutiny",
+          isCorrect: false
+        }
       ],
-    },
+      correct: "logic"
+    }
   ];
 
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
+  // Function to get options without rotation - keeping actual positions fixed
+  const getRotatedOptions = (options, questionIndex) => {
+    // Return options without any rotation to keep their actual positions fixed
+    return options;
+  };
 
-  const question = questions[currentQuestion];
-  const selectedChoiceData = question.choices.find((c) => c.id === selectedChoice);
-  const isLastQuestion = currentQuestion === questions.length - 1;
+  const currentQuestionData = questions[currentQuestion];
+  const displayOptions = getRotatedOptions(currentQuestionData.options, currentQuestion);
 
   const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
+    const isCorrect = choiceId === currentQuestionData.correct;
 
-  const handleConfirm = () => {
-    const choice = question.choices.find((c) => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, false);
-      setCoins((prev) => prev + 5);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, false);
     }
-    setShowFeedback(true);
-  };
 
-  const handleNext = () => {
-    if (!isLastQuestion) {
-      setCurrentQuestion((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, 300);
     } else {
-      navigate("/student/ai-for-all/kids/cyberbully-story"); // Next game route
+      setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
     resetFeedback();
   };
+
+  const handleNext = () => {
+    navigate("/student/ai-for-all/kids/cyberbully-story"); // Next game route
+  };
+
+  const accuracy = Math.round((score / questions.length) * 100);
 
   return (
     <GameShell
       title="Fake News Detector"
+      score={score}
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showFeedback && selectedChoiceData?.isCorrect}
-      showGameOver={isLastQuestion && showFeedback && selectedChoiceData?.isCorrect}
-      score={coins}
-      gameId={`ai-kids-83-${currentQuestion + 1}`}
-      gameType="ai"
-      totalLevels={100}
-      currentLevel={83 + currentQuestion}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      nextEnabled={showResult && accuracy >= 70}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      flashPoints={() => {}}
-      showAnswerConfetti={() => {}}
+      showGameOver={showResult && accuracy >= 70}
+      
+      gameId="ai-kids-83"
+      gameType="ai"
+      totalLevels={20}
+      currentLevel={83}
+      showConfetti={showResult && accuracy >= 70}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-6 text-center">{question.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-8">
-              <p className="text-white text-2xl leading-relaxed text-center font-semibold">
-                {question.text}
-              </p>
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Points: {score}</span>
+              </div>
+              
+              <div className="text-6xl mb-6 text-center">{currentQuestionData.options[0].emoji}{currentQuestionData.options[1].emoji}</div>
+              
+              <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
+                <p className="text-white text-lg leading-relaxed text-center font-semibold">
+                  {currentQuestionData.text}
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {displayOptions.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {question.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`border-3 rounded-xl p-10 transition-all ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : choice.isCorrect
-                      ? "bg-green-500/20 border-green-400 hover:bg-green-500/30"
-                      : "bg-red-500/20 border-red-400 hover:bg-red-500/30"
-                  }`}
-                >
-                  <div className="text-6xl mb-2">{choice.emoji}</div>
-                  <div className="text-white font-bold text-2xl text-center">{choice.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Answer
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-8xl mb-4 text-center">{selectedChoiceData?.isCorrect ? "🧠✨" : "🤔❌"}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "Smart Detective!" : "Oops! Try Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData?.text}</p>
-
-            {selectedChoiceData?.isCorrect ? (
-              <>
-                <p className="text-yellow-400 text-2xl font-bold mb-4">You earned 5 Coins! 🪙</p>
-                <button
-                  onClick={handleNext}
-                  className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition"
-                >
-                  {isLastQuestion ? "Finish" : "Next Question"}
-                </button>
-              </>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {accuracy >= 70 ? (
+              <div>
+                <div className="text-5xl mb-4">🕵️‍♀️</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Smart Detective!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You detected fake news correctly {score} out of {questions.length} times! ({accuracy}%)
+                  You're becoming a media literacy expert!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Points</span>
+                </div>
+                <p className="text-white/80">
+                  💡 Critical thinking helps you distinguish real news from fake stories!
+                </p>
+              </div>
             ) : (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You detected fake news correctly {score} out of {questions.length} times. ({accuracy}%)
+                  Keep practicing to improve your fact-checking skills!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Think about what reliable sources would say about these claims.
+                </p>
+              </div>
             )}
           </div>
         )}

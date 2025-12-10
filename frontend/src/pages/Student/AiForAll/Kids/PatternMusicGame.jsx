@@ -14,7 +14,6 @@ const PatternMusicGame = () => {
   const [userPattern, setUserPattern] = useState([]);
   const [showPattern, setShowPattern] = useState(true);
   const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
@@ -46,10 +45,6 @@ const PatternMusicGame = () => {
           setUserPattern([]);
           setShowPattern(true);
         } else {
-          if ((score + (isCorrect ? 1 : 0)) >= 4) {
-            setCoins(5);
-          }
-          setScore(prev => prev + (isCorrect ? 1 : 0));
           setShowResult(true);
         }
       }, 800);
@@ -66,7 +61,6 @@ const PatternMusicGame = () => {
     setUserPattern([]);
     setShowPattern(true);
     setScore(0);
-    setCoins(0);
     resetFeedback();
   };
 
@@ -74,23 +68,25 @@ const PatternMusicGame = () => {
     navigate("/student/ai-for-all/kids/robot-vision-game");
   };
 
+  const accuracy = Math.round((score / patterns.length) * 100);
+
   return (
     <GameShell
       title="Pattern Music Game"
-      score={coins}
+      score={score}
       subtitle={`Pattern ${currentPattern + 1} of ${patterns.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && score >= 4}
+      nextEnabled={showResult && accuracy >= 70}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && score >= 4}
+      showGameOver={showResult && accuracy >= 70}
       
       gameId="ai-kids-13"
       gameType="ai"
       totalLevels={20}
       currentLevel={13}
-      showConfetti={showResult && score >= 4}
+      showConfetti={showResult && accuracy >= 70}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
@@ -151,10 +147,10 @@ const PatternMusicGame = () => {
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
             <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {score >= 4 ? "🎉 Rhythm Master!" : "💪 Keep Practicing!"}
+              {accuracy >= 70 ? "🎉 Rhythm Master!" : "💪 Keep Practicing!"}
             </h2>
             <p className="text-white/90 text-xl mb-4 text-center">
-              You repeated {score} out of {patterns.length} patterns correctly!
+              You repeated {score} out of {patterns.length} patterns correctly! ({accuracy}%)
             </p>
             <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
               <p className="text-white/90 text-sm">
@@ -162,9 +158,9 @@ const PatternMusicGame = () => {
               </p>
             </div>
             <p className="text-yellow-400 text-2xl font-bold text-center">
-              {score >= 4 ? "You earned 5 Coins! 🪙" : "Get 4 or more correct to earn coins!"}
+              You earned {score} Points! 🪙
             </p>
-            {score < 4 && (
+            {accuracy < 70 && (
               <button
                 onClick={handleTryAgain}
                 className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
@@ -180,4 +176,3 @@ const PatternMusicGame = () => {
 };
 
 export default PatternMusicGame;
-

@@ -21,12 +21,7 @@ const SpamVsNotSpam = () => {
     { id: 2, subject: "Homework update from teacher", emoji: "📚", type: "not-spam", correct: "not-spam" },
     { id: 3, subject: "Click here for prize!", emoji: "🎁", type: "spam", correct: "spam" },
     { id: 4, subject: "Parent-teacher meeting notice", emoji: "👨‍👩‍👧", type: "not-spam", correct: "not-spam" },
-    { id: 5, subject: "You won $1 million!", emoji: "💸", type: "spam", correct: "spam" },
-    { id: 6, subject: "School library book due", emoji: "📖", type: "not-spam", correct: "not-spam" },
-    { id: 7, subject: "Free iPhone - claim now!", emoji: "📱", type: "spam", correct: "spam" },
-    { id: 8, subject: "Class schedule for tomorrow", emoji: "📅", type: "not-spam", correct: "not-spam" },
-    { id: 9, subject: "Urgent: Share this now!", emoji: "⚠️", type: "spam", correct: "spam" },
-    { id: 10, subject: "Your test results", emoji: "📝", type: "not-spam", correct: "not-spam" }
+    { id: 5, subject: "You won $1 million!", emoji: "💸", type: "spam", correct: "spam" }
   ];
 
   const currentEmailData = emails[currentEmail];
@@ -143,4 +138,3 @@ const SpamVsNotSpam = () => {
 };
 
 export default SpamVsNotSpam;
-

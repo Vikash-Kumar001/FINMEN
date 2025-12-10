@@ -56,6 +56,13 @@ const AIJobsStory = () => {
       text: "A robot helps in a hospital. Who ensures patient safety?",
       options: [
         { 
+          id: "none", 
+          text: "No supervision", 
+          emoji: "❌", 
+          description: "AI and humans should work together to ensure safety",
+          isCorrect: false
+        },
+        { 
           id: "ai", 
           text: "Only AI", 
           emoji: "🤖", 
@@ -68,13 +75,6 @@ const AIJobsStory = () => {
           emoji: "👩‍⚕️🤝🤖", 
           description: "AI and human doctors working together ensure patient safety",
           isCorrect: true
-        },
-        { 
-          id: "none", 
-          text: "No supervision", 
-          emoji: "❌", 
-          description: "AI and humans should work together to ensure safety",
-          isCorrect: false
         }
       ]
     },
@@ -110,6 +110,13 @@ const AIJobsStory = () => {
       text: "A robot is teaching students. Who ensures correct learning?",
       options: [
         { 
+          id: "none", 
+          text: "No supervision", 
+          emoji: "❌", 
+          description: "AI and humans should work together to ensure learning",
+          isCorrect: false
+        },
+        { 
           id: "ai", 
           text: "Only AI", 
           emoji: "🤖", 
@@ -122,13 +129,6 @@ const AIJobsStory = () => {
           emoji: "👩‍🏫🤝🤖", 
           description: "AI and teachers working together ensure correct learning",
           isCorrect: true
-        },
-        { 
-          id: "none", 
-          text: "No supervision", 
-          emoji: "❌", 
-          description: "AI and humans should work together to ensure learning",
-          isCorrect: false
         }
       ]
     },
@@ -160,6 +160,15 @@ const AIJobsStory = () => {
       ]
     }
   ];
+
+  // Function to get options without rotation - keeping actual positions fixed
+  const getRotatedOptions = (options, questionIndex) => {
+    // Return options without any rotation to keep their actual positions fixed
+    return options;
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
+  const displayOptions = getRotatedOptions(getCurrentQuestion().options, currentQuestion);
 
   const handleChoice = (selectedChoice) => {
     const newChoices = [...choices, { 
@@ -203,8 +212,6 @@ const AIJobsStory = () => {
     navigate("/student/ai-for-all/kids/fake-news-detector");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   return (
     <GameShell
       title="AI & Jobs Story"
@@ -239,7 +246,7 @@ const AIJobsStory = () => {
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getCurrentQuestion().options.map(option => (
+                {displayOptions.map(option => (
                   <button
                     key={option.id}
                     onClick={() => handleChoice(option.id)}

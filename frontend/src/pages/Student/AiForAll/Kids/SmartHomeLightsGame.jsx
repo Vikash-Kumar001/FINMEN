@@ -2,91 +2,212 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SmartHomeLightsGame = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-49");
+  const gameId = gameData?.id || "ai-kids-49";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [score, setScore] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
     useGameFeedback();
 
-  // 💡 5 Smart Home AI Questions
+  // 💡 Smart Home AI Questions with 3 options each
   const questions = [
     {
       id: 1,
-      situation: "You walk into your room and the lights turn ON automatically. What caused it?",
-      choices: [
-        { id: 1, text: "AI sensors detected movement 🤖", isCorrect: true },
-        { id: 2, text: "Magic ✨", isCorrect: false },
-        { id: 3, text: "Someone hiding and switching lights 🧍", isCorrect: false },
-      ],
+      text: "You walk into your room and the lights turn ON automatically. What caused it?",
+      options: [
+        { 
+          id: "ai", 
+          text: "AI sensors detected movement 🤖", 
+          emoji: "📡", 
+          description: "Motion sensors connected to AI detect your presence and automatically turn on lights.",
+          isCorrect: true
+        },
+        { 
+          id: "magic", 
+          text: "Magic spell ✨", 
+          emoji: "🪄", 
+          description: "While magic would be cool, smart homes use technology, not magic!",
+          isCorrect: false
+        },
+        { 
+          id: "person", 
+          text: "Someone hiding and switching lights 🧍", 
+          emoji: "🧍", 
+          description: "Smart homes work automatically without needing someone to manually operate switches.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      situation: "Your AC adjusts the temperature before you enter the room. How does it know?",
-      choices: [
-        { id: 1, text: "AI learns your comfort pattern 🌡️", isCorrect: true },
-        { id: 2, text: "Ghost in the room 👻", isCorrect: false },
-        { id: 3, text: "It guesses randomly 🎲", isCorrect: false },
-      ],
+      text: "Your AC adjusts the temperature before you enter the room. How does it know?",
+      options: [
+        { 
+          id: "ghost", 
+          text: "Ghost in the room 👻", 
+          emoji: "👻", 
+          description: "Smart homes use technology, not supernatural forces!",
+          isCorrect: false
+        },
+        { 
+          id: "ai", 
+          text: "AI learns your comfort pattern 🌡️", 
+          emoji: "🌡️", 
+          description: "AI analyzes when you're usually home and what temperatures you prefer.",
+          isCorrect: true
+        },
+        { 
+          id: "random", 
+          text: "It guesses randomly 🎲", 
+          emoji: "🎲", 
+          description: "AI uses data about your habits, not random guessing.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      situation: "Smart speakers play music when you say 'Play my playlist'. What technology helps this?",
-      choices: [
-        { id: 1, text: "AI Voice Recognition 🎤", isCorrect: true },
-        { id: 2, text: "Magic words spell 🪄", isCorrect: false },
-      ],
+      text: "Smart speakers play music when you say 'Play my playlist'. What technology helps this?",
+      options: [
+        { 
+          id: "voice", 
+          text: "AI Voice Recognition 🎤", 
+          emoji: "🎤", 
+          description: "Natural language processing helps devices understand voice commands.",
+          isCorrect: true
+        },
+        { 
+          id: "telepathy", 
+          text: "Telepathy 🧠", 
+          emoji: "🧠", 
+          description: "Devices use microphones and AI, not mind reading!",
+          isCorrect: false
+        },
+        { 
+          id: "luck", 
+          text: "Pure luck 🍀", 
+          emoji: "🍀", 
+          description: "Devices use sophisticated AI algorithms, not chance.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      situation: "The fridge sends a message when milk is low. What’s behind it?",
-      choices: [
-        { id: 1, text: "AI + Smart Sensors 🧠", isCorrect: true },
-        { id: 2, text: "A person inside checking 🧍‍♂️", isCorrect: false },
-      ],
+      text: "The fridge sends a message when milk is low. What's behind it?",
+      options: [
+        { 
+          id: "person", 
+          text: "A person inside checking 🧍‍♂️", 
+          emoji: "🧍", 
+          description: "Smart fridges work automatically without human intervention.",
+          isCorrect: false
+        },
+        { 
+          id: "guess", 
+          text: "It makes wild guesses 🔮", 
+          emoji: "🔮", 
+          description: "AI uses actual sensor data, not guesses.",
+          isCorrect: false
+        },
+        { 
+          id: "sensors", 
+          text: "AI + Smart Sensors 🧠", 
+          emoji: "🧠", 
+          description: "Cameras and weight sensors connected to AI track inventory levels.",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 5,
-      situation: "The door camera notifies you of visitors. How does it recognize faces?",
-      choices: [
-        { id: 1, text: "AI Facial Recognition 📸", isCorrect: true },
-        { id: 2, text: "By luck 🍀", isCorrect: false },
-      ],
-    },
+      text: "The door camera notifies you of visitors. How does it recognize faces?",
+      options: [
+        { 
+          id: "facial", 
+          text: "AI Facial Recognition 📸", 
+          emoji: "📸", 
+          description: "Computer vision algorithms identify known faces and detect new visitors.",
+          isCorrect: true
+        },
+        { 
+          id: "luck", 
+          text: "By luck 🍀", 
+          emoji: "🍀", 
+          description: "AI uses advanced computer vision technology, not chance.",
+          isCorrect: false
+        },
+        { 
+          id: "magic", 
+          text: "Magic mirror 🪞", 
+          emoji: "🪞", 
+          description: "Smart cameras use technology, not fairy tales!",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const currentQ = questions[currentQuestion];
+  // Function to get options without rotation - keeping actual positions fixed
+  const getRotatedOptions = (options, questionIndex) => {
+    // Return options without any rotation to keep their actual positions fixed
+    return options;
+  };
 
-  const handleChoice = (isCorrect) => {
+  const getCurrentQuestion = () => questions[currentQuestion];
+  const displayOptions = getRotatedOptions(getCurrentQuestion().options, currentQuestion);
+
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore((prev) => prev + 1);
-      showCorrectAnswerFeedback(2, false);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
+    
+    // Move to next question or show results
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
-        setCurrentQuestion((prev) => prev + 1);
-      }, 400);
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
-      const finalScore = score + (isCorrect ? 1 : 0);
-      if (finalScore >= 3) setCoins(10);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
       setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
-    setCurrentQuestion(0);
-    setScore(0);
-    setCoins(0);
     setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
@@ -98,74 +219,86 @@ const SmartHomeLightsGame = () => {
     <GameShell
       title="Smart Home Lights Game"
       score={coins}
-      subtitle={`Smart Sensors in Action — Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && coins > 0}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && coins > 0}
+      showGameOver={showResult && finalScore >= 3}
       
-      gameId="ai-kids-49"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={49}
-      showConfetti={showResult && coins > 0}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
     >
       <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
-            <div className="text-8xl mb-4 text-center">💡</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              Smart Home Lights Game
-            </h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-xl leading-relaxed text-center font-semibold">
-                {currentQ.situation}
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
               </p>
-            </div>
-
-            <div className="space-y-4">
-              {currentQ.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.isCorrect)}
-                  className="w-full border-2 border-white/40 rounded-xl bg-white/20 hover:bg-white/30 p-5 text-left transition-all hover:scale-[1.02]"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-3xl">{choice.text.split(" ").pop()}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {displayOptions.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center max-w-xl mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {score >= 3 ? "💡 Smart Home Expert!" : "❌ Try Again!"}
-            </h2>
-            <p className="text-white/90 text-lg mb-4">
-              You answered {score} out of {questions.length} correctly.
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-sm">
-                🌟 Smart homes use AI to save energy, recognize your habits, and make daily life easier.
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold">
-              {score >= 3 ? "You earned 10 Coins! 🪙" : "Get at least 3 correct to earn coins!"}
-            </p>
-            {score < 3 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">💡</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Smart Home Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning about smart home technology!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand how AI makes homes smarter, safer, and more energy-efficient!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about smart home technology!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to think about how AI sensors and algorithms make our homes smarter.
+                </p>
+              </div>
             )}
           </div>
         )}

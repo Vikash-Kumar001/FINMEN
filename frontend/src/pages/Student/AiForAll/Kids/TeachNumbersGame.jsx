@@ -2,133 +2,312 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const TeachNumbersGame = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentItem, setCurrentItem] = useState(0);
-  const [score, setScore] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-kids-61");
+  const gameId = gameData?.id || "ai-kids-61";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const items = [
-    { id: 1, symbol: "1️⃣", correct: 1 },
-    { id: 2, symbol: "2️⃣", correct: 2 },
-    { id: 3, symbol: "3️⃣", correct: 3 },
-    { id: 4, symbol: "1️⃣", correct: 1 },
-    { id: 5, symbol: "2️⃣", correct: 2 },
-    { id: 6, symbol: "3️⃣", correct: 3 },
+  // Questions about teaching numbers to AI (exactly 5 questions)
+  const questions = [
+    {
+      id: 1,
+      text: "How should we teach a robot to count to 3?",
+      options: [
+        { 
+          id: "examples", 
+          text: "Show many examples of 1, 2, and 3 📚", 
+          emoji: "📚", 
+          description: "Showing various examples helps robots understand the concept of numbers.",
+          isCorrect: true
+        },
+        { 
+          id: "once", 
+          text: "Show each number only once 📷", 
+          emoji: "📷", 
+          description: "One example isn't enough for AI to learn patterns reliably.",
+          isCorrect: false
+        },
+        { 
+          id: "mixed", 
+          text: "Mix up the numbers randomly 🎲", 
+          emoji: "🎲", 
+          description: "Random mixing without structure confuses AI learning.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "What's the best way to help AI recognize the number 2?",
+      options: [
+        { 
+          id: "same", 
+          text: "Always show 2 as the same picture 🖼️", 
+          emoji: "🖼️", 
+          description: "Same representation limits AI's ability to recognize 2 in different contexts.",
+          isCorrect: false
+        },
+        { 
+          id: "different", 
+          text: "Show 2 in different styles (dots, fingers, blocks) 🔄", 
+          emoji: "🔄", 
+          description: "Various representations help AI recognize the concept regardless of appearance.",
+          isCorrect: true
+        },
+        { 
+          id: "fast", 
+          text: "Flash images of 2 very quickly ⚡", 
+          emoji: "⚡", 
+          description: "Speed without clarity doesn't help AI learn effectively.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "Why is it important to label numbers correctly when teaching AI?",
+      options: [
+        { 
+          id: "learn", 
+          text: "So AI learns the right associations ✅", 
+          emoji: "✅", 
+          description: "Correct labels help AI form accurate connections between symbols and quantities.",
+          isCorrect: true
+        },
+        { 
+          id: "any", 
+          text: "Any label works the same 🤷", 
+          emoji: "🤷", 
+          description: "Incorrect labels mislead AI and cause it to make mistakes.",
+          isCorrect: false
+        },
+        { 
+          id: "skip", 
+          text: "We can skip labeling to save time ⏭️", 
+          emoji: "⏭️", 
+          description: "Without labels, AI can't learn to recognize numbers at all.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "What helps robots understand that 3 is more than 2?",
+      options: [
+        { 
+          id: "separate", 
+          text: "Teach numbers completely separately 🚫", 
+          emoji: "🚫", 
+          description: "Separate teaching prevents AI from understanding numerical relationships.",
+          isCorrect: false
+        },
+        { 
+          id: "words", 
+          text: "Just tell it verbally without visuals 🗣️", 
+          emoji: "🗣️", 
+          description: "Visual examples are crucial for AI to understand abstract concepts like quantity.",
+          isCorrect: false
+        },
+        { 
+          id: "compare", 
+          text: "Show groups of items to compare 📊", 
+          emoji: "📊", 
+          description: "Visual comparison helps AI grasp numerical relationships and quantities.",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "How often should we practice teaching numbers to AI?",
+      options: [
+        { 
+          id: "regular", 
+          text: "Practice regularly with new examples 📅", 
+          emoji: "📅", 
+          description: "Regular practice with variety reinforces learning and improves AI performance.",
+          isCorrect: true
+        },
+        { 
+          id: "once", 
+          text: "Teach once and never repeat 🛑", 
+          emoji: "🛑", 
+          description: "Single exposure isn't enough for AI to retain and generalize knowledge.",
+          isCorrect: false
+        },
+        { 
+          id: "random", 
+          text: "Practice randomly with no pattern 🔀", 
+          emoji: "🔀", 
+          description: "Structured practice is more effective than random repetition.",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const currentItemData = items[currentItem];
+  // Function to get options without rotation - keeping actual positions fixed
+  const getRotatedOptions = (options, questionIndex) => {
+    // Return options without any rotation to keep their actual positions fixed
+    return options;
+  };
 
-  const handleChoice = (choice) => {
-    const isCorrect = choice === currentItemData.correct;
+  const getCurrentQuestion = () => questions[currentQuestion];
+  const displayOptions = getRotatedOptions(getCurrentQuestion().options, currentQuestion);
 
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
-      setCoins(prev => prev + 5);
-      showCorrectAnswerFeedback(5, false);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    if (currentItem < items.length - 1) {
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
-        setCurrentItem(prev => prev + 1);
-      }, 300);
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0);
     } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
       setShowResult(true);
     }
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentItem(0);
-    setScore(0);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
   const handleNext = () => {
-    navigate("/student/ai-for-all/kids/robot-confusion-story"); // update your next path
+    navigate("/student/ai-for-all/kids/robot-confusion-story");
   };
-
-  const accuracy = Math.round((score / items.length) * 100);
 
   return (
     <GameShell
       title="Teach Numbers Game 🔢"
       score={coins}
-      subtitle={`Item ${currentItem + 1} of ${items.length}`}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
+      showGameOver={showResult && finalScore >= 3}
       
-      gameId="ai-kids-61"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={100}
+      totalLevels={20}
       currentLevel={61}
-      showConfetti={showResult && accuracy >= 70}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
     >
       <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">
-              Label the number!
-            </h3>
-
-            <div className="bg-white/10 rounded-lg p-12 mb-6 flex justify-center items-center text-8xl">
-              {currentItemData.symbol}
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              {[1, 2, 3].map((num) => (
-                <button
-                  key={num}
-                  onClick={() => handleChoice(num)}
-                  className="bg-blue-500/30 hover:bg-blue-500/50 border-3 border-blue-400 rounded-xl p-8 transition-all transform hover:scale-105 text-center"
-                >
-                  <div className="text-5xl mb-2">
-                    {num === 1 ? "1️⃣" : num === 2 ? "2️⃣" : "3️⃣"}
-                  </div>
-                  <div className="text-white font-bold text-xl">{num}</div>
-                </button>
-              ))}
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {displayOptions.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {accuracy >= 70 ? "🎉 Great Counting!" : "🔁 Try Again!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You labeled {score} out of {items.length} correctly! ({accuracy}%)
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                🤖 Robots learn counting when you label numbers correctly!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned {coins} Coins! 🪙
-            </p>
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again 🔄
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🔢</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Number Teaching Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand how to teach numbers to AI!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
+                  <p className="text-white/90 text-sm">
+                    🌟 Excellent! You know that teaching AI requires consistent examples, correct labels, visual comparisons, and regular practice!
+                  </p>
+                </div>
+                <p className="text-white/80">
+                  Your teaching skills help robots understand numbers and quantities!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Keep practicing to learn more about teaching numbers to AI!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
+                  <p className="text-white/90 text-sm">
+                    💡 Remember: Teaching AI works best with consistent examples, correct labels, visual aids, and regular practice!
+                  </p>
+                </div>
+                <p className="text-white/80 text-sm">
+                  Think about what helps robots understand abstract concepts like numbers and quantities.
+                </p>
+              </div>
             )}
           </div>
         )}

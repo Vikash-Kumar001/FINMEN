@@ -30,14 +30,14 @@ const AIDoctorQuiz = () => {
       options: [
         { 
           id: "yes", 
-          text: "Yes ✅", 
+          text: "Yes ", 
           emoji: "✅", 
           description: "AI can analyze X-rays to help doctors detect cancer early",
           isCorrect: true
         },
         { 
           id: "no", 
-          text: "No ❌", 
+          text: "No ", 
           emoji: "❌", 
           description: "AI can actually help detect cancer in X-rays",
           isCorrect: false
@@ -64,14 +64,14 @@ const AIDoctorQuiz = () => {
         },
         { 
           id: "yes", 
-          text: "Yes ✅", 
+          text: "Yes ", 
           emoji: "✅", 
           description: "AI can help doctors schedule patient appointments efficiently",
           isCorrect: true
         },
         { 
           id: "no", 
-          text: "No ❌", 
+          text: "No ", 
           emoji: "❌", 
           description: "AI can actually help schedule appointments",
           isCorrect: false
@@ -91,14 +91,14 @@ const AIDoctorQuiz = () => {
         },
         { 
           id: "no", 
-          text: "No ❌", 
+          text: "No ", 
           emoji: "❌", 
           description: "AI doesn't perform surgeries alone - doctors are always needed",
           isCorrect: true
         },
         { 
           id: "yes", 
-          text: "Yes ✅", 
+          text: "Yes ", 
           emoji: "✅", 
           description: "AI doesn't perform surgeries alone - doctors are always needed",
           isCorrect: false
@@ -111,14 +111,14 @@ const AIDoctorQuiz = () => {
       options: [
         { 
           id: "yes", 
-          text: "Yes ✅", 
+          text: "Yes ", 
           emoji: "✅", 
           description: "AI can remind patients to take medicines on time",
           isCorrect: true
         },
         { 
           id: "no", 
-          text: "No ❌", 
+          text: "No ", 
           emoji: "❌", 
           description: "AI can actually remind patients to take medicines",
           isCorrect: false
@@ -145,14 +145,14 @@ const AIDoctorQuiz = () => {
         },
         { 
           id: "yes", 
-          text: "Yes ✅", 
+          text: "Yes ", 
           emoji: "✅", 
           description: "AI can help predict heart problems early by analyzing medical data",
           isCorrect: true
         },
         { 
           id: "no", 
-          text: "No ❌", 
+          text: "No ", 
           emoji: "❌", 
           description: "AI can actually help predict heart problems early",
           isCorrect: false

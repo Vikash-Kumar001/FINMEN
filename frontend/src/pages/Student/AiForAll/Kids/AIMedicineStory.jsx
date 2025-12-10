@@ -56,6 +56,13 @@ const AIMedicineStory = () => {
       text: "AI suggests a treatment plan. Who approves it?",
       options: [
         { 
+          id: "patient", 
+          text: "Patient decides alone", 
+          emoji: "👤", 
+          description: "Doctors approve treatment plans with AI assistance",
+          isCorrect: false
+        },
+        { 
           id: "ai", 
           text: "AI automatically", 
           emoji: "🤖", 
@@ -68,13 +75,6 @@ const AIMedicineStory = () => {
           emoji: "👨‍⚕️", 
           description: "Doctors must approve treatment plans, AI only suggests options",
           isCorrect: true
-        },
-        { 
-          id: "patient", 
-          text: "Patient decides alone", 
-          emoji: "👤", 
-          description: "Doctors approve treatment plans with AI assistance",
-          isCorrect: false
         }
       ]
     },
@@ -110,6 +110,13 @@ const AIMedicineStory = () => {
       text: "AI predicts patient recovery chances. Who decides treatment?",
       options: [
         { 
+          id: "patient", 
+          text: "Patient alone", 
+          emoji: "👤", 
+          description: "Doctors decide treatment with AI and patient input",
+          isCorrect: false
+        },
+        { 
           id: "ai", 
           text: "AI decides alone", 
           emoji: "🤖", 
@@ -122,13 +129,6 @@ const AIMedicineStory = () => {
           emoji: "👨‍⚕️", 
           description: "Doctors decide treatment in consultation with AI predictions",
           isCorrect: true
-        },
-        { 
-          id: "patient", 
-          text: "Patient alone", 
-          emoji: "👤", 
-          description: "Doctors decide treatment with AI and patient input",
-          isCorrect: false
         }
       ]
     },
@@ -160,6 +160,15 @@ const AIMedicineStory = () => {
       ]
     }
   ];
+
+  // Function to get options without rotation - keeping actual positions fixed
+  const getRotatedOptions = (options, questionIndex) => {
+    // Return options without any rotation to keep their actual positions fixed
+    return options;
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
+  const displayOptions = getRotatedOptions(getCurrentQuestion().options, currentQuestion);
 
   const handleChoice = (selectedChoice) => {
     const newChoices = [...choices, { 
@@ -203,8 +212,6 @@ const AIMedicineStory = () => {
     navigate("/student/ai-for-all/kids/dangerous-robot-story");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   return (
     <GameShell
       title="AI in Medicine Story"
@@ -239,7 +246,7 @@ const AIMedicineStory = () => {
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getCurrentQuestion().options.map(option => (
+                {displayOptions.map(option => (
                   <button
                     key={option.id}
                     onClick={() => handleChoice(option.id)}

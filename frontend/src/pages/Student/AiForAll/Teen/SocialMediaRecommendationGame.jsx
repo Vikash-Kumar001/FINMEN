@@ -2,166 +2,240 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getAiTeenGames } from '../../../../pages/Games/GameCategories/AiForAll/teenGamesData';
 
 const SocialMediaRecommendationGame = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [selectedLike, setSelectedLike] = useState(null);
-  const [showRecommendations, setShowRecommendations] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-teen-28");
+  const gameId = gameData?.id || "ai-teen-28";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
+    useGameFeedback();
 
-  const interests = [
+  const questions = [
     {
       id: 1,
-      name: "Football",
-      emoji: "⚽",
-      recommendations: [
-        "🎥 Football Highlights",
-        "📸 Best Goals Reel",
-        "📰 Latest Football News",
-        "🎮 FIFA Game Clips",
-        "🏆 Top Matches Replay"
-      ]
+      title: "Recommendation Systems",
+      emoji: "🤖",
+      question: "What technology suggests content you might like on social media?",
+      choices: [
+        { id: 1, text: "Recommender AI", emoji: "🧠", isCorrect: true },
+        { id: 2, text: "Manual curation", emoji: "✋", isCorrect: false },
+        { id: 3, text: "Random selection", emoji: "🎲", isCorrect: false },
+      ],
     },
     {
       id: 2,
-      name: "Dance",
-      emoji: "💃",
-      recommendations: [
-        "🎶 Trending Dance Reels",
-        "🎥 Dance Tutorials",
-        "📸 Best Dance Performances",
-        "🎵 Viral Dance Challenges",
-        "🎬 Dance Competition Clips"
-      ]
+      title: "Data Collection",
+      emoji: "📊",
+      question: "What does AI analyze to recommend content to you?",
+      choices: [
+        { id: 1, text: "Your likes & views", emoji: "👍", isCorrect: true },
+        { id: 2, text: "Your location", emoji: "📍", isCorrect: false },
+        { id: 3, text: "Your contacts", emoji: "👥", isCorrect: false },
+      ],
     },
     {
       id: 3,
-      name: "Cooking",
-      emoji: "🍳",
-      recommendations: [
-        "🍲 Easy Recipes",
-        "🎥 Cooking Tips",
-        "📸 Delicious Food Reels",
-        "👩‍🍳 Chef Techniques",
-        "🎬 Cooking Challenges"
-      ]
-    }
+      title: "Algorithm Purpose",
+      emoji: "⚙️",
+      question: "Why do platforms use recommendation algorithms?",
+      choices: [
+        { id: 1, text: "Keep you engaged", emoji: "⏱️", isCorrect: true },
+        { id: 2, text: "Sell your data", emoji: "💰", isCorrect: false },
+        { id: 3, text: "Reduce storage", emoji: "💾", isCorrect: false },
+      ],
+    },
+    {
+      id: 4,
+      title: "Content Filtering",
+      emoji: "🔍",
+      question: "How does AI filter what content to show you?",
+      choices: [
+        { id: 1, text: "Pattern matching", emoji: "🔄", isCorrect: true },
+        { id: 2, text: "Chronological", emoji: "⏰", isCorrect: false },
+        { id: 3, text: "Random shuffle", emoji: "🔀", isCorrect: false },
+      ],
+    },
+    {
+      id: 5,
+      title: "Ethical Concerns",
+      emoji: "⚠️",
+      question: "What is a concern with recommendation algorithms?",
+      choices: [
+        { id: 1, text: "Echo chambers", emoji: "🌀", isCorrect: true },
+        { id: 2, text: "Too accurate", emoji: "🎯", isCorrect: false },
+        { id: 3, text: "Slow loading", emoji: "🐢", isCorrect: false },
+      ],
+    },
   ];
 
-  const handleLike = (id) => {
-    setSelectedLike(id);
+  const getCurrentQuestion = () => questions[currentQuestion];
+
+  const handleChoice = (choiceId) => {
+    const currentQ = getCurrentQuestion();
+    const choice = currentQ.choices.find((c) => c.id === choiceId);
+    const isCorrect = choice.isCorrect;
+    
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: choiceId,
+      isCorrect: isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const handleSeeRecommendations = () => {
-    if (selectedLike) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
-      setShowRecommendations(true);
-    }
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
-    navigate("/student/ai-for-all/teen/face-unlock-simulation"); // Update with actual next game path
+    // Find next game path
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        if (nextGame) {
+          navigate(nextGame.path);
+        } else {
+          navigate("/student/ai-for-all/teen/face-unlock-simulation");
+        }
+      } else {
+        navigate("/student/ai-for-all/teen/face-unlock-simulation");
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+      navigate("/student/ai-for-all/teen/face-unlock-simulation");
+    }
   };
 
-  const selectedInterest = interests.find(i => i.id === selectedLike);
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Social Media Recommendation"
-      subtitle="AI Suggests Content You Like"
+      subtitle={showResult ? "Game Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showRecommendations}
-      showGameOver={showRecommendations}
+      nextEnabled={showResult && finalScore >= 3}
+      showGameOver={showResult && finalScore >= 3}
       score={coins}
-      gameId="ai-teen-28"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={30}
-      currentLevel={28}
-      showConfetti={showRecommendations}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/teens"
-    
-      maxScore={30} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
       <div className="space-y-8">
-        {!showRecommendations ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">👍</div>
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">What do you like?</h2>
-            
-            <p className="text-white/80 mb-6 text-center">
-              Click on a topic you like to see AI-powered recommendations:
-            </p>
-
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              {interests.map(interest => (
-                <button
-                  key={interest.id}
-                  onClick={() => handleLike(interest.id)}
-                  className={`border-2 rounded-xl p-6 transition-all ${
-                    selectedLike === interest.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="text-6xl mb-2">{interest.emoji}</div>
-                  <div className="text-white font-semibold">{interest.name}</div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleSeeRecommendations}
-              disabled={!selectedLike}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedLike
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              See AI Suggestions! 🤖
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">🤖</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              Your AI Recommendations!
-            </h2>
-            
-            <div className="bg-purple-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white/80 text-sm mb-3">
-                You liked: {selectedInterest.emoji} {selectedInterest.name}
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <div className="text-6xl mb-3 text-center">{currentQuestionData.emoji}</div>
+              <h2 className="text-white text-xl font-bold mb-4 text-center">
+                {currentQuestionData.title}
+              </h2>
+              <p className="text-white text-lg mb-6 text-center">
+                "{currentQuestionData.question}"
               </p>
-              <p className="text-white text-lg font-bold mb-4">AI recommends for you:</p>
-              <div className="space-y-3">
-                {selectedInterest.recommendations.map((rec, idx) => (
-                  <div key={idx} className="bg-white/10 rounded-lg p-4 hover:bg-white/20 transition">
-                    <p className="text-white font-semibold">{rec}</p>
-                  </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.choices.map((choice) => (
+                  <button
+                    key={choice.id}
+                    onClick={() => handleChoice(choice.id)}
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{choice.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{choice.text}</h3>
+                  </button>
                 ))}
               </div>
             </div>
-
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm mb-3">
-                💡 Recommender systems analyze your likes and behavior to show content you'll enjoy.
-              </p>
-            </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned 5 Coins! 🪙
-            </p>
           </div>
-        )}
+        ) : showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Recommendation Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {questions.length} correctly! ({Math.round((finalScore / questions.length) * 100)}%)
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  💡 Recommender systems analyze your likes and behavior to show content you'll enjoy!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {questions.length} correctly. ({Math.round((finalScore / questions.length) * 100)}%)
+                  Keep practicing to learn more about recommendation systems!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  💡 Recommender systems analyze your likes and behavior to show content you'll enjoy!
+                </p>
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
     </GameShell>
   );

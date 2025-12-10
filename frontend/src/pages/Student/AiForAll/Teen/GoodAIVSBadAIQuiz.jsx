@@ -1,193 +1,314 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getAiTeenGames } from "../../../../pages/Games/GameCategories/AiForAll/teenGamesData";
 
 const GoodAIVSBadAIQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-teen-5";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
+      id: 1,
       text: "AI used for helping hospitals = Good AI?",
       emoji: "🏥",
-      choices: [
-        { id: 1, text: "Yes", emoji: "✅", isCorrect: true },
-        { id: 2, text: "No", emoji: "❌", isCorrect: false }
-      ]
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Correct - Healthcare AI improves patient outcomes",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "❌", 
+          description: "Incorrect - Medical AI is generally beneficial",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Only with doctor supervision", 
+          emoji: "👨‍⚕️", 
+          description: "Partially correct but not always required",
+          isCorrect: false
+        }
+      ],
+      explanation: "Yes! AI used in hospitals can improve diagnostics, predict patient deterioration, optimize treatment plans, and even assist in surgeries. This is considered Good AI because it directly benefits human health and wellbeing."
     },
     {
+      id: 2,
       text: "AI for generating fake news = Good AI?",
       emoji: "📰",
-      choices: [
-        { id: 1, text: "Yes", emoji: "✅", isCorrect: false },
-        { id: 2, text: "No", emoji: "❌", isCorrect: true }
-      ]
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Incorrect - Fake news harms society",
+          isCorrect: false
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "❌", 
+          description: "Correct - Misinformation is harmful",
+          isCorrect: true
+        },
+        { 
+          id: 3, 
+          text: "Only for satire", 
+          emoji: "😂", 
+          description: "Limited exception but not generally good",
+          isCorrect: false
+        }
+      ],
+      explanation: "No! AI that generates fake news is considered Bad AI because it spreads misinformation, manipulates public opinion, and can cause real-world harm by eroding trust in legitimate sources."
     },
     {
+      id: 3,
       text: "AI for autonomous car safety features = Good AI?",
       emoji: "🚗",
-      choices: [
-        { id: 1, text: "Yes", emoji: "✅", isCorrect: true },
-        { id: 2, text: "No", emoji: "❌", isCorrect: false }
-      ]
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Correct - Safety features save lives",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "❌", 
+          description: "Incorrect - Automotive safety AI is beneficial",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Only in luxury cars", 
+          emoji: "💎", 
+          description: "Too narrow - Safety should be universal",
+          isCorrect: false
+        }
+      ],
+      explanation: "Yes! AI in autonomous vehicles that focuses on safety features like collision avoidance, pedestrian detection, and adaptive cruise control is considered Good AI because it aims to reduce accidents and save lives."
     },
     {
+      id: 4,
       text: "AI for spam email filtering = Good AI?",
       emoji: "📧",
-      choices: [
-        { id: 1, text: "Yes", emoji: "✅", isCorrect: true },
-        { id: 2, text: "No", emoji: "❌", isCorrect: false }
-      ]
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Correct - Spam filters improve user experience",
+          isCorrect: true
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "❌", 
+          description: "Incorrect - Email filtering protects users",
+          isCorrect: false
+        },
+        { 
+          id: 3, 
+          text: "Only for business emails", 
+          emoji: "💼", 
+          description: "Too narrow - Everyone benefits from spam protection",
+          isCorrect: false
+        }
+      ],
+      explanation: "Yes! AI-powered spam filters are considered Good AI because they protect users from fraud, malware, and unwanted solicitations, improving digital safety and productivity."
     },
     {
+      id: 5,
       text: "AI used for stealing personal data = Good AI?",
       emoji: "💻",
-      choices: [
-        { id: 1, text: "Yes", emoji: "✅", isCorrect: false },
-        { id: 2, text: "No", emoji: "❌", isCorrect: true }
-      ]
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Incorrect - Data theft violates privacy",
+          isCorrect: false
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "❌", 
+          description: "Correct - Privacy violations are unethical",
+          isCorrect: true
+        },
+        { 
+          id: 3, 
+          text: "Only with consent", 
+          emoji: "📜", 
+          description: "Misleading - Consent doesn't justify data theft",
+          isCorrect: false
+        }
+      ],
+      explanation: "No! AI used for stealing personal data is clearly Bad AI because it violates privacy rights, enables identity theft, and can be used for fraudulent purposes without the victim's knowledge or consent."
     }
   ];
 
-  const current = questions[currentQuestion];
-  const selectedChoiceData = current.choices.find(c => c.id === selectedChoice);
-
-  const handleChoice = (choiceId) => setSelectedChoice(choiceId);
-
-  const handleConfirm = () => {
-    const choice = current.choices.find(c => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(prev => prev + 5);
-    }
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
-    } else {
-      navigate("/student/ai-for-all/teen/privacy-protection-story"); // next game path
-    }
-  };
-
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedOption(optionId);
     resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
+
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Good AI vs Bad AI Quiz"
-      subtitle="Understanding Ethical AI"
-      onNext={handleNextQuestion}
-      nextEnabled={showFeedback}
-      showGameOver={currentQuestion === questions.length - 1 && showFeedback}
-      score={coins}
-      gameId="ai-teen-5"
-      gameType="ai"
-      totalLevels={20}
-      currentLevel={5}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/teens"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-6 text-center">{current.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-8">
-              <p className="text-white text-2xl leading-relaxed text-center font-semibold">
-                {current.text}
+      totalXp={totalXp}
+      gameId={gameId}
+      gameType="ai"
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
+    >
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {answered && (
+                <div className={`rounded-lg p-4 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white text-center">
+                    {currentQuestionData.explanation}
+                  </p>
+                </div>
+              )}
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {current.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`border-3 rounded-xl p-10 transition-all ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="text-6xl mb-2">{choice.emoji}</div>
-                  <div className="text-white font-bold text-3xl">{choice.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Answer
-            </button>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">{selectedChoiceData?.isCorrect ? "🌟" : "❌"}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "Correct!" : "Not Quite..."}
-            </h2>
-
-            <div className={`rounded-lg p-4 mb-4 ${selectedChoiceData?.isCorrect ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
-              <p className="text-white text-center">
-                {selectedChoiceData?.isCorrect
-                  ? "Good choice! Ethical AI improves lives and supports society."
-                  : "Incorrect. Some AI applications, like helping hospitals or safety, are considered Good AI, while harmful uses are Bad AI."}
-              </p>
-            </div>
-
-            {selectedChoiceData?.isCorrect ? (
-              <p className="text-yellow-400 text-2xl font-bold text-center mb-4">
-                +5 Coins Earned! 🪙
-              </p>
-            ) : (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again 🔁
-              </button>
-            )}
-
-            {selectedChoiceData?.isCorrect && (
-              <button
-                onClick={handleNextQuestion}
-                className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Next Question ➡️
-              </button>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

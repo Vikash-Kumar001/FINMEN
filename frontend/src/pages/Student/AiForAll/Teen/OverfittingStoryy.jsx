@@ -1,196 +1,337 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { getGameDataById } from '../../../../utils/getGameData';
+import { getAiTeenGames } from '../../../../pages/Games/GameCategories/AiForAll/teenGamesData';
 
 const OverfittingStoryy = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-teen-55";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : "/student/ai-for-all/teen/ai-mistake-reflex",
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: "/student/ai-for-all/teen/ai-mistake-reflex", nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const questions = [
     {
-      title: "Red Apple Bias 🍎",
-      situation: "The AI saw only red apples and predicts every fruit is red. What happened?",
-      choices: [
-        { id: 1, text: "Overfitting AI 🤖", isCorrect: true },
-        { id: 2, text: "Perfect Model ✔️", isCorrect: false },
-      ],
+      id: 1,
+      text: "The AI saw only red apples and predicts every fruit is red. What happened?",
+      options: [
+        { 
+          id: "overfitting", 
+          text: "Overfitting AI", 
+          emoji: "🤖", 
+          description: "AI became too specialized in red apples and failed to generalize to other fruit colors",
+          isCorrect: true
+        },
+        { 
+          id: "perfect", 
+          text: "Perfect Model", 
+          emoji: "✔️", 
+          description: "A perfect model would recognize all types of fruits, not just one color",
+          isCorrect: false
+        },
+        { 
+          id: "underfitting", 
+          text: "Underfitting AI", 
+          emoji: "📉", 
+          description: "Underfitting means the AI is too simple to learn patterns, not too specialized",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Green Apple Surprise 🍏",
-      situation: "AI fails to recognize a green apple. Why did it happen?",
-      choices: [
-        { id: 1, text: "Overfitting on Red Apples 🤖", isCorrect: true },
-        { id: 2, text: "Random Guess 🌟", isCorrect: false },
-      ],
+      id: 2,
+      text: "AI fails to recognize a green apple. Why did it happen?",
+      options: [
+        { 
+          id: "red", 
+          text: "Overfitting on Red Apples", 
+          emoji: "🤖", 
+          description: "The AI learned only red apples so well that it couldn't recognize other variations",
+          isCorrect: true
+        },
+        { 
+          id: "guess", 
+          text: "Random Guess", 
+          emoji: "🌟", 
+          description: "Random guessing would sometimes be correct, not consistently wrong on green apples",
+          isCorrect: false
+        },
+        { 
+          id: "broken", 
+          text: "Broken Algorithm", 
+          emoji: "🔧", 
+          description: "A broken algorithm wouldn't work at all, not just fail on specific cases",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Learn More Variety 🌈",
-      situation: "To improve AI, what should we do next?",
-      choices: [
-        { id: 1, text: "Train with diverse fruits 🍎🍏🍐", isCorrect: true },
-        { id: 2, text: "Keep red apples only 🍎", isCorrect: false },
-      ],
+      id: 3,
+      text: "To improve AI, what should we do next?",
+      options: [
+        { 
+          id: "variety", 
+          text: "Train with diverse fruits", 
+          emoji: "🍎🍏🍐", 
+          description: "Adding variety in training data helps AI learn general patterns instead of specific cases",
+          isCorrect: true
+        },
+        { 
+          id: "red", 
+          text: "Keep red apples only", 
+          emoji: "🍎", 
+          description: "Using only one type of data reinforces the overfitting problem",
+          isCorrect: false
+        },
+        { 
+          id: "delete", 
+          text: "Delete all data", 
+          emoji: "🗑️", 
+          description: "Deleting data would eliminate all learning, not improve the model",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Better Predictions 📈",
-      situation: "After adding variety, AI now predicts all fruits correctly. This teaches?",
-      choices: [
-        { id: 1, text: "Variety avoids overfitting 🤖", isCorrect: true },
-        { id: 2, text: "Overfitting is good ✔️", isCorrect: false },
-      ],
+      id: 4,
+      text: "After adding variety, AI now predicts all fruits correctly. This teaches?",
+      options: [
+        { 
+          id: "avoid", 
+          text: "Variety avoids overfitting", 
+          emoji: "🤖", 
+          description: "Diverse training data prevents AI from becoming too specialized in limited examples",
+          isCorrect: true
+        },
+        { 
+          id: "good", 
+          text: "Overfitting is good", 
+          emoji: "✔️", 
+          description: "Overfitting reduces AI's ability to generalize, which is detrimental to performance",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore data quality", 
+          emoji: "🙈", 
+          description: "Data quality is crucial for AI performance, not something to ignore",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "AI Lesson Learned 🎓",
-      situation: "Teen learns that AI needs diverse data. Outcome?",
-      choices: [
-        { id: 1, text: "Better AI with more data 🌟", isCorrect: true },
-        { id: 2, text: "Stick to red apples only 🍎", isCorrect: false },
-      ],
-    },
+      id: 5,
+      text: "Teen learns that AI needs diverse data. Outcome?",
+      options: [
+        { 
+          id: "better", 
+          text: "Better AI with more data", 
+          emoji: "🌟", 
+          description: "More diverse training data leads to more robust and reliable AI systems",
+          isCorrect: true
+        },
+        { 
+          id: "stick", 
+          text: "Stick to red apples only", 
+          emoji: "🍎", 
+          description: "Limiting data variety perpetuates the overfitting problem",
+          isCorrect: false
+        },
+        { 
+          id: "complex", 
+          text: "Make model more complex", 
+          emoji: "🌀", 
+          description: "Increasing complexity without addressing data diversity won't solve overfitting",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleChoice = (choiceId) => setSelectedChoice(choiceId);
-
-  const handleConfirm = () => {
-    const choice = questions[currentQuestion].choices.find((c) => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(10, true);
-      setCoins((prev) => prev + 10);
-    }
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      navigate("/student/ai-for-all/teen/ai-mistake-reflex"); // update next game path
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
-  const current = questions[currentQuestion];
-  const selectedChoiceData = current.choices.find((c) => c.id === selectedChoice);
+  const getCurrentQuestion = () => questions[currentQuestion];
+
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Overfitting Story game completed! Score: ${finalScore}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, questions.length]);
 
   return (
     <GameShell
       title="Overfitting Story"
-      subtitle="Learning from Mistakes 🍏"
-      onNext={handleNextQuestion}
-      nextEnabled={showFeedback}
-      showGameOver={currentQuestion === questions.length - 1 && showFeedback}
       score={coins}
-      gameId="ai-teen-overfitting-story"
-      gameType="ai"
-      totalLevels={20}
-      currentLevel={55}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/teens"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-4 text-center">🍎</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{current.title}</h2>
-            <div className="bg-red-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">{current.situation}</p>
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
+      gameType="ai"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+    >
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="space-y-3 mb-6">
-              {current.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.text.split(" ")[1]}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData?.text.split(" ")[1]}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "✅ Overfitting Fixed!" : "❌ Try Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData?.text}</p>
-
-            {selectedChoiceData?.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Great! Adding variety improves AI learning and prevents overfitting. 🌟🤖
-                  </p>
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">✅</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Overfitting Fixed!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand that adding variety improves AI learning and prevents overfitting!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
                 </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  +10 Coins Earned! 🪙
+                <p className="text-white/80 text-sm md:text-base">
+                  Great! Adding variety improves AI learning and prevents overfitting. 🌟🤖
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, AI can overfit if it sees limited data.
                 </p>
                 <button
-                  onClick={handleNextQuestion}
-                  className="mt-6 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Next Question ➡️
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    AI can overfit if it sees limited data. Try again to learn more! 🍏
-                  </p>
-                </div>
-                <button
                   onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
                 >
-                  Try Again 🔁
+                  Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows how data diversity prevents AI from becoming too specialized.
+                </p>
+              </div>
             )}
           </div>
         )}

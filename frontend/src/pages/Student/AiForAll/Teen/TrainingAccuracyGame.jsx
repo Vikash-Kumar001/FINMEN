@@ -2,224 +2,240 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getAiTeenGames } from '../../../../pages/Games/GameCategories/AiForAll/teenGamesData';
 
 const TrainingAccuracyGame = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-teen-training-accuracy");
+  const gameId = gameData?.id || "ai-teen-training-accuracy";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
     useGameFeedback();
 
   const questions = [
     {
-      title: "Fixing Wrong Predictions 📊",
-      situation: "The AI marks a cat as a dog. What should you do?",
+      id: 1,
+      title: "Training Accuracy",
+      emoji: "🎯",
+      question: "What helps improve AI model accuracy?",
       choices: [
-        { id: 1, text: "Correct the label 🐱", isCorrect: true },
-        { id: 2, text: "Ignore the mistake 🙈", isCorrect: false },
+        { id: 1, text: "Correct mistakes", emoji: "✅", isCorrect: true },
+        { id: 2, text: "Ignore errors", emoji: "🙈", isCorrect: false },
+        { id: 3, text: "Restart training", emoji: "🔄", isCorrect: false },
       ],
     },
     {
-      title: "Adding More Examples 🧠",
-      situation: "AI struggles to recognize apples. What helps improve accuracy?",
+      id: 2,
+      title: "Data Quality",
+      emoji: "📊",
+      question: "What affects AI training quality the most?",
       choices: [
-        { id: 1, text: "Add more apple images 🍎", isCorrect: true },
-        { id: 2, text: "Delete old data 🗑️", isCorrect: false },
+        { id: 1, text: "Accurate labels", emoji: "🏷️", isCorrect: true },
+        { id: 2, text: "Fast computers", emoji: "💻", isCorrect: false },
+        { id: 3, text: "Colorful UI", emoji: "🎨", isCorrect: false },
       ],
     },
     {
-      title: "Adjusting Bias ⚖️",
-      situation: "AI only recognizes bright images. What can you do?",
+      id: 3,
+      title: "Bias Reduction",
+      emoji: "⚖️",
+      question: "How to reduce AI bias in training?",
       choices: [
-        { id: 1, text: "Add dark image samples 🌑", isCorrect: true },
-        { id: 2, text: "Use only bright ones ☀️", isCorrect: false },
+        { id: 1, text: "Diverse datasets", emoji: "さまざます", isCorrect: true },
+        { id: 2, text: "More data", emoji: "📈", isCorrect: false },
+        { id: 3, text: "Faster GPUs", emoji: "⚡", isCorrect: false },
       ],
     },
     {
-      title: "Fine-Tuning Model 🔧",
-      situation: "After several wrong guesses, what improves performance?",
+      id: 4,
+      title: "Model Retraining",
+      emoji: "🔧",
+      question: "When should you retrain an AI model?",
       choices: [
-        { id: 1, text: "Retrain with corrections 🔁", isCorrect: true },
-        { id: 2, text: "Keep same model 📦", isCorrect: false },
+        { id: 1, text: "After corrections", emoji: "🔁", isCorrect: true },
+        { id: 2, text: "Monthly schedule", emoji: "📅", isCorrect: false },
+        { id: 3, text: "Never update", emoji: "🔒", isCorrect: false },
       ],
     },
     {
-      title: "Celebrating Progress 🎯",
-      situation: "The AI’s accuracy rises from 60% → 95%. What does this mean?",
+      id: 5,
+      title: "Performance Metrics",
+      emoji: "📈",
+      question: "What indicates successful AI training?",
       choices: [
-        { id: 1, text: "AI learned correctly 📈", isCorrect: true },
-        { id: 2, text: "AI got lucky 🍀", isCorrect: false },
+        { id: 1, text: "Higher accuracy", emoji: "🎯", isCorrect: true },
+        { id: 2, text: "Faster processing", emoji: "⚡", isCorrect: false },
+        { id: 3, text: "Less memory", emoji: "💾", isCorrect: false },
       ],
     },
   ];
 
+  const getCurrentQuestion = () => questions[currentQuestion];
+
   const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = questions[currentQuestion].choices.find(
-      (c) => c.id === selectedChoice
-    );
-
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins((prev) => prev + 5);
+    const currentQ = getCurrentQuestion();
+    const choice = currentQ.choices.find((c) => c.id === choiceId);
+    const isCorrect = choice.isCorrect;
+    
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: choiceId,
+      isCorrect: isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
+    
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      navigate("/student/ai-for-all/teen/label-error-puzzle"); // next game
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
-  const current = questions[currentQuestion];
-  const selectedChoiceData = current.choices.find((c) => c.id === selectedChoice);
-  const progress = ((currentQuestion + (showFeedback ? 1 : 0)) / questions.length) * 100;
+  const handleNext = () => {
+    // Find next game path
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        if (nextGame) {
+          navigate(nextGame.path);
+        } else {
+          navigate("/student/ai-for-all/teen/label-error-puzzle");
+        }
+      } else {
+        navigate("/student/ai-for-all/teen/label-error-puzzle");
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+      navigate("/student/ai-for-all/teen/label-error-puzzle");
+    }
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Training Accuracy Game"
-      subtitle="Visualize how AI learns through correction"
-      onNext={handleNextQuestion}
-      nextEnabled={showFeedback}
-      showGameOver={currentQuestion === questions.length - 1 && showFeedback}
+      subtitle={showResult ? "Game Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
+      showGameOver={showResult && finalScore >= 3}
       score={coins}
-      gameId="ai-teen-training-accuracy"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={20}
-      currentLevel={45}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/teens"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
       <div className="space-y-8">
-        {/* Accuracy Progress Bar */}
-        <div className="w-full bg-white/20 rounded-full h-4 overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-700"
-            style={{ width: `${progress}%` }}
-          ></div>
-        </div>
-        <p className="text-center text-white text-sm">
-          Accuracy Progress: {Math.round(progress)}%
-        </p>
-
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-4 text-center">🎯</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              {current.title}
-            </h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">
-                {current.situation}
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <div className="text-6xl mb-3 text-center">{currentQuestionData.emoji}</div>
+              <h2 className="text-white text-xl font-bold mb-4 text-center">
+                {currentQuestionData.title}
+              </h2>
+              <p className="text-white text-lg mb-6 text-center">
+                "{currentQuestionData.question}"
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.choices.map((choice) => (
+                  <button
+                    key={choice.id}
+                    onClick={() => handleChoice(choice.id)}
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{choice.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{choice.text}</h3>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="space-y-3 mb-6">
-              {current.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-green-500/50 border-green-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-3xl">{choice.text.split(" ")[1]}</div>
-                    <div className="text-white font-semibold text-lg">
-                      {choice.text}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">
-              {selectedChoiceData?.text.split(" ")[1]}
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "✅ Accuracy Improved!" : "❌ Try Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData?.text}</p>
-
-            {selectedChoiceData?.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Great job! Correcting mistakes helps AI learn and boost accuracy! 📈🤖
-                  </p>
+        ) : showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Training Accuracy Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {questions.length} correctly! ({Math.round((finalScore / questions.length) * 100)}%)
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
                 </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  +5 Coins Earned! 🪙
+                <p className="text-white/80">
+                  💡 Correcting AI mistakes and providing quality data helps improve model accuracy!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {questions.length} correctly. ({Math.round((finalScore / questions.length) * 100)}%)
+                  Keep practicing to learn more about AI training accuracy!
                 </p>
                 <button
-                  onClick={handleNextQuestion}
-                  className="mt-6 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Next Question ➡️
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Oops! Remember, AI improves when you correct wrong predictions. 🔍
-                  </p>
-                </div>
-                <button
                   onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
-                  Try Again 🔁
+                  Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  💡 Correcting AI mistakes and providing quality data helps improve model accuracy!
+                </p>
+              </div>
             )}
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

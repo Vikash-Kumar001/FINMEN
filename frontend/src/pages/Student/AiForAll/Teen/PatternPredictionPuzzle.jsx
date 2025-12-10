@@ -1,163 +1,270 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PatternPredictionPuzzle = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
-  const [showResult, setShowResult] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-teen-2");
+  const gameId = gameData?.id || "ai-teen-2";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
+  const [showResult, setShowResult] = useState(false);
 
-  const puzzles = [
-    { id: 1, sequence: ["2", "4", "6", "8", "?"], correct: "10", options: ["9", "10", "12"] },
-    { id: 2, sequence: ["5", "10", "15", "20", "?"], correct: "25", options: ["22", "25", "30"] },
-    { id: 3, sequence: ["1", "4", "9", "16", "?"], correct: "25", options: ["20", "25", "30"] },
-    { id: 4, sequence: ["100", "90", "80", "70", "?"], correct: "60", options: ["50", "60", "65"] },
-    { id: 5, sequence: ["1", "1", "2", "3", "5", "?"], correct: "8", options: ["6", "7", "8"] },
-    { id: 6, sequence: ["3", "6", "12", "24", "?"], correct: "48", options: ["36", "48", "50"] }
+  // Pattern sequences (left side) - 6 items
+  const leftItems = [
+    { id: 1, name: "2, 4, 6, 8, ?", emoji: "🔢", description: "Even numbers increasing by 2" },
+    { id: 2, name: "5, 10, 15, 20, ?", emoji: "🔢", description: "Multiples of 5" },
+    { id: 3, name: "1, 4, 9, 16, ?", emoji: "🔢", description: "Perfect squares" },
+    { id: 4, name: "100, 90, 80, 70, ?", emoji: "🔢", description: "Decreasing by 10" },
+    { id: 5, name: "1, 1, 2, 3, 5, ?", emoji: "🔢", description: "Fibonacci sequence" }
+    
   ];
 
-  const currentPuzzleData = puzzles[currentPuzzle];
+  // Answers (right side) - 6 items, rearranged to split matches
+  const rightItems = [
+    { id: 2, name: "10", emoji: "🔟", description: "Next even number" },
+    { id: 4, name: "30", emoji: "㉞", description: "Next multiple of 5" },
+    { id: 3, name: "36", emoji: "㉟", description: "Next perfect square" },
+    { id: 1, name: "50", emoji: "㊿", description: "Next in decreasing sequence" },
+    { id: 5, name: "8", emoji: "⑧", description: "Next Fibonacci number" }
+    
+  ];
 
-  const handleAnswer = (answer) => {
-    setSelectedAnswer(answer);
+  // Correct matches (split across different positions for variety)
+  const correctMatches = [
+    { leftId: 1, rightId: 2 }, // 2,4,6,8,? → 10
+    { leftId: 2, rightId: 4 }, // 5,10,15,20,? → 30
+    { leftId: 3, rightId: 3 }, // 1,4,9,16,? → 36
+    { leftId: 4, rightId: 1 }, // 100,90,80,70,? → 50
+    { leftId: 5, rightId: 5 }, // 1,1,2,3,5,? → 8
+  ];
+
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    setSelectedLeft(item);
   };
 
-  const handleConfirm = () => {
-    const isCorrect = selectedAnswer === currentPuzzleData.correct;
-    
-    if (isCorrect) {
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    setSelectedRight(item);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedAnswer(null);
-    
-    if (currentPuzzle < puzzles.length - 1) {
-      setTimeout(() => {
-        setCurrentPuzzle(prev => prev + 1);
-      }, isCorrect ? 800 : 600);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      if ((score + (isCorrect ? 1 : 0)) >= 5) {
-        setCoins(5);
-      }
-      setScore(prev => prev + (isCorrect ? 1 : 0));
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === leftItems.length) {
+      setTimeout(() => {
+        setShowResult(true);
+      }, 800);
+    }
+
+    // Reset selections
+    setSelectedLeft(null);
+    setSelectedRight(null);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentPuzzle(0);
-    setSelectedAnswer(null);
+    setMatches([]);
+    setSelectedLeft(null);
+    setSelectedRight(null);
     setScore(0);
-    setCoins(0);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/student/ai-for-all/teen/image-classifier-game");
+  // Check if a left item is already matched
+  const isLeftItemMatched = (itemId) => {
+    return matches.some(match => match.leftId === itemId);
+  };
+
+  // Check if a right item is already matched
+  const isRightItemMatched = (itemId) => {
+    return matches.some(match => match.rightId === itemId);
+  };
+
+  // Get match result for a left item
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.leftId === itemId);
+    return match ? match.isCorrect : null;
   };
 
   return (
     <GameShell
       title="Pattern Prediction Puzzle"
-      score={coins}
-      subtitle={`Puzzle ${currentPuzzle + 1} of ${puzzles.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && score >= 5}
+      score={score}
+      subtitle={showResult ? "Game Complete!" : `Match Patterns with Answers (${matches.length}/${leftItems.length} matched)`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && score >= 5}
-      
-      gameId="ai-teen-2"
+      showGameOver={showResult}
+      gameId={gameId}
       gameType="ai"
-      totalLevels={20}
-      currentLevel={2}
-      showConfetti={showResult && score >= 5}
+      totalLevels={leftItems.length}
+      currentLevel={matches.length + 1}
+      maxScore={leftItems.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/teens"
     >
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">What comes next?</h3>
-            
-            <div className="bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-xl p-8 mb-6">
-              <div className="flex justify-center items-center gap-4">
-                {currentPuzzleData.sequence.map((num, idx) => (
-                  <div key={idx} className="text-6xl font-bold text-white">
-                    {num}
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Patterns */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Patterns</h3>
+              <div className="space-y-4">
+                {leftItems.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleLeftSelect(item)}
+                    disabled={isLeftItemMatched(item.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isLeftItemMatched(item.id)
+                        ? getMatchResult(item.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedLeft?.id === item.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{item.name}</h4>
+                        <p className="text-white/80 text-sm">{item.description}</p>
+                      </div>
+                    </div>
+                  </button>
                 ))}
               </div>
             </div>
 
-            <h3 className="text-white font-bold mb-4 text-center">Choose the answer:</h3>
-            
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              {currentPuzzleData.options.map((option, idx) => (
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedLeft 
+                    ? `Selected: ${selectedLeft.name}` 
+                    : "Select a Pattern"}
+                </p>
                 <button
-                  key={idx}
-                  onClick={() => handleAnswer(option)}
-                  className={`border-2 rounded-xl p-6 transition-all ${
-                    selectedAnswer === option
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
+                  onClick={handleMatch}
+                  disabled={!selectedLeft || !selectedRight}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedLeft && selectedRight
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  <div className="text-5xl font-bold text-white">{option}</div>
+                  Match
                 </button>
-              ))}
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{leftItems.length}</p>
+                  <p>Matched: {matches.length}/{leftItems.length}</p>
+                </div>
+              </div>
             </div>
 
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedAnswer}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedAnswer
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Answer
-            </button>
+            {/* Right column - Answers */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Answers</h3>
+              <div className="space-y-4">
+                {rightItems.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleRightSelect(item)}
+                    disabled={isRightItemMatched(item.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isRightItemMatched(item.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedRight?.id === item.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{item.name}</h4>
+                        <p className="text-white/80 text-sm">{item.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {score >= 5 ? "🎉 Pattern Master!" : "💪 Keep Practicing!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You solved {score} out of {puzzles.length} patterns correctly!
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 AI uses pattern recognition to make predictions - from weather forecasting to 
-                recommendation systems. You just did what AI does!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              {score >= 5 ? "You earned 5 Coins! 🪙" : "Get 5 or more correct to earn coins!"}
-            </p>
-            {score < 5 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Pattern Master!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {leftItems.length} patterns!
+                  You understand how AI recognizes patterns!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: AI uses pattern recognition to make predictions - from weather forecasting to recommendation systems!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {leftItems.length} patterns correctly.
+                  Remember, pattern recognition is key to AI!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Look for mathematical relationships in sequences - arithmetic progressions, geometric progressions, or special sequences like Fibonacci.
+                </p>
+              </div>
             )}
           </div>
         )}

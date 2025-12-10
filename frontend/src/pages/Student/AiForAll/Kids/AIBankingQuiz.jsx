@@ -30,14 +30,14 @@ const AIBankingQuiz = () => {
       options: [
         { 
           id: "yes", 
-          text: "Yes, it uses AI 🤖", 
+          text: "Yes, it uses AI ", 
           emoji: "✅", 
           description: "AI detects fraud patterns and protects user accounts",
           isCorrect: true
         },
         { 
           id: "no", 
-          text: "No, it's not AI ❌", 
+          text: "No, it's not AI ", 
           emoji: "❌", 
           description: "AI actually identifies suspicious transactions and prevents fraud",
           isCorrect: false
@@ -64,14 +64,14 @@ const AIBankingQuiz = () => {
         },
         { 
           id: "ai", 
-          text: "AI monitoring system 👁️", 
+          text: "AI monitoring system ", 
           emoji: "🤖", 
           description: "AI tracks spending patterns to flag unusual behavior in real time",
           isCorrect: true
         },
         { 
           id: "manual", 
-          text: "Manual checking 🧾", 
+          text: "Manual checking ", 
           emoji: "📋", 
           description: "AI, not humans, monitors for unusual transactions in real time",
           isCorrect: false
@@ -91,14 +91,14 @@ const AIBankingQuiz = () => {
         },
         { 
           id: "no", 
-          text: "By taking deposits 💰", 
+          text: "By taking deposits ", 
           emoji: "🏧", 
           description: "AI chatbots handle conversations, not money directly",
           isCorrect: false
         },
         { 
           id: "yes", 
-          text: "By answering customer questions 24/7 🤖", 
+          text: "By answering customer questions 24/7 ", 
           emoji: "💡", 
           description: "AI chatbots assist customers anytime, anywhere with questions",
           isCorrect: true
@@ -111,14 +111,14 @@ const AIBankingQuiz = () => {
       options: [
         { 
           id: "credit", 
-          text: "Credit data and history 📈", 
+          text: "Credit data and history ", 
           emoji: "📉", 
           description: "AI reviews credit data to speed up loan decisions",
           isCorrect: true
         },
         { 
           id: "random", 
-          text: "Random numbers 🎲", 
+          text: "Random numbers ", 
           emoji: "🎲", 
           description: "AI studies credit history, not random data, to decide loans",
           isCorrect: false
@@ -145,14 +145,14 @@ const AIBankingQuiz = () => {
         },
         { 
           id: "yes", 
-          text: "By detecting fraud and securing transactions 🧠", 
+          text: "By detecting fraud and securing transactions ", 
           emoji: "🛡️", 
           description: "AI ensures secure and safe digital banking",
           isCorrect: true
         },
         { 
           id: "no", 
-          text: "By guessing passwords 🔑", 
+          text: "By guessing passwords ", 
           emoji: "❌", 
           description: "AI defends accounts - it never guesses passwords",
           isCorrect: false

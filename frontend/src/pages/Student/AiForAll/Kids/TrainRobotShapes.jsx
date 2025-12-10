@@ -21,33 +21,94 @@ const TrainRobotShapes = () => {
   const [score, setScore] = useState(0);
   const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [choices, setChoices] = useState([]);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const items = [
-    { id: 1, name: "Red Circle", emoji: "🔴", shape: "circle" },
-    { id: 2, name: "Blue Triangle", emoji: "🔺", shape: "triangle" },
-    { id: 3, name: "Green Circle", emoji: "🟢", shape: "circle" },
-    { id: 4, name: "Yellow Triangle", emoji: "🔻", shape: "triangle" },
-    { id: 5, name: "Purple Circle", emoji: "🟣", shape: "circle" }
+    {
+      id: 1,
+      name: "Red Circle",
+      emoji: "🔴",
+      choices: [
+        { id: 1, text: "Circle Box", shape: "circle", isCorrect: true },
+        { id: 2, text: "Triangle Box", shape: "triangle", isCorrect: false },
+        { id: 3, text: "Square Box", shape: "square", isCorrect: false }
+      ]
+    },
+    {
+      id: 2,
+      name: "Blue Triangle",
+      emoji: "🔺",
+      choices: [
+        { id: 1, text: "Circle Box", shape: "circle", isCorrect: false },
+        { id: 2, text: "Triangle Box", shape: "triangle", isCorrect: true },
+        { id: 3, text: "Rectangle Box", shape: "rectangle", isCorrect: false }
+      ]
+    },
+    {
+      id: 3,
+      name: "Green Circle",
+      emoji: "🟢",
+      choices: [
+        { id: 1, text: "Square Box", shape: "square", isCorrect: false },
+        { id: 2, text: "Circle Box", shape: "circle", isCorrect: true },
+        { id: 3, text: "Triangle Box", shape: "triangle", isCorrect: false }
+      ]
+    },
+    {
+      id: 4,
+      name: "Yellow Triangle",
+      emoji: "🔻",
+      choices: [
+        { id: 1, text: "Rectangle Box", shape: "rectangle", isCorrect: false },
+        { id: 2, text: "Circle Box", shape: "circle", isCorrect: false },
+        { id: 3, text: "Triangle Box", shape: "triangle", isCorrect: true }
+      ]
+    },
+    {
+      id: 5,
+      name: "Purple Circle",
+      emoji: "🟣",
+      choices: [
+        { id: 1, text: "Triangle Box", shape: "triangle", isCorrect: false },
+        { id: 2, text: "Square Box", shape: "square", isCorrect: false },
+        { id: 3, text: "Circle Box", shape: "circle", isCorrect: true }
+      ]
+    }
   ];
 
   const currentItemData = items[currentItem];
 
-  const handleChoice = (boxShape) => {
-    const isCorrect = boxShape === currentItemData.shape;
-
+  const handleChoice = (choiceId) => {
+    const choice = currentItemData.choices.find((c) => c.id === choiceId);
+    const isCorrect = choice.isCorrect;
+    
+    const newChoices = [...choices, { 
+      questionId: currentItemData.id, 
+      choice: choiceId,
+      isCorrect: isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
     if (isCorrect) {
       setScore(prev => prev + 1);
       setCoins(prev => prev + 1); // 1 coin per correct answer
       showCorrectAnswerFeedback(1, true);
     }
-
+    
     if (currentItem < items.length - 1) {
       setTimeout(() => {
         setCurrentItem(prev => prev + 1);
-      }, isCorrect ? 1000 : 300);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setShowResult(true);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
@@ -56,6 +117,8 @@ const TrainRobotShapes = () => {
     setCurrentItem(0);
     setScore(0);
     setCoins(0);
+    setChoices([]);
+    setFinalScore(0);
     resetFeedback();
   };
 
@@ -63,25 +126,23 @@ const TrainRobotShapes = () => {
     navigate("/student/ai-for-all/kids/feedback-matters-story");
   };
 
-  const accuracy = Math.round((score / items.length) * 100);
-
   return (
     <GameShell
       title="Train Robot Shapes"
-      score={coins}
-      subtitle={`Item ${currentItem + 1} of ${items.length}`}
+      score={score}
+      subtitle={showResult ? "Game Complete!" : `Item ${currentItem + 1} of ${items.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
-      
+      showGameOver={showResult && finalScore >= 3}
+      maxScore={items.length}
       gameId={gameId}
       gameType="ai"
-      totalLevels={100}
-      currentLevel={70}
-      showConfetti={showResult && accuracy >= 70}
+      totalLevels={items.length}
+      currentLevel={currentItem + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
@@ -97,21 +158,16 @@ const TrainRobotShapes = () => {
               <div className="text-8xl">{currentItemData.emoji}</div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice("circle")}
-                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-8 rounded-2xl shadow-lg transition-all transform hover:scale-105"
-              >
-                <div className="text-5xl mb-2">⚪</div>
-                <div className="text-white font-bold text-xl">Circle Box</div>
-              </button>
-              <button
-                onClick={() => handleChoice("triangle")}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-8 rounded-2xl shadow-lg transition-all transform hover:scale-105"
-              >
-                <div className="text-5xl mb-2">🔺</div>
-                <div className="text-white font-bold text-xl">Triangle Box</div>
-              </button>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {currentItemData.choices.map((choice) => (
+                <button
+                  key={choice.id}
+                  onClick={() => handleChoice(choice.id)}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                >
+                  <h3 className="font-bold text-xl mb-2">{choice.text}</h3>
+                </button>
+              ))}
             </div>
             
             <div className="mt-6 bg-blue-500/20 rounded-lg p-4">
@@ -121,50 +177,37 @@ const TrainRobotShapes = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {accuracy >= 70 ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  Robot Learned Shapes!
-                </h2>
-                <p className="text-white/90 text-xl mb-4">
-                  You sorted {score} out of {items.length} correctly! ({accuracy}%)
+                <h3 className="text-2xl font-bold text-white mb-4">Robot Learned Shapes!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You sorted {finalScore} out of {items.length} correctly! ({Math.round((finalScore / items.length) * 100)}%)
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{coins} Coins</span>
                 </div>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white/90 text-sm">
-                    🌟 Teaching robots requires lots of correctly sorted examples. You're helping robots understand geometry!
-                  </p>
-                </div>
                 <p className="text-white/80">
-                  Each correct sort helps robots get better at recognizing shapes.
+                  🌟 Teaching robots requires lots of correctly sorted examples. You're helping robots understand geometry!
                 </p>
               </div>
             ) : (
               <div>
                 <div className="text-5xl mb-4">💪</div>
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  Keep Practicing!
-                </h2>
-                <p className="text-white/90 text-xl mb-4">
-                  You sorted {score} out of {items.length} correctly. ({accuracy}%)
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You sorted {finalScore} out of {items.length} correctly. ({Math.round((finalScore / items.length) * 100)}%)
+                  Keep practicing to learn more about shape recognition!
                 </p>
-                <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white/90 text-sm">
-                    💡 Robots need thousands of correctly sorted examples to learn properly. Every correct sort counts!
-                  </p>
-                </div>
                 <button
                   onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-full font-semibold transition"
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-                <p className="text-white/80 text-sm mt-4">
-                  Look carefully at each shape and think about whether it's a circle or triangle before selecting.
+                <p className="text-white/80 text-sm">
+                  💡 Robots need thousands of correctly sorted examples to learn properly. Every correct sort counts!
                 </p>
               </div>
             )}

@@ -1,210 +1,337 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { getGameDataById } from '../../../../utils/getGameData';
+import { getAiTeenGames } from '../../../../pages/Games/GameCategories/AiForAll/teenGamesData';
 
 const RobotConfusionStoryy = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-teen-63";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : "/student/ai-for-all/teen/feedback-loop-reflex",
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: "/student/ai-for-all/teen/feedback-loop-reflex", nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const questions = [
     {
-      title: "Lion vs Tiger 🦁🐯",
-      situation: "AI calls a lion a tiger. How should the teen fix it?",
-      choices: [
-        { id: 1, text: "Give more lion images 🦁", isCorrect: true },
-        { id: 2, text: "Ignore the mistake ❌", isCorrect: false },
-      ],
+      id: 1,
+      text: "AI calls a lion a tiger. How should the teen fix it?",
+      options: [
+        { 
+          id: "lion", 
+          text: "Give more lion images", 
+          emoji: "🦁", 
+          description: "Providing more examples of lions helps the AI distinguish between similar animals",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore the mistake", 
+          emoji: "❌", 
+          description: "Ignoring mistakes prevents the AI from learning and improving its accuracy",
+          isCorrect: false
+        },
+        { 
+          id: "delete", 
+          text: "Delete all data", 
+          emoji: "🗑️", 
+          description: "Deleting data eliminates all learning, not just incorrect patterns",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Apple vs Tomato 🍎🍅",
-      situation: "AI thinks a tomato is an apple. What’s the correction?",
-      choices: [
-        { id: 1, text: "Add correct fruit labels 🏷️", isCorrect: true },
-        { id: 2, text: "Keep wrong label ❌", isCorrect: false },
-      ],
+      id: 2,
+      text: "AI thinks a tomato is an apple. What's the correction?",
+      options: [
+        { 
+          id: "labels", 
+          text: "Add correct fruit labels", 
+          emoji: "🏷️", 
+          description: "Accurate labeling helps AI learn the distinguishing features of different fruits",
+          isCorrect: true
+        },
+        { 
+          id: "wrong", 
+          text: "Keep wrong label", 
+          emoji: "❌", 
+          description: "Keeping incorrect labels reinforces mistaken AI behavior",
+          isCorrect: false
+        },
+        { 
+          id: "remove", 
+          text: "Remove tomatoes", 
+          emoji: "🍅", 
+          description: "Removing examples limits AI learning rather than correcting it",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Car vs Bus 🚗🚌",
-      situation: "AI identifies buses as cars. What should be done?",
-      choices: [
-        { id: 1, text: "Provide more bus images 🚌", isCorrect: true },
-        { id: 2, text: "Delete car data 🚗", isCorrect: false },
-      ],
+      id: 3,
+      text: "AI identifies buses as cars. What should be done?",
+      options: [
+        { 
+          id: "bus", 
+          text: "Provide more bus images", 
+          emoji: "🚌", 
+          description: "Showing more examples of buses helps AI learn to distinguish them from cars",
+          isCorrect: true
+        },
+        { 
+          id: "delete", 
+          text: "Delete car data", 
+          emoji: "🚗", 
+          description: "Deleting car data removes important context that helps AI differentiate vehicles",
+          isCorrect: false
+        },
+        { 
+          id: "merge", 
+          text: "Merge categories", 
+          emoji: "🔄", 
+          description: "Merging categories reduces AI precision rather than improving it",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Cat vs Dog 🐱🐶",
-      situation: "AI mistakes cats for dogs. How do you help AI learn better?",
-      choices: [
-        { id: 1, text: "Add more cat photos 🐱", isCorrect: true },
-        { id: 2, text: "Only show dogs 🐶", isCorrect: false },
-      ],
+      id: 4,
+      text: "AI mistakes cats for dogs. How do you help AI learn better?",
+      options: [
+        { 
+          id: "cat", 
+          text: "Add more cat photos", 
+          emoji: "🐱", 
+          description: "More cat examples help AI recognize the distinguishing features of cats vs dogs",
+          isCorrect: true
+        },
+        { 
+          id: "dogs", 
+          text: "Only show dogs", 
+          emoji: "🐶", 
+          description: "Showing only dogs prevents the AI from learning about cats at all",
+          isCorrect: false
+        },
+        { 
+          id: "blur", 
+          text: "Blur images", 
+          emoji: "🌫️", 
+          description: "Blurring images makes it harder for AI to learn distinguishing features",
+          isCorrect: false
+        }
+      ]
     },
     {
-      title: "Chair vs Table 🪑🪵",
-      situation: "AI confuses chairs with tables. What’s the best fix?",
-      choices: [
-        { id: 1, text: "Train with both furniture types 🪑🪵", isCorrect: true },
-        { id: 2, text: "Use fewer examples ❌", isCorrect: false },
-      ],
-    },
+      id: 5,
+      text: "AI confuses chairs with tables. What's the best fix?",
+      options: [
+        { 
+          id: "both", 
+          text: "Train with both furniture types", 
+          emoji: "🪑🪵", 
+          description: "Showing both types of furniture helps AI learn to distinguish between them",
+          isCorrect: true
+        },
+        { 
+          id: "fewer", 
+          text: "Use fewer examples", 
+          emoji: "❌", 
+          description: "Fewer examples make it harder for AI to learn distinguishing features",
+          isCorrect: false
+        },
+        { 
+          id: "same", 
+          text: "Show only one type", 
+          emoji: "🪑", 
+          description: "Showing only one type prevents AI from learning to differentiate",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleChoice = (choiceId) => setSelectedChoice(choiceId);
-
-  const handleConfirm = () => {
-    const choice = questions[currentQuestion].choices.find(
-      (c) => c.id === selectedChoice
-    );
-
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(10, true);
-      setCoins((prev) => prev + 10);
-    }
-
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      navigate("/student/ai-for-all/teen/feedback-loop-reflex"); // next game path
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
   const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
-  const current = questions[currentQuestion];
-  const selectedChoiceData = current.choices.find((c) => c.id === selectedChoice);
+  const getCurrentQuestion = () => questions[currentQuestion];
+
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Robot Confusion Story game completed! Score: ${finalScore}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, questions.length]);
 
   return (
     <GameShell
-      title="Robot Confusion Story 🤖❓"
-      subtitle="Fixing AI Mistakes"
-      onNext={handleNextQuestion}
-      nextEnabled={showFeedback}
-      showGameOver={currentQuestion === questions.length - 1 && showFeedback}
+      title="Robot Confusion Story"
       score={coins}
-      gameId="ai-teen-robot-confusion"
-      gameType="ai"
-      totalLevels={20}
-      currentLevel={63}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/teens"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-4 text-center">🤖</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              {current.title}
-            </h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">
-                {current.situation}
+      totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
+      gameId={gameId}
+      gameType="ai"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+    >
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <div className="space-y-3 mb-6">
-              {current.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.text.split(" ")[1]}</div>
-                    <div className="text-white font-semibold text-lg">
-                      {choice.text}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">
-              {selectedChoiceData?.text.split(" ")[1]}
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "✅ Corrected!" : "❌ Try Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">
-              {selectedChoiceData?.text}
-            </p>
-
-            {selectedChoiceData?.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Great work! 🧠 You corrected the robot’s mistake with better data. Each fix helps AI learn more accurately! 🚀
-                  </p>
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">✅</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Corrected!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  Great work! You corrected the robot's mistake with better data. Each fix helps AI learn more accurately!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
                 </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  +10 Coins Earned! 🪙
+                <p className="text-white/80 text-sm md:text-base">
+                  Great work! 🧠 You corrected the robot's mistake with better data. Each fix helps AI learn more accurately! 🚀
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Oops! The robot stays confused 🤖💭.
                 </p>
                 <button
-                  onClick={handleNextQuestion}
-                  className="mt-6 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Next Question ➡️
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Oops! The robot stays confused 🤖💭. Try again to correct its understanding with better examples!
-                  </p>
-                </div>
-                <button
                   onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
                 >
-                  Try Again 🔁
+                  Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try again to correct the robot's understanding with better examples!
+                </p>
+              </div>
             )}
           </div>
         )}

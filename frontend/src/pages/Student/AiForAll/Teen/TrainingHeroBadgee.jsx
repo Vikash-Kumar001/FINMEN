@@ -1,122 +1,498 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const TrainingHeroBadgee = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-teen-52";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const trainingGames = [
-    { id: 1, title: "Overfitting Story 🌈" },
-    { id: 2, title: "Balanced Data Story 🌃" },
-    { id: 3, title: "AI Mistake Reflex ⚡" },
-    { id: 4, title: "Human vs AI Errors Quiz 👥" },
-    { id: 5, title: "AI Everywhere Quiz 🌐" },
-    { id: 6, title: "Cyber Safety Reflex 🛡️" },
-    { id: 7, title: "Recommendation Simulation 🎯" },
-    { id: 8, title: "Smart Home Simulation 🏠" },
-    { id: 9, title: "Online Safety Quiz 🔐" },
-    { id: 10, title: "AI in Games Story 🎮" }
+  const challenges = [
+    {
+      id: 1,
+      title: "AI Training Concepts",
+      question: "What is the primary goal when training an AI model?",
+      options: [
+        { 
+          text: "To enable the model to make accurate predictions on new data", 
+          emoji: "🎯", 
+          isCorrect: true
+        },
+        { 
+          text: "To make the model as complex as possible", 
+          emoji: "🤯", 
+          isCorrect: false
+        },
+        { 
+          text: "To use all available computational resources", 
+          emoji: "⚙️", 
+          isCorrect: false
+        },
+        { 
+          text: "To eliminate all human oversight", 
+          emoji: "🤖", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Exactly! The ultimate goal is generalization - making accurate predictions on unseen data!",
+        wrong: "While complexity and computational resources are considerations, the primary goal is predictive accuracy on new data."
+      }
+    },
+    {
+      id: 2,
+      title: "Bias in AI",
+      question: "Which approach helps reduce bias in AI training data?",
+      options: [
+        { 
+          text: "Ensuring diverse and representative datasets", 
+          emoji: "さまざまだ", 
+          isCorrect: true
+        },
+        { 
+          text: "Using data from a single source", 
+          emoji: "单一", 
+          isCorrect: false
+        },
+        { 
+          text: "Increasing dataset size without diversity", 
+          emoji: "📈", 
+          isCorrect: false
+        },
+        { 
+          text: "Removing all sensitive attributes", 
+          emoji: "🙈", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Correct! Diversity and representation in training data are key to reducing algorithmic bias!",
+        wrong: "Simply removing sensitive attributes doesn't eliminate bias; diverse, representative data is more effective."
+      }
+    },
+    {
+      id: 3,
+      title: "Overfitting Prevention",
+      question: "Which technique is commonly used to prevent overfitting?",
+      options: [
+        { 
+          text: "Cross-validation", 
+          emoji: "🔄", 
+          isCorrect: true
+        },
+        { 
+          text: "Increasing model complexity", 
+          emoji: "⬆️", 
+          isCorrect: false
+        },
+        { 
+          text: "Using all data for training", 
+          emoji: "📚", 
+          isCorrect: false
+        },
+        { 
+          text: "Reducing training iterations", 
+          emoji: "⏪", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Right! Cross-validation helps assess model generalization and prevents overfitting!",
+        wrong: "Cross-validation evaluates model performance on multiple data subsets to ensure robust generalization."
+      }
+    },
+    {
+      id: 4,
+      title: "Data Quality",
+      question: "Why is data preprocessing important in AI training?",
+      options: [
+        { 
+          text: "It ensures data consistency and removes noise", 
+          emoji: "🧹", 
+          isCorrect: true
+        },
+        { 
+          text: "It makes datasets larger", 
+          emoji: "📦", 
+          isCorrect: false
+        },
+        { 
+          text: "It speeds up model training", 
+          emoji: "⚡", 
+          isCorrect: false
+        },
+        { 
+          text: "It eliminates the need for validation", 
+          emoji: "❌", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Perfect! Preprocessing cleans data, handles missing values, and ensures consistency for better training!",
+        wrong: "Preprocessing focuses on data quality and consistency, which directly impacts model performance."
+      }
+    },
+    {
+      id: 5,
+      title: "Model Evaluation",
+      question: "What does a confusion matrix primarily show?",
+      options: [
+        { 
+          text: "Predictions vs actual outcomes for classification", 
+          emoji: "📊", 
+          isCorrect: true
+        },
+        { 
+          text: "Training time for different models", 
+          emoji: "⏱️", 
+          isCorrect: false
+        },
+        { 
+          text: "Cost of computational resources", 
+          emoji: "💰", 
+          isCorrect: false
+        },
+        { 
+          text: "Data storage requirements", 
+          emoji: "💾", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Exactly! A confusion matrix displays prediction accuracy by comparing predicted vs actual classifications!",
+        wrong: "A confusion matrix is a table used to evaluate classification model performance by showing prediction results."
+      }
+    },
+    {
+      id: 6,
+      title: "Ethical AI Training",
+      question: "Why should AI developers consider ethical implications during training?",
+      options: [
+        { 
+          text: "To prevent harm and ensure fair treatment of all groups", 
+          emoji: "⚖️", 
+          isCorrect: true
+        },
+        { 
+          text: "To reduce computational costs", 
+          emoji: "省钱", 
+          isCorrect: false
+        },
+        { 
+          text: "To speed up development process", 
+          emoji: "🏃", 
+          isCorrect: false
+        },
+        { 
+          text: "To minimize data usage", 
+          emoji: "📉", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Correct! Ethical considerations help prevent discrimination and ensure AI benefits society broadly!",
+        wrong: "Ethics in AI development focuses on fairness, accountability, and preventing societal harm."
+      }
+    },
+    {
+      id: 7,
+      title: "Feature Engineering",
+      question: "What is the main purpose of feature engineering?",
+      options: [
+        { 
+          text: "To create meaningful input variables for better model performance", 
+          emoji: "🔧", 
+          isCorrect: true
+        },
+        { 
+          text: "To increase the number of features regardless of relevance", 
+          emoji: "📈", 
+          isCorrect: false
+        },
+        { 
+          text: "To reduce computational requirements", 
+          emoji: "🔋", 
+          isCorrect: false
+        },
+        { 
+          text: "To standardize all features to the same scale", 
+          emoji: "📏", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Right! Feature engineering transforms raw data into informative inputs that improve model accuracy!",
+        wrong: "Effective feature engineering creates relevant, discriminative inputs that help models learn better patterns."
+      }
+    },
+    {
+      id: 8,
+      title: "Hyperparameter Tuning",
+      question: "What is the primary goal of hyperparameter tuning?",
+      options: [
+        { 
+          text: "To optimize model performance through parameter adjustment", 
+          emoji: "⚙️", 
+          isCorrect: true
+        },
+        { 
+          text: "To make models run faster", 
+          emoji: "⚡", 
+          isCorrect: false
+        },
+        { 
+          text: "To reduce the number of model parameters", 
+          emoji: "⬇️", 
+          isCorrect: false
+        },
+        { 
+          text: "To standardize model architectures", 
+          emoji: "📐", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Perfect! Hyperparameter tuning finds optimal settings to maximize model effectiveness!",
+        wrong: "Hyperparameter tuning systematically adjusts model configurations to achieve the best performance."
+      }
+    },
+    {
+      id: 9,
+      title: "Transfer Learning",
+      question: "What is a key benefit of transfer learning?",
+      options: [
+        { 
+          text: "Leveraging pre-trained models to solve new problems faster", 
+          emoji: "🚀", 
+          isCorrect: true
+        },
+        { 
+          text: "Eliminating the need for any training data", 
+          emoji: "❌", 
+          isCorrect: false
+        },
+        { 
+          text: "Reducing model interpretability", 
+          emoji: "❓", 
+          isCorrect: false
+        },
+        { 
+          text: "Creating completely unrelated models", 
+          emoji: "🔀", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Exactly! Transfer learning adapts existing models to new tasks, saving time and resources!",
+        wrong: "Transfer learning uses knowledge from pre-trained models to accelerate learning in new domains."
+      }
+    },
+    {
+      id: 10,
+      title: "Continuous Learning",
+      question: "Why is continuous learning important for deployed AI systems?",
+      options: [
+        { 
+          text: "To adapt to changing data patterns and maintain performance", 
+          emoji: "🔄", 
+          isCorrect: true
+        },
+        { 
+          text: "To reduce server costs over time", 
+          emoji: "💰", 
+          isCorrect: false
+        },
+        { 
+          text: "To eliminate the need for monitoring", 
+          emoji: "😴", 
+          isCorrect: false
+        },
+        { 
+          text: "To simplify model architectures", 
+          emoji: "🧩", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Correct! Continuous learning ensures models remain effective as real-world conditions evolve!",
+        wrong: "Concept drift means deployed models need ongoing updates to maintain accuracy and relevance."
+      }
+    }
   ];
 
-  const [completedGames, setCompletedGames] = useState([]);
-  const [showBadge, setShowBadge] = useState(false);
-  const [coins, setCoins] = useState(0);
-
-  const handleCompleteGame = (gameId) => {
-    if (!completedGames.includes(gameId)) {
-      setCompletedGames(prev => [...prev, gameId]);
-      showCorrectAnswerFeedback(3, true); // partial progress feedback
+  const handleAnswer = (isCorrect, optionIndex) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    setSelectedAnswer(optionIndex);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    if (completedGames.length + 1 === trainingGames.length) {
-      // All games completed
-      setCoins(25);
-      setShowBadge(true);
-    }
+    
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
   };
 
-  const handleFinish = () => {
-    navigate("/student/ai-for-all/teen/good-ai-vs-bad-ai-quiz"); // update with actual next game path
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
   };
+
+  const currentChallenge = challenges[challenge];
 
   return (
     <GameShell
-      title="Training Hero Badge 🏅"
-      subtitle="Complete Training & Bias Games"
-      onNext={handleFinish}
-      nextEnabled={showBadge}
-      showGameOver={showBadge}
-      score={coins}
-      gameId="ai-teen-52"
+      title="Badge: Training Hero"
+      subtitle={showResult ? "Badge Earned!" : `Challenge ${challenge + 1} of ${challenges.length}`}
+      showGameOver={showResult}
+      score={score}
+      gameId={gameId}
       gameType="ai"
-      totalLevels={20}
-      currentLevel={52}
-      showConfetti={showBadge}
-      backPath="/games/ai-for-all/teens"
-    
-      maxScore={20} // Max score is total number of questions (all correct)
+      totalLevels={challenges.length}
       coinsPerLevel={coinsPerLevel}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 8}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/ai-for-all/teens"
+    >
       <div className="space-y-8">
-        {!showBadge ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-6 text-center">
-              Training & Bias Games
-            </h2>
-
-            <div className="space-y-4">
-              {trainingGames.map(game => (
-                <button
-                  key={game.id}
-                  onClick={() => handleCompleteGame(game.id)}
-                  disabled={completedGames.includes(game.id)}
-                  className={`w-full p-4 rounded-xl text-white font-semibold transition ${
-                    completedGames.includes(game.id)
-                      ? "bg-green-500/50 cursor-not-allowed"
-                      : "bg-blue-500/30 hover:bg-blue-500/50"
-                  }`}
-                >
-                  {completedGames.includes(game.id) ? "✅ " : "🔹 "} {game.title}
-                </button>
-              ))}
+        {!showResult && currentChallenge ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallenge.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(option.isCorrect, idx)}
+                    disabled={answered}
+                    className={`bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3 ${
+                      answered && selectedAnswer === idx
+                        ? option.isCorrect
+                          ? "ring-4 ring-green-400"
+                          : "ring-4 ring-red-400"
+                        : ""
+                    }`}
+                  >
+                    <span className="text-2xl">{option.emoji}</span>
+                    <span className="font-bold text-lg">{option.text}</span>
+                  </button>
+                ))}
+              </div>
+              
+              {answered && (
+                <div className={`mt-4 p-4 rounded-xl ${
+                  currentChallenge.options[selectedAnswer]?.isCorrect
+                    ? "bg-green-500/20 border border-green-500/30"
+                    : "bg-red-500/20 border border-red-500/30"
+                }`}>
+                  <p className="text-white font-semibold">
+                    {currentChallenge.options[selectedAnswer]?.isCorrect
+                      ? currentChallenge.feedback.correct
+                      : currentChallenge.feedback.wrong}
+                  </p>
+                </div>
+              )}
             </div>
-
-            <p className="text-white/80 mt-6 text-center">
-              Complete all 10 training and bias games to earn the <strong>AI Teacher Badge 🏅</strong>!
-            </p>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-9xl mb-6">🏅</div>
-            <h2 className="text-3xl font-bold text-white mb-4">Congratulations!</h2>
-            <p className="text-white/90 text-lg mb-4">
-              You completed all 10 training and bias games and earned the <strong>AI Teacher Badge</strong>!
-            </p>
-
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center">
-                💡 This badge recognizes your AI literacy and consistent learning. Keep training AI every day! 🚀
-              </p>
-            </div>
-
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              +25 Coins Earned! 🪙
-            </p>
-
-            <button
-              onClick={handleFinish}
-              className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90 transition"
-            >
-              Finish & Continue ➡️
-            </button>
+            {score >= 8 ? (
+              <div>
+                <div className="text-6xl mb-4">🏅</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Training Hero Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-6">
+                  Outstanding! You demonstrated expert knowledge with {score} correct answers out of {challenges.length}!
+                </p>
+                
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-2xl mb-6">
+                  <h4 className="text-2xl font-bold mb-2">🎉 Achievement Unlocked!</h4>
+                  <p className="text-xl">Badge: Training Hero</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-green-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-green-300 mb-2">AI Training Mastery</h4>
+                    <p className="text-white/90 text-sm">
+                      You understand advanced concepts including bias reduction, overfitting prevention, and continuous learning.
+                    </p>
+                  </div>
+                  <div className="bg-blue-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-blue-300 mb-2">Ethical Development</h4>
+                    <p className="text-white/90 text-sm">
+                      You recognize the importance of ethical considerations and responsible AI development practices.
+                    </p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    // Navigate to next game path
+                    window.location.href = "/student/ai-for-all/teen/good-ai-vs-bad-ai-quiz";
+                  }}
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white py-3 px-8 rounded-full font-bold text-lg transition-all mb-4"
+                >
+                  Continue Learning
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Training!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {score} questions correctly out of {challenges.length}.
+                </p>
+                <p className="text-white/90 mb-6">
+                  Review concepts of bias reduction, model evaluation, feature engineering, and ethical AI development.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

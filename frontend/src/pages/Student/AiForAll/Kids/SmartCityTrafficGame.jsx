@@ -33,21 +33,21 @@ const SmartCityTrafficGame = () => {
       options: [
         { 
           id: "stop", 
-          text: "Stop Completely 🛑", 
+          text: "Stop Completely ", 
           emoji: "✋", 
           description: "Red means stop! Wait for the light to change before moving.",
           isCorrect: true
         },
         { 
           id: "go", 
-          text: "Go Fast 🏃", 
+          text: "Go Fast ", 
           emoji: "🏃", 
           description: "Never go on red! This would be dangerous and illegal.",
           isCorrect: false
         },
         { 
           id: "slow", 
-          text: "Slow Down 🐢", 
+          text: "Slow Down ", 
           emoji: "🐢", 
           description: "Red means complete stop, not just slowing down.",
           isCorrect: false
@@ -60,21 +60,21 @@ const SmartCityTrafficGame = () => {
       options: [
         { 
           id: "stop", 
-          text: "Stop Completely 🛑", 
+          text: "Stop Completely ", 
           emoji: "✋", 
           description: "If you can safely stop, you should. But yellow warns you to prepare to stop.",
           isCorrect: false
         },
         { 
           id: "prepare", 
-          text: "Prepare to Stop ⚠️", 
+          text: "Prepare to Stop ", 
           emoji: "⚠️", 
           description: "Yellow warns drivers to prepare to stop as the light is changing to red.",
           isCorrect: true
         },
         { 
           id: "go", 
-          text: "Go Faster 🏃", 
+          text: "Go Faster ", 
           emoji: "🏃", 
           description: "Never speed up on yellow! This increases accident risk.",
           isCorrect: false
@@ -87,21 +87,21 @@ const SmartCityTrafficGame = () => {
       options: [
         { 
           id: "stop", 
-          text: "Stop Completely 🛑", 
+          text: "Stop Completely ", 
           emoji: "✋", 
           description: "Green means go, not stop. Only stop if pedestrians are crossing.",
           isCorrect: false
         },
         { 
           id: "caution", 
-          text: "Proceed with Caution 🛡️", 
+          text: "Proceed with Caution ", 
           emoji: "🛡️", 
           description: "Look both ways and proceed carefully when the light is green.",
           isCorrect: false
         },
         { 
           id: "go", 
-          text: "Go Safely ✅", 
+          text: "Go Safely ", 
           emoji: "✅", 
           description: "Green means go! Proceed safely in the direction of the arrow.",
           isCorrect: true
@@ -114,21 +114,21 @@ const SmartCityTrafficGame = () => {
       options: [
         { 
           id: "random", 
-          text: "Changes Randomly 🎲", 
+          text: "Changes Randomly ", 
           emoji: "🎲", 
           description: "AI uses data, not randomness, to optimize traffic flow.",
           isCorrect: false
         },
         { 
           id: "optimize", 
-          text: "Optimizes Traffic Flow 🚦", 
+          text: "Optimizes Traffic Flow ", 
           emoji: "🚦", 
           description: "AI analyzes traffic patterns to reduce wait times and congestion.",
           isCorrect: true
         },
         { 
           id: "ignore", 
-          text: "Ignores Traffic 🚫", 
+          text: "Ignores Traffic ", 
           emoji: "🚫", 
           description: "AI actively manages traffic, it doesn't ignore it.",
           isCorrect: false
@@ -141,21 +141,21 @@ const SmartCityTrafficGame = () => {
       options: [
         { 
           id: "waste", 
-          text: "Waste More Time ⏳", 
+          text: "Waste More Time ", 
           emoji: "⏳", 
           description: "Smart lights reduce wait times, not increase them.",
           isCorrect: false
         },
         { 
           id: "reduce", 
-          text: "Reduce Congestion 🚗", 
+          text: "Reduce Congestion ", 
           emoji: "🚗", 
           description: "Smart lights adapt to traffic patterns to reduce congestion and wait times.",
           isCorrect: true
         },
         { 
           id: "confuse", 
-          text: "Confuse Drivers 🤔", 
+          text: "Confuse Drivers ", 
           emoji: "🤔", 
           description: "Smart lights make driving easier and safer, not more confusing.",
           isCorrect: false

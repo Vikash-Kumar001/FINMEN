@@ -14,33 +14,94 @@ const SortingColors = () => {
   const [score, setScore] = useState(0);
   const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [choices, setChoices] = useState([]);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const items = [
-    { id: 1, emoji: "🍎", color: "red", correctBox: "red" },
-    { id: 2, emoji: "🔵", color: "blue", correctBox: "blue" },
-    { id: 3, emoji: "🌹", color: "red", correctBox: "red" },
-    { id: 4, emoji: "🦋", color: "blue", correctBox: "blue" },
-    { id: 5, emoji: "🍓", color: "red", correctBox: "red" }
+    {
+      id: 1,
+      emoji: "🍎",
+      color: "red",
+      choices: [
+        { id: 1, text: "Red Box",  isCorrect: true },
+        { id: 2, text: "Blue Box",  isCorrect: false },
+        { id: 3, text: "Green Box",  isCorrect: false }
+      ]
+    },
+    {
+      id: 2,
+      emoji: "🔵",
+      color: "blue",
+      choices: [
+        { id: 1, text: "Yellow Box",  isCorrect: false },
+        { id: 2, text: "Blue Box",  isCorrect: true },
+        { id: 3, text: "Red Box",  isCorrect: false }
+      ]
+    },
+    {
+      id: 3,
+      emoji: "🌹",
+      color: "red",
+      choices: [
+        { id: 1, text: "Purple Box",  isCorrect: false },
+        { id: 2, text: "Green Box",  isCorrect: false },
+        { id: 3, text: "Red Box",  isCorrect: true }
+      ]
+    },
+    {
+      id: 4,
+      emoji: "🦋",
+      color: "orange",
+      choices: [
+        { id: 1, text: "Red Box",  isCorrect: false },
+        { id: 2, text: "Orange Box",  isCorrect: true },
+        { id: 3, text: "Blue Box",  isCorrect: false }
+      ]
+    },
+    {
+      id: 5,
+      emoji: "🍓",
+      color: "red",
+      choices: [
+        { id: 1, text: "Blue Box",  isCorrect: false },
+        { id: 2, text: "Pink Box",  isCorrect: false },
+        { id: 3, text: "Red Box",  isCorrect: true }
+      ]
+    }
   ];
 
   const currentItemData = items[currentItem];
 
-  const handleBoxChoice = (box) => {
-    const isCorrect = box === currentItemData.correctBox;
+  const handleChoice = (choiceId) => {
+    const choice = currentItemData.choices.find((c) => c.id === choiceId);
+    const isCorrect = choice.isCorrect;
+    
+    const newChoices = [...choices, { 
+      questionId: currentItemData.id, 
+      choice: choiceId,
+      isCorrect: isCorrect
+    }];
+    
+    setChoices(newChoices);
     
     if (isCorrect) {
       setScore(prev => prev + 1);
-      setCoins(prev => prev + 2);
-      showCorrectAnswerFeedback(1, false);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
     if (currentItem < items.length - 1) {
       setTimeout(() => {
         setCurrentItem(prev => prev + 1);
-      }, 300);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setShowResult(true);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
@@ -49,6 +110,8 @@ const SortingColors = () => {
     setCurrentItem(0);
     setScore(0);
     setCoins(0);
+    setChoices([]);
+    setFinalScore(0);
     resetFeedback();
   };
 
@@ -56,25 +119,23 @@ const SortingColors = () => {
     navigate("/student/ai-for-all/kids/true-false-ai-quiz");
   };
 
-  const accuracy = Math.round((score / items.length) * 100);
-
   return (
     <GameShell
       title="Sorting Colors"
       score={score}
-      subtitle={`Item ${currentItem + 1} of ${items.length}`}
+      subtitle={showResult ? "Game Complete!" : `Item ${currentItem + 1} of ${items.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
+      showGameOver={showResult && finalScore >= 3}
       gameId="ai-kids-3"
       gameType="ai"
       totalLevels={items.length}
       maxScore={items.length}
-      currentLevel={3}
-      showConfetti={showResult && accuracy >= 70}
+      currentLevel={currentItem + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
@@ -88,46 +149,53 @@ const SortingColors = () => {
               <div className="text-9xl animate-pulse">{currentItemData.emoji}</div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleBoxChoice("red")}
-                className="bg-red-500/30 hover:bg-red-500/50 border-3 border-red-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-4xl mb-2">🔴</div>
-                <div className="text-white font-bold text-xl">Red Box</div>
-              </button>
-              <button
-                onClick={() => handleBoxChoice("blue")}
-                className="bg-blue-500/30 hover:bg-blue-500/50 border-3 border-blue-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-4xl mb-2">🔵</div>
-                <div className="text-white font-bold text-xl">Blue Box</div>
-              </button>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {currentItemData.choices.map((choice) => (
+                <button
+                  key={choice.id}
+                  onClick={() => handleChoice(choice.id)}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                >
+                  <div className="text-2xl mb-2">{choice.emoji}</div>
+                  <h3 className="font-bold text-xl mb-2">{choice.text}</h3>
+                </button>
+              ))}
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {accuracy >= 70 ? "🎉 Sorting Champion!" : "💪 Keep Trying!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You sorted {score} out of {items.length} correctly! ({accuracy}%)
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 You learned data grouping! AI groups similar things together, just like you did!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned {coins} Coins! 🪙
-            </p>
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Sorting Champion!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {items.length} correctly! ({Math.round((finalScore / items.length) * 100)}%)
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  💡 You learned data grouping! AI groups similar things together, just like you did!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {items.length} correctly. ({Math.round((finalScore / items.length) * 100)}%)
+                  Keep practicing to learn more about data grouping!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  💡 You learned data grouping! AI groups similar things together, just like you did!
+                </p>
+              </div>
             )}
           </div>
         )}

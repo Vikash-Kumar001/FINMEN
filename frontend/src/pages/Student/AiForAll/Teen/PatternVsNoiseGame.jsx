@@ -2,188 +2,239 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getAiTeenGames } from '../../../../pages/Games/GameCategories/AiForAll/teenGamesData';
 
 const PatternVsNoiseGame = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [score, setScore] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-teen-70");
+  const gameId = gameData?.id || "ai-teen-70";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      title: "Question 1",
-      prompt: "Which image is clean training data?",
-      options: [
-        { id: 1, label: "Noisy Scribbles", isCorrect: false },
-        { id: 2, label: "Clear Pattern", isCorrect: true },
+      title: "Pattern Recognition",
+      emoji: "🔍",
+      question: "What makes data suitable for AI training?",
+      choices: [
+        { id: 1, text: "Clear patterns", emoji: "🎯", isCorrect: true },
+        { id: 2, text: "Random noise", emoji: "🌪️", isCorrect: false },
+        { id: 3, text: "Blurry images", emoji: "🌫️", isCorrect: false },
       ],
     },
     {
       id: 2,
-      title: "Question 2",
-      prompt: "Pick the correct data for AI training.",
-      options: [
-        { id: 1, label: "Random Noise", isCorrect: false },
-        { id: 2, label: "Structured Pattern", isCorrect: true },
+      title: "Data Quality",
+      emoji: "📊",
+      question: "Which data helps AI learn better?",
+      choices: [
+        { id: 1, text: "Structured data", emoji: "📋", isCorrect: true },
+        { id: 2, text: "Scattered points", emoji: "🌀", isCorrect: false },
+        { id: 3, text: "Missing values", emoji: "🕳️", isCorrect: false },
       ],
     },
     {
       id: 3,
-      title: "Question 3",
-      prompt: "Identify good quality data for AI.",
-      options: [
-        { id: 1, label: "Blurry Scribbles", isCorrect: false },
-        { id: 2, label: "Clear Shapes", isCorrect: true },
+      title: "Training Sets",
+      emoji: "📚",
+      question: "What should good training data contain?",
+      choices: [
+        { id: 1, text: "Consistent examples", emoji: "整齐", isCorrect: true },
+        { id: 2, text: "Random samples", emoji: "🔀", isCorrect: false },
+        { id: 3, text: "Duplicate entries", emoji: "复印", isCorrect: false },
       ],
     },
     {
       id: 4,
-      title: "Question 4",
-      prompt: "Which training set will help AI learn better?",
-      options: [
-        { id: 1, label: "Messy Noise", isCorrect: false },
-        { id: 2, label: "Clean Data", isCorrect: true },
+      title: "Noise Reduction",
+      emoji: "🔇",
+      question: "Why remove noise from training data?",
+      choices: [
+        { id: 1, text: "Improve accuracy", emoji: "📈", isCorrect: true },
+        { id: 2, text: "Save storage", emoji: "💾", isCorrect: false },
+        { id: 3, text: "Speed up process", emoji: "⚡", isCorrect: false },
       ],
     },
     {
       id: 5,
-      title: "Question 5",
-      prompt: "Pick the correct data for teaching AI.",
-      options: [
-        { id: 1, label: "Random Scribbles", isCorrect: false },
-        { id: 2, label: "Organized Pattern", isCorrect: true },
+      title: "AI Performance",
+      emoji: "🤖",
+      question: "What indicates quality training data?",
+      choices: [
+        { id: 1, text: "Predictive power", emoji: "🔮", isCorrect: true },
+        { id: 2, text: "Large size", emoji: "🐘", isCorrect: false },
+        { id: 3, text: "Visual appeal", emoji: "🎨", isCorrect: false },
       ],
     },
   ];
 
-  const current = questions[currentQuestion];
-  const selectedOption = current.options.find(opt => opt.id === selectedAnswer);
+  const getCurrentQuestion = () => questions[currentQuestion];
 
-  const handleSelect = (id) => {
-    setSelectedAnswer(id);
-  };
-
-  const handleConfirm = () => {
-    if (selectedOption.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setScore(prev => prev + 1);
-      setCoins(prev => prev + 5);
+  const handleChoice = (choiceId) => {
+    const currentQ = getCurrentQuestion();
+    const choice = currentQ.choices.find((c) => c.id === choiceId);
+    const isCorrect = choice.isCorrect;
+    
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: choiceId,
+      isCorrect: isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
+    
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-        setSelectedAnswer(null);
-        resetFeedback();
-      }, 800);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setShowResult(true);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
   const handleTryAgain = () => {
-    setCurrentQuestion(0);
-    setSelectedAnswer(null);
-    setScore(0);
-    setCoins(0);
     setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
   const handleNext = () => {
-    navigate("/student/ai-for-all/teen/teach-ai-emotions"); // Update to next game
+    // Find next game path
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        if (nextGame) {
+          navigate(nextGame.path);
+        } else {
+          navigate("/student/ai-for-all/teen/teach-ai-emotions");
+        }
+      } else {
+        navigate("/student/ai-for-all/teen/teach-ai-emotions");
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+      navigate("/student/ai-for-all/teen/teach-ai-emotions");
+    }
   };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Pattern vs Noise Game"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={showResult ? "Game Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
+      nextEnabled={showResult && finalScore >= 3}
+      showGameOver={showResult && finalScore >= 3}
       score={coins}
-      gameId="ai-teen-70"
+      gameId={gameId}
       gameType="ai"
-      totalLevels={20}
-      currentLevel={70}
-      showConfetti={showResult && score >= 3}
-      maxScore={questions.length} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/teens"
-    >
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">{current.title}</h3>
-            <p className="text-white/90 mb-6 text-center">{current.prompt}</p>
-
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              {current.options.map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => handleSelect(opt.id)}
-                  className={`border-2 rounded-xl p-6 transition-all ${
-                    selectedAnswer === opt.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
-                  }`}
-                >
-                  <div className="text-white font-bold text-lg">{opt.label}</div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedAnswer}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedAnswer
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Answer
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {score >= 3 ? "🎉 Well Done!" : "💪 Keep Practicing!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You selected {score} out of {questions.length} correct data patterns!
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 AI learns better with clean data. Choosing good training examples ensures smarter AI predictions.
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <div className="text-6xl mb-3 text-center">{currentQuestionData.emoji}</div>
+              <h2 className="text-white text-xl font-bold mb-4 text-center">
+                {currentQuestionData.title}
+              </h2>
+              <p className="text-white text-lg mb-6 text-center">
+                "{currentQuestionData.question}"
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.choices.map((choice) => (
+                  <button
+                    key={choice.id}
+                    onClick={() => handleChoice(choice.id)}
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{choice.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{choice.text}</h3>
+                  </button>
+                ))}
+              </div>
             </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              {score >= 3 ? `You earned ${coins} Coins! 🪙` : "Try again to earn coins!"}
-            </p>
-            {score < 3 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          </div>
+        ) : showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Pattern Recognition Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {questions.length} correctly! ({Math.round((finalScore / questions.length) * 100)}%)
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  💡 Clean data with clear patterns helps AI learn and make accurate predictions!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {questions.length} correctly. ({Math.round((finalScore / questions.length) * 100)}%)
+                  Keep practicing to learn more about pattern recognition!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  💡 Clean data with clear patterns helps AI learn and make accurate predictions!
+                </p>
+              </div>
             )}
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

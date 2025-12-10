@@ -1,195 +1,279 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getAiTeenGames } from "../../../../pages/Games/GameCategories/AiForAll/teenGamesData";
 
 const AiDoctorQuizz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ai-teen-31";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     { 
       id: 1, 
       text: "AI can detect diseases from X-rays?", 
       emoji: "🩻", 
-      choices: [
-        { id: 1, text: "Yes", isCorrect: true },
-        { id: 2, text: "No", isCorrect: false }
-      ]
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Correct - AI can analyze medical images to detect diseases",
+          isCorrect: true 
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "❌", 
+          description: "Incorrect - AI is used in medical imaging for disease detection",
+          isCorrect: false 
+        }
+      ],
+      explanation: "AI can detect patterns in medical images and patient data, helping doctors diagnose diseases faster and more accurately."
     },
     { 
       id: 2, 
       text: "AI can suggest personalized medicine based on patient data?", 
       emoji: "💊", 
-      choices: [
-        { id: 1, text: "Yes", isCorrect: true },
-        { id: 2, text: "No", isCorrect: false }
-      ]
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Correct - AI analyzes patient data to recommend treatments",
+          isCorrect: true 
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "❌", 
+          description: "Incorrect - Personalized medicine uses AI to tailor treatments",
+          isCorrect: false 
+        }
+      ],
+      explanation: "AI analyzes vast amounts of patient data to recommend personalized treatment plans, improving healthcare outcomes."
     },
     { 
       id: 3, 
       text: "AI can perform surgery independently without human supervision?", 
       emoji: "🏥", 
-      choices: [
-        { id: 1, text: "Yes", isCorrect: false },
-        { id: 2, text: "No", isCorrect: true }
-      ]
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Incorrect - Surgical robots require human oversight",
+          isCorrect: false 
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "❌", 
+          description: "Correct - AI assists but doesn't replace surgeons",
+          isCorrect: true 
+        }
+      ],
+      explanation: "While AI assists in surgeries, human supervision is essential. AI enhances precision but doesn't replace surgeons."
     },
     { 
       id: 4, 
-      text: "AI can monitor patients’ vital signs in real-time?", 
+      text: "AI can monitor patients' vital signs in real-time?", 
       emoji: "🩺", 
-      choices: [
-        { id: 1, text: "Yes", isCorrect: true },
-        { id: 2, text: "No", isCorrect: false }
-      ]
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Correct - AI continuously tracks patient vitals",
+          isCorrect: true 
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "❌", 
+          description: "Incorrect - Real-time monitoring uses AI technology",
+          isCorrect: false 
+        }
+      ],
+      explanation: "AI-powered devices continuously monitor vital signs, alerting healthcare providers to any concerning changes."
     },
     { 
       id: 5, 
       text: "AI can replace doctors completely?", 
       emoji: "👨‍⚕️", 
-      choices: [
-        { id: 1, text: "Yes", isCorrect: false },
-        { id: 2, text: "No", isCorrect: true }
-      ]
+      options: [
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Incorrect - AI supports but doesn't replace doctors",
+          isCorrect: false 
+        },
+        { 
+          id: 2, 
+          text: "No", 
+          emoji: "❌", 
+          description: "Correct - Doctors provide irreplaceable human judgment",
+          isCorrect: true 
+        }
+      ],
+      explanation: "AI enhances healthcare but cannot replace human doctors. Empathy, ethics, and complex decision-making require human expertise."
     }
   ];
 
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
-  const [showFeedback, setShowFeedback] = useState(false);
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = questions[currentQuestion].choices.find(c => c.id === selectedChoice);
-
-    if (choice.isCorrect) {
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
+    if (isCorrect) {
       setScore(prev => prev + 1);
-      setCoins(prev => prev + 1); // 1 coin per correct answer
-      showCorrectAnswerFeedback(1, false);
-    }
-
-    setShowFeedback(true);
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      // Quiz finished, navigate to next game
-      navigate("/student/ai-for-all/teen/music-playlist-ai");
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const selectedChoiceData = selectedChoice
-    ? questions[currentQuestion].choices.find(c => c.id === selectedChoice)
-    : null;
-
-  const question = questions[currentQuestion];
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="AI Doctor Quiz"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNextQuestion}
-      nextEnabled={showFeedback}
-      showGameOver={showFeedback && currentQuestion === questions.length - 1}
-      score={coins}
-      gameId="ai-teen-31"
-      gameType="ai"
-      totalLevels={20}
-      currentLevel={31}
-      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/ai-for-all/teens"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-6 text-center">{question.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-8">
-              <p className="text-white text-2xl leading-relaxed text-center font-semibold">
-                {question.text}
+      totalXp={totalXp}
+      gameId={gameId}
+      gameType="ai"
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
+    >
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {answered && (
+                <div className={`rounded-lg p-4 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white text-center">
+                    {currentQuestionData.explanation}
+                  </p>
+                </div>
+              )}
             </div>
-
-            <div className="space-y-3 mb-6">
-              {question.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-5xl">{choice.text === "Yes" ? "✅" : "❌"}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Answer
-            </button>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "🎉" : "❌"}
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData?.isCorrect ? "Correct!" : "Not Quite..."}
-            </h2>
-            
-            <div className={`bg-${selectedChoiceData?.isCorrect ? 'green' : 'red'}-500/20 rounded-lg p-4 mb-4`}>
-              <p className="text-white text-center">
-                {selectedChoiceData?.isCorrect
-                  ? "AI can detect patterns in medical images and patient data, helping doctors diagnose diseases faster and more accurately."
-                  : "Remember, AI in healthcare assists doctors in diagnosis, but it doesn't replace human judgement!"}
-              </p>
-            </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              {selectedChoiceData?.isCorrect ? "You earned 1 Coin! 🪙" : ""}
-            </p>
-
-            <button
-              onClick={handleNextQuestion}
-              className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-            >
-              {currentQuestion < questions.length - 1 ? "Next Question" : "Finish Quiz"}
-            </button>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

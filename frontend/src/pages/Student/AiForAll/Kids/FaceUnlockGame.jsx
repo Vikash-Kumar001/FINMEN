@@ -12,34 +12,92 @@ const FaceUnlockGame = () => {
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentFace, setCurrentFace] = useState(0);
   const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [choices, setChoices] = useState([]);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   // Array of faces: exactly 5 as per project specification
   const faces = [
-    { id: 1, emoji: "😊", correct: true },
-    { id: 2, emoji: "😎", correct: false },
-    { id: 3, emoji: "😇", correct: true },
-    { id: 4, emoji: "😡", correct: false },
-    { id: 5, emoji: "🙂", correct: true }
+    {
+      id: 1,
+      emoji: "😊",
+      choices: [
+        { id: 1, text: "Can Unlock Phone", isCorrect: true },
+        { id: 2, text: "Cannot Unlock Phone", isCorrect: false },
+        { id: 3, text: "Needs Password", isCorrect: false }
+      ]
+    },
+    {
+      id: 2,
+      emoji: "😎",
+      choices: [
+        { id: 1, text: "Can Unlock Phone", isCorrect: false },
+        { id: 2, text: "Cannot Unlock Phone", isCorrect: true },
+        { id: 3, text: "Needs Fingerprint", isCorrect: false }
+      ]
+    },
+    {
+      id: 3,
+      emoji: "😇",
+      choices: [
+        { id: 1, text: "Cannot Unlock Phone", isCorrect: false },
+        { id: 2, text: "Needs Password", isCorrect: false },
+        { id: 3, text: "Can Unlock Phone", isCorrect: true }
+      ]
+    },
+    {
+      id: 4,
+      emoji: "😡",
+      choices: [
+        { id: 1, text: "Cannot Unlock Phone", isCorrect: true },
+        { id: 2, text: "Can Unlock Phone", isCorrect: false },
+        { id: 3, text: "Needs Face Scan", isCorrect: false }
+      ]
+    },
+    {
+      id: 5,
+      emoji: "🙂",
+      choices: [
+        { id: 1, text: "Needs Voice Recognition", isCorrect: false },
+        { id: 2, text: "Can Unlock Phone", isCorrect: true },
+        { id: 3, text: "Cannot Unlock Phone", isCorrect: false }
+      ]
+    }
   ];
 
   const currentFaceData = faces[currentFace];
 
-  const handleChoice = (choice) => {
-    const isCorrect = choice === currentFaceData.correct;
-
+  const handleChoice = (choiceId) => {
+    const choice = currentFaceData.choices.find((c) => c.id === choiceId);
+    const isCorrect = choice.isCorrect;
+    
+    const newChoices = [...choices, { 
+      questionId: currentFaceData.id, 
+      choice: choiceId,
+      isCorrect: isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
     if (isCorrect) {
       setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
+    
     if (currentFace < faces.length - 1) {
       setTimeout(() => {
         setCurrentFace(prev => prev + 1);
-      }, 300);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setShowResult(true);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
@@ -47,6 +105,9 @@ const FaceUnlockGame = () => {
     setShowResult(false);
     setCurrentFace(0);
     setScore(0);
+    setCoins(0);
+    setChoices([]);
+    setFinalScore(0);
     resetFeedback();
   };
 
@@ -54,25 +115,23 @@ const FaceUnlockGame = () => {
     navigate("/student/ai-for-all/kids/ai-or-human-quiz"); // update next route as needed
   };
 
-  const accuracy = Math.round((score / faces.length) * 100);
-
   return (
     <GameShell
       title="Face Unlock Game"
       score={score}
-      subtitle={`Face ${currentFace + 1} of ${faces.length}`}
+      subtitle={showResult ? "Game Complete!" : `Face ${currentFace + 1} of ${faces.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
-      
+      showGameOver={showResult && finalScore >= 3}
+      maxScore={faces.length}
       gameId="ai-kids-32"
       gameType="ai"
-      totalLevels={20}
-      currentLevel={32}
-      showConfetti={showResult && accuracy >= 70}
+      totalLevels={faces.length}
+      currentLevel={currentFace + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
@@ -81,48 +140,54 @@ const FaceUnlockGame = () => {
         {!showResult ? (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
             <div className="text-9xl mb-6 text-center animate-pulse">{currentFaceData.emoji}</div>
-            <h3 className="text-white text-xl font-bold mb-6 text-center">Does this face unlock the phone?</h3>
+            <h3 className="text-white text-xl font-bold mb-6 text-center">Can this face unlock the phone?</h3>
 
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice(true)}
-                className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-5xl mb-2">🔓</div>
-                <div className="text-white font-bold text-xl">UNLOCK</div>
-              </button>
-              <button
-                onClick={() => handleChoice(false)}
-                className="bg-red-500/30 hover:bg-red-500/50 border-3 border-red-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-5xl mb-2">🔒</div>
-                <div className="text-white font-bold text-xl">LOCK</div>
-              </button>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {currentFaceData.choices.map((choice) => (
+                <button
+                  key={choice.id}
+                  onClick={() => handleChoice(choice.id)}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                >
+                  <h3 className="font-bold text-xl mb-2">{choice.text}</h3>
+                </button>
+              ))}
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {accuracy >= 70 ? "🎉 Phone Unlocked!" : "💪 Keep Practicing!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You recognized {score} out of {faces.length} faces correctly! ({accuracy}%)
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Facial recognition AI helps devices unlock securely. Good job noticing the right faces!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned {score} Points! 🪙
-            </p>
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Phone Unlocked!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You recognized {finalScore} out of {faces.length} faces correctly! ({Math.round((finalScore / faces.length) * 100)}%)
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  💡 Facial recognition AI helps devices unlock securely. Good job noticing the right faces!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You recognized {finalScore} out of {faces.length} faces correctly. ({Math.round((finalScore / faces.length) * 100)}%)
+                  Keep practicing to learn more about facial recognition!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  💡 Facial recognition AI helps devices unlock securely. Good job noticing the right faces!
+                </p>
+              </div>
             )}
           </div>
         )}

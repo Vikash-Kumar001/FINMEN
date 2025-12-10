@@ -21,6 +21,8 @@ const DataLabelingGame = () => {
   const [score, setScore] = useState(0);
   const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [choices, setChoices] = useState([]);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   // Items to label with educational context
@@ -28,48 +30,68 @@ const DataLabelingGame = () => {
     { 
       id: 1, 
       image: "🍎", 
-      correct: "Apple",
+      choices: [
+        { id: 1, text: "Apple", isCorrect: true },
+        { id: 2, text: "Cherry", isCorrect: false },
+        { id: 3, text: "Tomato", isCorrect: false }
+      ],
       explanation: "Red apples are a healthy snack rich in fiber and vitamins."
     },
     { 
       id: 2, 
       image: "🍌", 
-      correct: "Banana",
+      choices: [
+        { id: 1, text: "Lemon", isCorrect: false },
+        { id: 2, text: "Banana", isCorrect: true },
+        { id: 3, text: "Corn", isCorrect: false }
+      ],
       explanation: "Bananas are a great source of potassium and natural energy."
     },
     { 
       id: 3, 
       image: "🚗", 
-      correct: "Car",
+      choices: [
+        { id: 1, text: "Boat", isCorrect: false },
+        { id: 2, text: "Truck", isCorrect: false },
+        { id: 3, text: "Car", isCorrect: true }
+      ],
       explanation: "Cars are vehicles that help people travel from place to place."
     },
     { 
       id: 4, 
       image: "🚲", 
-      correct: "Bicycle",
+      choices: [
+        { id: 1, text: "Skateboard", isCorrect: false },
+        { id: 2, text: "Bicycle", isCorrect: true },
+        { id: 3, text: "Motorcycle", isCorrect: false }
+      ],
       explanation: "Bicycles are eco-friendly transportation with two wheels."
     },
     { 
       id: 5, 
       image: "🐱", 
-      correct: "Cat",
+      choices: [
+        { id: 1, text: "Dog", isCorrect: false },
+        { id: 2, text: "Rabbit", isCorrect: false },
+        { id: 3, text: "Cat", isCorrect: true }
+      ],
       explanation: "Cats are furry pets that love to purr and play."
     }
   ];
 
-  // Function to determine button order based on current item index
-  const getButtonOrder = (itemIndex) => {
-    // Alternate the position of the correct answer
-    // For even indices: correct answer first, wrong label second
-    // For odd indices: wrong label first, correct answer second
-    return itemIndex % 2 === 0 ? 'normal' : 'swapped';
-  };
-
   const currentItemData = items[currentItem];
-  const buttonOrder = getButtonOrder(currentItem);
 
-  const handleChoice = (choice) => {
-    const isCorrect = choice === currentItemData.correct;
+  const handleChoice = (choiceId) => {
+    const choice = currentItemData.choices.find((c) => c.id === choiceId);
+    const isCorrect = choice.isCorrect;
+    
+    const newChoices = [...choices, { 
+      questionId: currentItemData.id, 
+      choice: choiceId,
+      isCorrect: isCorrect
+    }];
+    
+    setChoices(newChoices);
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -80,9 +102,14 @@ const DataLabelingGame = () => {
     if (currentItem < items.length - 1) {
       setTimeout(() => {
         setCurrentItem(prev => prev + 1);
-      }, isCorrect ? 1000 : 300);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setShowResult(true);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
@@ -91,6 +118,8 @@ const DataLabelingGame = () => {
     setCurrentItem(0);
     setScore(0);
     setCoins(0);
+    setChoices([]);
+    setFinalScore(0);
     resetFeedback();
   };
 
@@ -98,25 +127,23 @@ const DataLabelingGame = () => {
     navigate("/student/ai-for-all/kids/ai-gets-smarter");
   };
 
-  const accuracy = Math.round((score / items.length) * 100);
-
   return (
     <GameShell
       title="Data Labeling Game"
-      score={coins}
-      subtitle={`Item ${currentItem + 1} of ${items.length}`}
+      score={score}
+      subtitle={showResult ? "Game Complete!" : `Item ${currentItem + 1} of ${items.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
-      
+      showGameOver={showResult && finalScore >= 3}
+      maxScore={items.length}
       gameId={gameId}
       gameType="ai"
-      totalLevels={20}
-      currentLevel={56}
-      showConfetti={showResult && accuracy >= 70}
+      totalLevels={items.length}
+      currentLevel={currentItem + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/kids"
@@ -132,42 +159,16 @@ const DataLabelingGame = () => {
               {currentItemData.image}
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              {buttonOrder === 'normal' ? (
-                <>
-                  <button
-                    onClick={() => handleChoice(currentItemData.correct)}
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-8 rounded-2xl shadow-lg transition-all transform hover:scale-105"
-                  >
-                    <div className="text-5xl mb-2">{currentItemData.image}</div>
-                    <div className="text-white font-bold text-xl">{currentItemData.correct}</div>
-                  </button>
-                  <button
-                    onClick={() => handleChoice("Wrong Label")}
-                    className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white p-8 rounded-2xl shadow-lg transition-all transform hover:scale-105"
-                  >
-                    <div className="text-5xl mb-2">❓</div>
-                    <div className="text-white font-bold text-xl">Something Else</div>
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => handleChoice("Wrong Label")}
-                    className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white p-8 rounded-2xl shadow-lg transition-all transform hover:scale-105"
-                  >
-                    <div className="text-5xl mb-2">❓</div>
-                    <div className="text-white font-bold text-xl">Something Else</div>
-                  </button>
-                  <button
-                    onClick={() => handleChoice(currentItemData.correct)}
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-8 rounded-2xl shadow-lg transition-all transform hover:scale-105"
-                  >
-                    <div className="text-5xl mb-2">{currentItemData.image}</div>
-                    <div className="text-white font-bold text-xl">{currentItemData.correct}</div>
-                  </button>
-                </>
-              )}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {currentItemData.choices.map((choice) => (
+                <button
+                  key={choice.id}
+                  onClick={() => handleChoice(choice.id)}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                >
+                  <h3 className="font-bold text-xl mb-2">{choice.text}</h3>
+                </button>
+              ))}
             </div>
             
             <div className="mt-6 bg-blue-500/20 rounded-lg p-4">
@@ -177,50 +178,37 @@ const DataLabelingGame = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {accuracy >= 70 ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  Data Labeling Pro!
-                </h2>
-                <p className="text-white/90 text-xl mb-4">
-                  You labeled {score} out of {items.length} correctly! ({accuracy}%)
+                <h3 className="text-2xl font-bold text-white mb-4">Data Labeling Pro!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You labeled {finalScore} out of {items.length} correctly! ({Math.round((finalScore / items.length) * 100)}%)
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{coins} Coins</span>
                 </div>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white/90 text-sm">
-                    🌟 Teaching AI requires lots of correctly labeled examples. You're helping robots learn about the world!
-                  </p>
-                </div>
                 <p className="text-white/80">
-                  Each correct label helps AI get better at recognizing objects.
+                  🌟 Teaching AI requires lots of correctly labeled examples. You're helping robots learn about the world!
                 </p>
               </div>
             ) : (
               <div>
                 <div className="text-5xl mb-4">💪</div>
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  Keep Practicing!
-                </h2>
-                <p className="text-white/90 text-xl mb-4">
-                  You labeled {score} out of {items.length} correctly. ({accuracy}%)
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You labeled {finalScore} out of {items.length} correctly. ({Math.round((finalScore / items.length) * 100)}%)
+                  Keep practicing to learn more about data labeling!
                 </p>
-                <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white/90 text-sm">
-                    💡 AI needs thousands of correctly labeled examples to learn properly. Every correct label counts!
-                  </p>
-                </div>
                 <button
                   onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-full font-semibold transition"
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-                <p className="text-white/80 text-sm mt-4">
-                  Pay attention to each item and think about what it is before selecting.
+                <p className="text-white/80 text-sm">
+                  💡 AI needs thousands of correctly labeled examples to learn properly. Every correct label counts!
                 </p>
               </div>
             )}

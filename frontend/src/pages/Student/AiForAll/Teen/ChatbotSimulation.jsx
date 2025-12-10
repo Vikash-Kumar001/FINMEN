@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -6,187 +6,327 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const ChatbotSimulation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [messages, setMessages] = useState([]);
-  const [userInput, setUserInput] = useState("");
-  const [step, setStep] = useState(0);
-  const [coins, setCoins] = useState(0);
-  const [showComplete, setShowComplete] = useState(false);
+  
   const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
-  const conversationSteps = [
+  const questions = [
     {
-      userPrompt: "Say 'Hello' to the chatbot",
-      expectedKeywords: ["hello", "hi", "hey"],
-      botResponse: "Hi! How are you today? 😊"
+      id: 1,
+      text: "You're designing a chatbot. What is the primary purpose of Natural Language Processing (NLP)?",
+      options: [
+        { 
+          id: "translate", 
+          text: "Translate languages only", 
+          emoji: "🌐", 
+          description: "Convert text between different languages",
+          isCorrect: false
+        },
+        { 
+          id: "understand", 
+          text: "Understand and interpret human language", 
+          emoji: "🧠", 
+          description: "Process and comprehend user inputs",
+          isCorrect: true
+        },
+        { 
+          id: "voice", 
+          text: "Generate voice responses", 
+          emoji: "🔊", 
+          description: "Convert text to speech",
+          isCorrect: false
+        },
+        { 
+          id: "store", 
+          text: "Store conversation data", 
+          emoji: "💾", 
+          description: "Save chat history",
+          isCorrect: false
+        }
+      ]
     },
     {
-      userPrompt: "Ask the chatbot how it's doing",
-      expectedKeywords: ["how", "are", "you", "doing"],
-      botResponse: "I'm doing great, thank you for asking! I'm here to help you. What would you like to know?"
+      id: 2,
+      text: "Which feature makes a chatbot seem more human-like in conversations?",
+      options: [
+        { 
+          id: "speed", 
+          text: "Responding instantly", 
+          emoji: "⚡", 
+          description: "Immediate responses to all queries",
+          isCorrect: false
+        },
+        { 
+          id: "context", 
+          text: "Remembering conversation context", 
+          emoji: "💭", 
+          description: "Maintain topic continuity",
+          isCorrect: true
+        },
+        { 
+          id: "caps", 
+          text: "Using all caps", 
+          emoji: "🔤", 
+          description: "Emphasize all words",
+          isCorrect: false
+        },
+        { 
+          id: "emoji", 
+          text: "Using many emojis", 
+          emoji: "😀", 
+          description: "Add emotional icons",
+          isCorrect: false
+        }
+      ]
     },
     {
-      userPrompt: "Ask the chatbot about the weather",
-      expectedKeywords: ["weather", "temperature", "sunny", "rain"],
-      botResponse: "I can help with weather information! In your area, it's currently sunny and 25°C. Perfect day! ☀️"
+      id: 3,
+      text: "What is a key consideration when designing chatbot responses?",
+      options: [
+        { 
+          id: "long", 
+          text: "Make responses as detailed as possible", 
+          emoji: "📚", 
+          description: "Provide extensive information",
+          isCorrect: false
+        },
+        { 
+          id: "short", 
+          text: "Keep responses concise and clear", 
+          emoji: "✂️", 
+          description: "Be brief and understandable",
+          isCorrect: true
+        },
+        { 
+          id: "repeat", 
+          text: "Repeat the user's question", 
+          emoji: "🔄", 
+          description: "Echo back inputs",
+          isCorrect: false
+        },
+        { 
+          id: "random", 
+          text: "Use random responses", 
+          emoji: "🎲", 
+          description: "Unpredictable answers",
+          isCorrect: false
+        }
+      ]
     },
     {
-      userPrompt: "Thank the chatbot",
-      expectedKeywords: ["thank", "thanks", "appreciate"],
-      botResponse: "You're very welcome! Feel free to ask me anything anytime! 💙"
+      id: 4,
+      text: "Why is it important to include fallback responses in a chatbot?",
+      options: [
+        { 
+          id: "fun", 
+          text: "To entertain users", 
+          emoji: "🎭", 
+          description: "Provide comedy relief",
+          isCorrect: false
+        },
+        { 
+          id: "help", 
+          text: "To assist when the bot doesn't understand", 
+          emoji: "🆘", 
+          description: "Handle unrecognized inputs gracefully",
+          isCorrect: true
+        },
+        { 
+          id: "ads", 
+          text: "To show advertisements", 
+          emoji: "📢", 
+          description: "Promote products",
+          isCorrect: false
+        },
+        { 
+          id: "stats", 
+          text: "To collect user statistics", 
+          emoji: "📊", 
+          description: "Gather analytics",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "What is the main benefit of using chatbots in customer service?",
+      options: [
+        { 
+          id: "cost", 
+          text: "Reduce operational costs", 
+          emoji: "💰", 
+          description: "Lower staffing expenses",
+          isCorrect: true
+        },
+        { 
+          id: "complex", 
+          text: "Handle complex technical issues", 
+          emoji: "🔧", 
+          description: "Solve advanced problems",
+          isCorrect: false
+        },
+        { 
+          id: "human", 
+          text: "Replace all human agents", 
+          emoji: "🤖", 
+          description: "Eliminate human workforce",
+          isCorrect: false
+        },
+        { 
+          id: "slow", 
+          text: "Slow down response times", 
+          emoji: "🐌", 
+          description: "Decrease service speed",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const currentStep = conversationSteps[step];
-
-  const handleSend = () => {
-    if (!userInput.trim()) return;
-
-    // Add user message
-    setMessages([...messages, { type: "user", text: userInput }]);
-
-    // Check if input matches expected keywords
-    const inputLower = userInput.toLowerCase();
-    const isCorrect = currentStep.expectedKeywords.some(keyword => 
-      inputLower.includes(keyword.toLowerCase())
-    );
-
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      // Add bot response after delay
-      setTimeout(() => {
-        setMessages(prev => [...prev, { type: "bot", text: currentStep.botResponse }]);
-        
-        if (step < conversationSteps.length - 1) {
-          setStep(prev => prev + 1);
-        } else {
-          showCorrectAnswerFeedback(5, true);
-          setCoins(5);
-          setShowComplete(true);
-        }
-      }, 800);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setTimeout(() => {
-        setMessages(prev => [...prev, { 
-          type: "bot", 
-          text: `Try saying something about: ${currentStep.expectedKeywords.join(", ")}` 
-        }]);
-      }, 800);
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setUserInput("");
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const handleNext = () => {
-    navigate("/student/ai-for-all/teen/ai-in-gaming-story");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
   };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Chatbot Simulation"
-      subtitle="Understanding Chatbots"
-      onNext={handleNext}
-      nextEnabled={showComplete}
-      showGameOver={showComplete}
+      subtitle={showResult ? "Simulation Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={() => navigate("/student/ai-for-all/teen/ai-in-gaming-story")}
+      nextEnabled={showResult}
+      showGameOver={showResult && finalScore >= 3}
       score={coins}
       gameId="ai-teen-9"
       gameType="ai"
-      totalLevels={20}
-      currentLevel={9}
-      showConfetti={showComplete}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       backPath="/games/ai-for-all/teens"
-    
-      maxScore={20} // Max score is total number of questions (all correct)
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-          <div className="text-6xl mb-4 text-center">🤖</div>
-          <h3 className="text-white text-xl font-bold mb-6 text-center">Chat with an AI Bot!</h3>
-          
-          {!showComplete && (
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-sm text-center">
-                {currentStep.userPrompt}
-              </p>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-4 md:mb-6 text-center">Understanding Chatbots</h3>
+              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
+                <p className="text-base md:text-lg lg:text-xl font-semibold text-white text-center">"{getCurrentQuestion().text}"</p>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                  >
+                    <div className="flex items-start">
+                      <div className="text-2xl md:text-3xl mr-3">{option.emoji}</div>
+                      <div>
+                        <h5 className="font-bold text-white text-sm md:text-base mb-1">{option.text}</h5>
+                        <p className="text-white/80 text-xs md:text-sm">{option.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
-
-          {/* Chat Messages */}
-          <div className="bg-gray-800/50 rounded-xl p-4 mb-4 h-64 overflow-y-auto">
-            {messages.length === 0 ? (
-              <div className="text-white/50 text-center py-20">
-                Start the conversation...
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Excellent!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand how chatbots work!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  💡 Chatbots use Natural Language Processing (NLP) to understand what you're saying 
+                  and respond appropriately. They're used in customer service, education, and entertainment!
+                </p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {messages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[70%] px-4 py-2 rounded-lg ${
-                        msg.type === "user"
-                          ? "bg-purple-500/50 text-white"
-                          : "bg-blue-500/30 text-white"
-                      }`}
-                    >
-                      {msg.text}
-                    </div>
-                  </div>
-                ))}
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Chatbots use NLP to understand language and provide helpful responses!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to focus on how chatbots understand language and provide helpful responses.
+                </p>
               </div>
             )}
           </div>
-
-          {/* Input Area */}
-          {!showComplete && (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSend()}
-                placeholder="Type your message..."
-                className="flex-1 px-4 py-3 bg-white/10 border-2 border-white/40 rounded-xl text-white placeholder-white/50 focus:border-purple-400 focus:outline-none"
-              />
-              <button
-                onClick={handleSend}
-                disabled={!userInput.trim()}
-                className={`px-6 py-3 rounded-xl font-bold text-white transition ${
-                  userInput.trim()
-                    ? "bg-gradient-to-r from-purple-500 to-blue-500 hover:opacity-90"
-                    : "bg-gray-500/50 cursor-not-allowed"
-                }`}
-              >
-                Send
-              </button>
-            </div>
-          )}
-
-          {showComplete && (
-            <div className="bg-green-500/20 rounded-lg p-4 mt-4">
-              <p className="text-white text-center mb-2">
-                🎉 Great conversation! You understand how chatbots work!
-              </p>
-              <p className="text-white/80 text-sm text-center mb-4">
-                💡 Chatbots use Natural Language Processing (NLP) to understand what you're saying 
-                and respond appropriately. They're used in customer service, education, and entertainment!
-              </p>
-              <p className="text-yellow-400 text-xl font-bold text-center">
-                You earned 5 Coins! 🪙
-              </p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </GameShell>
   );
 };
 
 export default ChatbotSimulation;
-

@@ -2,141 +2,240 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getAiTeenGames } from '../../../../pages/Games/GameCategories/AiForAll/teenGamesData';
 
 const SortingEmotionsGame = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentEmoji, setCurrentEmoji] = useState(0);
-  const [score, setScore] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("ai-teen-7");
+  const gameId = gameData?.id || "ai-teen-7";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
+    useGameFeedback();
 
-  const emojis = [
-    { id: 1, emoji: "😊", emotion: "happy" },
-    { id: 2, emoji: "😢", emotion: "sad" },
-    { id: 3, emoji: "😁", emotion: "happy" },
-    { id: 4, emoji: "😭", emotion: "sad" },
-    { id: 5, emoji: "🥳", emotion: "happy" },
-    { id: 6, emoji: "😔", emotion: "sad" },
-    { id: 7, emoji: "😄", emotion: "happy" },
-    { id: 8, emoji: "😞", emotion: "sad" },
-    { id: 9, emoji: "😃", emotion: "happy" },
-    { id: 10, emoji: "😥", emotion: "sad" }
+  const questions = [
+    {
+      id: 1,
+      title: "Emotion Recognition",
+      emoji: "😊",
+      question: "What technology helps computers recognize human emotions?",
+      choices: [
+        { id: 1, text: "Emotion AI", emoji: "🤖", isCorrect: true },
+        { id: 2, text: "Manual Analysis", emoji: "✋", isCorrect: false },
+        { id: 3, text: "Guesswork", emoji: "❓", isCorrect: false },
+      ],
+    },
+    {
+      id: 2,
+      title: "Customer Service",
+      emoji: "📞",
+      question: "How do companies use emotion recognition AI?",
+      choices: [
+        { id: 1, text: "Analyze customer tone", emoji: "🎧", isCorrect: true },
+        { id: 2, text: "Replace humans", emoji: "👥", isCorrect: false },
+        { id: 3, text: "Play music", emoji: "🎵", isCorrect: false },
+      ],
+    },
+    {
+      id: 3,
+      title: "Mental Health",
+      emoji: "🧠",
+      question: "How can emotion AI help with mental health?",
+      choices: [
+        { id: 1, text: "Detect mood changes", emoji: "📊", isCorrect: true },
+        { id: 2, text: "Diagnose disorders", emoji: "⚕️", isCorrect: false },
+        { id: 3, text: "Cure depression", emoji: "💊", isCorrect: false },
+      ],
+    },
+    {
+      id: 4,
+      title: "Social Media",
+      emoji: "📱",
+      question: "How do social platforms use emotion recognition?",
+      choices: [
+        { id: 1, text: "Understand reactions", emoji: "👍", isCorrect: true },
+        { id: 2, text: "Create posts", emoji: "✍️", isCorrect: false },
+        { id: 3, text: "Block users", emoji: "🚫", isCorrect: false },
+      ],
+    },
+    {
+      id: 5,
+      title: "Privacy Concerns",
+      emoji: "🔒",
+      question: "What is a major concern with emotion recognition AI?",
+      choices: [
+        { id: 1, text: "Privacy invasion", emoji: "👁️", isCorrect: true },
+        { id: 2, text: "Too accurate", emoji: "🎯", isCorrect: false },
+        { id: 3, text: "Free service", emoji: "💸", isCorrect: false },
+      ],
+    },
   ];
 
-  const currentEmojiData = emojis[currentEmoji];
+  const getCurrentQuestion = () => questions[currentQuestion];
 
-  const handleChoice = (choice) => {
-    const isCorrect = choice === currentEmojiData.emotion;
+  const handleChoice = (choiceId) => {
+    const currentQ = getCurrentQuestion();
+    const choice = currentQ.choices.find((c) => c.id === choiceId);
+    const isCorrect = choice.isCorrect;
+    
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: choiceId,
+      isCorrect: isCorrect
+    }];
+    
+    setChoices(newChoices);
     
     if (isCorrect) {
-      setScore(prev => prev + 1);
-      setCoins(prev => prev + 2);
-      showCorrectAnswerFeedback(1, false);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
-    if (currentEmoji < emojis.length - 1) {
+    if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
-        setCurrentEmoji(prev => prev + 1);
-      }, 300);
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setShowResult(true);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentEmoji(0);
-    setScore(0);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
   const handleNext = () => {
-    navigate("/student/ai-for-all/teen/true-false-ai-quiz");
+    // Find next game path
+    try {
+      const games = getAiTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        if (nextGame) {
+          navigate(nextGame.path);
+        } else {
+          navigate("/student/ai-for-all/teen/true-false-ai-quiz");
+        }
+      } else {
+        navigate("/student/ai-for-all/teen/true-false-ai-quiz");
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+      navigate("/student/ai-for-all/teen/true-false-ai-quiz");
+    }
   };
 
-  const accuracy = Math.round((score / emojis.length) * 100);
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Sorting Emotions Game"
-      score={coins}
-      subtitle={`Emoji ${currentEmoji + 1} of ${emojis.length}`}
+      subtitle={showResult ? "Game Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
-      
-      gameId="ai-teen-7"
+      nextEnabled={showResult && finalScore >= 3}
+      showGameOver={showResult && finalScore >= 3}
+      score={coins}
+      gameId={gameId}
       gameType="ai"
-      totalLevels={20}
-      currentLevel={7}
-      showConfetti={showResult && accuracy >= 70}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/ai-for-all/teens"
-    >
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">Sort this emotion!</h3>
-            
-            <div className="bg-gradient-to-br from-pink-500/30 to-purple-500/30 rounded-xl p-16 mb-6 flex justify-center items-center">
-              <div className="text-9xl animate-bounce">{currentEmojiData.emoji}</div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice("happy")}
-                className="bg-yellow-500/30 hover:bg-yellow-500/50 border-3 border-yellow-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-6xl mb-2">😊</div>
-                <div className="text-white font-bold text-xl">Happy</div>
-              </button>
-              <button
-                onClick={() => handleChoice("sad")}
-                className="bg-blue-500/30 hover:bg-blue-500/50 border-3 border-blue-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-6xl mb-2">😢</div>
-                <div className="text-white font-bold text-xl">Sad</div>
-              </button>
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <div className="text-6xl mb-3 text-center">{currentQuestionData.emoji}</div>
+              <h2 className="text-white text-xl font-bold mb-4 text-center">
+                {currentQuestionData.title}
+              </h2>
+              <p className="text-white text-lg mb-6 text-center">
+                "{currentQuestionData.question}"
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.choices.map((choice) => (
+                  <button
+                    key={choice.id}
+                    onClick={() => handleChoice(choice.id)}
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{choice.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{choice.text}</h3>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {accuracy >= 70 ? "🎉 Emotion Expert!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You sorted {score} out of {emojis.length} correctly! ({accuracy}%)
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Emotion recognition AI is used in customer service, mental health apps, and 
-                social media platforms to understand human feelings!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned {coins} Coins! 🪙
-            </p>
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+        ) : showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Emotion Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {questions.length} correctly! ({Math.round((finalScore / questions.length) * 100)}%)
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  💡 Emotion recognition AI is used in customer service, mental health apps, and social media platforms to understand human feelings!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {finalScore} out of {questions.length} correctly. ({Math.round((finalScore / questions.length) * 100)}%)
+                  Keep practicing to learn more about emotion recognition!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  💡 Emotion recognition AI is used in customer service, mental health apps, and social media platforms to understand human feelings!
+                </p>
+              </div>
             )}
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

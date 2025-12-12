@@ -10,224 +10,260 @@ const PuzzleLearningTools = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
   const [selectedTool, setSelectedTool] = useState(null);
   const [selectedOutcome, setSelectedOutcome] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Create arrays for left and right columns
+  // Tools (left side) - 5 items
   const tools = [
-    { id: 1, name: "Books", emoji: "📚" },
-    { id: 2, name: "Internet", emoji: "🌐" },
-    { id: 3, name: "Practice", emoji: "🏋️" }
+    { id: 1, name: "Books", emoji: "📚", description: "Written materials containing knowledge and information" },
+    { id: 2, name: "Internet", emoji: "🌐", description: "Global network providing instant access to vast information" },
+    { id: 3, name: "Practice", emoji: "🏋️", description: "Repetitive exercises to develop and improve skills" },
+    { id: 4, name: "Videos", emoji: "🎥", description: "Visual media for demonstrating concepts and procedures" },
+    { id: 5, name: "Mentors", emoji: "👨‍🏫", description: "Experienced guides who provide wisdom and direction" }
   ];
 
+  // Outcomes (right side) - 5 items
   const outcomes = [
-    { id: 1, name: "Knowledge", emoji: "🧠" },
-    { id: 2, name: "Information", emoji: "ℹ️" },
-    { id: 3, name: "Skills", emoji: "🔧" }
+    { id: 3, name: "Skills", emoji: "🔧", description: "Practical abilities developed through training" },
+    { id: 2, name: "Information", emoji: "ℹ️", description: "Data and facts obtained from various sources" },
+    { id: 4, name: "Experience", emoji: "🌟", description: "Practical contact with and observation of events" },
+    { id: 1, name: "Knowledge", emoji: "🧠", description: "Understanding of facts, truths, and principles" },
+    { id: 5, name: "Wisdom", emoji: "🦉", description: "Deep understanding and good judgment gained through experience" }
   ];
 
-  // Define correct matches
+  // Correct matches
   const correctMatches = [
-    { tool: "Books", outcome: "Knowledge" },
-    { tool: "Internet", outcome: "Information" },
-    { tool: "Practice", outcome: "Skills" }
+    { toolId: 1, outcomeId: 1 }, // Books → Knowledge
+    { toolId: 2, outcomeId: 2 }, // Internet → Information
+    { toolId: 3, outcomeId: 3 }, // Practice → Skills
+    { toolId: 4, outcomeId: 4 }, // Videos → Experience
+    { toolId: 5, outcomeId: 5 }  // Mentors → Wisdom
   ];
 
-  // Shuffle arrays to randomize positions
-  const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
-  
-  const shuffledTools = shuffleArray(tools);
-  const shuffledOutcomes = shuffleArray(outcomes);
-
-  const handleToolSelect = (toolName) => {
-    if (selectedOutcome) {
-      // Check if this is a correct match
-      const isCorrect = correctMatches.some(match => 
-        match.tool === toolName && match.outcome === selectedOutcome
-      );
-      
-      if (isCorrect) {
-        // Correct match
-        const matchId = `${toolName}-${selectedOutcome}`;
-        setMatchedPairs([...matchedPairs, matchId]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === correctMatches.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedTool(null);
-      setSelectedOutcome(null);
-    } else {
-      setSelectedTool(toolName);
-    }
+  const handleToolSelect = (tool) => {
+    if (gameFinished) return;
+    setSelectedTool(tool);
   };
 
-  const handleOutcomeSelect = (outcomeName) => {
-    if (selectedTool) {
-      // Check if this is a correct match
-      const isCorrect = correctMatches.some(match => 
-        match.tool === selectedTool && match.outcome === outcomeName
-      );
-      
-      if (isCorrect) {
-        // Correct match
-        const matchId = `${selectedTool}-${outcomeName}`;
-        setMatchedPairs([...matchedPairs, matchId]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === correctMatches.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedTool(null);
-      setSelectedOutcome(null);
+  const handleOutcomeSelect = (outcome) => {
+    if (gameFinished) return;
+    setSelectedOutcome(outcome);
+  };
+
+  const handleMatch = () => {
+    if (!selectedTool || !selectedOutcome || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      toolId: selectedTool.id,
+      outcomeId: selectedOutcome.id,
+      isCorrect: correctMatches.some(
+        match => match.toolId === selectedTool.id && match.outcomeId === selectedOutcome.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setSelectedOutcome(outcomeName);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === tools.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedTool(null);
+    setSelectedOutcome(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedTool(null);
+    setSelectedOutcome(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/ehe/kids");
   };
 
-  const isToolSelected = (toolName) => selectedTool === toolName;
-  const isOutcomeSelected = (outcomeName) => selectedOutcome === outcomeName;
+  // Check if a tool is already matched
+  const isToolMatched = (toolId) => {
+    return matches.some(match => match.toolId === toolId);
+  };
+
+  // Check if an outcome is already matched
+  const isOutcomeMatched = (outcomeId) => {
+    return matches.some(match => match.outcomeId === outcomeId);
+  };
+
+  // Get match result for a tool
+  const getMatchResult = (toolId) => {
+    const match = matches.find(m => m.toolId === toolId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Learning Tools"
-      subtitle={`Match learning tools to their outcomes! ${matchedPairs.length}/${correctMatches.length} matched`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Tools with Outcomes (${matches.length}/${tools.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="ehe-kids-94"
       gameType="ehe"
-      totalLevels={10}
-      currentLevel={94}
-      showConfetti={gameFinished}
+      totalLevels={tools.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      backPath="/games/ehe/kids"
+      maxScore={tools.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Tools column */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Learning Tools</h3>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Tools */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Learning Tools</h3>
               <div className="space-y-4">
-                {shuffledTools.map((tool) => (
+                {tools.map(tool => (
                   <button
-                    key={`tool-${tool.id}`}
-                    onClick={() => handleToolSelect(tool.name)}
-                    disabled={matchedPairs.includes(`${tool.name}-Knowledge`) || 
-                              matchedPairs.includes(`${tool.name}-Information`) || 
-                              matchedPairs.includes(`${tool.name}-Skills`)}
+                    key={tool.id}
+                    onClick={() => handleToolSelect(tool)}
+                    disabled={isToolMatched(tool.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      matchedPairs.includes(`${tool.name}-Knowledge`) || 
-                      matchedPairs.includes(`${tool.name}-Information`) || 
-                      matchedPairs.includes(`${tool.name}-Skills`)
-                        ? 'bg-green-500/20 border-2 border-green-400'
-                        : isToolSelected(tool.name)
-                        ? 'bg-blue-500/20 border-2 border-blue-400'
-                        : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                      isToolMatched(tool.id)
+                        ? getMatchResult(tool.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedTool?.id === tool.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <span className="text-3xl mr-3">{tool.emoji}</span>
-                      <span className="text-white/90 text-lg">{tool.name}</span>
+                      <div className="text-2xl mr-3">{tool.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{tool.name}</h4>
+                        <p className="text-white/80 text-sm">{tool.description}</p>
+                      </div>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
-            
-            {/* Outcomes column */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Learning Outcomes</h3>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedTool 
+                    ? `Selected: ${selectedTool.name}` 
+                    : "Select a Tool"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedTool || !selectedOutcome}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedTool && selectedOutcome
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{tools.length}</p>
+                  <p>Matched: {matches.length}/{tools.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Outcomes */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Learning Outcomes</h3>
               <div className="space-y-4">
-                {shuffledOutcomes.map((outcome) => (
+                {outcomes.map(outcome => (
                   <button
-                    key={`outcome-${outcome.id}`}
-                    onClick={() => handleOutcomeSelect(outcome.name)}
-                    disabled={matchedPairs.includes(`Books-${outcome.name}`) || 
-                              matchedPairs.includes(`Internet-${outcome.name}`) || 
-                              matchedPairs.includes(`Practice-${outcome.name}`)}
+                    key={outcome.id}
+                    onClick={() => handleOutcomeSelect(outcome)}
+                    disabled={isOutcomeMatched(outcome.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      matchedPairs.includes(`Books-${outcome.name}`) || 
-                      matchedPairs.includes(`Internet-${outcome.name}`) || 
-                      matchedPairs.includes(`Practice-${outcome.name}`)
-                        ? 'bg-green-500/20 border-2 border-green-400'
-                        : isOutcomeSelected(outcome.name)
-                        ? 'bg-blue-500/20 border-2 border-blue-400'
-                        : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                      isOutcomeMatched(outcome.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedOutcome?.id === outcome.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <span className="text-3xl mr-3">{outcome.emoji}</span>
-                      <span className="text-white/90 text-lg">{outcome.name}</span>
+                      <div className="text-2xl mr-3">{outcome.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{outcome.name}</h4>
+                        <p className="text-white/80 text-sm">{outcome.description}</p>
+                      </div>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
           </div>
-          
-          {/* Feedback area */}
-          {selectedTool && selectedOutcome && (
-            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
-              <p className="text-white/90 text-center">
-                Matching: {selectedTool} → {selectedOutcome}
-              </p>
-            </div>
-          )}
-          
-          {selectedTool && !selectedOutcome && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedTool}. Now select an outcome to match!
-              </p>
-            </div>
-          )}
-          
-          {!selectedTool && selectedOutcome && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedOutcome}. Now select a tool to match!
-              </p>
-            </div>
-          )}
-          
-          {/* Completion message */}
-          {gameFinished && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
-              <p className="text-green-300 text-center font-bold">
-                Great job! You matched all learning tools to their outcomes!
-              </p>
-              <p className="text-green-300 text-center mt-2">
-                Books give you Knowledge, Internet provides Information, and Practice builds Skills!
-              </p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Learning Master!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {tools.length} learning tools with their outcomes!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Different learning tools lead to different types of learning outcomes!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {tools.length} learning tools correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each learning tool helps you achieve!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

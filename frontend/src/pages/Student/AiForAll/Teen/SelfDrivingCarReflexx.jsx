@@ -28,16 +28,68 @@ const SelfDrivingCarReflexx = () => {
   const timerRef = useRef(null);
   const currentRoundRef = useRef(0);
 
-  // 🚦 Reflex challenges — each color has one correct action
-  const lights = [
-    { id: 1, emoji: "🟥", signal: "Red", correctAction: "Stop" },
-    { id: 2, emoji: "🟢", signal: "Green", correctAction: "Go" },
-    { id: 3, emoji: "🟡", signal: "Yellow", correctAction: "Slow" },
-    { id: 4, emoji: "🟢", signal: "Green", correctAction: "Go" },
-    { id: 5, emoji: "🟥", signal: "Red", correctAction: "Stop" }
+  const questions = [
+    {
+      id: 1,
+      question: "What should a self-driving car do when it sees a red light?",
+      signal: { emoji: "🟥", text: "Red Light" },
+      correctAnswer: "Stop",
+      options: [
+        { text: "Stop", isCorrect: true, emoji: "🛑" },
+        { text: "Go", isCorrect: false, emoji: "🏎️" },
+        { text: "Slow Down", isCorrect: false, emoji: "⚠️" },
+        { text: "Speed Up", isCorrect: false, emoji: "⚡" }
+      ]
+    },
+    {
+      id: 2,
+      question: "What should a self-driving car do when it sees a green light?",
+      signal: { emoji: "🟢", text: "Green Light" },
+      correctAnswer: "Go",
+      options: [
+        { text: "Stop", isCorrect: false, emoji: "🛑" },
+        { text: "Go", isCorrect: true, emoji: "🏎️" },
+        { text: "Slow Down", isCorrect: false, emoji: "⚠️" },
+        { text: "Turn Around", isCorrect: false, emoji: "🔄" }
+      ]
+    },
+    {
+      id: 3,
+      question: "What should a self-driving car do when it sees a yellow light?",
+      signal: { emoji: "🟡", text: "Yellow Light" },
+      correctAnswer: "Slow Down",
+      options: [
+        { text: "Stop", isCorrect: false, emoji: "🛑" },
+        { text: "Go", isCorrect: false, emoji: "🏎️" },
+        { text: "Slow Down", isCorrect: true, emoji: "⚠️" },
+        { text: "Park", isCorrect: false, emoji: "🅿️" }
+      ]
+    },
+    {
+      id: 4,
+      question: "What should a self-driving car do when it sees a green light?",
+      signal: { emoji: "🟢", text: "Green Light" },
+      correctAnswer: "Go",
+      options: [
+        { text: "Stop", isCorrect: false, emoji: "🛑" },
+        { text: "Go", isCorrect: true, emoji: "🏎️" },
+        { text: "Slow Down", isCorrect: false, emoji: "⚠️" },
+        { text: "Honk", isCorrect: false, emoji: "📢" }
+      ]
+    },
+    {
+      id: 5,
+      question: "What should a self-driving car do when it sees a red light?",
+      signal: { emoji: "🟥", text: "Red Light" },
+      correctAnswer: "Stop",
+      options: [
+        { text: "Stop", isCorrect: true, emoji: "🛑" },
+        { text: "Go", isCorrect: false, emoji: "🏎️" },
+        { text: "Slow Down", isCorrect: false, emoji: "⚠️" },
+        { text: "Reverse", isCorrect: false, emoji: "◀️" }
+      ]
+    }
   ];
-
-  const options = ["Stop", "Go", "Slow"];
 
   useEffect(() => {
     currentRoundRef.current = currentRound;
@@ -95,14 +147,14 @@ const SelfDrivingCarReflexx = () => {
     resetFeedback();
   };
 
-  const handleChoice = (choice) => {
+  const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentLightData = lights[currentRound - 1];
-    const isCorrect = choice === currentLightData.correctAction;
+    const currentQuestion = questions[currentRound - 1];
+    const isCorrect = option.isCorrect;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -121,13 +173,13 @@ const SelfDrivingCarReflexx = () => {
   };
 
   const finalScore = score;
-  const currentLightData = lights[currentRound - 1];
+  const currentQuestion = questions[currentRound - 1];
   const accuracy = Math.round((score / TOTAL_ROUNDS) * 100);
 
   return (
     <GameShell
       title="Self-Driving Car Reflex 🚗"
-      subtitle={gameState === "playing" ? `Signal ${currentRound}/${TOTAL_ROUNDS}: React Fast! What should the car do? 🚦` : "Test your self-driving car reflexes!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your self-driving car reflexes!` : "Test your self-driving car reflexes!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -149,8 +201,8 @@ const SelfDrivingCarReflexx = () => {
             <div className="text-5xl mb-6">🚗</div>
             <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
             <p className="text-white/90 text-lg mb-6">
-              React fast to traffic light signals!<br />
-              You have {ROUND_TIME} seconds for each signal.
+              Test your self-driving car reflexes!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
             <p className="text-white/80 mb-6">
               You have {TOTAL_ROUNDS} signals with {ROUND_TIME} seconds each!
@@ -164,11 +216,11 @@ const SelfDrivingCarReflexx = () => {
           </div>
         )}
 
-        {gameState === "playing" && currentLightData && (
+        {gameState === "playing" && currentQuestion && (
           <div className="space-y-8">
             <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <div className="text-white">
-                <span className="font-bold">Signal:</span> {currentRound}/{TOTAL_ROUNDS}
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
               <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
                 <span className="text-white">Time:</span> {timeLeft}s
@@ -178,32 +230,27 @@ const SelfDrivingCarReflexx = () => {
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <h3 className="text-white text-xl font-bold mb-6 text-center">
-                React Fast! What should the car do? 🚦
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
               </h3>
-
-              <div className="bg-gradient-to-br from-red-500/30 to-yellow-500/30 rounded-xl p-12 mb-6 text-center">
-                <div className="text-8xl mb-3">{currentLightData.emoji}</div>
-                <p className="text-white text-3xl font-bold">
-                  {currentLightData.signal} Light
+              
+              <div className="bg-gradient-to-br from-red-500/30 to-yellow-500/30 rounded-xl p-8 mb-6 text-center">
+                <div className="text-6xl mb-3">{currentQuestion.signal.emoji}</div>
+                <p className="text-white text-2xl font-bold">
+                  {currentQuestion.signal.text}
                 </p>
               </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                {options.map((opt, i) => (
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={i}
-                    onClick={() => handleChoice(opt)}
+                    key={index}
+                    onClick={() => handleAnswer(option)}
                     disabled={answered}
                     className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <div className="text-white font-bold text-xl">
-                      {opt === "Stop" && "🛑 "}
-                      {opt === "Go" && "🏎️ "}
-                      {opt === "Slow" && "⚠️ "}
-                      {opt}
-                    </div>
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
                 ))}
               </div>

@@ -9,7 +9,7 @@ const SustainabilityQuiz = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-sustainability";
+  const gameId = "ai-teen-87";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -56,25 +56,23 @@ const SustainabilityQuiz = () => {
       text: "Can AI save electricity by turning off lights when no one's in the room?",
       emoji: "💡",
       options: [
+        
         { 
           id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - Smart sensors can automate energy savings",
-          isCorrect: true
+          text: "No", 
+          emoji: "❌", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Motion sensors are widely used",
-          isCorrect: false
+          text: "Yes", 
+          emoji: "✅",
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Only in offices", 
           emoji: "🏢", 
-          description: "Too narrow - Applicable in many settings",
           isCorrect: false
         }
       ],
@@ -89,21 +87,18 @@ const SustainabilityQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Correct - Predictive analytics optimize energy use",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - AI excels at demand forecasting",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only during peak hours", 
           emoji: "⏰", 
-          description: "Too limited - Works for all periods",
           isCorrect: false
         }
       ],
@@ -114,27 +109,25 @@ const SustainabilityQuiz = () => {
       text: "Can AI help in detecting pollution levels in cities?",
       emoji: "🏙️",
       options: [
+        
         { 
           id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - Sensor networks monitor air quality",
-          isCorrect: true
+          text: "No", 
+          emoji: "❌", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Environmental monitoring uses AI",
+          text: "Only in developed countries", 
+          emoji: "🌍", 
           isCorrect: false
         },
         { 
           id: 3, 
-          text: "Only in developed countries", 
-          emoji: "🌍", 
-          description: "Too narrow - Deployable globally",
-          isCorrect: false
-        }
+          text: "Yes", 
+          emoji: "✅", 
+          isCorrect: true
+        },
       ],
       explanation: "Yes! AI processes data from air quality sensors, satellite imagery, and weather stations to detect pollution levels in real-time, helping cities identify problem areas and take corrective actions."
     },
@@ -143,25 +136,23 @@ const SustainabilityQuiz = () => {
       text: "Can AI help design eco-friendly buildings?",
       emoji: "🏠",
       options: [
+        
         { 
           id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - AI optimizes building designs",
-          isCorrect: true
+          text: "No", 
+          emoji: "❌", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Sustainable architecture uses AI tools",
-          isCorrect: false
+          text: "Yes", 
+          emoji: "✅", 
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Only for new constructions", 
           emoji: "🏗️", 
-          description: "Too limited - Retrofitting also benefits",
           isCorrect: false
         }
       ],
@@ -172,25 +163,23 @@ const SustainabilityQuiz = () => {
       text: "Can AI track water usage to prevent wastage?",
       emoji: "💧",
       options: [
+        
         { 
           id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - Smart meters detect usage patterns",
-          isCorrect: true
+          text: "No", 
+          emoji: "❌",
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Water management uses AI systems",
-          isCorrect: false
+          text: "Yes", 
+          emoji: "✅", 
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Only in agriculture", 
-          emoji: "🌾", 
-          description: "Too narrow - Residential and industrial use too",
+          emoji: "🌾",
           isCorrect: false
         }
       ],

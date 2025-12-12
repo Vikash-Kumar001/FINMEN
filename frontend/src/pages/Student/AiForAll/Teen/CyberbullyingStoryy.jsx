@@ -57,19 +57,20 @@ const CyberbullyingStoryy = () => {
       id: 1,
       text: "A robot posts a mean comment about your classmate online. What should you do?",
       options: [
-        { 
-          id: "report", 
-          text: "Report the post", 
-          emoji: "📣", 
-          description: "Reporting cyberbullying helps platform moderators take action to stop harassment",
-          isCorrect: true
-        },
+
         { 
           id: "like", 
           text: "Like the post", 
           emoji: "👍", 
           description: "Engaging with harmful content, even seemingly positively, can encourage more of it",
           isCorrect: false
+        },
+                { 
+          id: "report", 
+          text: "Report the post", 
+          emoji: "📣", 
+          description: "Reporting cyberbullying helps platform moderators take action to stop harassment",
+          isCorrect: true
         },
         { 
           id: "share", 
@@ -111,19 +112,20 @@ const CyberbullyingStoryy = () => {
       id: 3,
       text: "You see a robot tagging someone in hurtful messages. Your action?",
       options: [
-        { 
-          id: "platform", 
-          text: "Report to platform", 
-          emoji: "📣", 
-          description: "Platform reporting systems are designed to handle cyberbullying effectively",
-          isCorrect: true
-        },
+        
         { 
           id: "join", 
           text: "Join the bullying", 
           emoji: "👎", 
           description: "Participating in harassment makes you complicit in the harm",
           isCorrect: false
+        },
+        { 
+          id: "platform", 
+          text: "Report to platform", 
+          emoji: "📣", 
+          description: "Platform reporting systems are designed to handle cyberbullying effectively",
+          isCorrect: true
         },
         { 
           id: "ignore", 
@@ -138,13 +140,7 @@ const CyberbullyingStoryy = () => {
       id: 4,
       text: "Robot posts a fake negative review about your friend. What do you do?",
       options: [
-        { 
-          id: "report", 
-          text: "Report the post", 
-          emoji: "📣", 
-          description: "Reporting false reviews helps maintain the integrity of online platforms",
-          isCorrect: true
-        },
+        
         { 
           id: "comment", 
           text: "Comment negatively too", 
@@ -158,7 +154,14 @@ const CyberbullyingStoryy = () => {
           emoji: "📤", 
           description: "Sharing harmful content amplifies its reach and impact",
           isCorrect: false
-        }
+        },
+        { 
+          id: "report", 
+          text: "Report the post", 
+          emoji: "📣", 
+          description: "Reporting false reviews helps maintain the integrity of online platforms",
+          isCorrect: true
+        },
       ]
     },
     {

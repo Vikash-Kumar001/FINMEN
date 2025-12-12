@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const ReflexTeenGrowth = () => {
   const navigate = useNavigate();
@@ -10,190 +13,265 @@ const ReflexTeenGrowth = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentRound, setCurrentRound] = useState(1);
-  const [gameState, setGameState] = useState('waiting');
-  const [reactionTime, setReactionTime] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(false);
-  const startTimeRef = useRef(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
   const timerRef = useRef(null);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const currentRoundRef = useRef(0);
 
-  const scenarios = [
-    { action: "Skill Upgrade", emoji: "📚", isCorrect: true },
-    { action: "No Learning", emoji: "❌", isCorrect: false },
-    { action: "Take Course", emoji: "📖", isCorrect: true },
-    { action: "Skip Learning", emoji: "⏭️", isCorrect: false },
-    { action: "Practice Skills", emoji: "💪", isCorrect: true },
-    { action: "Avoid Practice", emoji: "🛋️", isCorrect: false },
-    { action: "Seek Feedback", emoji: "🔄", isCorrect: true },
-    { action: "Ignore Feedback", emoji: "🙉", isCorrect: false }
+  const questions = [
+    {
+      id: 1,
+      action: "Skill Upgrade",
+      emoji: "📚",
+      correctAnswer: "Right growth action",
+      options: [
+        { text: "Right growth action", isCorrect: true },
+        { text: "No Learning", isCorrect: false },
+        { text: "Skip Learning", isCorrect: false },
+        { text: "Avoid Practice", isCorrect: false }
+      ]
+    },
+    {
+      id: 2,
+      action: "Take Course",
+      emoji: "📖",
+      correctAnswer: "Right growth action",
+      options: [
+        { text: "Skip Learning", isCorrect: false },
+        { text: "Right growth action", isCorrect: true },
+        { text: "Ignore Feedback", isCorrect: false },
+        { text: "No Learning", isCorrect: false }
+      ]
+    },
+    {
+      id: 3,
+      action: "Practice Skills",
+      emoji: "💪",
+      correctAnswer: "Right growth action",
+      options: [
+        { text: "Right growth action", isCorrect: true },
+        { text: "Ignore Feedback", isCorrect: false },
+        { text: "No Learning", isCorrect: false },
+        { text: "Avoid Practice", isCorrect: false }
+      ]
+    },
+    {
+      id: 4,
+      action: "Seek Feedback",
+      emoji: "🔄",
+      correctAnswer: "Right growth action",
+      options: [
+        { text: "Avoid Practice", isCorrect: false },
+        { text: "Right growth action", isCorrect: true },
+        { text: "Skip Learning", isCorrect: false },
+        { text: "Ignore Feedback", isCorrect: false }
+      ]
+    },
+    {
+      id: 5,
+      action: "Set Goals",
+      emoji: "🎯",
+      correctAnswer: "Right growth action",
+      options: [
+        { text: "No Learning", isCorrect: false },
+        { text: "Right growth action", isCorrect: true },
+        { text: "Skip Learning", isCorrect: false },
+        { text: "Ignore Feedback", isCorrect: false }
+      ]
+    }
   ];
 
-  const [currentScenario, setCurrentScenario] = useState(null);
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
 
-  const handleChoice = (selectedOption) => {
-    const endTime = Date.now();
-    const time = endTime - startTimeRef.current;
-    setReactionTime(time);
-
-    const isCorrect = selectedOption.isCorrect;
-    setGameState(isCorrect ? 'success' : 'fail');
-
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-      setShowCoinFeedback(true);
-      setTimeout(() => setShowCoinFeedback(false), 1500);
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
+  }, [currentRound, gameState]);
 
+  // Start the game
+  const startGame = () => {
+    setGameState("playing");
+    setCurrentRound(1);
+    setTimeLeft(ROUND_TIME);
+  };
+
+  // Handle answer selection
+  const handleAnswer = (option) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    const isCorrect = option.isCorrect;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    // Move to next round after delay
     setTimeout(() => {
-      if (currentRound < 5) {
+      resetFeedback();
+      if (currentRound < TOTAL_ROUNDS) {
         setCurrentRound(prev => prev + 1);
-        setGameState('waiting');
-        setTimeout(() => startRound(), 500);
       } else {
-        setGameFinished(true);
+        setGameState("finished");
       }
-    }, isCorrect ? 1500 : 1000);
+    }, 1000);
   };
 
-  const startRound = () => {
-    // Randomly select a scenario pair (correct and incorrect)
-    const randomIndex = Math.floor(Math.random() * 4); // 0-3 for 4 pairs
-    
-    // Create scenario pair and randomize their order
-    const correctOption = scenarios[randomIndex * 2];
-    const incorrectOption = scenarios[randomIndex * 2 + 1];
-    
-    // Randomly decide the order (50/50 chance)
-    const scenarioPair = Math.random() > 0.5 
-      ? [correctOption, incorrectOption]  // Correct on left
-      : [incorrectOption, correctOption]; // Correct on right
+  // Handle time running out
+  const handleTimeUp = useCallback(() => {
+    if (!answered) {
+      setAnswered(true);
+      showCorrectAnswerFeedback(0, false);
       
-    setCurrentScenario(scenarioPair);
-    setGameState('showing');
-
-    const randomDelay = Math.random() * 2000 + 1000;
-
-    timerRef.current = setTimeout(() => {
-      setGameState('ready');
-      startTimeRef.current = Date.now();
-    }, randomDelay);
-  };
+      // Move to next round after delay
+      setTimeout(() => {
+        resetFeedback();
+        if (currentRound < TOTAL_ROUNDS) {
+          setCurrentRound(prev => prev + 1);
+        } else {
+          setGameState("finished");
+        }
+      }, 1000);
+    }
+  }, [answered, currentRound, showCorrectAnswerFeedback, resetFeedback]);
 
   const handleNext = () => {
     navigate("/student/ehe/teens/puzzle-career-growth-steps");
   };
 
+  // Timer effect
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (currentRound === 1 && gameState === 'waiting') {
-        startRound();
-      }
-    }, 100);
-
+    if (gameState === "playing" && !answered && currentRound > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current);
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    
     return () => {
-      clearTimeout(timer);
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
     };
-  }, []);
+  }, [gameState, answered, currentRound, handleTimeUp]);
+
+  const finalScore = score;
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Teen Growth"
-      subtitle={`Round ${currentRound}/5`}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Growth decisions!` : "Growth decisions!"}
       onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
+      nextEnabled={gameState === "finished"}
+      showGameOver={gameState === "finished"}
+      score={finalScore}
       gameId="ehe-teen-93"
       gameType="ehe"
-      totalLevels={100}
-      currentLevel={93}
-      showConfetti={gameFinished}
+      totalLevels={TOTAL_ROUNDS}
+      currentLevel={currentRound}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       backPath="/games/ehe/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      maxScore={TOTAL_ROUNDS} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 relative">
-          {showCoinFeedback && (
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-              <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                +1
-              </div>
-            </div>
-          )}
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Round {currentRound}/5</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">
-              {gameState === 'waiting' && '⏳'}
-              {gameState === 'showing' && '🧠'}
-              {gameState === 'ready' && '⚡'}
-              {gameState === 'success' && '✅'}
-              {gameState === 'fail' && '❌'}
-            </div>
-            <p className="text-white/90 text-lg">
-              {gameState === 'waiting' && 'Get ready for growth decisions...'}
-              {gameState === 'showing' && 'Watch for the learning signal...'}
-              {gameState === 'ready' && 'QUICK! Choose the right growth action!'}
-              {gameState === 'success' && `Great choice! (${reactionTime}ms)`}
-              {gameState === 'fail' && 'Too slow! Growth requires quick learning decisions!'}
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">📚📖💪🔄🎯</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Growth decisions!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
           </div>
+        )}
 
-          {gameState === 'ready' && currentScenario && (
-            <div className="grid grid-cols-2 gap-4">
-              {currentScenario.map((scenario, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleChoice(scenario)}
-                  className={`p-6 rounded-xl border-2 transition-all transform hover:scale-105 ${
-                    scenario.isCorrect
-                      ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                      : 'bg-red-100/20 border-red-500 text-white hover:bg-red-200/20'
-                  }`}
-                >
-                  <div className="text-4xl mb-2">{scenario.emoji}</div>
-                  <div className="font-bold text-lg">{scenario.action}</div>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {gameState === 'success' && currentScenario && (
-            <div className="text-center space-y-4">
-              <div className="text-green-400">
-                <div className="text-6xl">{currentScenario.find(s => s.isCorrect)?.emoji}</div>
-                <h3 className="text-xl font-bold text-white">Excellent Growth Choice!</h3>
-                <p className="text-white/90">Reaction time: {reactionTime}ms</p>
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
-              <div className="flex justify-center gap-2">
-                <span className="text-yellow-500 text-2xl">+1</span>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
               </div>
             </div>
-          )}
 
-          {gameState === 'fail' && currentScenario && (
-            <div className="text-center space-y-4">
-              <div className="text-red-400">
-                <div className="text-6xl">{currentScenario.find(s => !s.isCorrect)?.emoji}</div>
-                <h3 className="text-xl font-bold text-white">Missed Growth Opportunity!</h3>
-                <p className="text-white/90">Remember: Career growth requires proactive learning decisions!</p>
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                Is "{currentQuestion.action}" the right growth action?
+              </h3>
+              
+              <div className="bg-gray-800/50 rounded-xl p-12 mb-6 flex justify-center items-center">
+                <div className="text-9xl animate-pulse">{currentQuestion.emoji}</div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {option.text}
+                  </button>
+                ))}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {gameState === "finished" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <h2 className="text-3xl font-bold text-white mb-4">Game Over!</h2>
+            <p className="text-xl text-white/80 mb-2">Your final score: <span className="text-yellow-400 font-bold">{finalScore}</span>/{TOTAL_ROUNDS}</p>
+            <p className="text-white/80 mb-6">You earned {finalScore} coins!</p>
+            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl p-4 border border-white/10">
+              <h3 className="text-lg font-semibold text-white mb-2">How did you do?</h3>
+              <p className="text-white/80">
+                {finalScore >= 4 ? "Excellent job! You understand personal growth strategies!" : 
+                 finalScore >= 3 ? "Good work! Keep developing your growth mindset!" : 
+                 "Keep learning about personal growth to improve!"}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

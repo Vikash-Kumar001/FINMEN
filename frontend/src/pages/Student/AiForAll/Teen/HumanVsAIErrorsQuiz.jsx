@@ -9,7 +9,7 @@ const HumanVsAIErrorsQuiz = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-human-vs-ai-errors";
+  const gameId = "ai-teen-73";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -60,21 +60,18 @@ const HumanVsAIErrorsQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Correct - Both humans and AI can make errors",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - Humans definitely make mistakes",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only under pressure", 
           emoji: "😰", 
-          description: "Partially correct but too narrow",
           isCorrect: false
         }
       ],
@@ -85,27 +82,25 @@ const HumanVsAIErrorsQuiz = () => {
       text: "If a human types wrong data in a system, is it an error?",
       emoji: "💻",
       options: [
+        
         { 
           id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - Human data entry errors affect systems",
-          isCorrect: true
+          text: "No", 
+          emoji: "❌", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Incorrect data entry is an error",
+          text: "Only if it crashes the system", 
+          emoji: "💥", 
           isCorrect: false
         },
         { 
           id: 3, 
-          text: "Only if it crashes the system", 
-          emoji: "💥", 
-          description: "Too specific - All incorrect data is problematic",
-          isCorrect: false
-        }
+          text: "Yes", 
+          emoji: "✅", 
+          isCorrect: true
+        },
       ],
       explanation: "Yes! Human data entry errors are a significant source of problems in computer systems. Typos, incorrect formatting, or wrong information can lead to system failures, incorrect calculations, or flawed decision-making."
     },
@@ -114,25 +109,23 @@ const HumanVsAIErrorsQuiz = () => {
       text: "Humans misjudge or miscalculate sometimes. Does this resemble AI mistakes?",
       emoji: "🧠",
       options: [
+        
         { 
           id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - Both can misinterpret information",
-          isCorrect: true
+          text: "No", 
+          emoji: "❌",
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - There are similarities in error types",
-          isCorrect: false
+          text: "Yes", 
+          emoji: "✅",
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Only in complex situations", 
           emoji: "🧩", 
-          description: "Too narrow - Errors happen in simple cases too",
           isCorrect: false
         }
       ],
@@ -147,21 +140,18 @@ const HumanVsAIErrorsQuiz = () => {
           id: 1, 
           text: "True", 
           emoji: "✅", 
-          description: "Correct - Learning from errors is essential",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "False", 
           emoji: "❌", 
-          description: "Incorrect - Improvement requires error correction",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only AI needs constant updates", 
           emoji: "🤖", 
-          description: "Incorrect - Humans also learn from mistakes",
           isCorrect: false
         }
       ],
@@ -172,25 +162,23 @@ const HumanVsAIErrorsQuiz = () => {
       text: "Understanding human errors helps us design better AI. Agree?",
       emoji: "🌟",
       options: [
+       
         { 
           id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - Human error analysis informs AI design",
-          isCorrect: true
-        },
-        { 
-          id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - Human insights are valuable for AI",
           isCorrect: false
+        },
+         { 
+          id: 2, 
+          text: "Yes", 
+          emoji: "✅",
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Only for specific domains", 
           emoji: "🎯", 
-          description: "Too narrow - Broad applicability",
           isCorrect: false
         }
       ],

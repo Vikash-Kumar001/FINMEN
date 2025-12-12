@@ -57,13 +57,7 @@ const SmartMapsStory = () => {
       id: 1,
       text: "You need to reach your friend's house quickly for an important event. What's the best way to find the fastest route?",
       options: [
-        { 
-          id: "guess", 
-          text: "Guess the route yourself", 
-          emoji: "❓", 
-          description: "Guessing may lead to traffic jams, construction zones, or longer routes that waste valuable time",
-          isCorrect: false
-        },
+       
         { 
           id: "ai", 
           text: "Use Google Maps AI", 
@@ -71,10 +65,17 @@ const SmartMapsStory = () => {
           description: "AI navigation systems like Google Maps analyze real-time traffic, road conditions, accidents, and historical data to calculate the fastest route",
           isCorrect: true
         },
+         { 
+          id: "guess", 
+          text: "Guess the route yourself", 
+          emoji: "❓", 
+          description: "Guessing may lead to traffic jams, construction zones, or longer routes that waste valuable time",
+          isCorrect: false
+        },
         { 
           id: "paper", 
           text: "Use a paper map", 
-          emoji: "纸质地图", 
+          emoji: "🗺️", 
           description: "Paper maps don't provide real-time traffic updates or dynamic route optimization that AI systems offer",
           isCorrect: false
         }
@@ -84,13 +85,7 @@ const SmartMapsStory = () => {
       id: 2,
       text: "Why does Google Maps sometimes suggest a longer-looking route than the direct path?",
       options: [
-        { 
-          id: "mistake", 
-          text: "It made a mistake", 
-          emoji: "❌", 
-          description: "AI navigation systems are designed to optimize for time, not distance, using sophisticated algorithms",
-          isCorrect: false
-        },
+       
         { 
           id: "traffic", 
           text: "Avoiding traffic congestion", 
@@ -104,26 +99,34 @@ const SmartMapsStory = () => {
           emoji: "🎲", 
           description: "AI systems use data-driven approaches rather than random selections to optimize routes",
           isCorrect: false
-        }
+        },
+         { 
+          id: "mistake", 
+          text: "It made a mistake", 
+          emoji: "❌", 
+          description: "AI navigation systems are designed to optimize for time, not distance, using sophisticated algorithms",
+          isCorrect: false
+        },
       ]
     },
     {
       id: 3,
       text: "How does your navigation app know about an accident that happened 10 minutes ago?",
       options: [
-        { 
-          id: "magic", 
-          text: "Magical prediction", 
-          emoji: "🔮", 
-          description: "Navigation systems use real data sources rather than supernatural abilities",
-          isCorrect: false
-        },
+        
         { 
           id: "data", 
           text: "Real-time data integration", 
           emoji: "📡", 
           description: "AI navigation systems collect data from traffic cameras, police reports, user reports, and connected vehicles to stay updated",
           isCorrect: true
+        },
+        { 
+          id: "magic", 
+          text: "Magical prediction", 
+          emoji: "🔮", 
+          description: "Navigation systems use real data sources rather than supernatural abilities",
+          isCorrect: false
         },
         { 
           id: "guess", 
@@ -138,13 +141,7 @@ const SmartMapsStory = () => {
       id: 4,
       text: "Why does your navigation app suggest different routes at different times of day to the same destination?",
       options: [
-        { 
-          id: "broken", 
-          text: "The app is broken", 
-          emoji: "🔧", 
-          description: "Variations in route suggestions reflect intelligent adaptation rather than malfunction",
-          isCorrect: false
-        },
+        
         { 
           id: "patterns", 
           text: "Traffic patterns change", 
@@ -158,7 +155,14 @@ const SmartMapsStory = () => {
           emoji: "🔄", 
           description: "Route variations are based on predictive analytics, not randomness",
           isCorrect: false
-        }
+        },
+        { 
+          id: "broken", 
+          text: "The app is broken", 
+          emoji: "🔧", 
+          description: "Variations in route suggestions reflect intelligent adaptation rather than malfunction",
+          isCorrect: false
+        },
       ]
     },
     {

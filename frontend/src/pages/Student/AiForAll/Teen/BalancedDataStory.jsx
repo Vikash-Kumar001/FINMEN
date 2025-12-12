@@ -84,19 +84,20 @@ const BalancedDataStory = () => {
       id: 2,
       text: "The teen adds night photos to the dataset. What happens?",
       options: [
-        { 
-          id: "learn", 
-          text: "AI learns to recognize at night", 
-          emoji: "🌙", 
-          description: "Adding diverse examples helps AI generalize and perform well in different conditions",
-          isCorrect: true
-        },
+        
         { 
           id: "ignore", 
           text: "AI ignores new photos", 
           emoji: "🚫", 
           description: "Properly designed AI systems incorporate new training data to improve performance",
           isCorrect: false
+        },
+        { 
+          id: "learn", 
+          text: "AI learns to recognize at night", 
+          emoji: "🌙", 
+          description: "Adding diverse examples helps AI generalize and perform well in different conditions",
+          isCorrect: true
         },
         { 
           id: "delete", 
@@ -138,13 +139,7 @@ const BalancedDataStory = () => {
       id: 4,
       text: "Training AI only in one condition can lead to bias. True or False?",
       options: [
-        { 
-          id: "true", 
-          text: "True", 
-          emoji: "✔️", 
-          description: "Limited training data creates blind spots and biases in AI systems",
-          isCorrect: true
-        },
+       
         { 
           id: "false", 
           text: "False", 
@@ -158,26 +153,34 @@ const BalancedDataStory = () => {
           emoji: "🤔", 
           description: "Regardless of the AI system, diverse training data is essential for robust performance",
           isCorrect: false
-        }
+        },
+         { 
+          id: "true", 
+          text: "True", 
+          emoji: "✔️", 
+          description: "Limited training data creates blind spots and biases in AI systems",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 5,
       text: "What is the key takeaway from this balanced data exercise?",
       options: [
-        { 
-          id: "diverse", 
-          text: "AI needs diverse data to perform well", 
-          emoji: "🌈", 
-          description: "Diverse training data is fundamental to creating robust and fair AI systems",
-          isCorrect: true
-        },
+       
         { 
           id: "daylight", 
           text: "AI performs best in daylight only", 
           emoji: "🌞", 
           description: "Limiting AI to one condition creates weaknesses rather than strengths",
           isCorrect: false
+        },
+         { 
+          id: "diverse", 
+          text: "AI needs diverse data to perform well", 
+          emoji: "🌈", 
+          description: "Diverse training data is fundamental to creating robust and fair AI systems",
+          isCorrect: true
         },
         { 
           id: "optional", 

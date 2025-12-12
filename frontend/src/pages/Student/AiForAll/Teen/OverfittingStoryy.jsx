@@ -85,19 +85,20 @@ const OverfittingStoryy = () => {
       text: "AI fails to recognize a green apple. Why did it happen?",
       options: [
         { 
-          id: "red", 
-          text: "Overfitting on Red Apples", 
-          emoji: "🤖", 
-          description: "The AI learned only red apples so well that it couldn't recognize other variations",
-          isCorrect: true
-        },
-        { 
           id: "guess", 
           text: "Random Guess", 
           emoji: "🌟", 
           description: "Random guessing would sometimes be correct, not consistently wrong on green apples",
           isCorrect: false
         },
+        { 
+          id: "red", 
+          text: "Overfitting on Red Apples", 
+          emoji: "🤖", 
+          description: "The AI learned only red apples so well that it couldn't recognize other variations",
+          isCorrect: true
+        },
+        
         { 
           id: "broken", 
           text: "Broken Algorithm", 
@@ -111,13 +112,7 @@ const OverfittingStoryy = () => {
       id: 3,
       text: "To improve AI, what should we do next?",
       options: [
-        { 
-          id: "variety", 
-          text: "Train with diverse fruits", 
-          emoji: "🍎🍏🍐", 
-          description: "Adding variety in training data helps AI learn general patterns instead of specific cases",
-          isCorrect: true
-        },
+        
         { 
           id: "red", 
           text: "Keep red apples only", 
@@ -131,26 +126,34 @@ const OverfittingStoryy = () => {
           emoji: "🗑️", 
           description: "Deleting data would eliminate all learning, not improve the model",
           isCorrect: false
-        }
+        },
+        { 
+          id: "variety", 
+          text: "Train with diverse fruits", 
+          emoji: "🍎🍏🍐", 
+          description: "Adding variety in training data helps AI learn general patterns instead of specific cases",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 4,
       text: "After adding variety, AI now predicts all fruits correctly. This teaches?",
       options: [
-        { 
-          id: "avoid", 
-          text: "Variety avoids overfitting", 
-          emoji: "🤖", 
-          description: "Diverse training data prevents AI from becoming too specialized in limited examples",
-          isCorrect: true
-        },
+        
         { 
           id: "good", 
           text: "Overfitting is good", 
           emoji: "✔️", 
           description: "Overfitting reduces AI's ability to generalize, which is detrimental to performance",
           isCorrect: false
+        },
+        { 
+          id: "avoid", 
+          text: "Variety avoids overfitting", 
+          emoji: "🤖", 
+          description: "Diverse training data prevents AI from becoming too specialized in limited examples",
+          isCorrect: true
         },
         { 
           id: "ignore", 

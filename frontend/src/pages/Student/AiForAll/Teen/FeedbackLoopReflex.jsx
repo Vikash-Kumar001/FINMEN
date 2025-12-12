@@ -28,12 +28,67 @@ const FeedbackLoopReflex = () => {
   const timerRef = useRef(null);
   const currentRoundRef = useRef(0);
 
-  const items = [
-    { id: 1, emoji: "🐶", question: "AI says: 'This is a cat.'", correctAnswer: "incorrect" },
-    { id: 2, emoji: "🚗", question: "AI says: 'This is a car.'", correctAnswer: "correct" },
-    { id: 3, emoji: "🍎", question: "AI says: 'This is a banana.'", correctAnswer: "incorrect" },
-    { id: 4, emoji: "🐱", question: "AI says: 'This is a cat.'", correctAnswer: "correct" },
-    { id: 5, emoji: "🌧️", question: "AI says: 'It's sunny.'", correctAnswer: "incorrect" }
+  const questions = [
+    {
+      id: 1,
+      question: "AI says: 'This is a cat.' What should you do?",
+      item: { emoji: "🐶", text: "Actual image: Dog" },
+      correctAnswer: "Mark as incorrect",
+      options: [
+        { text: "Mark as correct", isCorrect: false, emoji: "✅" },
+        { text: "Mark as incorrect", isCorrect: true, emoji: "❌" },
+        { text: "Ignore the response", isCorrect: false, emoji: "🙈" },
+        { text: "Ask for explanation", isCorrect: false, emoji: "❓" }
+      ]
+    },
+    {
+      id: 2,
+      question: "AI says: 'This is a car.' What should you do?",
+      item: { emoji: "🚗", text: "Actual image: Car" },
+      correctAnswer: "Mark as correct",
+      options: [
+        { text: "Mark as correct", isCorrect: true, emoji: "✅" },
+        { text: "Mark as incorrect", isCorrect: false, emoji: "❌" },
+        { text: "Request more details", isCorrect: false, emoji: "🔍" },
+        { text: "Skip this item", isCorrect: false, emoji: "⏭️" }
+      ]
+    },
+    {
+      id: 3,
+      question: "AI says: 'This is a banana.' What should you do?",
+      item: { emoji: "🍎", text: "Actual image: Apple" },
+      correctAnswer: "Mark as incorrect",
+      options: [
+        { text: "Mark as correct", isCorrect: false, emoji: "✅" },
+        { text: "Mark as incorrect", isCorrect: true, emoji: "❌" },
+        { text: "Provide correction", isCorrect: false, emoji: "✏️" },
+        { text: "Report the AI", isCorrect: false, emoji: "🚩" }
+      ]
+    },
+    {
+      id: 4,
+      question: "AI says: 'This is a cat.' What should you do?",
+      item: { emoji: "🐱", text: "Actual image: Cat" },
+      correctAnswer: "Mark as correct",
+      options: [
+        { text: "Mark as correct", isCorrect: true, emoji: "✅" },
+        { text: "Mark as incorrect", isCorrect: false, emoji: "❌" },
+        { text: "Add to training data", isCorrect: false, emoji: "📚" },
+        { text: "Move to next item", isCorrect: false, emoji: "➡️" }
+      ]
+    },
+    {
+      id: 5,
+      question: "AI says: 'It's sunny.' What should you do?",
+      item: { emoji: "🌧️", text: "Actual weather: Rainy" },
+      correctAnswer: "Mark as incorrect",
+      options: [
+        { text: "Mark as correct", isCorrect: false, emoji: "✅" },
+        { text: "Mark as incorrect", isCorrect: true, emoji: "❌" },
+        { text: "Suggest improvement", isCorrect: false, emoji: "💡" },
+        { text: "End the session", isCorrect: false, emoji: "⏹️" }
+      ]
+    }
   ];
 
   useEffect(() => {
@@ -92,14 +147,14 @@ const FeedbackLoopReflex = () => {
     resetFeedback();
   };
 
-  const handleChoice = (choice) => {
+  const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentItemData = items[currentRound - 1];
-    const isCorrect = choice === currentItemData.correctAnswer;
+    const currentQuestion = questions[currentRound - 1];
+    const isCorrect = option.isCorrect;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -118,13 +173,13 @@ const FeedbackLoopReflex = () => {
   };
 
   const finalScore = score;
-  const currentItemData = items[currentRound - 1];
+  const currentQuestion = questions[currentRound - 1];
   const accuracy = Math.round((score / TOTAL_ROUNDS) * 100);
 
   return (
     <GameShell
       title="Feedback Loop Reflex"
-      subtitle={gameState === "playing" ? `Item ${currentRound}/${TOTAL_ROUNDS}: Is AI's answer correct or incorrect?` : "Test your ability to give feedback to AI!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your ability to give feedback to AI!` : "Test your ability to give feedback to AI!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -146,8 +201,8 @@ const FeedbackLoopReflex = () => {
             <div className="text-5xl mb-6">🔄</div>
             <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
             <p className="text-white/90 text-lg mb-6">
-              Give feedback to the AI!<br />
-              You have {ROUND_TIME} seconds for each item.
+              Test your ability to give feedback to AI!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
             <p className="text-white/80 mb-6">
               You have {TOTAL_ROUNDS} items with {ROUND_TIME} seconds each!
@@ -161,11 +216,11 @@ const FeedbackLoopReflex = () => {
           </div>
         )}
 
-        {gameState === "playing" && currentItemData && (
+        {gameState === "playing" && currentQuestion && (
           <div className="space-y-8">
             <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <div className="text-white">
-                <span className="font-bold">Item:</span> {currentRound}/{TOTAL_ROUNDS}
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
               <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
                 <span className="text-white">Time:</span> {timeLeft}s
@@ -175,35 +230,29 @@ const FeedbackLoopReflex = () => {
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <h3 className="text-white text-xl font-bold mb-6 text-center">
-                Is AI's answer correct or incorrect?
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
               </h3>
-
-              <div className="bg-gradient-to-br from-yellow-500/30 to-orange-500/30 rounded-xl p-12 mb-6">
-                <div className="text-9xl mb-3 text-center">{currentItemData.emoji}</div>
-                <p className="text-white text-2xl font-bold text-center">
-                  {currentItemData.question}
+              
+              <div className="bg-gradient-to-br from-yellow-500/30 to-orange-500/30 rounded-xl p-8 mb-6">
+                <div className="text-6xl mb-3 text-center">{currentQuestion.item.emoji}</div>
+                <p className="text-white text-xl font-bold text-center">
+                  {currentQuestion.item.text}
                 </p>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => handleChoice("correct")}
-                  disabled={answered}
-                  className="w-full min-h-[80px] bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <div className="text-3xl mr-2">✅</div>
-                  <div className="text-white font-bold text-xl">Correct</div>
-                </button>
-                <button
-                  onClick={() => handleChoice("incorrect")}
-                  disabled={answered}
-                  className="w-full min-h-[80px] bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <div className="text-3xl mr-2">❌</div>
-                  <div className="text-white font-bold text-xl">Incorrect</div>
-                </button>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

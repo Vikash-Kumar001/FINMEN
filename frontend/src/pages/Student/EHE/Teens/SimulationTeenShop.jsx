@@ -20,25 +20,29 @@ const SimulationTeenShop = () => {
       id: 1,
       text: "Teen opens a small shop. What should be the first priority?",
       options: [
-        {
-          id: "a",
-          text: "Keep detailed accounts of income and expenses",
-          emoji: "📊",
-          description: "Great! Tracking finances is essential for understanding business performance.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Spend money on decorations before selling anything",
           emoji: "🎨",
-          description: "While appearance matters, financial tracking is more critical for success.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Keep detailed accounts of income and expenses",
+          emoji: "📊",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Close the shop because it seems complicated",
           emoji: "🚪",
-          description: "Giving up prevents learning valuable business skills and potential success.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Research competitors and market demand",
+          emoji: "🕵️",
           isCorrect: false
         }
       ]
@@ -51,21 +55,24 @@ const SimulationTeenShop = () => {
           id: "a",
           text: "Analyze expenses, adjust pricing or reduce costs",
           emoji: "🔍",
-          description: "Perfect! Financial analysis helps identify problems and solutions.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Ignore the numbers and hope it gets better",
           emoji: "🙈",
-          description: "Ignoring financial problems usually makes them worse over time.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Spend more money on advertising immediately",
           emoji: "📢",
-          description: "Increasing expenses without addressing underlying issues may worsen losses.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Seek advice from a business mentor",
+          emoji: "👨‍🏫",
           isCorrect: false
         }
       ]
@@ -74,25 +81,29 @@ const SimulationTeenShop = () => {
       id: 3,
       text: "A customer wants to buy an item on credit. How should the teen handle this?",
       options: [
-        {
-          id: "a",
-          text: "Establish clear credit terms and track receivables",
-          emoji: "📝",
-          description: "Excellent! Clear agreements protect both parties and business finances.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Give credit to every customer without records",
           emoji: "🤝",
-          description: "Untracked credit sales create financial uncertainty and potential losses.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Refuse all credit sales completely",
           emoji: "❌",
-          description: "Credit can be beneficial when managed properly with clear terms.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Establish clear credit terms and track receivables",
+          emoji: "📝",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Offer installment plans for larger purchases",
+          emoji: "💳",
           isCorrect: false
         }
       ]
@@ -105,21 +116,24 @@ const SimulationTeenShop = () => {
           id: "a",
           text: "Save some profit, reinvest some, spend some responsibly",
           emoji: "🎯",
-          description: "Great! Balanced financial management supports growth and rewards effort.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Spend all profit immediately on personal items",
           emoji: "🎉",
-          description: "Spending all profit leaves nothing for business growth or emergencies.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Never take any money out of the business",
           emoji: "🔒",
-          description: "Business success should provide personal benefits to motivate continued effort.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Expand to multiple locations immediately",
+          emoji: "🏙️",
           isCorrect: false
         }
       ]
@@ -128,27 +142,31 @@ const SimulationTeenShop = () => {
       id: 5,
       text: "How often should the teen review the shop's financial statements?",
       options: [
-        {
-          id: "a",
-          text: "Regularly (weekly or monthly) to track performance",
-          emoji: "📅",
-          description: "Perfect! Regular financial reviews help identify trends and make adjustments.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Once a year when taxes are due",
           emoji: "🗓️",
-          description: "Annual reviews miss opportunities to improve performance throughout the year.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Never - just hope everything works out",
           emoji: "🤞",
-          description: "Lack of financial oversight often leads to unexpected problems and failures.",
           isCorrect: false
-        }
+        },
+        {
+          id: "d",
+          text: "Daily for detailed transaction monitoring",
+          emoji: "📈",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Regularly (weekly or monthly) to track performance",
+          emoji: "📅",
+          isCorrect: true
+        },
       ]
     }
   ];
@@ -214,7 +232,7 @@ const SimulationTeenShop = () => {
             {getCurrentScenario().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +243,7 @@ const SimulationTeenShop = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+
                   </div>
                 </div>
               </button>

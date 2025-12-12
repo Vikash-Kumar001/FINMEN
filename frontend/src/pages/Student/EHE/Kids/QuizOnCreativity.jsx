@@ -1,45 +1,78 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getEheKidsGames } from "../../../../pages/Games/GameCategories/EHE/kidGamesData";
 
 const QuizOnCreativity = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ehe-kids-32";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getEheKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : "/games/ehe/kids",
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: "/games/ehe/kids", nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
       text: "Which is innovation?",
+      emoji: "💡",
       options: [
         {
           id: "a",
           text: "Solving problems in new ways",
-          emoji: "💡",
-          description: "Correct! Innovation means finding new solutions to problems!",
+          emoji: "🛠️",
           isCorrect: true
         },
         {
           id: "b",
           text: "Copying others",
           emoji: "📋",
-          description: "That's imitation, not innovation!",
           isCorrect: false
         },
         {
           id: "c",
           text: "Doing nothing",
           emoji: "😴",
-          description: "That's not innovation at all!",
           isCorrect: false
         }
       ]
@@ -47,26 +80,24 @@ const QuizOnCreativity = () => {
     {
       id: 2,
       text: "What helps creativity?",
+      emoji: "🎨",
       options: [
         {
           id: "c",
           text: "Being afraid to try",
           emoji: "😨",
-          description: "Fear blocks creativity!",
           isCorrect: false
         },
         {
           id: "a",
           text: "Asking 'what if?' questions",
-          emoji: "🤔",
-          description: "Perfect! Curiosity fuels creativity!",
+          emoji: "❓",
           isCorrect: true
         },
         {
           id: "b",
           text: "Following the same routine",
           emoji: "🔁",
-          description: "Routine can limit new ideas!",
           isCorrect: false
         }
       ]
@@ -74,26 +105,24 @@ const QuizOnCreativity = () => {
     {
       id: 3,
       text: "When you make a mistake in a project, what should you do?",
+      emoji: "🔧",
       options: [
         {
           id: "b",
           text: "Give up immediately",
           emoji: "🏳️",
-          description: "That's not how innovators think!",
           isCorrect: false
         },
         {
           id: "c",
           text: "Hide it from others",
           emoji: "🙈",
-          description: "Hiding mistakes prevents learning!",
           isCorrect: false
         },
         {
           id: "a",
           text: "Learn from it and try a different approach",
           emoji: "📚",
-          description: "Exactly! Mistakes are learning opportunities!",
           isCorrect: true
         }
       ]
@@ -101,26 +130,24 @@ const QuizOnCreativity = () => {
     {
       id: 4,
       text: "What's the benefit of brainstorming with friends?",
+      emoji: "👥",
       options: [
         {
           id: "b",
           text: "To prove you're smarter",
           emoji: "👑",
-          description: "That's not the purpose of teamwork!",
           isCorrect: false
         },
         {
           id: "c",
           text: "To copy their ideas",
           emoji: "📸",
-          description: "That's not real collaboration!",
           isCorrect: false
         },
         {
           id: "a",
           text: "To combine different perspectives",
           emoji: "🤝",
-          description: "Perfect! Different viewpoints spark creativity!",
           isCorrect: true
         }
       ]
@@ -128,118 +155,137 @@ const QuizOnCreativity = () => {
     {
       id: 5,
       text: "Why is creativity important in entrepreneurship?",
+      emoji: "🚀",
       options: [
         {
           id: "c",
           text: "To avoid all risks",
           emoji: "🛡️",
-          description: "Entrepreneurship involves calculated risks!",
           isCorrect: false
         },
         {
           id: "b",
           text: "To do everything alone",
           emoji: "👤",
-          description: "That's not the benefit of creativity!",
           isCorrect: false
         },
         {
           id: "a",
           text: "To find unique solutions and opportunities",
-          emoji: "🚀",
-          description: "Exactly! Creativity drives business innovation!",
+          emoji: "🎯",
           isCorrect: true
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
       } else {
-        setGameFinished(true);
+        setLevelCompleted(true);
       }
-    }, 1500);
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/ehe/kids");
-  };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Quiz on Creativity"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
-      gameId="ehe-kids-32"
-      gameType="ehe"
-      totalLevels={10}
-      currentLevel={32}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
-      backPath="/games/ehe/kids"
-      showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => {
-              const isSelected = choices.some(c => 
-                c.question === currentQuestion && c.optionId === option.id
-              );
-              const showFeedback = choices.some(c => c.question === currentQuestion);
+      totalXp={totalXp}
+      gameId={gameId}
+      gameType="ehe"
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
+    >
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
               
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={showFeedback}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-                >
-                  <div className="flex items-center">
-                    <div className="text-2xl mr-4">{option.emoji}</div>
-                    <div>
-                      <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                      {showFeedback && isSelected && (
-                        <p className="text-white/90">{option.description}</p>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {answered && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

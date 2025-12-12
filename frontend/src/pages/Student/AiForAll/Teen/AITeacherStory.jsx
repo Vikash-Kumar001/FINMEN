@@ -57,19 +57,20 @@ const AITeacherStory = () => {
       id: 1,
       text: "An online tutor changes lesson difficulty based on student answers. Who decides this?",
       options: [
-        { 
-          id: "ai", 
-          text: "AI Tutor", 
-          emoji: "🤖", 
-          description: "AI tutors analyze student responses in real-time to dynamically adjust lesson difficulty for optimal learning",
-          isCorrect: true
-        },
+       
         { 
           id: "teacher", 
           text: "Manual Teacher", 
           emoji: "👩‍🏫", 
           description: "Manual teachers can't continuously monitor and adjust difficulty for each individual student simultaneously",
           isCorrect: false
+        },
+         { 
+          id: "ai", 
+          text: "AI Tutor", 
+          emoji: "🤖", 
+          description: "AI tutors analyze student responses in real-time to dynamically adjust lesson difficulty for optimal learning",
+          isCorrect: true
         },
         { 
           id: "student", 
@@ -111,19 +112,20 @@ const AITeacherStory = () => {
       id: 3,
       text: "The tutor tracks learning speed and suggests exercises accordingly. Who manages this?",
       options: [
-        { 
-          id: "engine", 
-          text: "AI Engine", 
-          emoji: "🤖", 
-          description: "AI engines continuously track learning patterns and adapt exercise recommendations for optimal progress",
-          isCorrect: true
-        },
+       
         { 
           id: "logs", 
           text: "Manual Logs", 
           emoji: "🗂️", 
           description: "Manual logs are time-consuming and don't provide real-time adaptation to learning needs",
           isCorrect: false
+        },
+         { 
+          id: "engine", 
+          text: "AI Engine", 
+          emoji: "🤖", 
+          description: "AI engines continuously track learning patterns and adapt exercise recommendations for optimal progress",
+          isCorrect: true
         },
         { 
           id: "schedule", 
@@ -138,13 +140,7 @@ const AITeacherStory = () => {
       id: 4,
       text: "New quiz questions are generated for practice based on student level. Who creates them?",
       options: [
-        { 
-          id: "algorithm", 
-          text: "AI Algorithm", 
-          emoji: "🤖", 
-          description: "AI algorithms generate customized questions that match each student's current skill level and learning gaps",
-          isCorrect: true
-        },
+       
         { 
           id: "copy", 
           text: "Teacher Copy-Paste", 
@@ -158,20 +154,21 @@ const AITeacherStory = () => {
           emoji: "📚", 
           description: "Textbook questions are static and don't provide personalized practice for each student",
           isCorrect: false
-        }
+        },
+         { 
+          id: "algorithm", 
+          text: "AI Algorithm", 
+          emoji: "🤖", 
+          description: "AI algorithms generate customized questions that match each student's current skill level and learning gaps",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 5,
       text: "The system recommends next topics to study. Who decides?",
       options: [
-        { 
-          id: "recommendation", 
-          text: "AI Recommendation", 
-          emoji: "🤖", 
-          description: "AI recommendation engines analyze learning progress to suggest optimal next topics for each student",
-          isCorrect: true
-        },
+        
         { 
           id: "random", 
           text: "Random Choice", 
@@ -185,7 +182,14 @@ const AITeacherStory = () => {
           emoji: "📋", 
           description: "Fixed curricula don't account for individual learning speeds and mastery levels",
           isCorrect: false
-        }
+        },
+        { 
+          id: "recommendation", 
+          text: "AI Recommendation", 
+          emoji: "🤖", 
+          description: "AI recommendation engines analyze learning progress to suggest optimal next topics for each student",
+          isCorrect: true
+        },
       ]
     }
   ];

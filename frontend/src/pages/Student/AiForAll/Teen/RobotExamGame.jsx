@@ -10,8 +10,8 @@ const RobotExamGame = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("ai-teen-robot-exam");
-  const gameId = gameData?.id || "ai-teen-robot-exam";
+  const gameData = getGameDataById("ai-teen-66");
+  const gameId = gameData?.id || "ai-teen-66";
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
@@ -43,8 +43,8 @@ const RobotExamGame = () => {
       emoji: "📚",
       question: "What happens with limited training data?",
       choices: [
-        { id: 1, text: "Poor results", emoji: "📉", isCorrect: true },
-        { id: 2, text: "Extra features", emoji: "✨", isCorrect: false },
+        { id: 1, text: "Extra features", emoji: "✨", isCorrect: false },
+        { id: 2, text: "Poor results", emoji: "📉", isCorrect: true },
         { id: 3, text: "Lower costs", emoji: "💰", isCorrect: false },
       ],
     },
@@ -54,8 +54,8 @@ const RobotExamGame = () => {
       emoji: "🔄",
       question: "When should AI models be retrained?",
       choices: [
-        { id: 1, text: "New data available", emoji: "🆕", isCorrect: true },
-        { id: 2, text: "Monthly schedule", emoji: "📅", isCorrect: false },
+        { id: 1, text: "Monthly schedule", emoji: "📅", isCorrect: false },
+        { id: 2, text: "New data available", emoji: "🆕", isCorrect: true },
         { id: 3, text: "Never update", emoji: "🔒", isCorrect: false },
       ],
     },
@@ -65,9 +65,9 @@ const RobotExamGame = () => {
       emoji: "📊",
       question: "What indicates successful AI training?",
       choices: [
-        { id: 1, text: "High accuracy", emoji: "🎯", isCorrect: true },
-        { id: 2, text: "Complex design", emoji: "🎨", isCorrect: false },
-        { id: 3, text: "Fast loading", emoji: "💨", isCorrect: false },
+        { id: 1, text: "Complex design", emoji: "🎨", isCorrect: false },
+        { id: 2, text: "Fast loading", emoji: "💨", isCorrect: false },
+        { id: 3, text: "High accuracy", emoji: "🎯", isCorrect: true },
       ],
     },
     {
@@ -76,8 +76,8 @@ const RobotExamGame = () => {
       emoji: "🌐",
       question: "Where is diverse AI training crucial?",
       choices: [
-        { id: 1, text: "Healthcare", emoji: "🏥", isCorrect: true },
-        { id: 2, text: "Video games", emoji: "🎮", isCorrect: false },
+        { id: 1, text: "Video games", emoji: "🎮", isCorrect: false },
+        { id: 2, text: "Healthcare", emoji: "🏥", isCorrect: true },
         { id: 3, text: "Social media", emoji: "📱", isCorrect: false },
       ],
     },

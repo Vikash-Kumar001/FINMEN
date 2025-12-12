@@ -1,58 +1,103 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getEheKidsGames } from "../../../../pages/Games/GameCategories/EHE/kidGamesData";
 
 const QuizOnLifelongLearning = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ehe-kids-92";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getEheKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : "/games/ehe/kids",
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: "/games/ehe/kids", nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
       text: "Learning stops when?",
+      emoji: "⏱️",
       options: [
         {
           id: "a",
           text: "After school",
           emoji: "🏫",
-          description: "Learning doesn't stop after school - it continues throughout your life!",
           isCorrect: false
         },
         {
           id: "b",
           text: "Never",
           emoji: "♾️",
-          description: "Correct! Learning is a lifelong process that never stops!",
           isCorrect: true
+        },
+        {
+          id: "c",
+          text: "At age 30",
+          emoji: "🎂",
+          isCorrect: false
         }
       ]
     },
     {
       id: 2,
       text: "Lifelong learning helps you:",
+      emoji: "🎯",
       options: [
         {
           id: "a",
           text: "Adapt to changes in the world",
           emoji: "🔄",
-          description: "Exactly! The world is always changing, and lifelong learning helps you adapt!",
           isCorrect: true
         },
         {
           id: "b",
           text: "Stay stuck in old ways",
           emoji: "🛑",
-          description: "Actually, lifelong learning helps you grow and adapt, not stay stuck!",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Avoid challenges",
+          emoji: "😴",
           isCorrect: false
         }
       ]
@@ -60,19 +105,24 @@ const QuizOnLifelongLearning = () => {
     {
       id: 3,
       text: "Which is an example of lifelong learning?",
+      emoji: "📚",
       options: [
         {
           id: "a",
           text: "Learning to cook new recipes as an adult",
           emoji: "👨‍🍳",
-          description: "Perfect! Learning new skills at any age is lifelong learning!",
           isCorrect: true
         },
         {
           id: "b",
           text: "Only learning what's taught in school",
-          emoji: "📚",
-          description: "Lifelong learning goes beyond school - it includes all learning throughout life!",
+          emoji: "📘",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Never trying new things",
+          emoji: "❌",
           isCorrect: false
         }
       ]
@@ -80,131 +130,163 @@ const QuizOnLifelongLearning = () => {
     {
       id: 4,
       text: "Why is lifelong learning important for careers?",
+      emoji: "💼",
       options: [
-        {
-          id: "a",
-          text: "Jobs and skills change over time",
-          emoji: "💼",
-          description: "Right! As jobs evolve, you need to keep learning new skills!",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Once you get a job, you don't need to learn more",
-          emoji: "😴",
-          description: "Actually, most careers require continuous learning to stay relevant!",
+          emoji: "🛋️",
           isCorrect: false
-        }
+        },
+        {
+          id: "c",
+          text: "It's not important",
+          emoji: "🤔",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Jobs and skills change over time",
+          emoji: "📈",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 5,
       text: "How can you practice lifelong learning?",
+      emoji: "🌱",
       options: [
         {
           id: "a",
           text: "Read books, take courses, or learn new hobbies",
           emoji: "📖",
-          description: "Excellent! There are many ways to keep learning throughout your life!",
           isCorrect: true
         },
         {
           id: "b",
           text: "Avoid new experiences and challenges",
           emoji: "🔒",
-          description: "Actually, trying new things is a key part of lifelong learning!",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Stop learning after graduation",
+          emoji: "🏁",
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
       } else {
-        setGameFinished(true);
+        setLevelCompleted(true);
       }
-    }, 1500);
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/ehe/kids");
-  };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Quiz on Lifelong Learning"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
-      gameId="ehe-kids-92"
-      gameType="ehe"
-      totalLevels={10}
-      currentLevel={92}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
-      backPath="/games/ehe/kids"
-      showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => {
-              const isSelected = choices.some(c => 
-                c.question === currentQuestion && c.optionId === option.id
-              );
-              const showFeedback = choices.some(c => c.question === currentQuestion);
+      totalXp={totalXp}
+      gameId={gameId}
+      gameType="ehe"
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
+    >
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
               
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={showFeedback}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-                >
-                  <div className="flex items-center">
-                    <div className="text-2xl mr-4">{option.emoji}</div>
-                    <div>
-                      <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                      {showFeedback && isSelected && (
-                        <p className="text-white/90">{option.description}</p>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {answered && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                 } `}>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

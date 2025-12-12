@@ -60,21 +60,18 @@ const BiasInDataQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "👍", 
-          description: "Incorrect - City-trained AI may not recognize rural features",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "👎", 
-          description: "Correct - Lack of rural data causes poor performance",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only for object detection", 
           emoji: "🔍", 
-          description: "Partially correct but not comprehensive",
           isCorrect: false
         }
       ],
@@ -89,21 +86,18 @@ const BiasInDataQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✔️", 
-          description: "Incorrect - Gender bias affects voice recognition",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Correct - Lack of female voice data causes bias",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only with high pitch settings", 
-          emoji: "📈", 
-          description: "Oversimplified - Pitch isn't the only factor",
+          emoji: "📈",
           isCorrect: false
         }
       ],
@@ -117,22 +111,19 @@ const BiasInDataQuiz = () => {
         { 
           id: 1, 
           text: "True", 
-          emoji: "✅", 
-          description: "Correct - Language diversity is crucial for AI performance",
+          emoji: "✅",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "False", 
-          emoji: "❌", 
-          description: "Incorrect - Language bias affects multilingual AI",
+          emoji: "❌",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only for complex sentences", 
           emoji: "📝", 
-          description: "Too narrow - Applies broadly to language processing",
           isCorrect: false
         }
       ],
@@ -146,22 +137,19 @@ const BiasInDataQuiz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "👍", 
-          description: "Incorrect - Skin tone bias affects facial recognition",
+          emoji: "👍",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "👎", 
-          description: "Correct - Lack of skin tone diversity causes bias",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only in poor lighting", 
           emoji: "💡", 
-          description: "Too specific - Bias occurs in various conditions",
           isCorrect: false
         }
       ],
@@ -176,21 +164,18 @@ const BiasInDataQuiz = () => {
           id: 1, 
           text: "Use diverse data", 
           emoji: "🌍", 
-          description: "Correct - Diverse training data reduces bias",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Use only rich-country data", 
           emoji: "💰", 
-          description: "Incorrect - Excludes global perspectives",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Increase processing speed", 
           emoji: "⚡", 
-          description: "Irrelevant - Speed doesn't address fairness",
           isCorrect: false
         }
       ],

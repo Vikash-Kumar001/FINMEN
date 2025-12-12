@@ -34,19 +34,20 @@ const SimpleAlgorithmPuzzle = () => {
   // Step positions (right side) - 6 items, rearranged to split matches
   const rightItems = [
     { id: 1, name: "First", emoji: "1️⃣", description: "The initial step" },
-    { id: 2, name: "Second", emoji: "2️⃣", description: "The next step" },
+    { id: 2, name: "Fifth", emoji: "5️⃣", description: "The fifth step" },
     { id: 3, name: "Third", emoji: "3️⃣", description: "The third step" },
     { id: 4, name: "Fourth", emoji: "4️⃣", description: "The fourth step" },
-    { id: 5, name: "Fifth", emoji: "5️⃣", description: "The fifth step" }
+    { id: 5, name: "Second", emoji: "2️⃣", description: "The next step" },
+    
   ];
 
   // Correct matches (split across different positions for variety)
   const correctMatches = [
     { leftId: 1, rightId: 1 }, // Brush teeth → First
-    { leftId: 2, rightId: 2 }, // Eat breakfast → Second
+    { leftId: 2, rightId: 5 }, // Eat breakfast → Second
     { leftId: 3, rightId: 4 }, // Pack school bag → Fourth
     { leftId: 4, rightId: 3 }, // Put on uniform → Third
-    { leftId: 5, rightId: 5 }, // Tie shoelaces → Fifth
+    { leftId: 5, rightId: 2 }, // Tie shoelaces → Fifth
   ];
 
   const handleLeftSelect = (item) => {

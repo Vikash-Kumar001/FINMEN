@@ -124,7 +124,7 @@ const teenAiGames = {
   'spam-filter-reflex': SpamFilterReflex,
   'robot-vision-mistake': RobotVisionMistake,
   'ai-vs-tools-quiz': AIVsToolsQuiz,
-  'future-ai-reflection': FutureAIReflection,
+  'future-of-ai-reflection': FutureAIReflection,
   'ai-basics-badge': AiBasicsBadge,
   'smart-maps-story': SmartMapsStory,
   'voice-assistant-reflex': VoiceAssistantReflex,

@@ -1,24 +1,61 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getEheTeenGames } from "../../../../pages/Games/GameCategories/EHE/teenGamesData";
 
 const QuizTeenEntrepreneurs = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const navigate = useNavigate();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ehe-teen-42";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getEheTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : "/games/ehe/teens",
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: "/games/ehe/teens", nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      text: "Which quality do teen entrepreneurs typically show?",
+      text: "Which quality do teen entrepreneurs show?",
+      emoji: "🚀",
       options: [
         {
           id: "a",
@@ -33,170 +70,241 @@ const QuizTeenEntrepreneurs = () => {
           emoji: "🛋️",
           description: "Entrepreneurs are action-oriented, not passive",
           isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Avoiding challenges",
+          emoji: "🛡️",
+          description: "Entrepreneurs embrace challenges as opportunities for growth",
+          isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "What do successful teen entrepreneurs focus on?",
+      text: "What motivates teen entrepreneurs?",
+      emoji: "💡",
       options: [
         {
           id: "a",
-          text: "Solving real problems",
+          text: "Solving problems and creating value",
           emoji: "🔧",
           description: "Exactly! Successful entrepreneurs identify and solve genuine problems",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Making quick money",
-          emoji: "💸",
-          description: "While financial success is important, focusing on problem-solving leads to sustainable success",
+          text: "Avoiding responsibility",
+          emoji: "😴",
+          description: "Entrepreneurship involves taking responsibility, not avoiding it",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Copying others",
+          emoji: "📎",
+          description: "While learning from others helps, innovation comes from original thinking",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "How do teen entrepreneurs typically learn?",
+      text: "Why is creativity important for teen entrepreneurs?",
+      emoji: "🎨",
       options: [
         {
           id: "a",
-          text: "Through trial and error",
-          emoji: "🧪",
-          description: "Correct! Learning through experimentation is a key entrepreneurial trait",
+          text: "To develop unique solutions",
+          emoji: "✨",
+          description: "Great! Creativity enables entrepreneurs to solve problems differently",
           isCorrect: true
         },
         {
           id: "b",
-          text: "By avoiding challenges",
-          emoji: "😴",
-          description: "Entrepreneurs embrace challenges as learning opportunities",
+          text: "To copy existing ideas",
+          emoji: "📋",
+          description: "While借鉴 is helpful, creativity involves original thinking",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "To avoid innovation",
+          emoji: "🚫",
+          description: "Innovation is a key driver of entrepreneurial success",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "What's important for teen entrepreneurs when starting out?",
+      text: "What skill helps teen entrepreneurs succeed?",
+      emoji: "🤝",
       options: [
         {
           id: "a",
-          text: "Starting small and learning",
-          emoji: "🌱",
-          description: "Perfect! Starting small allows for learning and iteration without major risk",
+          text: "Communication and leadership",
+          emoji: "🎤",
+          description: "Perfect! These skills help entrepreneurs inspire teams and connect with customers",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Going big immediately",
-          emoji: "🚀",
-          description: "While ambition is good, starting small reduces risk and builds experience",
+          text: "Avoiding teamwork",
+          emoji: "👤",
+          description: "Most successful ventures require collaboration and partnership",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ignoring feedback",
+          emoji: "🙉",
+          description: "Feedback is essential for improvement and course correction",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "What helps teen entrepreneurs succeed?",
+      text: "What is a benefit of teen entrepreneurship?",
+      emoji: "⭐",
       options: [
         {
           id: "a",
-          text: "Persistence and adaptability",
-          emoji: "💪",
-          description: "Exactly! Persistence through challenges and adaptability to change are key success factors",
+          text: "Early financial literacy and experience",
+          emoji: "💰",
+          description: "Exactly! Real-world business experience builds valuable financial skills",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Giving up easily",
-          emoji: "🏳️",
-          description: "Entrepreneurship requires resilience and the ability to overcome setbacks",
+          text: "Reduced learning opportunities",
+          emoji: "📉",
+          description: "Entrepreneurship actually expands learning opportunities",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Limited skill development",
+          emoji: "🚧",
+          description: "Entrepreneurship develops diverse skills across multiple domains",
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
       } else {
-        setGameFinished(true);
+        setLevelCompleted(true);
       }
-    }, 1500);
+    }, isCorrect ? 1000 : 800);
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
-  const handleNext = () => {
-    navigate("/student/ehe/teens/reflex-teen-entrepreneur");
-  };
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Quiz on Teen Entrepreneurs"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="ehe-teen-42"
+      gameId={gameId}
       gameType="ehe"
-      totalLevels={50}
-      currentLevel={42}
-      showConfetti={gameFinished}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/ehe/teens"
       showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
-          </div>
-
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🧠</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Teen Entrepreneur Quiz</h3>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {answered && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.description}
+                  </p>
                 </div>
-              </button>
-            ))}
+              )}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -10,246 +10,260 @@ const PuzzleMatchFutureJobs = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [selectedField, setSelectedField] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const [shuffledJobs, setShuffledJobs] = useState([]);
-  const [shuffledFields, setShuffledFields] = useState([]);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      job: "Game Designer",
-      emoji: "🎮",
-      field: "Games",
-      fieldEmoji: "🕹️",
-      description: "Game designers create the concepts, rules, and experiences for video games."
-    },
-    {
-      id: 2,
-      job: "Drone Pilot",
-      emoji: "🚁",
-      field: "Flying Robots",
-      fieldEmoji: "🤖",
-      description: "Drone pilots operate unmanned aerial vehicles for various commercial and recreational purposes."
-    },
-    {
-      id: 3,
-      job: "Data Scientist",
-      emoji: "📊",
-      field: "Numbers",
-      fieldEmoji: "🔢",
-      description: "Data scientists analyze complex data sets to find patterns and make predictions."
-    },
-    {
-      id: 4,
-      job: "AI Engineer",
-      emoji: "🤖",
-      field: "Artificial Intelligence",
-      fieldEmoji: "🧠",
-      description: "AI engineers develop intelligent systems that can learn and make decisions."
-    },
-    {
-      id: 5,
-      job: "Renewable Energy Technician",
-      emoji: "⚡",
-      field: "Green Energy",
-      fieldEmoji: "🌿",
-      description: "Renewable energy technicians install and maintain solar panels, wind turbines, and other clean energy systems."
-    }
+  // Jobs (left side) - 5 items
+  const jobs = [
+    { id: 1, name: "Game Designer", emoji: "🎮", description: "Create concepts, rules, and experiences for video games" },
+    { id: 2, name: "Drone Pilot", emoji: "🚁", description: "Operate unmanned aerial vehicles for various purposes" },
+    { id: 3, name: "Data Scientist", emoji: "📊", description: "Analyze complex data sets to find patterns and make predictions" },
+    { id: 4, name: "AI Engineer", emoji: "🤖", description: "Develop intelligent systems that can learn and make decisions" },
+    { id: 5, name: "Renewable Energy Technician", emoji: "⚡", description: "Install and maintain solar panels, wind turbines, and clean energy systems" }
   ];
 
-  // Shuffle arrays when component mounts
-  useEffect(() => {
-    const shuffleArray = (array) => {
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    };
+  // Fields (right side) - 5 items
+  const fields = [
+    { id: 4, name: "Artificial Intelligence", emoji: "🧠", description: "Development of intelligent machines that can perform human-like tasks" },
+    { id: 3, name: "Numbers", emoji: "🔢", description: "Mathematical analysis and statistical interpretation" },
+    { id: 2, name: "Flying Robots", emoji: "🤖", description: "Unmanned aerial vehicles for commercial and recreational use" },
+    { id: 5, name: "Green Energy", emoji: "🌿", description: "Sustainable energy sources like solar, wind, and hydro power" },
+    { id: 1, name: "Games", emoji: "🕹️", description: "Entertainment industry focused on interactive experiences" },
+  ];
 
-    setShuffledJobs(shuffleArray(puzzles.map(p => p.job)));
-    setShuffledFields(shuffleArray(puzzles.map(p => p.field)));
-  }, []);
+  // Correct matches
+  const correctMatches = [
+    { jobId: 1, fieldId: 1 }, // Game Designer → Games
+    { jobId: 2, fieldId: 2 }, // Drone Pilot → Flying Robots
+    { jobId: 3, fieldId: 3 }, // Data Scientist → Numbers
+    { jobId: 4, fieldId: 4 }, // AI Engineer → Artificial Intelligence
+    { jobId: 5, fieldId: 5 }  // Renewable Energy Technician → Green Energy
+  ];
 
   const handleJobSelect = (job) => {
-    if (selectedField) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.job === job && p.field === selectedField);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedJob(null);
-      setSelectedField(null);
-    } else {
-      setSelectedJob(job);
-    }
+    if (gameFinished) return;
+    setSelectedJob(job);
   };
 
   const handleFieldSelect = (field) => {
-    if (selectedJob) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.job === selectedJob && p.field === field);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedJob(null);
-      setSelectedField(null);
+    if (gameFinished) return;
+    setSelectedField(field);
+  };
+
+  const handleMatch = () => {
+    if (!selectedJob || !selectedField || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      jobId: selectedJob.id,
+      fieldId: selectedField.id,
+      isCorrect: correctMatches.some(
+        match => match.jobId === selectedJob.id && match.fieldId === selectedField.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setSelectedField(field);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === jobs.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedJob(null);
+    setSelectedField(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedJob(null);
+    setSelectedField(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/ehe/kids");
   };
 
-  const isMatched = (id) => matchedPairs.includes(id);
-  const isJobSelected = (job) => selectedJob === job;
-  const isFieldSelected = (field) => selectedField === field;
+  // Check if a job is already matched
+  const isJobMatched = (jobId) => {
+    return matches.some(match => match.jobId === jobId);
+  };
+
+  // Check if a field is already matched
+  const isFieldMatched = (fieldId) => {
+    return matches.some(match => match.fieldId === fieldId);
+  };
+
+  // Get match result for a job
+  const getMatchResult = (jobId) => {
+    const match = matches.find(m => m.jobId === jobId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Match Future Jobs"
-      subtitle={`Match jobs to fields! ${matchedPairs.length}/${puzzles.length} matched`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Jobs with Fields (${matches.length}/${jobs.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="ehe-kids-74"
       gameType="ehe"
-      totalLevels={10}
-      currentLevel={74}
-      showConfetti={gameFinished}
+      totalLevels={jobs.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      backPath="/games/ehe/kids"
+      maxScore={jobs.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Jobs column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Jobs</h3>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Jobs */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Jobs</h3>
               <div className="space-y-4">
-                {shuffledJobs.map((job, index) => {
-                  const puzzle = puzzles.find(p => p.job === job);
-                  return (
-                    <button
-                      key={`job-${index}`}
-                      onClick={() => handleJobSelect(job)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isJobSelected(job)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.emoji}</span>
-                        <span className="text-white/90 text-lg">{job}</span>
+                {jobs.map(job => (
+                  <button
+                    key={job.id}
+                    onClick={() => handleJobSelect(job)}
+                    disabled={isJobMatched(job.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isJobMatched(job.id)
+                        ? getMatchResult(job.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedJob?.id === job.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{job.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{job.name}</h4>
+                        <p className="text-white/80 text-sm">{job.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
-            
-            {/* Fields column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Fields</h3>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedJob 
+                    ? `Selected: ${selectedJob.name}` 
+                    : "Select a Job"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedJob || !selectedField}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedJob && selectedField
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{jobs.length}</p>
+                  <p>Matched: {matches.length}/{jobs.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Fields */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Fields</h3>
               <div className="space-y-4">
-                {shuffledFields.map((field, index) => {
-                  const puzzle = puzzles.find(p => p.field === field);
-                  return (
-                    <button
-                      key={`field-${index}`}
-                      onClick={() => handleFieldSelect(field)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isFieldSelected(field)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.fieldEmoji}</span>
-                        <span className="text-white/90 text-lg">{field}</span>
+                {fields.map(field => (
+                  <button
+                    key={field.id}
+                    onClick={() => handleFieldSelect(field)}
+                    disabled={isFieldMatched(field.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isFieldMatched(field.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedField?.id === field.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{field.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{field.name}</h4>
+                        <p className="text-white/80 text-sm">{field.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-          
-          {/* Feedback area */}
-          {selectedJob && selectedField && (
-            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
-              <p className="text-white/90 text-center">
-                Matching: {selectedJob} → {selectedField}
-              </p>
-            </div>
-          )}
-          
-          {selectedJob && !selectedField && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedJob}. Now select a field to match!
-              </p>
-            </div>
-          )}
-          
-          {!selectedJob && selectedField && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedField}. Now select a job to match!
-              </p>
-            </div>
-          )}
-          
-          {/* Completion message */}
-          {gameFinished && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
-              <p className="text-green-300 text-center font-bold">
-                Great job! You matched all future jobs to their fields!
-              </p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Future Career Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {jobs.length} future jobs with their fields!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Emerging technologies are creating exciting new career opportunities!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Exploring!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {jobs.length} future jobs correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what skills and knowledge each job would require!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

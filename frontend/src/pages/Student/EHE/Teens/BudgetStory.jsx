@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -6,39 +6,41 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const BudgetStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const questions = [
     {
       id: 1,
       text: "A teen earns ₹500. Should she spend all or make a budget?",
       options: [
+        
         {
           id: "a",
-          text: "Make a budget to manage money wisely",
-          emoji: "📋",
-          description: "Correct! Budgeting helps allocate money for needs, wants, and savings.",
-          isCorrect: true
+          text: "Spend all immediately on fun things",
+          emoji: "🎉",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Spend all immediately on fun things",
-          emoji: "🎉",
-          description: "Spending all money at once leaves nothing for emergencies or future goals.",
-          isCorrect: false
+          text: "Make a budget to manage money wisely",
+          emoji: "📋",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Hide the money and forget about it",
           emoji: "🙈",
-          description: "Ignoring money doesn't make it grow or help achieve financial goals.",
           isCorrect: false
         }
       ]
@@ -47,27 +49,25 @@ const BudgetStory = () => {
       id: 2,
       text: "What's the best approach to budgeting for a teen?",
       options: [
+        
         {
           id: "a",
-          text: "Track income and expenses, set spending limits",
-          emoji: "📊",
-          description: "Exactly! Tracking helps understand spending patterns and make informed decisions.",
-          isCorrect: true
+          text: "Spend whatever feels right in the moment",
+          emoji: "💸",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Spend whatever feels right in the moment",
-          emoji: "💸",
-          description: "Impulse spending without a plan often leads to financial stress.",
+          text: "Ask parents to handle all financial decisions",
+          emoji: "👨‍👩‍👧‍👦",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Ask parents to handle all financial decisions",
-          emoji: "👨‍👩‍👧‍👦",
-          description: "Learning to budget is an important life skill for financial independence.",
-          isCorrect: false
-        }
+          text: "Track income and expenses, set spending limits",
+          emoji: "📊",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -78,21 +78,18 @@ const BudgetStory = () => {
           id: "a",
           text: "List all sources of income",
           emoji: "📥",
-          description: "Great! Knowing how much money is coming in is essential for budgeting.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Buy the most expensive item first",
           emoji: "🛍️",
-          description: "Prioritizing purchases before understanding income leads to overspending.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Spend money on entertainment",
           emoji: "🎬",
-          description: "Entertainment is important but should be planned within the budget.",
           isCorrect: false
         }
       ]
@@ -101,25 +98,23 @@ const BudgetStory = () => {
       id: 4,
       text: "Why is it important to save money even as a teen?",
       options: [
+        
         {
           id: "a",
-          text: "Builds financial security and good habits",
-          emoji: "🏦",
-          description: "Perfect! Saving early helps with emergencies and teaches financial discipline.",
-          isCorrect: true
+          text: "To avoid ever spending money again",
+          emoji: "🔒",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "To avoid ever spending money again",
-          emoji: "🔒",
-          description: "Saving doesn't mean never spending - it's about balancing spending and saving.",
-          isCorrect: false
+          text: "Builds financial security and good habits",
+          emoji: "🏦",
+          isCorrect: true
         },
         {
           id: "c",
           text: "To show off to friends",
-          emoji: "炫耀",
-          description: "Financial decisions should be based on personal goals, not peer pressure.",
+          emoji: "🏆",
           isCorrect: false
         }
       ]
@@ -132,21 +127,18 @@ const BudgetStory = () => {
           id: "a",
           text: "Save some, spend some, give some if possible",
           emoji: "🎯",
-          description: "Correct! The 50/30/20 rule (needs/wants/savings) is a good starting point.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Spend everything on wants first",
           emoji: "🛒",
-          description: "Prioritizing wants over needs and savings can lead to financial problems.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Never spend money on anything",
           emoji: "🚫",
-          description: "Money is meant to be used for value, not hoarded without purpose.",
           isCorrect: false
         }
       ]
@@ -154,79 +146,138 @@ const BudgetStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: optionId,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect;
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
 
   const handleNext = () => {
     navigate("/student/ehe/teens/debate-save-or-spend");
   };
 
+  const getCurrentQuestion = () => questions[currentQuestion];
+
   return (
     <GameShell
       title="Budget Story"
-      subtitle={`Level 25 of 30`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
       gameId="ehe-teen-25"
       gameType="ehe"
-      totalLevels={30}
-      currentLevel={25}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/teens"
       showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/ehe/teens"
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 25/30</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <h2 className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎯</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Budget Pro!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand the fundamentals of budgeting and financial planning!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
                 </div>
-              </button>
-            ))}
+                <p className="text-white/80 text-sm md:text-base">
+                  Great job! You know that budgeting helps allocate money for needs, wants, and savings, tracking income and expenses helps make informed decisions, listing income sources is the first budgeting step, saving builds financial security and good habits, and the 50/30/20 rule is a good budgeting guideline!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, budgeting is a crucial life skill for financial success!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows the best understanding of budgeting principles.
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

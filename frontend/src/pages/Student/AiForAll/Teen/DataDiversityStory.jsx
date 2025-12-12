@@ -111,13 +111,7 @@ const DataDiversityStory = () => {
       id: 3,
       text: "AI struggles with different skin tones. What's the solution?",
       options: [
-        { 
-          id: "tones", 
-          text: "Add varied skin tones", 
-          emoji: "🌈", 
-          description: "Including diverse skin tones in training data helps AI work fairly across all ethnicities",
-          isCorrect: true
-        },
+       
         { 
           id: "same", 
           text: "Use same dataset only", 
@@ -131,26 +125,34 @@ const DataDiversityStory = () => {
           emoji: "😐", 
           description: "Accepting limitations perpetuates discrimination in AI applications",
           isCorrect: false
-        }
+        },
+         { 
+          id: "tones", 
+          text: "Add varied skin tones", 
+          emoji: "🌈", 
+          description: "Including diverse skin tones in training data helps AI work fairly across all ethnicities",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 4,
       text: "AI trained on young faces fails on older people. What to do?",
       options: [
-        { 
-          id: "ages", 
-          text: "Include all age groups", 
-          emoji: "👵👴", 
-          description: "Representing all age groups in training data ensures AI works for everyone",
-          isCorrect: true
-        },
+       
         { 
           id: "kids", 
           text: "Train only on kids", 
           emoji: "👦", 
           description: "Training on limited age groups creates AI that discriminates against other age groups",
           isCorrect: false
+        },
+         { 
+          id: "ages", 
+          text: "Include all age groups", 
+          emoji: "👵👴", 
+          description: "Representing all age groups in training data ensures AI works for everyone",
+          isCorrect: true
         },
         { 
           id: "complex", 
@@ -165,13 +167,7 @@ const DataDiversityStory = () => {
       id: 5,
       text: "AI gives biased results favoring one gender. How to balance?",
       options: [
-        { 
-          id: "samples", 
-          text: "Add diverse samples", 
-          emoji: "🧑👩", 
-          description: "Balanced datasets with diverse representation reduce bias and improve fairness",
-          isCorrect: true
-        },
+        
         { 
           id: "diversity", 
           text: "Ignore diversity", 
@@ -185,7 +181,14 @@ const DataDiversityStory = () => {
           emoji: "🗑️", 
           description: "Excluding data rather than diversifying it doesn't address the root cause of bias",
           isCorrect: false
-        }
+        },
+        { 
+          id: "samples", 
+          text: "Add diverse samples", 
+          emoji: "🧑👩", 
+          description: "Balanced datasets with diverse representation reduce bias and improve fairness",
+          isCorrect: true
+        },
       ]
     }
   ];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -10,246 +10,260 @@ const PuzzleMatchInnovators = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
   const [selectedInnovator, setSelectedInnovator] = useState(null);
   const [selectedInvention, setSelectedInvention] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const [shuffledInnovators, setShuffledInnovators] = useState([]);
-  const [shuffledInventions, setShuffledInventions] = useState([]);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      innovator: "Edison",
-      emoji: "💡",
-      invention: "Bulb",
-      inventionEmoji: "🔦",
-      description: "Thomas Edison invented the practical incandescent light bulb."
-    },
-    {
-      id: 2,
-      innovator: "Wright Brothers",
-      emoji: "✈️",
-      invention: "Plane",
-      inventionEmoji: "🛩️",
-      description: "Orville and Wilbur Wright created the first successful airplane."
-    },
-    {
-      id: 3,
-      innovator: "Jobs",
-      emoji: "📱",
-      invention: "iPhone",
-      inventionEmoji: "📲",
-      description: "Steve Jobs revolutionized personal technology with the iPhone."
-    },
-    {
-      id: 4,
-      innovator: "Tesla",
-      emoji: "⚡",
-      invention: "AC Motor",
-      inventionEmoji: "⚙️",
-      description: "Nikola Tesla invented the alternating current motor."
-    },
-    {
-      id: 5,
-      innovator: "Curie",
-      emoji: "⚛️",
-      invention: "Radium",
-      inventionEmoji: "🔬",
-      description: "Marie Curie discovered radium and advanced atomic research."
-    }
+  // Innovators (left side) - 5 items
+  const innovators = [
+    { id: 1, name: "Edison", emoji: "💡", description: "Invented the practical incandescent light bulb" },
+    { id: 2, name: "Wright Brothers", emoji: "✈️", description: "Created the first successful airplane" },
+    { id: 3, name: "Jobs", emoji: "📱", description: "Revolutionized personal technology with the iPhone" },
+    { id: 4, name: "Tesla", emoji: "⚡", description: "Invented the alternating current motor" },
+    { id: 5, name: "Curie", emoji: "⚛️", description: "Discovered radium and advanced atomic research" }
   ];
 
-  // Shuffle arrays when component mounts
-  useEffect(() => {
-    const shuffleArray = (array) => {
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    };
+  // Inventions (right side) - 5 items
+  const inventions = [
+    { id: 5, name: "Radium", emoji: "🔬", description: "Radioactive element discovered by Marie Curie" },
+    { id: 3, name: "iPhone", emoji: "📲", description: "Smartphone that changed mobile technology" },
+    { id: 2, name: "Plane", emoji: "🛩️", description: "Vehicle that flies through the air" },
+    { id: 1, name: "Bulb", emoji: "🔦", description: "Device that produces light when electricity passes through it" },
+    { id: 4, name: "AC Motor", emoji: "⚙️", description: "Motor that runs on alternating current" },
+  ];
 
-    setShuffledInnovators(shuffleArray(puzzles.map(p => p.innovator)));
-    setShuffledInventions(shuffleArray(puzzles.map(p => p.invention)));
-  }, []);
+  // Correct matches
+  const correctMatches = [
+    { innovatorId: 1, inventionId: 1 }, // Edison → Bulb
+    { innovatorId: 2, inventionId: 2 }, // Wright Brothers → Plane
+    { innovatorId: 3, inventionId: 3 }, // Jobs → iPhone
+    { innovatorId: 4, inventionId: 4 }, // Tesla → AC Motor
+    { innovatorId: 5, inventionId: 5 }  // Curie → Radium
+  ];
 
   const handleInnovatorSelect = (innovator) => {
-    if (selectedInvention) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.innovator === innovator && p.invention === selectedInvention);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedInnovator(null);
-      setSelectedInvention(null);
-    } else {
-      setSelectedInnovator(innovator);
-    }
+    if (gameFinished) return;
+    setSelectedInnovator(innovator);
   };
 
   const handleInventionSelect = (invention) => {
-    if (selectedInnovator) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.innovator === selectedInnovator && p.invention === invention);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedInnovator(null);
-      setSelectedInvention(null);
+    if (gameFinished) return;
+    setSelectedInvention(invention);
+  };
+
+  const handleMatch = () => {
+    if (!selectedInnovator || !selectedInvention || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      innovatorId: selectedInnovator.id,
+      inventionId: selectedInvention.id,
+      isCorrect: correctMatches.some(
+        match => match.innovatorId === selectedInnovator.id && match.inventionId === selectedInvention.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setSelectedInvention(invention);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === innovators.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedInnovator(null);
+    setSelectedInvention(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedInnovator(null);
+    setSelectedInvention(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/ehe/kids");
   };
 
-  const isMatched = (id) => matchedPairs.includes(id);
-  const isInnovatorSelected = (innovator) => selectedInnovator === innovator;
-  const isInventionSelected = (invention) => selectedInvention === invention;
+  // Check if an innovator is already matched
+  const isInnovatorMatched = (innovatorId) => {
+    return matches.some(match => match.innovatorId === innovatorId);
+  };
+
+  // Check if an invention is already matched
+  const isInventionMatched = (inventionId) => {
+    return matches.some(match => match.inventionId === inventionId);
+  };
+
+  // Get match result for an innovator
+  const getMatchResult = (innovatorId) => {
+    const match = matches.find(m => m.innovatorId === innovatorId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Match Innovators"
-      subtitle={`Match innovators to their inventions! ${matchedPairs.length}/${puzzles.length} matched`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Innovators with Inventions (${matches.length}/${innovators.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="ehe-kids-34"
       gameType="ehe"
-      totalLevels={10}
-      currentLevel={34}
-      showConfetti={gameFinished}
+      totalLevels={innovators.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      backPath="/games/ehe/kids"
+      maxScore={innovators.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Innovators column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Innovators</h3>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Innovators */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Innovators</h3>
               <div className="space-y-4">
-                {shuffledInnovators.map((innovator, index) => {
-                  const puzzle = puzzles.find(p => p.innovator === innovator);
-                  return (
-                    <button
-                      key={`innovator-${index}`}
-                      onClick={() => handleInnovatorSelect(innovator)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isInnovatorSelected(innovator)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.emoji}</span>
-                        <span className="text-white/90 text-lg">{innovator}</span>
+                {innovators.map(innovator => (
+                  <button
+                    key={innovator.id}
+                    onClick={() => handleInnovatorSelect(innovator)}
+                    disabled={isInnovatorMatched(innovator.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isInnovatorMatched(innovator.id)
+                        ? getMatchResult(innovator.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedInnovator?.id === innovator.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{innovator.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{innovator.name}</h4>
+                        <p className="text-white/80 text-sm">{innovator.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
-            
-            {/* Inventions column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Inventions</h3>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedInnovator 
+                    ? `Selected: ${selectedInnovator.name}` 
+                    : "Select an Innovator"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedInnovator || !selectedInvention}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedInnovator && selectedInvention
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{innovators.length}</p>
+                  <p>Matched: {matches.length}/{innovators.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Inventions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Inventions</h3>
               <div className="space-y-4">
-                {shuffledInventions.map((invention, index) => {
-                  const puzzle = puzzles.find(p => p.invention === invention);
-                  return (
-                    <button
-                      key={`invention-${index}`}
-                      onClick={() => handleInventionSelect(invention)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isInventionSelected(invention)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.inventionEmoji}</span>
-                        <span className="text-white/90 text-lg">{invention}</span>
+                {inventions.map(invention => (
+                  <button
+                    key={invention.id}
+                    onClick={() => handleInventionSelect(invention)}
+                    disabled={isInventionMatched(invention.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isInventionMatched(invention.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedInvention?.id === invention.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{invention.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{invention.name}</h4>
+                        <p className="text-white/80 text-sm">{invention.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-          
-          {/* Feedback area */}
-          {selectedInnovator && selectedInvention && (
-            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
-              <p className="text-white/90 text-center">
-                Matching: {selectedInnovator} → {selectedInvention}
-              </p>
-            </div>
-          )}
-          
-          {selectedInnovator && !selectedInvention && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedInnovator}. Now select an invention to match!
-              </p>
-            </div>
-          )}
-          
-          {!selectedInnovator && selectedInvention && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedInvention}. Now select an innovator to match!
-              </p>
-            </div>
-          )}
-          
-          {/* Completion message */}
-          {gameFinished && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
-              <p className="text-green-300 text-center font-bold">
-                Great job! You matched all innovators to their inventions!
-              </p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {innovators.length} innovators with their inventions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Innovation drives human progress - from light bulbs to smartphones!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {innovators.length} innovators correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about which inventor created which groundbreaking invention!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

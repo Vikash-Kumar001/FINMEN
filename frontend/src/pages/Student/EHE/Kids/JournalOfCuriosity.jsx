@@ -1,29 +1,83 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
+import { PenSquare } from 'lucide-react';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const JournalOfCuriosity = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [journalEntry, setJournalEntry] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ehe-kids-97";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [entry, setEntry] = useState("");
+  const [showResult, setShowResult] = useState(false);
+
+  const stages = [
+    {
+      question: 'Write: "One new thing I want to learn is ___.',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "I am curious about this because ___.',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "To explore this topic, I could ___.',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "An expert in this field is ___.',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "Learning this will help me ___.',
+      minLength: 10,
+    },
+  ];
 
   const handleSubmit = () => {
-    if (journalEntry.trim().length >= 10) {
-      setIsSubmitted(true);
-      setCoins(5); // Reward for completing the journal entry
-      showCorrectAnswerFeedback(5, true);
-      setTimeout(() => setGameFinished(true), 1500);
+    if (showResult) return; // Prevent multiple submissions
+    
+    resetFeedback();
+    const entryText = entry.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setShowResult(true);
+        } else {
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
+        }
+      }, 1500);
     }
   };
+
+  const finalScore = score;
+
+  // Log when game completes
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Journal of Curiosity game completed! Score: ${finalScore}/${stages.length}, gameId: ${gameId}`);
+    }
+  }, [showResult, finalScore, gameId, stages.length]);
 
   const handleNext = () => {
     navigate("/games/ehe/kids");
@@ -32,74 +86,83 @@ const JournalOfCuriosity = () => {
   return (
     <GameShell
       title="Journal of Curiosity"
-      subtitle={isSubmitted ? "Great job!" : "Write about what you want to learn"}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
-      gameId="ehe-kids-97"
-      gameType="ehe"
-      totalLevels={10}
-      currentLevel={97}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
-      backPath="/games/ehe/kids"
-      showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Feed your curiosity!` : "Journal Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
+      onNext={handleNext}
+      nextEnabled={showResult}
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="ehe"
+      maxScore={stages.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          {!isSubmitted ? (
-            <>
-              <h2 className="text-xl font-semibold text-white mb-4">
-                Write: "One new thing I want to learn is ___."
-              </h2>
-              <p className="text-white/80 mb-6">
-                Think about something new you're curious about. What would you like to explore or learn more about? Write at least 10 words.
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === stages.length}
+      backPath="/games/ehe/kids"
+    >
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center text-center text-white space-y-6 md:space-y-8 max-w-4xl mx-auto px-4 py-4">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-6 md:p-8 rounded-xl md:rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-8 h-8 md:w-10 md:h-10 text-yellow-300" />
+            <h3 className="text-xl md:text-2xl font-bold mb-4 text-white">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4 text-sm md:text-base">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-xs md:text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
+            </p>
+            <textarea
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-base md:text-lg bg-white/90 min-h-[120px] md:min-h-[150px]"
+              disabled={showResult}
+            />
+            <div className="mt-2 text-white/50 text-xs md:text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
+            </div>
+            <button
+              onClick={handleSubmit}
+              className={`mt-4 px-6 md:px-8 py-3 md:py-4 rounded-full text-base md:text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
+            >
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
+            </button>
+          </div>
+        )}
+        
+        {showResult && (
+          <div className="bg-white/10 backdrop-blur-md p-6 md:p-8 rounded-xl md:rounded-2xl border border-white/20 text-center">
+            <div className="text-4xl mb-4">🔍</div>
+            <h2 className="text-2xl font-bold text-white mb-6">Curiosity Explored!</h2>
+            
+            <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl p-4 border border-green-400/30 mb-6">
+              <p className="text-green-300 font-bold">
+                🎉 Wonderful! You've completed your curiosity journal entry!
               </p>
-              
-              <textarea
-                value={journalEntry}
-                onChange={(e) => setJournalEntry(e.target.value)}
-                placeholder="Start writing your journal entry here... What new thing would you like to learn?"
-                className="w-full h-48 p-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-              />
-              
-              <div className="flex justify-between items-center mt-4">
-                <span className="text-white/70 text-sm">
-                  {journalEntry.length} characters
-                </span>
-                <button
-                  onClick={handleSubmit}
-                  disabled={journalEntry.trim().length < 10}
-                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white rounded-full font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  Submit Entry
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-white mb-6">Your Curiosity Journal Entry</h2>
-              
-              <div className="bg-white/5 rounded-xl p-6 border border-white/10 mb-6 text-left">
-                <p className="text-white/90 whitespace-pre-wrap">{journalEntry}</p>
-              </div>
-              
-              <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl p-4 border border-green-400/30">
-                <p className="text-green-300 font-bold">
-                  🎉 Wonderful! You've completed your curiosity journal entry!
-                </p>
-                <p className="text-green-300 mt-2">
-                  Exploring your curiosity is the first step toward lifelong learning!
-                </p>
+              <p className="text-green-300 mt-2">
+                Exploring your curiosity is the first step toward lifelong learning!
+              </p>
+            </div>
+            
+            <div className="bg-white/5 rounded-xl p-6 border border-white/10 mb-6 text-left">
+              <h3 className="text-lg font-semibold text-white mb-3">Your Entries:</h3>
+              <div className="space-y-3">
+                {stages.map((stage, index) => (
+                  <div key={index} className="text-white/90 text-sm">
+                    <span className="font-medium">Q{index + 1}:</span> {stage.question}
+                  </div>
+                ))}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

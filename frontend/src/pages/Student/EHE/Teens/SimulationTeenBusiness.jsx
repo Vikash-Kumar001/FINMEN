@@ -18,135 +18,150 @@ const SimulationTeenBusiness = () => {
   const scenarios = [
     {
       id: 1,
-      text: "You run an online store selling handmade crafts. An order arrives but you realize you're out of stock on a key material. What do you do?",
+      text: "Teen runs an online store. Customer orders arrive. What should she do?",
       options: [
         {
           id: "a",
-          text: "Deliver on time by finding alternatives or explaining the delay",
-          emoji: "✅",
-          description: "Great! Honesty and problem-solving maintain customer trust and relationships",
+          text: "Deliver on time",
+          emoji: "📦",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Delay the order without communication",
+          text: "Delay delivery",
           emoji: "⏰",
-          description: "Poor communication damages customer relationships and business reputation",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Quit the business because of this challenge",
+          text: "Quit the business",
           emoji: "🏳️",
-          description: "Challenges are opportunities to learn and improve, not reasons to give up",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Ignore customer messages",
+          emoji: "🔇",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Sales are slow for a week. How do you respond?",
+      text: "How should she handle customer complaints?",
       options: [
         {
           id: "a",
-          text: "Analyze what's working and adjust your approach",
-          emoji: "📊",
-          description: "Perfect! Data-driven decisions help improve business performance",
+          text: "Listen and resolve issues professionally",
+          emoji: "👂",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Panic and make random changes",
-          emoji: "😰",
-          description: "Reactive decisions without analysis often make problems worse",
+          text: "Argue with customers",
+          emoji: "😠",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Ignore the problem and hope it resolves itself",
+          text: "Ignore all complaints",
           emoji: "🙈",
-          description: "Proactive problem-solving is essential for business success",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Blame suppliers only",
+          emoji: "😤",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "A customer leaves a negative review. What's your approach?",
+      text: "What approach should she take to pricing?",
       options: [
         {
           id: "a",
-          text: "Respond professionally and try to resolve their issue",
-          emoji: "🤝",
-          description: "Excellent! Professional responses can turn negative experiences into positive ones",
+          text: "Research market rates and stay competitive",
+          emoji: "📊",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Ignore the review or respond angrily",
-          emoji: "😡",
-          description: "Ignoring or reacting negatively to feedback damages business reputation",
+          text: "Price randomly",
+          emoji: "🎲",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Remove the review from your site",
-          emoji: "🗑️",
-          description: "Authentic feedback, even negative, builds trust with potential customers",
+          text: "Always undercut competitors",
+          emoji: "📉",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Charge maximum without value",
+          emoji: "💸",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "You receive an unexpected large order. How do you handle it?",
+      text: "How should she manage finances?",
       options: [
         {
           id: "a",
-          text: "Assess your capacity and communicate clearly about timelines",
-          emoji: "📅",
-          description: "Great! Clear communication and realistic planning ensure customer satisfaction",
+          text: "Track income and expenses carefully",
+          emoji: "💰",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Accept without checking if you can deliver",
-          emoji: "🤯",
-          description: "Overpromising leads to disappointed customers and damaged reputation",
+          text: "Spend without records",
+          emoji: "💳",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Reject it because it seems challenging",
-          emoji: "❌",
-          description: "Challenging opportunities can lead to growth when handled properly",
+          text: "Ignore all financial data",
+          emoji: "🗑️",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Overspend consistently",
+          emoji: "💸",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "Your business is growing. What's your next priority?",
+      text: "What should she do to grow her business?",
       options: [
         {
           id: "a",
-          text: "Plan for sustainable growth and maintain quality",
-          emoji: "🌱",
-          description: "Perfect! Sustainable growth ensures long-term business success",
+          text: "Improve quality and seek feedback",
+          emoji: "📈",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Grow as fast as possible regardless of quality",
-          emoji: "💨",
-          description: "Rapid growth without quality control can damage the business",
+          text: "Stop innovating",
+          emoji: "🛑",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Stop growing to avoid complications",
-          emoji: "🛑",
-          description: "Growth is generally positive when managed properly",
+          text: "Avoid customer interaction",
+          emoji: "🔇",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Copy competitors without improvement",
+          emoji: "📎",
           isCorrect: false
         }
       ]
@@ -175,7 +190,7 @@ const SimulationTeenBusiness = () => {
   const getCurrentScenario = () => scenarios[currentStep];
 
   const handleNext = () => {
-    navigate("/student/ehe/teens/reflex-teen-boss");
+    navigate("/games/ehe/teens");
   };
 
   return (
@@ -191,8 +206,8 @@ const SimulationTeenBusiness = () => {
       totalXp={totalXp}
       gameId="ehe-teen-48"
       gameType="ehe"
-      totalLevels={50}
-      currentLevel={48}
+      totalLevels={10}
+      currentLevel={8}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/ehe/teens"
@@ -214,7 +229,7 @@ const SimulationTeenBusiness = () => {
             {getCurrentScenario().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +240,6 @@ const SimulationTeenBusiness = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

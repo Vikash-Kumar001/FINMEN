@@ -1,237 +1,184 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const DebateLearningEndsCollege = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const navigate = useNavigate();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ehe-teen-96";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Does learning stop after completing a college degree?",
+      text: "Does learning stop after getting a degree?",
       options: [
-        {
-          id: "a",
-          text: "No, learning is a lifelong process",
-          emoji: "📚",
-          description: "Exactly! The world changes constantly, requiring continuous learning",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Yes, college provides all necessary knowledge",
-          emoji: "🎓",
-          description: "Fields evolve rapidly, making ongoing learning essential",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Only if you want to stay employed",
-          emoji: "💼",
-          description: "Learning benefits all aspects of life, not just employment",
-          isCorrect: false
-        }
+        { id: "a", text: "No, it continues throughout life", correct: true },
+        { id: "b", text: "Yes, completely stops", correct: false },
+        { id: "c", text: "Only in certain fields", correct: false },
+        
       ]
     },
     {
       id: 2,
-      text: "What's a key reason professionals must continue learning?",
+      text: "Why is lifelong learning important in today's world?",
       options: [
-        {
-          id: "a",
-          text: "Technology and industry practices constantly evolve",
-          emoji: "🔄",
-          description: "Perfect! Staying current is essential in fast-changing fields",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Employers require it for entertainment",
-          emoji: "🎮",
-          description: "Continuous learning serves practical career advancement purposes",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Learning is only for students",
-          emoji: "👶",
-          description: "Learning benefits professionals at all career stages",
-          isCorrect: false
-        }
+        { id: "a", text: "Rapid changes require constant adaptation", correct: true },
+        { id: "b", text: "Things never change", correct: false },
+        { id: "c", text: "Knowledge becomes obsolete slowly", correct: false },
+    
       ]
     },
     {
       id: 3,
-      text: "How does lifelong learning benefit personal development?",
+      text: "What is a growth mindset in learning?",
       options: [
-        {
-          id: "a",
-          text: "Keeps the mind active and expands perspectives",
-          emoji: "🧠",
-          description: "Exactly! Learning enhances cognitive abilities and worldview",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Creates unnecessary stress",
-          emoji: "😰",
-          description: "Learning, when approached properly, enhances rather than diminishes well-being",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Is only useful for career advancement",
-          emoji: "💼",
-          description: "Learning enriches all aspects of life beyond professional contexts",
-          isCorrect: false
-        }
+        { id: "a", text: "Belief that abilities can be developed", correct: true },
+        { id: "b", text: "Belief that talents are fixed", correct: false },
+        { id: "c", text: "Avoiding challenges", correct: false },
       ]
     },
     {
       id: 4,
-      text: "What's the best approach to lifelong learning?",
+      text: "How can professionals stay relevant in their careers?",
       options: [
-        {
-          id: "a",
-          text: "Stay curious and seek learning opportunities regularly",
-          emoji: "🔍",
-          description: "Perfect! A growth mindset leads to continuous development",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Only learn when forced by employers",
-          emoji: "⏰",
-          description: "Proactive learning is more effective than reactive learning",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Avoid all new information to prevent confusion",
-          emoji: "🛡️",
-          description: "Embracing new information, when properly evaluated, enhances understanding",
-          isCorrect: false
-        }
+        { id: "a", text: "Continuously update skills and knowledge", correct: true },
+        { id: "b", text: "Rely only on past education", correct: false },
+        { id: "c", text: "Avoid new technologies", correct: false },
       ]
     },
     {
       id: 5,
-      text: "How can professionals balance work with continuous learning?",
+      text: "What are benefits of being a lifelong learner?",
       options: [
-        {
-          id: "a",
-          text: "Dedicate specific time and set learning goals",
-          emoji: "📅",
-          description: "Exactly! Structured approaches make learning sustainable",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Quit jobs to focus only on learning",
-          emoji: "🚪",
-          description: "Career experience provides valuable learning opportunities",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Never learn anything new",
-          emoji: "❌",
-          description: "Stagnation limits both professional and personal growth",
-          isCorrect: false
-        }
+        { id: "a", text: "Better opportunities and personal fulfillment", correct: true },
+        { id: "b", text: "Increased stress and pressure", correct: false },
+        { id: "c", text: "Less job security", correct: false },
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
-    if (isCorrect) {
-      showCorrectAnswerFeedback(2, true);
+  const handleAnswerSelect = (option) => {
+    resetFeedback();
+    
+    if (option.correct) {
+      const newCoins = coins + coinsPerLevel;
+      setCoins(newCoins);
+      setFinalScore(finalScore + 1);
+      showCorrectAnswerFeedback(newCoins);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+        setCurrentQuestion(currentQuestion + 1);
       } else {
-        setGameFinished(true);
+        setShowResult(true);
       }
     }, 1500);
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   const handleNext = () => {
-    navigate("/student/ehe/teens/journal-growth-plans");
+    navigate("/games/ehe/teens");
   };
 
   return (
     <GameShell
       title="Debate: Learning Ends After College?"
-      subtitle={`Debate ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length * 2}
+      score={coins}
+      subtitle={showResult ? "Debate Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
       gameId="ehe-teen-96"
       gameType="ehe"
-      totalLevels={100}
-      currentLevel={96}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/teens"
       showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/ehe/teens"
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Debate {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length * 2}</span>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">
+                {questions[currentQuestion].text}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-6">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswerSelect(option)}
+                    className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
+                  >
+                    <div className="flex items-center">
+                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                        {option.id}
+                      </span>
+                      <span className="font-medium">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🎭</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Learning After College Debate</h3>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+        ) : (
+          <div className="text-center py-8">
+            <div className="inline-block p-4 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 mb-6">
+              <div className="bg-white p-2 rounded-full">
+                <div className="text-4xl">
+                  {finalScore >= 3 ? "🏆" : "📚"}
                 </div>
-              </button>
-            ))}
+              </div>
+            </div>
+            
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              {finalScore >= 3 ? "Great Job!" : "Good Effort!"}
+            </h2>
+            
+            <p className="text-white/80 mb-6 max-w-2xl mx-auto">
+              {finalScore >= 3 
+                ? "You've shown excellent understanding of lifelong learning and growth mindset!" 
+                : "You're on the right track! Review the concepts and try again."}
+            </p>
+            
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 border border-white/20 max-w-md mx-auto mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Your Score</span>
+                <span className="text-xl font-bold text-yellow-400">{finalScore}/{questions.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">Coins Earned</span>
+                <span className="text-xl font-bold text-yellow-400">{coins}</span>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

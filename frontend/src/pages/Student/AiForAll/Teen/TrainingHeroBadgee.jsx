@@ -8,7 +8,7 @@ const TrainingHeroBadgee = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-52";
+  const gameId = "ai-teen-75";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -29,11 +29,7 @@ const TrainingHeroBadgee = () => {
       title: "AI Training Concepts",
       question: "What is the primary goal when training an AI model?",
       options: [
-        { 
-          text: "To enable the model to make accurate predictions on new data", 
-          emoji: "🎯", 
-          isCorrect: true
-        },
+        
         { 
           text: "To make the model as complex as possible", 
           emoji: "🤯", 
@@ -43,6 +39,11 @@ const TrainingHeroBadgee = () => {
           text: "To use all available computational resources", 
           emoji: "⚙️", 
           isCorrect: false
+        },
+        { 
+          text: "To enable the model to make accurate predictions on new data", 
+          emoji: "🎯", 
+          isCorrect: true
         },
         { 
           text: "To eliminate all human oversight", 
@@ -62,12 +63,12 @@ const TrainingHeroBadgee = () => {
       options: [
         { 
           text: "Ensuring diverse and representative datasets", 
-          emoji: "さまざまだ", 
+          emoji: "📊", 
           isCorrect: true
         },
         { 
           text: "Using data from a single source", 
-          emoji: "单一", 
+          emoji: "📈", 
           isCorrect: false
         },
         { 
@@ -91,11 +92,7 @@ const TrainingHeroBadgee = () => {
       title: "Overfitting Prevention",
       question: "Which technique is commonly used to prevent overfitting?",
       options: [
-        { 
-          text: "Cross-validation", 
-          emoji: "🔄", 
-          isCorrect: true
-        },
+        
         { 
           text: "Increasing model complexity", 
           emoji: "⬆️", 
@@ -105,6 +102,11 @@ const TrainingHeroBadgee = () => {
           text: "Using all data for training", 
           emoji: "📚", 
           isCorrect: false
+        },
+        { 
+          text: "Cross-validation", 
+          emoji: "🔄", 
+          isCorrect: true
         },
         { 
           text: "Reducing training iterations", 
@@ -122,11 +124,7 @@ const TrainingHeroBadgee = () => {
       title: "Data Quality",
       question: "Why is data preprocessing important in AI training?",
       options: [
-        { 
-          text: "It ensures data consistency and removes noise", 
-          emoji: "🧹", 
-          isCorrect: true
-        },
+        
         { 
           text: "It makes datasets larger", 
           emoji: "📦", 
@@ -141,7 +139,12 @@ const TrainingHeroBadgee = () => {
           text: "It eliminates the need for validation", 
           emoji: "❌", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "It ensures data consistency and removes noise", 
+          emoji: "🧹", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Perfect! Preprocessing cleans data, handles missing values, and ensures consistency for better training!",
@@ -153,15 +156,16 @@ const TrainingHeroBadgee = () => {
       title: "Model Evaluation",
       question: "What does a confusion matrix primarily show?",
       options: [
-        { 
-          text: "Predictions vs actual outcomes for classification", 
-          emoji: "📊", 
-          isCorrect: true
-        },
+       
         { 
           text: "Training time for different models", 
           emoji: "⏱️", 
           isCorrect: false
+        },
+         { 
+          text: "Predictions vs actual outcomes for classification", 
+          emoji: "📊", 
+          isCorrect: true
         },
         { 
           text: "Cost of computational resources", 
@@ -179,161 +183,6 @@ const TrainingHeroBadgee = () => {
         wrong: "A confusion matrix is a table used to evaluate classification model performance by showing prediction results."
       }
     },
-    {
-      id: 6,
-      title: "Ethical AI Training",
-      question: "Why should AI developers consider ethical implications during training?",
-      options: [
-        { 
-          text: "To prevent harm and ensure fair treatment of all groups", 
-          emoji: "⚖️", 
-          isCorrect: true
-        },
-        { 
-          text: "To reduce computational costs", 
-          emoji: "省钱", 
-          isCorrect: false
-        },
-        { 
-          text: "To speed up development process", 
-          emoji: "🏃", 
-          isCorrect: false
-        },
-        { 
-          text: "To minimize data usage", 
-          emoji: "📉", 
-          isCorrect: false
-        }
-      ],
-      feedback: {
-        correct: "Correct! Ethical considerations help prevent discrimination and ensure AI benefits society broadly!",
-        wrong: "Ethics in AI development focuses on fairness, accountability, and preventing societal harm."
-      }
-    },
-    {
-      id: 7,
-      title: "Feature Engineering",
-      question: "What is the main purpose of feature engineering?",
-      options: [
-        { 
-          text: "To create meaningful input variables for better model performance", 
-          emoji: "🔧", 
-          isCorrect: true
-        },
-        { 
-          text: "To increase the number of features regardless of relevance", 
-          emoji: "📈", 
-          isCorrect: false
-        },
-        { 
-          text: "To reduce computational requirements", 
-          emoji: "🔋", 
-          isCorrect: false
-        },
-        { 
-          text: "To standardize all features to the same scale", 
-          emoji: "📏", 
-          isCorrect: false
-        }
-      ],
-      feedback: {
-        correct: "Right! Feature engineering transforms raw data into informative inputs that improve model accuracy!",
-        wrong: "Effective feature engineering creates relevant, discriminative inputs that help models learn better patterns."
-      }
-    },
-    {
-      id: 8,
-      title: "Hyperparameter Tuning",
-      question: "What is the primary goal of hyperparameter tuning?",
-      options: [
-        { 
-          text: "To optimize model performance through parameter adjustment", 
-          emoji: "⚙️", 
-          isCorrect: true
-        },
-        { 
-          text: "To make models run faster", 
-          emoji: "⚡", 
-          isCorrect: false
-        },
-        { 
-          text: "To reduce the number of model parameters", 
-          emoji: "⬇️", 
-          isCorrect: false
-        },
-        { 
-          text: "To standardize model architectures", 
-          emoji: "📐", 
-          isCorrect: false
-        }
-      ],
-      feedback: {
-        correct: "Perfect! Hyperparameter tuning finds optimal settings to maximize model effectiveness!",
-        wrong: "Hyperparameter tuning systematically adjusts model configurations to achieve the best performance."
-      }
-    },
-    {
-      id: 9,
-      title: "Transfer Learning",
-      question: "What is a key benefit of transfer learning?",
-      options: [
-        { 
-          text: "Leveraging pre-trained models to solve new problems faster", 
-          emoji: "🚀", 
-          isCorrect: true
-        },
-        { 
-          text: "Eliminating the need for any training data", 
-          emoji: "❌", 
-          isCorrect: false
-        },
-        { 
-          text: "Reducing model interpretability", 
-          emoji: "❓", 
-          isCorrect: false
-        },
-        { 
-          text: "Creating completely unrelated models", 
-          emoji: "🔀", 
-          isCorrect: false
-        }
-      ],
-      feedback: {
-        correct: "Exactly! Transfer learning adapts existing models to new tasks, saving time and resources!",
-        wrong: "Transfer learning uses knowledge from pre-trained models to accelerate learning in new domains."
-      }
-    },
-    {
-      id: 10,
-      title: "Continuous Learning",
-      question: "Why is continuous learning important for deployed AI systems?",
-      options: [
-        { 
-          text: "To adapt to changing data patterns and maintain performance", 
-          emoji: "🔄", 
-          isCorrect: true
-        },
-        { 
-          text: "To reduce server costs over time", 
-          emoji: "💰", 
-          isCorrect: false
-        },
-        { 
-          text: "To eliminate the need for monitoring", 
-          emoji: "😴", 
-          isCorrect: false
-        },
-        { 
-          text: "To simplify model architectures", 
-          emoji: "🧩", 
-          isCorrect: false
-        }
-      ],
-      feedback: {
-        correct: "Correct! Continuous learning ensures models remain effective as real-world conditions evolve!",
-        wrong: "Concept drift means deployed models need ongoing updates to maintain accuracy and relevance."
-      }
-    }
   ];
 
   const handleAnswer = (isCorrect, optionIndex) => {

@@ -111,19 +111,20 @@ const SmallDataVsBigDataStory = () => {
       id: 3,
       text: "AI trained on 3 voices vs 3000 voices. Which one performs better?",
       options: [
-        { 
-          id: "thousand", 
-          text: "AI with 3000 Voices", 
-          emoji: "🔊", 
-          description: "More voice samples help AI recognize accents, tones, and speech variations",
-          isCorrect: true
-        },
+       
         { 
           id: "three", 
           text: "AI with 3 Voices", 
           emoji: "🗣️", 
           description: "Limited voice samples restrict AI's ability to understand diverse speech patterns",
           isCorrect: false
+        },
+         { 
+          id: "thousand", 
+          text: "AI with 3000 Voices", 
+          emoji: "🔊", 
+          description: "More voice samples help AI recognize accents, tones, and speech variations",
+          isCorrect: true
         },
         { 
           id: "same", 
@@ -138,13 +139,7 @@ const SmallDataVsBigDataStory = () => {
       id: 4,
       text: "AI sees only 2 car pictures during training. What happens during testing?",
       options: [
-        { 
-          id: "fail", 
-          text: "Fails to Detect Cars", 
-          emoji: "❌", 
-          description: "Insufficient training data leads to poor real-world performance",
-          isCorrect: true
-        },
+        
         { 
           id: "accurate", 
           text: "Detects Cars Accurately", 
@@ -158,7 +153,14 @@ const SmallDataVsBigDataStory = () => {
           emoji: "🎲", 
           description: "AI attempts pattern recognition but lacks sufficient data for accuracy",
           isCorrect: false
-        }
+        },
+        { 
+          id: "fail", 
+          text: "Fails to Detect Cars", 
+          emoji: "❌", 
+          description: "Insufficient training data leads to poor real-world performance",
+          isCorrect: true
+        },
       ]
     },
     {

@@ -28,12 +28,67 @@ const AIMistakeReflex = () => {
   const timerRef = useRef(null);
   const currentRoundRef = useRef(0);
 
-  const items = [
-    { id: 1, question: "AI says: 2+2=5", correctAction: "correct", type: "mistake" },
-    { id: 2, question: "AI says: Sun rises in the west", correctAction: "correct", type: "mistake" },
-    { id: 3, question: "AI says: Water boils at 100°C", correctAction: "ignore", type: "correct" },
-    { id: 4, question: "AI says: Earth is flat", correctAction: "correct", type: "mistake" },
-    { id: 5, question: "AI says: 10-5=5", correctAction: "ignore", type: "correct" },
+  const questions = [
+    {
+      id: 1,
+      question: "AI says: 2+2=5. What should you do?",
+      statement: "AI says: 2+2=5",
+      correctAnswer: "Correct it",
+      options: [
+        { text: "Correct it", isCorrect: true, emoji: "🔧" },
+        { text: "Ignore", isCorrect: false, emoji: "🙈" },
+        { text: "Agree", isCorrect: false, emoji: "👍" },
+        { text: "Report", isCorrect: false, emoji: "🚩" }
+      ]
+    },
+    {
+      id: 2,
+      question: "AI says: Sun rises in the west. What should you do?",
+      statement: "AI says: Sun rises in the west",
+      correctAnswer: "Correct it",
+      options: [
+        { text: "Correct it", isCorrect: true, emoji: "🔧" },
+        { text: "Ignore", isCorrect: false, emoji: "🙈" },
+        { text: "Share", isCorrect: false, emoji: "📤" },
+        { text: "Laugh", isCorrect: false, emoji: "😂" }
+      ]
+    },
+    {
+      id: 3,
+      question: "AI says: Water boils at 100°C. What should you do?",
+      statement: "AI says: Water boils at 100°C",
+      correctAnswer: "Ignore",
+      options: [
+        { text: "Correct it", isCorrect: false, emoji: "🔧" },
+        { text: "Ignore", isCorrect: true, emoji: "🙈" },
+        { text: "Question", isCorrect: false, emoji: "❓" },
+        { text: "Verify", isCorrect: false, emoji: "🔍" }
+      ]
+    },
+    {
+      id: 4,
+      question: "AI says: Earth is flat. What should you do?",
+      statement: "AI says: Earth is flat",
+      correctAnswer: "Correct it",
+      options: [
+        { text: "Correct it", isCorrect: true, emoji: "🔧" },
+        { text: "Ignore", isCorrect: false, emoji: "🙈" },
+        { text: "Debate", isCorrect: false, emoji: "🗣️" },
+        { text: "Accept", isCorrect: false, emoji: "✅" }
+      ]
+    },
+    {
+      id: 5,
+      question: "AI says: 10-5=5. What should you do?",
+      statement: "AI says: 10-5=5",
+      correctAnswer: "Ignore",
+      options: [
+        { text: "Correct it", isCorrect: false, emoji: "🔧" },
+        { text: "Ignore", isCorrect: true, emoji: "🙈" },
+        { text: "Challenge", isCorrect: false, emoji: "⚔️" },
+        { text: "Confirm", isCorrect: false, emoji: "✔️" }
+      ]
+    }
   ];
 
   useEffect(() => {
@@ -92,16 +147,14 @@ const AIMistakeReflex = () => {
     resetFeedback();
   };
 
-  const handleChoice = (choice) => {
+  const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentItemData = items[currentRound - 1];
-    const isCorrect =
-      (choice === "correct" && currentItemData.correctAction === "correct") ||
-      (choice === "ignore" && currentItemData.correctAction === "ignore");
+    const currentQuestion = questions[currentRound - 1];
+    const isCorrect = option.isCorrect;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -120,13 +173,13 @@ const AIMistakeReflex = () => {
   };
 
   const finalScore = score;
-  const currentItemData = items[currentRound - 1];
+  const currentQuestion = questions[currentRound - 1];
   const accuracy = Math.round((score / TOTAL_ROUNDS) * 100);
 
   return (
     <GameShell
       title="AI Mistake Reflex"
-      subtitle={gameState === "playing" ? `Item ${currentRound}/${TOTAL_ROUNDS}: Did AI make a mistake?` : "Test your ability to identify AI mistakes!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your ability to identify AI mistakes!` : "Test your ability to identify AI mistakes!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -148,8 +201,8 @@ const AIMistakeReflex = () => {
             <div className="text-5xl mb-6">🤖</div>
             <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
             <p className="text-white/90 text-lg mb-6">
-              Identify if the AI made a mistake!<br />
-              You have {ROUND_TIME} seconds for each item.
+              Test your ability to identify AI mistakes!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
             <p className="text-white/80 mb-6">
               You have {TOTAL_ROUNDS} items with {ROUND_TIME} seconds each!
@@ -163,11 +216,11 @@ const AIMistakeReflex = () => {
           </div>
         )}
 
-        {gameState === "playing" && currentItemData && (
+        {gameState === "playing" && currentQuestion && (
           <div className="space-y-8">
             <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <div className="text-white">
-                <span className="font-bold">Item:</span> {currentRound}/{TOTAL_ROUNDS}
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
               <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
                 <span className="text-white">Time:</span> {timeLeft}s
@@ -177,32 +230,26 @@ const AIMistakeReflex = () => {
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <h3 className="text-white text-xl font-bold mb-6 text-center">
-                Did AI make a mistake?
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
               </h3>
-
-              <div className="bg-gradient-to-br from-orange-500/30 to-yellow-500/30 rounded-xl p-12 mb-6">
-                <p className="text-3xl font-bold text-center">{currentItemData.question}</p>
+              
+              <div className="bg-gradient-to-br from-orange-500/30 to-yellow-500/30 rounded-xl p-8 mb-6">
+                <p className="text-white text-2xl font-bold">{currentQuestion.statement}</p>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => handleChoice("correct")}
-                  disabled={answered}
-                  className="w-full min-h-[80px] bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <div className="text-3xl mr-2">✔️</div>
-                  <div className="text-white font-bold text-xl">Correct it</div>
-                </button>
-                <button
-                  onClick={() => handleChoice("ignore")}
-                  disabled={answered}
-                  className="w-full min-h-[80px] bg-gradient-to-r from-purple-500 to-cyan-600 hover:from-purple-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <div className="text-3xl mr-2">❌</div>
-                  <div className="text-white font-bold text-xl">Ignore</div>
-                </button>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

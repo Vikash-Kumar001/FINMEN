@@ -58,19 +58,20 @@ const AIHumanRolesStory = () => {
       text: "Who should decide the final court judgment — a Human Judge or an AI system?",
       options: [
         { 
-          id: "ai", 
-          text: "AI Judge", 
-          emoji: "🤖", 
-          description: "AI lacks the emotional intelligence and moral reasoning required for justice decisions",
-          isCorrect: false
-        },
-        { 
           id: "human", 
           text: "Human Judge", 
           emoji: "👨‍⚖️", 
           description: "Humans bring empathy, moral reasoning, and contextual understanding essential for fair judgments",
           isCorrect: true
         },
+        { 
+          id: "ai", 
+          text: "AI Judge", 
+          emoji: "🤖", 
+          description: "AI lacks the emotional intelligence and moral reasoning required for justice decisions",
+          isCorrect: false
+        },
+        
         { 
           id: "both", 
           text: "Both together", 
@@ -111,19 +112,20 @@ const AIHumanRolesStory = () => {
       id: 3,
       text: "Who should make the final hiring decision — HR AI tool or Human Manager?",
       options: [
-        { 
-          id: "ai", 
-          text: "HR AI Tool", 
-          emoji: "🤖", 
-          description: "AI can introduce bias and cannot assess soft skills or cultural fit effectively",
-          isCorrect: false
-        },
+        
         { 
           id: "manager", 
           text: "Human Manager", 
           emoji: "🧑‍💼", 
           description: "Managers can evaluate interpersonal skills, company culture fit, and nuanced qualifications",
           isCorrect: true
+        },
+        { 
+          id: "ai", 
+          text: "HR AI Tool", 
+          emoji: "🤖", 
+          description: "AI can introduce bias and cannot assess soft skills or cultural fit effectively",
+          isCorrect: false
         },
         { 
           id: "hr", 
@@ -172,6 +174,14 @@ const AIHumanRolesStory = () => {
           description: "AI can be fooled by sophisticated misinformation and lacks contextual understanding of complex events",
           isCorrect: false
         },
+        
+        { 
+          id: "public", 
+          text: "Public Voting", 
+          emoji: "🗳️", 
+          description: "Public opinion can be influenced by misinformation, making expert verification essential",
+          isCorrect: false
+        },
         { 
           id: "journalist", 
           text: "Human Journalist", 
@@ -179,13 +189,6 @@ const AIHumanRolesStory = () => {
           description: "Journalists apply critical thinking, source verification, and ethical judgment to confirm news accuracy",
           isCorrect: true
         },
-        { 
-          id: "public", 
-          text: "Public Voting", 
-          emoji: "🗳️", 
-          description: "Public opinion can be influenced by misinformation, making expert verification essential",
-          isCorrect: false
-        }
       ]
     }
   ];

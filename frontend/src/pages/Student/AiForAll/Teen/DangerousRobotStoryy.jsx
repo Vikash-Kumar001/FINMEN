@@ -64,6 +64,14 @@ const DangerousRobotStoryy = () => {
           description: "Encouraging a dangerous robot would make the situation worse and put more people at risk",
           isCorrect: false
         },
+        
+        { 
+          id: "watch", 
+          text: "Watch and Learn", 
+          emoji: "👀", 
+          description: "Observing a dangerous situation without acting puts others at unnecessary risk",
+          isCorrect: false
+        },
         { 
           id: "switch", 
           text: "Switch Off", 
@@ -71,13 +79,6 @@ const DangerousRobotStoryy = () => {
           description: "Turning off a dangerous robot is the safest immediate response to prevent harm",
           isCorrect: true
         },
-        { 
-          id: "watch", 
-          text: "Watch and Learn", 
-          emoji: "👀", 
-          description: "Observing a dangerous situation without acting puts others at unnecessary risk",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -85,19 +86,20 @@ const DangerousRobotStoryy = () => {
       text: "The robot is malfunctioning and moving dangerously. Action?",
       options: [
         { 
-          id: "encourage", 
-          text: "Encourage", 
-          emoji: "👍", 
-          description: "Encouraging a malfunctioning robot could lead to unpredictable and dangerous behavior",
-          isCorrect: false
-        },
-        { 
           id: "switch", 
           text: "Switch Off", 
           emoji: "🛑", 
           description: "Disabling a malfunctioning robot prevents potential harm to people and property",
           isCorrect: true
         },
+        { 
+          id: "encourage", 
+          text: "Encourage", 
+          emoji: "👍", 
+          description: "Encouraging a malfunctioning robot could lead to unpredictable and dangerous behavior",
+          isCorrect: false
+        },
+        
         { 
           id: "repair", 
           text: "Attempt Repair", 
@@ -118,6 +120,14 @@ const DangerousRobotStoryy = () => {
           description: "Encouraging a robot to harm animals is unethical and dangerous",
           isCorrect: false
         },
+        
+        { 
+          id: "redirect", 
+          text: "Redirect to Toys", 
+          emoji: "🧸", 
+          description: "Attempting to redirect a dangerous robot puts you at risk and may not work",
+          isCorrect: false
+        },
         { 
           id: "switch", 
           text: "Switch Off", 
@@ -125,13 +135,6 @@ const DangerousRobotStoryy = () => {
           description: "Immediately stopping a robot that threatens animals prevents unnecessary suffering",
           isCorrect: true
         },
-        { 
-          id: "redirect", 
-          text: "Redirect to Toys", 
-          emoji: "🧸", 
-          description: "Attempting to redirect a dangerous robot puts you at risk and may not work",
-          isCorrect: false
-        }
       ]
     },
     {

@@ -10,8 +10,8 @@ const RobotHonestyGame = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("ai-teen-18");
-  const gameId = gameData?.id || "ai-teen-18";
+  const gameData = getGameDataById("ai-teen-88");
+  const gameId = gameData?.id || "ai-teen-88";
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
@@ -32,8 +32,8 @@ const RobotHonestyGame = () => {
       emoji: "🤖",
       question: "Why is honesty important in AI systems?",
       choices: [
-        { id: 1, text: "Builds trust", emoji: "🤝", isCorrect: true },
-        { id: 2, text: "Faster processing", emoji: "⚡", isCorrect: false },
+        { id: 1, text: "Faster processing", emoji: "⚡", isCorrect: false },
+        { id: 2, text: "Builds trust", emoji: "🤝", isCorrect: true },
         { id: 3, text: "Cost reduction", emoji: "💰", isCorrect: false },
       ],
     },
@@ -54,8 +54,8 @@ const RobotHonestyGame = () => {
       emoji: "📚",
       question: "How should AI handle user data?",
       choices: [
-        { id: 1, text: "Honest use", emoji: "🛡️", isCorrect: true },
-        { id: 2, text: "Hidden collection", emoji: "🕵️", isCorrect: false },
+        { id: 1, text: "Hidden collection", emoji: "🕵️", isCorrect: false },
+        { id: 2, text: "Honest use", emoji: "🛡️", isCorrect: true },
         { id: 3, text: "Unauthorized sale", emoji: "💸", isCorrect: false },
       ],
     },

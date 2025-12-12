@@ -13,140 +13,156 @@ const SimulationCareerDecision = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const scenarios = [
     {
       id: 1,
-      text: "A teen is passionate about arts but parents want her to become a doctor. What's the best approach?",
+      text: "Teen has choices: Medicine / Engineering / Arts. What should she decide based on?",
       options: [
         {
           id: "a",
-          text: "Ignore parents completely",
-          emoji: "🚫",
-          description: "Family relationships matter; complete disregard can create unnecessary conflict",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Explore both interests and communicate openly",
-          emoji: "🤝",
-          description: "Perfect! Balancing personal interests with family input leads to better decisions",
+          text: "Interests + research",
+          emoji: "🔍",
           isCorrect: true
         },
         {
+          id: "b",
+          text: "Parents only",
+          emoji: "👨‍👩‍👧‍👦",
+          isCorrect: false
+        },
+        {
           id: "c",
-          text: "Give up on personal interests entirely",
-          emoji: "🏳️",
-          description: "Personal fulfillment is important for long-term career satisfaction",
+          text: "Friends only",
+          emoji: "👥",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Random choice",
+          emoji: "🎲",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "When choosing between Medicine, Engineering, and Arts, what factors should guide the decision?",
+      text: "How should she research career options?",
       options: [
         {
           id: "a",
-          text: "Parents' preferences only",
-          emoji: "👨‍👩‍👧‍👦",
-          description: "While family input is valuable, personal fit is crucial for career success",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Interests, aptitude, and research on all options",
-          emoji: "🔍",
-          description: "Exactly! Comprehensive evaluation leads to informed career decisions",
+          text: "Talk to professionals and explore online",
+          emoji: "🌐",
           isCorrect: true
         },
         {
+          id: "b",
+          text: "Avoid all research",
+          emoji: "🙈",
+          isCorrect: false
+        },
+        {
           id: "c",
-          text: "Highest salary potential only",
-          emoji: "💰",
-          description: "Financial considerations are important but shouldn't be the only factor",
+          text: "Copy someone else's choice",
+          emoji: "📎",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Guess based on popularity",
+          emoji: "📈",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "How should the teen gather information about these career paths?",
+      text: "What factors should influence her decision?",
       options: [
         {
           id: "a",
-          text: "Talk to professionals, research thoroughly, and try internships",
-          emoji: "👥",
-          description: "Perfect! Direct engagement provides authentic insights into career realities",
+          text: "Passion, market demand, and skills",
+          emoji: "🎯",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Only read online articles",
-          emoji: "💻",
-          description: "While online research helps, direct experience is more valuable",
+          text: "Only salary expectations",
+          emoji: "💰",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Copy what friends are choosing",
-          emoji: "👯",
-          description: "Individual career paths should align with personal interests and strengths",
+          text: "Ease of study only",
+          emoji: "📚",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Shortest study duration",
+          emoji: "⏱️",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "What's important when balancing personal interests with family expectations?",
+      text: "How can she test her career interest?",
       options: [
         {
           id: "a",
-          text: "Open communication and finding common ground",
-          emoji: "💬",
-          description: "Exactly! Dialogue helps align personal goals with family support",
+          text: "Internships and volunteer work",
+          emoji: "💼",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Secretly pursue interests without telling family",
-          emoji: "🤫",
-          description: "Honesty and transparency build trust and support systems",
+          text: "Avoid all exposure",
+          emoji: "🚫",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Completely ignore personal interests",
-          emoji: "❌",
-          description: "Personal fulfillment contributes to long-term career success and happiness",
+          text: "Stick to assumptions",
+          emoji: "💭",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Rely on movies",
+          emoji: "🎬",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "After researching all options, what's the next step?",
+      text: "What should she do after making a decision?",
       options: [
         {
           id: "a",
-          text: "Make a decision based on thorough analysis",
-          emoji: "✅",
-          description: "Perfect! Informed decisions based on research lead to better outcomes",
+          text: "Create an action plan and seek guidance",
+          emoji: "📝",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Delay decision indefinitely",
-          emoji: "⏰",
-          description: "Timely decisions prevent missed opportunities and unnecessary stress",
+          text: "Never review the decision",
+          emoji: "🛑",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Choose randomly without analysis",
-          emoji: "🎲",
-          description: "Career decisions affect long-term outcomes and should be well-considered",
+          text: "Ignore all advice",
+          emoji: "🙉",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Procrastinate indefinitely",
+          emoji: "⏰",
           isCorrect: false
         }
       ]
@@ -159,6 +175,7 @@ const SimulationCareerDecision = () => {
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { step: currentStep, optionId, isCorrect }]);
@@ -175,7 +192,7 @@ const SimulationCareerDecision = () => {
   const getCurrentScenario = () => scenarios[currentStep];
 
   const handleNext = () => {
-    navigate("/student/ehe/teens/reflex-teen-direction");
+    navigate("/games/ehe/teens");
   };
 
   return (
@@ -185,14 +202,14 @@ const SimulationCareerDecision = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       gameId="ehe-teen-58"
       gameType="ehe"
-      totalLevels={60}
-      currentLevel={58}
+      totalLevels={scenarios.length}
+      currentLevel={currentStep + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/ehe/teens"
@@ -214,7 +231,7 @@ const SimulationCareerDecision = () => {
             {getCurrentScenario().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +242,6 @@ const SimulationCareerDecision = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

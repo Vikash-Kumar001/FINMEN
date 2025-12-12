@@ -59,22 +59,19 @@ const ComputerVisionBasics = () => {
         { 
           id: 1, 
           text: "AI that can see and understand images", 
-          emoji: "📸", 
-          description: "Correct - Computer vision enables machines to interpret visuals",
+          emoji: "📸",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "AI that can only recognize faces", 
-          emoji: "👤", 
-          description: "Too limited - Computer vision does much more",
+          emoji: "👤",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "AI that creates art", 
           emoji: "🎨", 
-          description: "Incorrect - That's generative AI",
           isCorrect: false
         }
       ],
@@ -88,22 +85,19 @@ const ComputerVisionBasics = () => {
         { 
           id: 1, 
           text: "Medical image analysis", 
-          emoji: "🏥", 
-          description: "Incorrect - This IS a CV application",
+          emoji: "🏥",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Voice assistants", 
-          emoji: "🔊", 
-          description: "Correct - This is speech recognition, not vision",
+          emoji: "🔊",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Facial recognition", 
-          emoji: "👮", 
-          description: "Incorrect - This IS a CV application",
+          emoji: "👮",
           isCorrect: false
         }
       ],
@@ -117,22 +111,19 @@ const ComputerVisionBasics = () => {
         { 
           id: 1, 
           text: "Convert pixels to numbers", 
-          emoji: "🔢", 
-          description: "Correct - Digital representation enables analysis",
+          emoji: "🔢",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Use human eyes", 
-          emoji: "👀", 
-          description: "Incorrect - Computers process data differently",
+          emoji: "👀",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Magic algorithms", 
           emoji: "✨", 
-          description: "Incorrect - Based on mathematical principles",
           isCorrect: false
         }
       ],
@@ -147,21 +138,18 @@ const ComputerVisionBasics = () => {
           id: 1, 
           text: "Training with labeled images", 
           emoji: "📚", 
-          description: "Correct - Supervised learning enhances accuracy",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "More RAM memory", 
           emoji: "💾", 
-          description: "Helpful but not the key factor",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Faster internet", 
           emoji: "🌐", 
-          description: "Irrelevant to vision capability",
           isCorrect: false
         }
       ],
@@ -176,21 +164,18 @@ const ComputerVisionBasics = () => {
           id: 1, 
           text: "Enables autonomous vehicles", 
           emoji: "🚗", 
-          description: "Correct - Critical for self-driving technology",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Makes computers heavier", 
           emoji: "🏋️", 
-          description: "Incorrect - Software doesn't add physical weight",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Replaces all human jobs", 
           emoji: "🤖", 
-          description: "Overstated - Augments rather than replaces",
           isCorrect: false
         }
       ],

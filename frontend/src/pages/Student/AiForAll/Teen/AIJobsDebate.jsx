@@ -60,21 +60,18 @@ const AIJobsDebate = () => {
           id: 1, 
           text: "Panic and give up", 
           emoji: "😱", 
-          description: "Incorrect - Giving up prevents growth",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Learn new skills to adapt", 
           emoji: "📚", 
-          description: "Correct - Adaptability is key to success",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Blame AI", 
           emoji: "🤖", 
-          description: "Incorrect - Blaming technology is unproductive",
           isCorrect: false
         }
       ],
@@ -89,21 +86,18 @@ const AIJobsDebate = () => {
           id: 1, 
           text: "Look for new opportunities", 
           emoji: "🔍", 
-          description: "Correct - Proactive approach to change",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Stop trying to drive", 
-          emoji: "🛑", 
-          description: "Too passive - Limits future possibilities",
+          emoji: "🛑",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Protest against AI", 
           emoji: "✊", 
-          description: "Ineffective - Resistance won't stop progress",
           isCorrect: false
         }
       ],
@@ -118,21 +112,18 @@ const AIJobsDebate = () => {
           id: 1, 
           text: "Learn digital skills", 
           emoji: "💻", 
-          description: "Correct - Digital fluency is increasingly essential",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Ignore changes", 
-          emoji: "🙈", 
-          description: "Incorrect - Ignorance leads to obsolescence",
+          emoji: "🙈",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Criticize AI publicly", 
           emoji: "🗣️", 
-          description: "Unhelpful - Doesn't solve personal challenges",
           isCorrect: false
         }
       ],
@@ -147,21 +138,18 @@ const AIJobsDebate = () => {
           id: 1, 
           text: "Learn healthcare skills and AI tech", 
           emoji: "🩺", 
-          description: "Correct - Human-AI collaboration in healthcare",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Complain that AI is taking jobs", 
           emoji: "😤", 
-          description: "Unproductive - Focus should be on adaptation",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Avoid healthcare careers", 
-          emoji: "🚫", 
-          description: "Incorrect - Healthcare demand continues growing",
+          emoji: "🚫",
           isCorrect: false
         }
       ],
@@ -176,21 +164,18 @@ const AIJobsDebate = () => {
           id: 1, 
           text: "Learn creative & tech skills", 
           emoji: "🎨", 
-          description: "Correct - Blend human creativity with AI tools",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Ignore AI creativity", 
           emoji: "🙄", 
-          description: "Incorrect - Staying unaware is risky",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Argue AI should be banned", 
           emoji: "🚫", 
-          description: "Unrealistic - Technology advancement is inevitable",
           isCorrect: false
         }
       ],

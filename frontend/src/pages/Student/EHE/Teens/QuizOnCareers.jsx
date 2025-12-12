@@ -1,232 +1,310 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getEheTeenGames } from "../../../../pages/Games/GameCategories/EHE/teenGamesData";
 
 const QuizOnCareers = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const navigate = useNavigate();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ehe-teen-2";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getEheTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : "/games/ehe/teens",
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: "/games/ehe/teens", nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      text: "Which career needs coding skills?",
+      text: "Which career needs coding?",
+      emoji: "💻",
       options: [
         {
           id: "a",
           text: "Teacher",
-          emoji: "📚",
-          description: "Teachers focus on education, not primarily on coding",
+          emoji: "chalkboard",
+          description: "Teaching focuses on education delivery rather than software development",
           isCorrect: false
         },
         {
           id: "b",
           text: "Software Engineer",
-          emoji: "💻",
-          description: "Correct! Software engineers write code to create applications and systems",
+          emoji: "🖥️",
+          description: "Correct! Software engineers design, develop, and maintain computer programs",
           isCorrect: true
         },
         {
           id: "c",
           text: "Farmer",
           emoji: "🚜",
-          description: "Farmers focus on agriculture, not coding",
+          description: "Farming involves agricultural production rather than programming",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Which professional helps people with legal issues?",
+      text: "What should guide career selection?",
+      emoji: "🧭",
       options: [
         {
           id: "a",
-          text: "Doctor",
-          emoji: "👨‍⚕️",
-          description: "Doctors focus on medical health, not legal matters",
+          text: "Parental pressure only",
+          emoji: "👪",
+          description: "While family input matters, your own interests and abilities are crucial",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Lawyer",
-          emoji: "⚖️",
-          description: "Correct! Lawyers provide legal advice and represent clients in court",
+          text: "Interests, skills, and market demand",
+          emoji: "🎯",
+          description: "Exactly! Aligning personal passion with abilities and opportunities leads to satisfaction",
           isCorrect: true
         },
         {
           id: "c",
-          text: "Chef",
-          emoji: "👨‍🍳",
-          description: "Chefs focus on cooking and food preparation",
+          text: "Peer choices only",
+          emoji: "👥",
+          description: "Following friends without considering your fit may lead to dissatisfaction",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Who designs buildings and structures?",
+      text: "Why is career research important?",
+      emoji: "🔍",
       options: [
         {
           id: "a",
-          text: "Architect",
-          emoji: "🏛️",
-          description: "Correct! Architects design buildings and structures",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Journalist",
-          emoji: "📰",
-          description: "Journalists focus on reporting news and writing articles",
+          text: "Follow trends without thinking",
+          emoji: "🌪️",
+          description: "Blindly following trends without analysis rarely leads to success",
           isCorrect: false
         },
         {
+          id: "b",
+          text: "Make informed decisions about future",
+          emoji: "🧠",
+          description: "Perfect! Research helps you understand requirements, outlook, and fit",
+          isCorrect: true
+        },
+        {
           id: "c",
-          text: "Nurse",
-          emoji: "👩‍⚕️",
-          description: "Nurses focus on patient care in healthcare settings",
+          text: "Avoid all planning",
+          emoji: "🚫",
+          description: "Research actually supports planning rather than avoiding it",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "Which career involves treating patients' medical conditions?",
+      text: "What is a benefit of career planning?",
+      emoji: "📈",
       options: [
         {
           id: "a",
-          text: "Teacher",
-          emoji: "🏫",
-          description: "Teachers focus on education, not medical treatment",
+          text: "No benefits",
+          emoji: "❌",
+          description: "Planning provides clear advantages in goal achievement",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Doctor",
-          emoji: "🏥",
-          description: "Correct! Doctors diagnose and treat medical conditions",
+          text: "Clear direction and goals",
+          emoji: "✅",
+          description: "Exactly! Planning creates a roadmap for skill development and opportunities",
           isCorrect: true
         },
         {
           id: "c",
-          text: "Mechanic",
-          emoji: "🔧",
-          description: "Mechanics fix vehicles and machinery, not medical conditions",
+          text: "Increased confusion",
+          emoji: "😵",
+          description: "Good planning reduces uncertainty rather than creating confusion",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "Who investigates crimes and collects evidence?",
+      text: "How can students explore careers?",
+      emoji: "🎓",
       options: [
         {
           id: "a",
-          text: "Scientist",
-          emoji: "🔬",
-          description: "Scientists conduct research and experiments in various fields",
+          text: "Avoid all exposure",
+          emoji: "🙈",
+          description: "Limited exposure restricts understanding of possibilities",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Police Detective",
-          emoji: "👮",
-          description: "Correct! Police detectives investigate crimes and gather evidence",
+          text: "Internships, job shadowing, and career fairs",
+          emoji: "🏢",
+          description: "Correct! Hands-on experiences provide realistic insights into various fields",
           isCorrect: true
         },
         {
           id: "c",
-          text: "Librarian",
-          emoji: "📚",
-          description: "Librarians manage books and information resources",
+          text: "Stick to one idea only",
+          emoji: "📌",
+          description: "Exploring multiple options helps identify the best fit",
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
       } else {
-        setGameFinished(true);
+        setLevelCompleted(true);
       }
-    }, 1500);
+    }, isCorrect ? 1000 : 800);
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
-  const handleNext = () => {
-    navigate("/student/ehe/teens/reflex-teen-career");
-  };
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Quiz on Careers"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="ehe-teen-2"
+      gameId={gameId}
       gameType="ehe"
-      totalLevels={10}
-      currentLevel={2}
-      showConfetti={gameFinished}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/ehe/teens"
       showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {answered && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.description}
+                  </p>
                 </div>
-              </button>
-            ))}
+              )}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

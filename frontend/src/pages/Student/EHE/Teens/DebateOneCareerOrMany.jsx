@@ -24,21 +24,18 @@ const DebateOneCareerOrMany = () => {
           id: "a",
           text: "Explore many options first",
           emoji: "🔍",
-          description: "Correct! Exploration helps identify interests and strengths before specializing",
           isCorrect: true
         },
         {
           id: "b",
           text: "Pick one career early and stick to it",
           emoji: "📌",
-          description: "Early specialization can limit discovery of better-fitting careers",
           isCorrect: false
         },
         {
           id: "c",
           text: "Let parents decide without input",
           emoji: "👨‍👩‍👧‍👦",
-          description: "Career choices should involve personal reflection, not just parental direction",
           isCorrect: false
         }
       ]
@@ -51,21 +48,18 @@ const DebateOneCareerOrMany = () => {
           id: "a",
           text: "Discover diverse interests and find the best fit",
           emoji: "🌟",
-          description: "Exactly! Exploration leads to more informed and satisfying career decisions",
           isCorrect: true
         },
         {
           id: "b",
           text: "Confuse yourself with too many choices",
           emoji: "😵",
-          description: "Structured exploration clarifies rather than confuses career direction",
           isCorrect: false
         },
         {
           id: "c",
           text: "Delay inevitable specialization",
           emoji: "⏰",
-          description: "Exploration before specialization typically leads to better long-term outcomes",
           isCorrect: false
         }
       ]
@@ -78,21 +72,18 @@ const DebateOneCareerOrMany = () => {
           id: "a",
           text: "Builds broader skills and informed decision-making",
           emoji: "🧠",
-          description: "Perfect! Diverse experiences develop adaptable skills and self-awareness",
           isCorrect: true
         },
         {
           id: "b",
           text: "Wastes time that could be spent specializing",
           emoji: "⏳",
-          description: "Early exploration typically improves rather than hinders long-term success",
           isCorrect: false
         },
         {
           id: "c",
           text: "Creates unnecessary pressure to succeed",
           emoji: "😰",
-          description: "Exploration reduces pressure by building confidence in career choices",
           isCorrect: false
         }
       ]
@@ -105,21 +96,18 @@ const DebateOneCareerOrMany = () => {
           id: "a",
           text: "Try different internships, courses, and volunteer work",
           emoji: "📚",
-          description: "Excellent! Hands-on experiences provide realistic career insights",
           isCorrect: true
         },
         {
           id: "b",
           text: "Randomly switch jobs without reflection",
           emoji: "🔄",
-          description: "Purposeful exploration with reflection is more effective than random switching",
           isCorrect: false
         },
         {
           id: "c",
           text: "Avoid all career-related activities until college",
           emoji: "🚫",
-          description: "Early exploration provides valuable insights that inform later decisions",
           isCorrect: false
         }
       ]
@@ -132,21 +120,18 @@ const DebateOneCareerOrMany = () => {
           id: "a",
           text: "Talk to professionals, job shadow, and take relevant courses",
           emoji: "👥",
-          description: "Exactly! Direct engagement with careers provides authentic insights",
           isCorrect: true
         },
         {
           id: "b",
           text: "Only read about careers online",
           emoji: "💻",
-          description: "While online research helps, direct experience is more valuable",
           isCorrect: false
         },
         {
           id: "c",
           text: "Copy whatever their best friend chooses",
           emoji: "👯",
-          description: "Individual career paths should align with personal interests and strengths",
           isCorrect: false
         }
       ]
@@ -191,8 +176,8 @@ const DebateOneCareerOrMany = () => {
       totalXp={totalXp}
       gameId="ehe-teen-6"
       gameType="ehe"
-      totalLevels={10}
-      currentLevel={6}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/ehe/teens"
@@ -214,7 +199,7 @@ const DebateOneCareerOrMany = () => {
             {getCurrentQuestion().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {getCurrentQuestion().options.map(option => (
               <button
                 key={option.id}

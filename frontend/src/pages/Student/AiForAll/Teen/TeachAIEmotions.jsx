@@ -60,21 +60,18 @@ const TeachAIEmotions = () => {
           id: 1, 
           text: "Happy", 
           emoji: "😊", 
-          description: "Correct - Wide smile indicates happiness",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Sad", 
           emoji: "😢", 
-          description: "Incorrect - Tears indicate sadness",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Angry", 
           emoji: "😠", 
-          description: "Incorrect - Frown with angry eyes",
           isCorrect: false
         }
       ],
@@ -89,21 +86,18 @@ const TeachAIEmotions = () => {
           id: 1, 
           text: "Happy", 
           emoji: "😄", 
-          description: "Incorrect - Smiling face shows happiness",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Sad", 
           emoji: "😔", 
-          description: "Correct - Tears indicate sadness",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Surprised", 
           emoji: "😲", 
-          description: "Incorrect - Open mouth with wide eyes",
           isCorrect: false
         }
       ],
@@ -118,21 +112,18 @@ const TeachAIEmotions = () => {
           id: 1, 
           text: "Happy", 
           emoji: "😃", 
-          description: "Incorrect - Open smile shows happiness",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Sad", 
-          emoji: "😞", 
-          description: "Incorrect - Downward frown shows sadness",
+          emoji: "😞",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Angry", 
           emoji: "😡", 
-          description: "Correct - Frown with angry eyes shows anger",
           isCorrect: true
         }
       ],
@@ -147,21 +138,18 @@ const TeachAIEmotions = () => {
           id: 1, 
           text: "Bored", 
           emoji: "😑", 
-          description: "Incorrect - Neutral face shows boredom",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Surprised", 
           emoji: "😮", 
-          description: "Correct - Open mouth shows surprise",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Disgusted", 
           emoji: "🤢", 
-          description: "Incorrect - Green face shows disgust",
           isCorrect: false
         }
       ],
@@ -176,21 +164,18 @@ const TeachAIEmotions = () => {
           id: 1, 
           text: "Makes AI more human-like", 
           emoji: "🤝", 
-          description: "Partially correct but not the main reason",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Helps AI respond appropriately", 
           emoji: "💬", 
-          description: "Correct - Emotional intelligence improves responses",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Makes AI faster", 
           emoji: "⚡", 
-          description: "Incorrect - Emotions don't affect processing speed",
           isCorrect: false
         }
       ],

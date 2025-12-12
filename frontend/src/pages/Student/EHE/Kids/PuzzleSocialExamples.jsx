@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -10,246 +10,260 @@ const PuzzleSocialExamples = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
   const [selectedSolution, setSelectedSolution] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const [shuffledSolutions, setShuffledSolutions] = useState([]);
-  const [shuffledAreas, setShuffledAreas] = useState([]);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      solution: "Solar Lamps",
-      emoji: "💡",
-      area: "Villages",
-      areaEmoji: "🏘️",
-      description: "Solar lamps provide clean, affordable lighting to villages without electricity."
-    },
-    {
-      id: 2,
-      solution: "Clean Water",
-      emoji: "💧",
-      area: "Rural Areas",
-      areaEmoji: "🌾",
-      description: "Clean water systems improve health and quality of life in rural communities."
-    },
-    {
-      id: 3,
-      solution: "Microloans",
-      emoji: "💰",
-      area: "Poor Families",
-      areaEmoji: "👨‍👩‍👧‍👦",
-      description: "Small loans help poor families start businesses and improve their livelihoods."
-    },
-    {
-      id: 4,
-      solution: "Recycling Programs",
-      emoji: "♻️",
-      area: "Urban Communities",
-      areaEmoji: "🏙️",
-      description: "Recycling programs reduce waste and create jobs in urban areas."
-    },
-    {
-      id: 5,
-      solution: "Mobile Health Clinics",
-      emoji: "🚑",
-      area: "Remote Regions",
-      areaEmoji: "🗺️",
-      description: "Mobile clinics bring healthcare services to remote regions with limited access."
-    }
+  // Solutions (left side) - 5 items
+  const solutions = [
+    { id: 1, name: "Solar Lamps", emoji: "💡", description: "Provide clean, affordable lighting to villages without electricity" },
+    { id: 2, name: "Clean Water", emoji: "💧", description: "Improve health and quality of life in rural communities" },
+    { id: 3, name: "Microloans", emoji: "💰", description: "Help poor families start businesses and improve their livelihoods" },
+    { id: 4, name: "Recycling Programs", emoji: "♻️", description: "Reduce waste and create jobs in urban areas" },
+    { id: 5, name: "Mobile Health Clinics", emoji: "🚑", description: "Bring healthcare services to remote regions with limited access" }
   ];
 
-  // Shuffle arrays when component mounts
-  useEffect(() => {
-    const shuffleArray = (array) => {
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    };
+  // Areas (right side) - 5 items
+  const areas = [
+    { id: 2, name: "Rural Areas", emoji: "🌾", description: "Communities far from urban centers with limited infrastructure" },
+    { id: 1, name: "Villages", emoji: "🏘️", description: "Rural communities without reliable access to electricity" },
+    { id: 5, name: "Remote Regions", emoji: "🗺️", description: "Geographically isolated areas with limited access to services" },
+    { id: 3, name: "Poor Families", emoji: "👨‍👩‍👧‍👦", description: "Households with limited financial resources" },
+    { id: 4, name: "Urban Communities", emoji: "🏙️", description: "Cities and towns with significant waste management challenges" },
+  ];
 
-    setShuffledSolutions(shuffleArray(puzzles.map(p => p.solution)));
-    setShuffledAreas(shuffleArray(puzzles.map(p => p.area)));
-  }, []);
+  // Correct matches
+  const correctMatches = [
+    { solutionId: 1, areaId: 1 }, // Solar Lamps → Villages
+    { solutionId: 2, areaId: 2 }, // Clean Water → Rural Areas
+    { solutionId: 3, areaId: 3 }, // Microloans → Poor Families
+    { solutionId: 4, areaId: 4 }, // Recycling Programs → Urban Communities
+    { solutionId: 5, areaId: 5 }  // Mobile Health Clinics → Remote Regions
+  ];
 
   const handleSolutionSelect = (solution) => {
-    if (selectedArea) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.solution === solution && p.area === selectedArea);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedSolution(null);
-      setSelectedArea(null);
-    } else {
-      setSelectedSolution(solution);
-    }
+    if (gameFinished) return;
+    setSelectedSolution(solution);
   };
 
   const handleAreaSelect = (area) => {
-    if (selectedSolution) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.solution === selectedSolution && p.area === area);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedSolution(null);
-      setSelectedArea(null);
+    if (gameFinished) return;
+    setSelectedArea(area);
+  };
+
+  const handleMatch = () => {
+    if (!selectedSolution || !selectedArea || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      solutionId: selectedSolution.id,
+      areaId: selectedArea.id,
+      isCorrect: correctMatches.some(
+        match => match.solutionId === selectedSolution.id && match.areaId === selectedArea.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setSelectedArea(area);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === solutions.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedSolution(null);
+    setSelectedArea(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedSolution(null);
+    setSelectedArea(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/ehe/kids");
   };
 
-  const isMatched = (id) => matchedPairs.includes(id);
-  const isSolutionSelected = (solution) => selectedSolution === solution;
-  const isAreaSelected = (area) => selectedArea === area;
+  // Check if a solution is already matched
+  const isSolutionMatched = (solutionId) => {
+    return matches.some(match => match.solutionId === solutionId);
+  };
+
+  // Check if an area is already matched
+  const isAreaMatched = (areaId) => {
+    return matches.some(match => match.areaId === areaId);
+  };
+
+  // Get match result for a solution
+  const getMatchResult = (solutionId) => {
+    const match = matches.find(m => m.solutionId === solutionId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Social Examples"
-      subtitle={`Match solutions to areas! ${matchedPairs.length}/${puzzles.length} matched`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Solutions with Areas (${matches.length}/${solutions.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="ehe-kids-84"
       gameType="ehe"
-      totalLevels={10}
-      currentLevel={84}
-      showConfetti={gameFinished}
+      totalLevels={solutions.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      backPath="/games/ehe/kids"
+      maxScore={solutions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Solutions column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Solutions</h3>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Solutions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Solutions</h3>
               <div className="space-y-4">
-                {shuffledSolutions.map((solution, index) => {
-                  const puzzle = puzzles.find(p => p.solution === solution);
-                  return (
-                    <button
-                      key={`solution-${index}`}
-                      onClick={() => handleSolutionSelect(solution)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isSolutionSelected(solution)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.emoji}</span>
-                        <span className="text-white/90 text-lg">{solution}</span>
+                {solutions.map(solution => (
+                  <button
+                    key={solution.id}
+                    onClick={() => handleSolutionSelect(solution)}
+                    disabled={isSolutionMatched(solution.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isSolutionMatched(solution.id)
+                        ? getMatchResult(solution.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedSolution?.id === solution.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{solution.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{solution.name}</h4>
+                        <p className="text-white/80 text-sm">{solution.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
-            
-            {/* Areas column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Areas</h3>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedSolution 
+                    ? `Selected: ${selectedSolution.name}` 
+                    : "Select a Solution"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedSolution || !selectedArea}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedSolution && selectedArea
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{solutions.length}</p>
+                  <p>Matched: {matches.length}/{solutions.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Areas */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Areas</h3>
               <div className="space-y-4">
-                {shuffledAreas.map((area, index) => {
-                  const puzzle = puzzles.find(p => p.area === area);
-                  return (
-                    <button
-                      key={`area-${index}`}
-                      onClick={() => handleAreaSelect(area)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isAreaSelected(area)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.areaEmoji}</span>
-                        <span className="text-white/90 text-lg">{area}</span>
+                {areas.map(area => (
+                  <button
+                    key={area.id}
+                    onClick={() => handleAreaSelect(area)}
+                    disabled={isAreaMatched(area.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isAreaMatched(area.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedArea?.id === area.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{area.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{area.name}</h4>
+                        <p className="text-white/80 text-sm">{area.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-          
-          {/* Feedback area */}
-          {selectedSolution && selectedArea && (
-            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
-              <p className="text-white/90 text-center">
-                Matching: {selectedSolution} → {selectedArea}
-              </p>
-            </div>
-          )}
-          
-          {selectedSolution && !selectedArea && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedSolution}. Now select an area to match!
-              </p>
-            </div>
-          )}
-          
-          {!selectedSolution && selectedArea && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedArea}. Now select a solution to match!
-              </p>
-            </div>
-          )}
-          
-          {/* Completion message */}
-          {gameFinished && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
-              <p className="text-green-300 text-center font-bold">
-                Great job! You matched all social solutions to their areas!
-              </p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Social Impact Champion!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {solutions.length} social solutions with their areas!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Innovative solutions can address social challenges in different communities!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {solutions.length} social solutions correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what challenges each community faces and how solutions can help!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

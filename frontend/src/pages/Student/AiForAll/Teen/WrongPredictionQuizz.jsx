@@ -60,22 +60,19 @@ const WrongPredictionQuizz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Incorrect - AI can make mistakes",
+          emoji: "✅",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Correct - AI systems can and do make errors",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only with perfect data", 
           emoji: "📊", 
-          description: "Partially correct but unrealistic expectation",
           isCorrect: false
         }
       ],
@@ -90,15 +87,13 @@ const WrongPredictionQuizz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Incorrect - Weather prediction is inherently uncertain",
+          emoji: "✅",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Correct - Weather forecasting has inherent limitations",
           isCorrect: true
         },
         { 
@@ -119,18 +114,17 @@ const WrongPredictionQuizz = () => {
       options: [
         { 
           id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Incorrect - Stock markets are highly unpredictable",
-          isCorrect: false
+          text: "No", 
+          emoji: "❌", 
+          isCorrect: true
         },
         { 
           id: 2, 
-          text: "No", 
-          emoji: "❌", 
-          description: "Correct - Markets involve too many unpredictable factors",
-          isCorrect: true
+          text: "Yes", 
+          emoji: "✅", 
+          isCorrect: false
         },
+        
         { 
           id: 3, 
           text: "Only with insider information", 
@@ -151,23 +145,21 @@ const WrongPredictionQuizz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Incorrect - Autonomous vehicles can err",
           isCorrect: false
         },
+        
         { 
           id: 2, 
-          text: "No", 
-          emoji: "❌", 
-          description: "Correct - Self-driving technology has limitations",
-          isCorrect: true
+          text: "Only in bad weather", 
+          emoji: "🌧️", 
+          isCorrect: false
         },
         { 
           id: 3, 
-          text: "Only in bad weather", 
-          emoji: "🌧️", 
-          description: "Too narrow - Mistakes happen in various conditions",
-          isCorrect: false
-        }
+          text: "No", 
+          emoji: "❌", 
+          isCorrect: true
+        },
       ],
       explanation: "No! While self-driving cars use advanced AI, they can still make mistakes due to sensor limitations, unusual road conditions, or unexpected scenarios that weren't in their training data."
     },
@@ -181,21 +173,18 @@ const WrongPredictionQuizz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Incorrect - Medical diagnosis is complex and uncertain",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Correct - Medical AI can miss rare conditions",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only with experienced doctors", 
           emoji: "👨‍⚕️", 
-          description: "Misleading - Human expertise is still needed",
           isCorrect: false
         }
       ],

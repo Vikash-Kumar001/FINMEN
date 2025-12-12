@@ -155,7 +155,7 @@ const AIInGamingStory = () => {
         { 
           id: "playercar", 
           text: "Your car's steering", 
-          emoji: "方向盘", 
+          emoji: "🚗", 
           description: "Players control their own vehicles, not AI",
           isCorrect: false
         }

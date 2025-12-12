@@ -12,7 +12,7 @@ const RecommendationSimulation = () => {
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti } = useGameFeedback();
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
@@ -58,6 +58,13 @@ const RecommendationSimulation = () => {
       id: 2,
       text: "Which approach recommends items based on similar users' preferences?",
       options: [
+         { 
+          id: "collaborative", 
+          text: "Collaborative filtering", 
+          emoji: "👥", 
+          description: "Recommend based on similar users",
+          isCorrect: true
+        },
         { 
           id: "content", 
           text: "Content-based filtering", 
@@ -65,13 +72,7 @@ const RecommendationSimulation = () => {
           description: "Recommend based on item characteristics",
           isCorrect: false
         },
-        { 
-          id: "collaborative", 
-          text: "Collaborative filtering", 
-          emoji: "👥", 
-          description: "Recommend based on similar users",
-          isCorrect: true
-        },
+       
         { 
           id: "hybrid", 
           text: "Hybrid systems", 
@@ -134,19 +135,20 @@ const RecommendationSimulation = () => {
           isCorrect: false
         },
         { 
-          id: "diversity", 
-          text: "Limited exposure to diverse content", 
-          emoji: "🌀", 
-          description: "Narrow range of suggestions",
-          isCorrect: true
-        },
-        { 
           id: "speed", 
           text: "Slow processing times", 
           emoji: "🐌", 
           description: "Delayed recommendations",
           isCorrect: false
         },
+        { 
+          id: "diversity", 
+          text: "Limited exposure to diverse content", 
+          emoji: "🌀", 
+          description: "Narrow range of suggestions",
+          isCorrect: true
+        },
+        
         { 
           id: "interface", 
           text: "Complex user interfaces", 
@@ -160,13 +162,7 @@ const RecommendationSimulation = () => {
       id: 5,
       text: "Which technique analyzes item features to make recommendations?",
       options: [
-        { 
-          id: "collaborative", 
-          text: "Collaborative filtering", 
-          emoji: "👥", 
-          description: "Based on similar users",
-          isCorrect: false
-        },
+        
         { 
           id: "content", 
           text: "Content-based filtering", 
@@ -184,10 +180,17 @@ const RecommendationSimulation = () => {
         { 
           id: "clustering", 
           text: "User clustering", 
-          emoji: "蔟", 
+          emoji: "⏹️", 
           description: "Grouping similar users",
           isCorrect: false
-        }
+        },
+        { 
+          id: "collaborative", 
+          text: "Collaborative filtering", 
+          emoji: "👥", 
+          description: "Based on similar users",
+          isCorrect: false
+        },
       ]
     }
   ];
@@ -256,7 +259,9 @@ const RecommendationSimulation = () => {
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}>
       <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
         {!showResult ? (
           <div className="space-y-4 md:space-y-6">

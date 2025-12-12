@@ -9,7 +9,7 @@ const CybersecurityAIQuiz = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-44";
+  const gameId = "ai-teen-48";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -59,22 +59,19 @@ const CybersecurityAIQuiz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - AI excels at real-time threat detection",
+          emoji: "✅",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - AI is widely used for real-time security",
+          emoji: "❌",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only with human oversight", 
           emoji: "🧑‍💻", 
-          description: "Partially correct but not always required",
           isCorrect: false
         }
       ],
@@ -85,25 +82,24 @@ const CybersecurityAIQuiz = () => {
       text: "Can AI identify phishing attempts automatically?",
       emoji: "📧",
       options: [
+        
         { 
           id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - AI analyzes email content for threats",
-          isCorrect: true
-        },
-        { 
-          id: 2, 
           text: "No", 
           emoji: "❌", 
           description: "Incorrect - Email filtering uses AI extensively",
           isCorrect: false
         },
         { 
+          id: 2, 
+          text: "Yes", 
+          emoji: "✅",
+          isCorrect: true
+        },
+        { 
           id: 3, 
           text: "Only in business emails", 
-          emoji: "🏢", 
-          description: "Too narrow - AI protects all email types",
+          emoji: "🏢",
           isCorrect: false
         }
       ],
@@ -118,21 +114,18 @@ const CybersecurityAIQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Correct - AI uses predictive analytics for threats",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Predictive cybersecurity is a key AI use",
+          emoji: "❌",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only with perfect data", 
           emoji: "📊", 
-          description: "Unrealistic - AI works with imperfect data",
           isCorrect: false
         }
       ],
@@ -147,21 +140,18 @@ const CybersecurityAIQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Correct - AI provides proactive malware protection",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Prevention is a core AI security function",
+          emoji: "❌",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only signature-based malware", 
           emoji: "🔍", 
-          description: "Too limited - AI detects unknown threats too",
           isCorrect: false
         }
       ],
@@ -172,27 +162,25 @@ const CybersecurityAIQuiz = () => {
       text: "Can AI alert users about suspicious login attempts?",
       emoji: "🔔",
       options: [
+        
         { 
           id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - AI monitors authentication activities",
-          isCorrect: true
+          text: "No", 
+          emoji: "❌", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Authentication monitoring uses AI",
+          text: "Only for admin accounts", 
+          emoji: "👑", 
           isCorrect: false
         },
         { 
           id: 3, 
-          text: "Only for admin accounts", 
-          emoji: "👑", 
-          description: "Too narrow - AI protects all accounts",
-          isCorrect: false
-        }
+          text: "Yes", 
+          emoji: "✅",
+          isCorrect: true
+        },
       ],
       explanation: "Yes! AI monitors login patterns, detects unusual access times/geolocations, identifies brute force attempts, and alerts users about suspicious authentication activities to prevent unauthorized access."
     }

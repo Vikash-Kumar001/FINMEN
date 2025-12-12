@@ -18,62 +18,61 @@ const SimulationTeenStartup = () => {
   const scenarios = [
     {
       id: 1,
-      text: "As a teen entrepreneur, you must choose between two product options for your startup:",
+      text: "As a teen entrepreneur, you must choose between product options for your startup:",
       options: [
-        
-        {
-          id: "b",
-          text: "Safe, eco-friendly product with higher costs",
-          emoji: "🌱",
-          description: "Perfect! Sustainable products build long-term customer loyalty and brand value",
-          isCorrect: true
-        },
         {
           id: "a",
           text: "Cheap product that harms the environment",
           emoji: "💰",
-          description: "Short-term profits but long-term damage to environment and reputation",
           isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Safe, eco-friendly product with higher costs",
+          emoji: "🌱",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Copy a competitor's product exactly",
           emoji: "📋",
-          description: "This could lead to legal issues and doesn't create unique value",
           isCorrect: false
         },
         {
-          id: "b",
+          id: "d",
           text: "Emphasize your unique value proposition and quality",
           emoji: "✨",
-          description: "Exactly! Focus on what makes your product and mission unique",
-          isCorrect: true
-        },
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      text: "Your startup receives investment offers from two sources:",
+      text: "Your startup receives investment offers from different sources:",
       options: [
+         {
+          id: "b",
+          text: "Patient investor who supports your mission",
+          emoji: "🎯",
+          isCorrect: true
+        },
         {
           id: "a",
           text: "Investor who demands quick returns and cost-cutting",
           emoji: "⏱️",
-          description: "Pressure for quick returns may compromise quality and sustainability",
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Patient investor who supports your mission",
-          emoji: "🎯",
-          description: "Exactly! Mission-aligned investors support long-term sustainable growth",
-          isCorrect: true
-        },
+       
         {
           id: "c",
           text: "Investor who wants to control all decisions",
           emoji: "👑",
-          description: "Losing control of your startup defeats the purpose of entrepreneurship",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Investor who offers moderate funding with reasonable terms",
+          emoji: "🤝",
           isCorrect: false
         }
       ]
@@ -86,23 +85,27 @@ const SimulationTeenStartup = () => {
           id: "a",
           text: "Extremely high to maximize profit per unit",
           emoji: "💎",
-          description: "High prices may limit market access and social impact",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "Below cost to gain market share quickly",
+          emoji: "📉",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Match competitor prices exactly",
+          emoji: "🔁",
           isCorrect: false
         },
         {
           id: "b",
           text: "Balanced pricing that covers costs and allows growth",
           emoji: "⚖️",
-          description: "Perfect! Balanced pricing ensures sustainability while maximizing social impact",
           isCorrect: true
         },
-        {
-          id: "c",
-          text: "Below cost to gain market share quickly",
-          emoji: "📉",
-          description: "Selling below cost is unsustainable and can harm the business long-term",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -113,7 +116,6 @@ const SimulationTeenStartup = () => {
           id: "a",
           text: "Lower your prices to match, even if it means cutting quality",
           emoji: "⬇️",
-          description: "Compromising quality can damage your reputation and long-term success",
           isCorrect: false
         },
         
@@ -121,7 +123,18 @@ const SimulationTeenStartup = () => {
           id: "c",
           text: "Give up and quit the market",
           emoji: "🏳️",
-          description: "Persistence and differentiation are key to entrepreneurial success",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Differentiate your product through unique features and branding",
+          emoji: "🌟",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Focus on improving customer service to retain clients",
+          emoji: "👥",
           isCorrect: false
         }
       ]
@@ -134,21 +147,24 @@ const SimulationTeenStartup = () => {
           id: "a",
           text: "Only financial metrics like revenue and profit",
           emoji: "📊",
-          description: "Financial metrics are important but not the only measure of success",
           isCorrect: false
         },
         {
           id: "b",
           text: "Balanced metrics including social impact and sustainability",
           emoji: "🌍",
-          description: "Perfect! True success includes financial sustainability and positive social impact",
           isCorrect: true
         },
         {
           id: "c",
           text: "Number of social media followers only",
           emoji: "📱",
-          description: "Social media presence helps but isn't a comprehensive measure of success",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Customer satisfaction and retention rates",
+          emoji: "😊",
           isCorrect: false
         }
       ]
@@ -216,7 +232,7 @@ const SimulationTeenStartup = () => {
             {getCurrentScenario().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -227,7 +243,7 @@ const SimulationTeenStartup = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+
                   </div>
                 </div>
               </button>

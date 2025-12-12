@@ -8,7 +8,7 @@ const AIExplorerHeroBadgee = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-25";
+  const gameId = "ai-teen-100";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -41,7 +41,7 @@ const AIExplorerHeroBadgee = () => {
         },
         { 
           text: "Software that replaces all human jobs", 
-          emoji: "失业", 
+          emoji: "🤖", 
           isCorrect: false
         },
         { 
@@ -91,15 +91,16 @@ const AIExplorerHeroBadgee = () => {
       title: "Neural Networks",
       question: "What is the primary inspiration behind artificial neural networks?",
       options: [
-        { 
-          text: "Biological neural structures in the human brain", 
-          emoji: "🧠", 
-          isCorrect: true
-        },
+        
         { 
           text: "Computer processor architectures", 
           emoji: "💻", 
           isCorrect: false
+        },
+        { 
+          text: "Biological neural structures in the human brain", 
+          emoji: "🧠", 
+          isCorrect: true
         },
         { 
           text: "Telecommunications networks", 
@@ -122,11 +123,7 @@ const AIExplorerHeroBadgee = () => {
       title: "AI Applications",
       question: "Which domain has AI significantly transformed through computer vision?",
       options: [
-        { 
-          text: "Medical imaging and diagnostics", 
-          emoji: "🏥", 
-          isCorrect: true
-        },
+        
         { 
           text: "Manual bookkeeping", 
           emoji: "📚", 
@@ -141,7 +138,12 @@ const AIExplorerHeroBadgee = () => {
           text: "Handwritten letter composition", 
           emoji: "✉️", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Medical imaging and diagnostics", 
+          emoji: "🏥", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Perfect! AI-powered computer vision revolutionizes medical imaging for faster, more accurate diagnoses!",

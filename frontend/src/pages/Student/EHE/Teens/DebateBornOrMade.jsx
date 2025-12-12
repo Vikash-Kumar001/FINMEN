@@ -20,27 +20,25 @@ const DebateBornOrMade = () => {
       id: 1,
       text: "Are entrepreneurs born or made?",
       options: [
+        
         {
           id: "a",
-          text: "Made, with skills developed through learning",
-          emoji: "📚",
-          description: "Correct! While some may have natural tendencies, entrepreneurship is largely learned",
-          isCorrect: true
+          text: "Born with innate traits only",
+          emoji: "✨",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Born with innate traits only",
-          emoji: "天赋",
-          description: "This view ignores the importance of education, experience, and skill development",
+          text: "Either way, no effort is needed",
+          emoji: "😴",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Either way, no effort is needed",
-          emoji: "😴",
-          description: "Success requires effort regardless of natural tendencies",
-          isCorrect: false
-        }
+          text: "Made, with skills developed through learning",
+          emoji: "📚",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -51,21 +49,18 @@ const DebateBornOrMade = () => {
           id: "a",
           text: "Yes, through education and practice",
           emoji: "🎓",
-          description: "Exactly! Skills like leadership, problem-solving, and innovation can be developed",
           isCorrect: true
         },
         {
           id: "b",
           text: "No, they're completely innate",
           emoji: "🔒",
-          description: "Research shows that entrepreneurial skills can be learned and improved",
           isCorrect: false
         },
         {
           id: "c",
           text: "Only some skills can be taught",
           emoji: "📋",
-          description: "Most entrepreneurial skills can be developed with proper guidance and practice",
           isCorrect: false
         }
       ]
@@ -74,25 +69,23 @@ const DebateBornOrMade = () => {
       id: 3,
       text: "What role does experience play in entrepreneurship?",
       options: [
+       
         {
           id: "a",
-          text: "Builds knowledge and improves decision-making",
-          emoji: "📈",
-          description: "Perfect! Experience provides valuable lessons that inform better business decisions",
-          isCorrect: true
-        },
-        {
-          id: "b",
           text: "Is irrelevant to success",
           emoji: "❌",
-          description: "Experience is crucial for recognizing opportunities and avoiding common pitfalls",
           isCorrect: false
+        },
+         {
+          id: "b",
+          text: "Builds knowledge and improves decision-making",
+          emoji: "📈",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Only matters in large corporations",
           emoji: "🏢",
-          description: "Experience benefits entrepreneurs at all levels and stages",
           isCorrect: false
         }
       ]
@@ -101,25 +94,23 @@ const DebateBornOrMade = () => {
       id: 4,
       text: "How important is mentorship in developing entrepreneurs?",
       options: [
+       
         {
           id: "a",
-          text: "Very important for guidance and learning",
-          emoji: "👨‍🏫",
-          description: "Correct! Mentors provide valuable insights, networks, and lessons from their experiences",
-          isCorrect: true
-        },
-        {
-          id: "b",
           text: "Unnecessary if you're naturally talented",
           emoji: "💪",
-          description: "Even naturally talented individuals benefit from mentorship and guidance",
           isCorrect: false
+        },
+         {
+          id: "b",
+          text: "Very important for guidance and learning",
+          emoji: "👨‍🏫",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Only helpful for beginners",
           emoji: "👶",
-          description: "Mentors provide value at all career stages, even for experienced entrepreneurs",
           isCorrect: false
         }
       ]
@@ -132,21 +123,18 @@ const DebateBornOrMade = () => {
           id: "a",
           text: "Combination of learning, practice, and mentorship",
           emoji: "🤝",
-          description: "Exactly! A multi-faceted approach maximizes skill development and success potential",
           isCorrect: true
         },
         {
           id: "b",
           text: "Relying solely on natural talent",
           emoji: "🎯",
-          description: "Natural talent alone is rarely sufficient for entrepreneurial success",
           isCorrect: false
         },
         {
           id: "c",
           text: "Copying successful entrepreneurs exactly",
           emoji: "📎",
-          description: "While learning from others is valuable, each entrepreneur must develop their unique approach",
           isCorrect: false
         }
       ]
@@ -191,8 +179,8 @@ const DebateBornOrMade = () => {
       totalXp={totalXp}
       gameId="ehe-teen-16"
       gameType="ehe"
-      totalLevels={20}
-      currentLevel={16}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/ehe/teens"
@@ -214,7 +202,7 @@ const DebateBornOrMade = () => {
             {getCurrentQuestion().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {getCurrentQuestion().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +213,6 @@ const DebateBornOrMade = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

@@ -13,6 +13,7 @@ const SimulationCareerUpgrade = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const scenarios = [
@@ -20,25 +21,29 @@ const SimulationCareerUpgrade = () => {
       id: 1,
       text: "A teen has been working at a company for a year. She notices new technologies being used in her field. What should she do?",
       options: [
-        {
-          id: "a",
-          text: "Take a course to learn the new technologies",
-          emoji: "📖",
-          description: "Perfect! Proactive learning keeps you relevant in your field",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Ignore the new technologies and continue as before",
           emoji: "😴",
-          description: "Staying static limits career growth opportunities",
           isCorrect: false
+        },
+         {
+          id: "a",
+          text: "Take a course to learn the new technologies",
+          emoji: "📖",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Complain about changes to coworkers",
           emoji: "😠",
-          description: "Negativity doesn't advance your career or skills",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Research how these technologies apply to her current role",
+          emoji: "🔍",
           isCorrect: false
         }
       ]
@@ -51,21 +56,24 @@ const SimulationCareerUpgrade = () => {
           id: "a",
           text: "Accept the challenge to develop leadership skills",
           emoji: "💪",
-          description: "Exactly! Taking on responsibilities builds valuable experience",
           isCorrect: true
         },
         {
           id: "b",
           text: "Decline because it might be too difficult",
           emoji: "😨",
-          description: "Avoiding challenges limits professional development",
           isCorrect: false
         },
         {
           id: "c",
           text: "Ask someone else to do it for her",
           emoji: "🤷",
-          description: "Delegating opportunities prevents personal growth",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Ask for guidance on project management best practices",
+          emoji: "📘",
           isCorrect: false
         }
       ]
@@ -74,27 +82,31 @@ const SimulationCareerUpgrade = () => {
       id: 3,
       text: "She receives feedback that her presentation skills need improvement. What's the best approach?",
       options: [
-        {
-          id: "a",
-          text: "Take a public speaking course and practice regularly",
-          emoji: "🎤",
-          description: "Perfect! Addressing weaknesses directly leads to improvement",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Ignore the feedback to protect her ego",
           emoji: "🛡️",
-          description: "Avoiding feedback limits personal and professional growth",
           isCorrect: false
         },
         {
           id: "c",
           text: "Blame others for not understanding her presentations",
           emoji: "😠",
-          description: "Deflecting responsibility prevents skill development",
           isCorrect: false
-        }
+        },
+        {
+          id: "d",
+          text: "Record herself presenting to identify specific areas for improvement",
+          emoji: "📹",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Take a public speaking course and practice regularly",
+          emoji: "🎤",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -105,21 +117,24 @@ const SimulationCareerUpgrade = () => {
           id: "a",
           text: "Yes, networking can open new opportunities",
           emoji: "🤝",
-          description: "Exactly! Professional relationships often lead to career advancement",
           isCorrect: true
         },
         {
           id: "b",
           text: "No, it's a waste of time",
           emoji: "⏰",
-          description: "Networking builds valuable professional connections",
           isCorrect: false
         },
         {
           id: "c",
           text: "Only if her boss forces her to go",
           emoji: "👤",
-          description: "Proactive networking is more effective than passive attendance",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Prepare questions in advance to have meaningful conversations",
+          emoji: "📝",
           isCorrect: false
         }
       ]
@@ -128,25 +143,29 @@ const SimulationCareerUpgrade = () => {
       id: 5,
       text: "She's considering a certification that could advance her career. What should influence her decision?",
       options: [
-        {
-          id: "a",
-          text: "Relevance to career goals and industry demand",
-          emoji: "🎯",
-          description: "Perfect! Strategic choices maximize career advancement",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "The cheapest option regardless of quality",
           emoji: "💰",
-          description: "Quality education often provides better long-term value",
           isCorrect: false
         },
         {
           id: "c",
           text: "What her friends are doing",
           emoji: "👥",
-          description: "Personal career goals should guide educational decisions",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Relevance to career goals and industry demand",
+          emoji: "🎯",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Certifications held by colleagues in senior positions",
+          emoji: "📊",
           isCorrect: false
         }
       ]
@@ -159,6 +178,7 @@ const SimulationCareerUpgrade = () => {
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { step: currentStep, optionId, isCorrect }]);
@@ -185,14 +205,14 @@ const SimulationCareerUpgrade = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       gameId="ehe-teen-98"
       gameType="ehe"
-      totalLevels={100}
-      currentLevel={98}
+      totalLevels={scenarios.length}
+      currentLevel={currentStep + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/ehe/teens"
@@ -214,7 +234,7 @@ const SimulationCareerUpgrade = () => {
             {getCurrentScenario().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +245,7 @@ const SimulationCareerUpgrade = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+
                   </div>
                 </div>
               </button>

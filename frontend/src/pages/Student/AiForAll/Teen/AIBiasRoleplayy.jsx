@@ -59,22 +59,19 @@ const AIBiasRoleplayy = () => {
         { 
           id: 1, 
           text: "Let it continue", 
-          emoji: "🙈", 
-          description: "Incorrect - Perpetuates unfair treatment",
+          emoji: "🙈",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Correct it to include everyone", 
-          emoji: "✅", 
-          description: "Correct - Ensures fairness and equality",
+          emoji: "✅",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Report only to friends", 
           emoji: "👥", 
-          description: "Insufficient - Doesn't address systemic issue",
           isCorrect: false
         }
       ],
@@ -88,22 +85,19 @@ const AIBiasRoleplayy = () => {
         { 
           id: 1, 
           text: "Leave it as is", 
-          emoji: "🙈", 
-          description: "Incorrect - Maintains inequality",
+          emoji: "🙈",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Ensure all neighborhoods are considered", 
           emoji: "✅", 
-          description: "Correct - Promotes educational equity",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only select top students", 
           emoji: "🏆", 
-          description: "Incomplete - Still excludes qualified candidates",
           isCorrect: false
         }
       ],
@@ -114,25 +108,23 @@ const AIBiasRoleplayy = () => {
       text: "AI recommends treatments mostly for men. What's the fair approach?",
       emoji: "🏥",
       options: [
+        
         { 
           id: 1, 
-          text: "Accept the bias", 
-          emoji: "🙈", 
-          description: "Incorrect - Could harm patients",
-          isCorrect: false
+          text: "Include all genders equally", 
+          emoji: "✅", 
+          isCorrect: true
         },
         { 
           id: 2, 
-          text: "Include all genders equally", 
-          emoji: "✅", 
-          description: "Correct - Ensures proper healthcare",
-          isCorrect: true
+          text: "Accept the bias", 
+          emoji: "🙈", 
+          isCorrect: false
         },
         { 
           id: 3, 
           text: "Focus only on common conditions", 
           emoji: "📊", 
-          description: "Incomplete - May still exclude groups",
           isCorrect: false
         }
       ],
@@ -147,21 +139,18 @@ const AIBiasRoleplayy = () => {
           id: 1, 
           text: "Do nothing", 
           emoji: "🙈", 
-          description: "Incorrect - Perpetuates financial exclusion",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Adjust AI to be fair to everyone", 
           emoji: "✅", 
-          description: "Correct - Promotes economic equality",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Replace human loan officers", 
           emoji: "🤖", 
-          description: "Doesn't solve bias - May amplify it",
           isCorrect: false
         }
       ],
@@ -172,25 +161,23 @@ const AIBiasRoleplayy = () => {
       text: "Why is detecting AI bias important?",
       emoji: "🧐",
       options: [
+        
         { 
           id: 1, 
-          text: "Prevents unfair treatment", 
-          emoji: "✅", 
-          description: "Correct - Core reason for bias detection",
-          isCorrect: true
+          text: "Makes AI faster", 
+          emoji: "⚡", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "Makes AI faster", 
-          emoji: "⚡", 
-          description: "Incorrect - Speed isn't related to fairness",
-          isCorrect: false
+          text: "Prevents unfair treatment", 
+          emoji: "✅", 
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Reduces electricity usage", 
           emoji: "🔌", 
-          description: "Incorrect - Environmental impact unrelated",
           isCorrect: false
         }
       ],

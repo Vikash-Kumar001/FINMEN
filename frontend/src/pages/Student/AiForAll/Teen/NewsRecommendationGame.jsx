@@ -54,9 +54,9 @@ const NewsRecommendationGame = () => {
       emoji: "⚙️",
       question: "Why do news platforms use recommendation algorithms?",
       choices: [
-        { id: 1, text: "Increase engagement", emoji: "📈", isCorrect: true },
-        { id: 2, text: "Reduce writers", emoji: "✂️", isCorrect: false },
-        { id: 3, text: "Save storage", emoji: "💾", isCorrect: false },
+        { id: 1, text: "Reduce writers", emoji: "✂️", isCorrect: false },
+        { id: 2, text: "Save storage", emoji: "💾", isCorrect: false },
+        { id: 3, text: "Increase engagement", emoji: "📈", isCorrect: true },
       ],
     },
     {
@@ -65,8 +65,8 @@ const NewsRecommendationGame = () => {
       emoji: "🌍",
       question: "What's a challenge with news recommendation systems?",
       choices: [
-        { id: 1, text: "Echo chambers", emoji: "🌀", isCorrect: true },
-        { id: 2, text: "Too many topics", emoji: "🤯", isCorrect: false },
+        { id: 1, text: "Too many topics", emoji: "🤯", isCorrect: false },
+        { id: 2, text: "Echo chambers", emoji: "🌀", isCorrect: true },
         { id: 3, text: "Slow loading", emoji: "🐢", isCorrect: false },
       ],
     },

@@ -8,7 +8,7 @@ const AIExplorerBadge = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-51";
+  const gameId = "ai-teen-50";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -29,11 +29,7 @@ const AIExplorerBadge = () => {
       title: "AI Applications",
       question: "Which of these is a common real-world application of AI today?",
       options: [
-        { 
-          text: "Medical diagnosis assistance", 
-          emoji: "🏥", 
-          isCorrect: true
-        },
+        
         { 
           text: "Manual bookkeeping", 
           emoji: "📚", 
@@ -48,7 +44,12 @@ const AIExplorerBadge = () => {
           text: "Handwritten letters", 
           emoji: "✉️", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Medical diagnosis assistance", 
+          emoji: "🏥", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Exactly! AI is widely used in healthcare to assist with medical diagnosis and treatment!",
@@ -60,15 +61,16 @@ const AIExplorerBadge = () => {
       title: "AI in Daily Life",
       question: "Which everyday technology most likely uses AI algorithms?",
       options: [
-        { 
-          text: "Email spam filtering", 
-          emoji: "📧", 
-          isCorrect: true
-        },
+        
         { 
           text: "Basic calculator", 
           emoji: "🔢", 
           isCorrect: false
+        },
+        { 
+          text: "Email spam filtering", 
+          emoji: "📧", 
+          isCorrect: true
         },
         { 
           text: "Manual light switch", 
@@ -91,20 +93,21 @@ const AIExplorerBadge = () => {
       title: "AI Exploration",
       question: "What is a key benefit of exploring AI technologies?",
       options: [
-        { 
-          text: "Solving complex problems efficiently", 
-          emoji: "🧩", 
-          isCorrect: true
-        },
+       
         { 
           text: "Eliminating all human jobs", 
-          emoji: "失业", 
+          emoji: "👱", 
           isCorrect: false
         },
         { 
           text: "Creating unsolvable puzzles", 
           emoji: "🧩", 
           isCorrect: false
+        },
+         { 
+          text: "Solving complex problems efficiently", 
+          emoji: "🧩", 
+          isCorrect: true
         },
         { 
           text: "Making technology more confusing", 
@@ -153,11 +156,7 @@ const AIExplorerBadge = () => {
       title: "Future of AI",
       question: "What should be a focus when exploring future AI developments?",
       options: [
-        { 
-          text: "Transparency and explainability", 
-          emoji: "🔍", 
-          isCorrect: true
-        },
+       
         { 
           text: "Maximum automation", 
           emoji: "🤖", 
@@ -167,6 +166,11 @@ const AIExplorerBadge = () => {
           text: "Complexity for experts only", 
           emoji: "🤯", 
           isCorrect: false
+        },
+         { 
+          text: "Transparency and explainability", 
+          emoji: "🔍", 
+          isCorrect: true
         },
         { 
           text: "Secrecy in development", 

@@ -10,183 +10,260 @@ const PuzzleMatchCareers = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(null);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedCareer, setSelectedCareer] = useState(null);
+  const [selectedFocus, setSelectedFocus] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Shuffle function to randomize the order of matches
-  const shuffleArray = (array) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
-
-  const puzzles = [
-    {
-      id: 1,
-      item: "Space Scientist",
-      emoji: "🚀",
-      matches: shuffleArray([
-        { id: "mars", text: "Mars", emoji: "🪐", correct: true },
-        { id: "dna", text: "DNA", emoji: "🧬", correct: false },
-        { id: "earth", text: "Earth", emoji: "🌍", correct: false }
-      ])
-    },
-    {
-      id: 2,
-      item: "Geneticist",
-      emoji: "🧬",
-      matches: shuffleArray([
-        { id: "mars", text: "Mars", emoji: "🪐", correct: false },
-        { id: "dna", text: "DNA", emoji: "🧬", correct: true },
-        { id: "earth", text: "Earth", emoji: "🌍", correct: false }
-      ])
-    },
-    {
-      id: 3,
-      item: "Climate Scientist",
-      emoji: "🌍",
-      matches: shuffleArray([
-        { id: "mars", text: "Mars", emoji: "🪐", correct: false },
-        { id: "dna", text: "DNA", emoji: "🧬", correct: false },
-        { id: "earth", text: "Earth", emoji: "🌍", correct: true }
-      ])
-    },
-    {
-      id: 4,
-      item: "AI Researcher",
-      emoji: "🤖",
-      matches: shuffleArray([
-        { id: "algorithms", text: "Algorithms", emoji: "🔢", correct: true },
-        { id: "paintings", text: "Paintings", emoji: "🎨", correct: false },
-        { id: "recipes", text: "Recipes", emoji: "🍳", correct: false }
-      ])
-    },
-    {
-      id: 5,
-      item: "Cybersecurity Expert",
-      emoji: "🛡️",
-      matches: shuffleArray([
-        { id: "networks", text: "Networks", emoji: "🌐", correct: true },
-        { id: "gardens", text: "Gardens", emoji: "🌱", correct: false },
-        { id: "libraries", text: "Libraries", emoji: "📚", correct: false }
-      ])
-    }
+  // Careers (left side) - 5 items
+  const careers = [
+    { id: 1, name: "Space Scientist", emoji: "🚀", description: "Studies celestial bodies and space phenomena" },
+    { id: 2, name: "Geneticist", emoji: "🧬", description: "Researches genes and heredity" },
+    { id: 3, name: "Climate Scientist", emoji: "🌍", description: "Studies Earth's climate systems" },
+    { id: 4, name: "AI Researcher", emoji: "🤖", description: "Develops artificial intelligence systems" },
+    { id: 5, name: "Cybersecurity Expert", emoji: "🛡️", description: "Protects digital information and networks" }
   ];
 
-  const handleMatch = (matchId) => {
-    const currentPuzzleData = puzzles[currentPuzzle];
-    const match = currentPuzzleData.matches.find(m => m.id === matchId);
-    setSelectedMatch(matchId);
+  // Areas of Focus (right side) - 5 items
+  const areasOfFocus = [
+    { id: 5, name: "Networks", emoji: "🌐", description: "Digital infrastructure and security" },
+    { id: 1, name: "Mars", emoji: "🪐", description: "Red planet exploration and colonization" },
+    { id: 4, name: "Algorithms", emoji: "🔢", description: "Mathematical procedures for AI systems" },
+    { id: 2, name: "DNA", emoji: "🧬", description: "Genetic material and heredity studies" },
+    { id: 3, name: "Earth", emoji: "🌍", description: "Planet's climate and environmental systems" },
+  ];
 
-    if (match.correct) {
-      setCoins(prev => prev + 1);
+  // Correct matches
+  const correctMatches = [
+    { careerId: 1, focusId: 1 }, // Space Scientist → Mars
+    { careerId: 2, focusId: 2 }, // Geneticist → DNA
+    { careerId: 3, focusId: 3 }, // Climate Scientist → Earth
+    { careerId: 4, focusId: 4 }, // AI Researcher → Algorithms
+    { careerId: 5, focusId: 5 }  // Cybersecurity Expert → Networks
+  ];
+
+  const handleCareerSelect = (career) => {
+    if (gameFinished) return;
+    setSelectedCareer(career);
+  };
+
+  const handleFocusSelect = (focus) => {
+    if (gameFinished) return;
+    setSelectedFocus(focus);
+  };
+
+  const handleMatch = () => {
+    if (!selectedCareer || !selectedFocus || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      careerId: selectedCareer.id,
+      focusId: selectedFocus.id,
+      isCorrect: correctMatches.some(
+        match => match.careerId === selectedCareer.id && match.focusId === selectedFocus.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setShowCoinFeedback(currentPuzzleData.id);
-      setTimeout(() => setShowCoinFeedback(null), 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    setTimeout(() => {
-      if (currentPuzzle < puzzles.length - 1) {
-        setCurrentPuzzle(prev => prev + 1);
-        setSelectedMatch(null);
-      } else {
+    // Check if all items are matched
+    if (newMatches.length === careers.length) {
+      setTimeout(() => {
         setGameFinished(true);
-      }
-    }, 1500);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedCareer(null);
+    setSelectedFocus(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedCareer(null);
+    setSelectedFocus(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/student/ehe/teens/freelance-story");
   };
 
+  // Check if a career is already matched
+  const isCareerMatched = (careerId) => {
+    return matches.some(match => match.careerId === careerId);
+  };
+
+  // Check if an area of focus is already matched
+  const isFocusMatched = (focusId) => {
+    return matches.some(match => match.focusId === focusId);
+  };
+
+  // Get match result for a career
+  const getMatchResult = (careerId) => {
+    const match = matches.find(m => m.careerId === careerId);
+    return match ? match.isCorrect : null;
+  };
+
   return (
     <GameShell
       title="Puzzle: Match Careers"
-      subtitle={`Puzzle ${currentPuzzle + 1}/5: ${puzzles[currentPuzzle].item}`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Careers with Focus Areas (${matches.length}/${careers.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="ehe-teen-74"
       gameType="ehe"
-      totalLevels={80}
-      currentLevel={74}
-      showConfetti={gameFinished}
+      totalLevels={careers.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={80} // Max score is total number of questions (all correct)
+      backPath="/games/ehe/teens"
+      maxScore={careers.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/5: {puzzles[currentPuzzle].item}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6 text-center">
-            Match the career to their area of focus!
-          </p>
-
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-              {showCoinFeedback === puzzles[currentPuzzle].id && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                    +1
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-4xl mr-3">{puzzles[currentPuzzle].emoji}</div>
-                <div className="text-white text-xl font-bold">{puzzles[currentPuzzle].item}</div>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Careers */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Careers</h3>
+              <div className="space-y-4">
+                {careers.map(career => (
+                  <button
+                    key={career.id}
+                    onClick={() => handleCareerSelect(career)}
+                    disabled={isCareerMatched(career.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isCareerMatched(career.id)
+                        ? getMatchResult(career.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedCareer?.id === career.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{career.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{career.name}</h4>
+                        <p className="text-white/80 text-sm">{career.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
+            </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                {puzzles[currentPuzzle].matches.map((match) => {
-                  const isCorrect = selectedMatch === match.id && match.correct;
-                  const isWrong = selectedMatch === match.id && !match.correct;
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedCareer 
+                    ? `Selected: ${selectedCareer.name}` 
+                    : "Select a Career"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedCareer || !selectedFocus}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedCareer && selectedFocus
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{careers.length}</p>
+                  <p>Matched: {matches.length}/{careers.length}</p>
+                </div>
+              </div>
+            </div>
 
-                  return (
-                    <button
-                      key={match.id}
-                      onClick={() => handleMatch(match.id)}
-                      disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${
-                        !selectedMatch
-                          ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                          : isCorrect
-                          ? 'bg-green-100/20 border-green-500 text-white'
-                          : isWrong
-                          ? 'bg-red-100/20 border-red-500 text-white'
-                          : 'bg-gray-100/20 border-gray-500 text-white'
-                      }`}
-                    >
-                      {isCorrect && (
-                        <div className="absolute -top-2 -right-2 text-2xl">✅</div>
-                      )}
-                      {isWrong && (
-                        <div className="absolute -top-2 -right-2 text-2xl">❌</div>
-                      )}
-                      <div className="text-2xl mb-1">{match.emoji}</div>
-                      <div className="font-medium text-sm">{match.text}</div>
-                    </button>
-                  );
-                })}
+            {/* Right column - Areas of Focus */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Areas of Focus</h3>
+              <div className="space-y-4">
+                {areasOfFocus.map(focus => (
+                  <button
+                    key={focus.id}
+                    onClick={() => handleFocusSelect(focus)}
+                    disabled={isFocusMatched(focus.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isFocusMatched(focus.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedFocus?.id === focus.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{focus.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{focus.name}</h4>
+                        <p className="text-white/80 text-sm">{focus.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Career Focus Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {careers.length} careers with their focus areas!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding career focus areas helps you choose the right path!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {careers.length} careers correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each career specializes in!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

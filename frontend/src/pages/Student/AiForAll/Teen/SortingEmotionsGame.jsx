@@ -32,9 +32,9 @@ const SortingEmotionsGame = () => {
       emoji: "😊",
       question: "What technology helps computers recognize human emotions?",
       choices: [
-        { id: 1, text: "Emotion AI", emoji: "🤖", isCorrect: true },
+        { id: 1, text: "Guesswork", emoji: "❓", isCorrect: false },
         { id: 2, text: "Manual Analysis", emoji: "✋", isCorrect: false },
-        { id: 3, text: "Guesswork", emoji: "❓", isCorrect: false },
+        { id: 3, text: "Emotion AI", emoji: "🤖", isCorrect: true },
       ],
     },
     {
@@ -54,8 +54,8 @@ const SortingEmotionsGame = () => {
       emoji: "🧠",
       question: "How can emotion AI help with mental health?",
       choices: [
-        { id: 1, text: "Detect mood changes", emoji: "📊", isCorrect: true },
-        { id: 2, text: "Diagnose disorders", emoji: "⚕️", isCorrect: false },
+        { id: 1, text: "Diagnose disorders", emoji: "⚕️", isCorrect: false },
+        { id: 2, text: "Detect mood changes", emoji: "📊", isCorrect: true },
         { id: 3, text: "Cure depression", emoji: "💊", isCorrect: false },
       ],
     },
@@ -76,8 +76,8 @@ const SortingEmotionsGame = () => {
       emoji: "🔒",
       question: "What is a major concern with emotion recognition AI?",
       choices: [
-        { id: 1, text: "Privacy invasion", emoji: "👁️", isCorrect: true },
-        { id: 2, text: "Too accurate", emoji: "🎯", isCorrect: false },
+        { id: 1, text: "Too accurate", emoji: "🎯", isCorrect: false },
+        { id: 2, text: "Privacy invasion", emoji: "👁️", isCorrect: true },
         { id: 3, text: "Free service", emoji: "💸", isCorrect: false },
       ],
     },

@@ -10,173 +10,260 @@ const PuzzleBusinessTerms = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(null);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedTerm, setSelectedTerm] = useState(null);
+  const [selectedDefinition, setSelectedDefinition] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      item: "Cost",
-      emoji: "🛒",
-      matches: [
-        { id: "raw", text: "Raw Material", emoji: "🥕", correct: true },
-        { id: "sell", text: "Selling Price", emoji: "🏷️", correct: false },
-        { id: "profit", text: "Extra Money", emoji: "💰", correct: false }
-      ]
-    },
-    {
-      id: 2,
-      item: "Profit",
-      emoji: "💰",
-      matches: [
-        { id: "extra", text: "Extra", emoji: "➕", correct: true },
-        { id: "loss", text: "Overspend", emoji: "🔻", correct: false },
-        { id: "cost", text: "Raw Material", emoji: "🥕", correct: false }
-      ]
-    },
-    {
-      id: 3,
-      item: "Loss",
-      emoji: "🔻",
-      matches: [
-        { id: "overspend", text: "Overspend", emoji: "💸", correct: true },
-        { id: "raw", text: "Raw Material", emoji: "🥕", correct: false },
-        { id: "extra", text: "Extra", emoji: "➕", correct: false }
-      ]
-    },
-    {
-      id: 4,
-      item: "Revenue",
-      emoji: "💳",
-      matches: [
-        { id: "income", text: "Total Income", emoji: "💵", correct: true },
-        { id: "expense", text: "Total Expense", emoji: "🧾", correct: false },
-        { id: "profit", text: "Extra Money", emoji: "💰", correct: false }
-      ]
-    },
-    {
-      id: 5,
-      item: "Budget",
-      emoji: "📋",
-      matches: [
-        { id: "plan", text: "Financial Plan", emoji: "📝", correct: true },
-        { id: "spend", text: "Random Spend", emoji: "🎲", correct: false },
-        { id: "loss", text: "Overspend", emoji: "🔻", correct: false }
-      ]
-    }
+  // Terms (left side) - 5 items
+  const terms = [
+    { id: 1, name: "Cost", emoji: "🛒", description: "The amount of money spent to produce goods or services" },
+    { id: 2, name: "Profit", emoji: "💰", description: "The financial gain from business activities" },
+    { id: 3, name: "Loss", emoji: "🔻", description: "When expenses exceed income in business" },
+    { id: 4, name: "Revenue", emoji: "💳", description: "Total income from sales of goods or services" },
+    { id: 5, name: "Budget", emoji: "📋", description: "A financial plan for managing income and expenses" }
   ];
 
-  const handleMatch = (matchId) => {
-    const currentPuzzleData = puzzles[currentPuzzle];
-    const match = currentPuzzleData.matches.find(m => m.id === matchId);
-    setSelectedMatch(matchId);
+  // Definitions (right side) - 5 items
+  const definitions = [
+    { id: 2, name: "Extra", emoji: "➕", description: "Additional amount earned beyond expenses" },
+    { id: 1, name: "Raw Material", emoji: "🥕", description: "Basic materials used to create products" },
+    { id: 4, name: "Total Income", emoji: "💵", description: "Complete earnings from all business activities" },
+    { id: 5, name: "Financial Plan", emoji: "📝", description: "Strategy for allocating money toward goals" },
+    { id: 3, name: "Overspend", emoji: "💸", description: "Spending more money than planned or earned" },
+  ];
 
-    if (match.correct) {
-      setCoins(prev => prev + 1);
+  // Correct matches
+  const correctMatches = [
+    { termId: 1, definitionId: 1 }, // Cost → Raw Material
+    { termId: 2, definitionId: 2 }, // Profit → Extra
+    { termId: 3, definitionId: 3 }, // Loss → Overspend
+    { termId: 4, definitionId: 4 }, // Revenue → Total Income
+    { termId: 5, definitionId: 5 }  // Budget → Financial Plan
+  ];
+
+  const handleTermSelect = (term) => {
+    if (gameFinished) return;
+    setSelectedTerm(term);
+  };
+
+  const handleDefinitionSelect = (definition) => {
+    if (gameFinished) return;
+    setSelectedDefinition(definition);
+  };
+
+  const handleMatch = () => {
+    if (!selectedTerm || !selectedDefinition || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      termId: selectedTerm.id,
+      definitionId: selectedDefinition.id,
+      isCorrect: correctMatches.some(
+        match => match.termId === selectedTerm.id && match.definitionId === selectedDefinition.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setShowCoinFeedback(currentPuzzleData.id);
-      setTimeout(() => setShowCoinFeedback(null), 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    setTimeout(() => {
-      if (currentPuzzle < puzzles.length - 1) {
-        setCurrentPuzzle(prev => prev + 1);
-        setSelectedMatch(null);
-      } else {
+    // Check if all items are matched
+    if (newMatches.length === terms.length) {
+      setTimeout(() => {
         setGameFinished(true);
-      }
-    }, 1500);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedTerm(null);
+    setSelectedDefinition(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedTerm(null);
+    setSelectedDefinition(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/student/ehe/teens/budget-story");
   };
 
+  // Check if a term is already matched
+  const isTermMatched = (termId) => {
+    return matches.some(match => match.termId === termId);
+  };
+
+  // Check if a definition is already matched
+  const isDefinitionMatched = (definitionId) => {
+    return matches.some(match => match.definitionId === definitionId);
+  };
+
+  // Get match result for a term
+  const getMatchResult = (termId) => {
+    const match = matches.find(m => m.termId === termId);
+    return match ? match.isCorrect : null;
+  };
+
   return (
     <GameShell
       title="Puzzle: Match Business Terms"
-      subtitle={`Puzzle ${currentPuzzle + 1}/5: ${puzzles[currentPuzzle].item}`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Terms with Definitions (${matches.length}/${terms.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="ehe-teen-24"
       gameType="ehe"
-      totalLevels={30}
-      currentLevel={24}
-      showConfetti={gameFinished}
+      totalLevels={terms.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={30} // Max score is total number of questions (all correct)
+      backPath="/games/ehe/teens"
+      maxScore={terms.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/5: {puzzles[currentPuzzle].item}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6 text-center">
-            Match the business term to its correct definition!
-          </p>
-
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-              {showCoinFeedback === puzzles[currentPuzzle].id && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                    +1
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-4xl mr-3">{puzzles[currentPuzzle].emoji}</div>
-                <div className="text-white text-xl font-bold">{puzzles[currentPuzzle].item}</div>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Terms */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Terms</h3>
+              <div className="space-y-4">
+                {terms.map(term => (
+                  <button
+                    key={term.id}
+                    onClick={() => handleTermSelect(term)}
+                    disabled={isTermMatched(term.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isTermMatched(term.id)
+                        ? getMatchResult(term.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedTerm?.id === term.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{term.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{term.name}</h4>
+                        <p className="text-white/80 text-sm">{term.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
+            </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                {puzzles[currentPuzzle].matches.map((match) => {
-                  const isCorrect = selectedMatch === match.id && match.correct;
-                  const isWrong = selectedMatch === match.id && !match.correct;
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedTerm 
+                    ? `Selected: ${selectedTerm.name}` 
+                    : "Select a Term"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedTerm || !selectedDefinition}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedTerm && selectedDefinition
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{terms.length}</p>
+                  <p>Matched: {matches.length}/{terms.length}</p>
+                </div>
+              </div>
+            </div>
 
-                  return (
-                    <button
-                      key={match.id}
-                      onClick={() => handleMatch(match.id)}
-                      disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${
-                        !selectedMatch
-                          ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                          : isCorrect
-                          ? 'bg-green-100/20 border-green-500 text-white'
-                          : isWrong
-                          ? 'bg-red-100/20 border-red-500 text-white'
-                          : 'bg-gray-100/20 border-gray-500 text-white'
-                      }`}
-                    >
-                      {isCorrect && (
-                        <div className="absolute -top-2 -right-2 text-2xl">✅</div>
-                      )}
-                      {isWrong && (
-                        <div className="absolute -top-2 -right-2 text-2xl">❌</div>
-                      )}
-                      <div className="text-2xl mb-1">{match.emoji}</div>
-                      <div className="font-medium text-sm">{match.text}</div>
-                    </button>
-                  );
-                })}
+            {/* Right column - Definitions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Definitions</h3>
+              <div className="space-y-4">
+                {definitions.map(definition => (
+                  <button
+                    key={definition.id}
+                    onClick={() => handleDefinitionSelect(definition)}
+                    disabled={isDefinitionMatched(definition.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isDefinitionMatched(definition.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedDefinition?.id === definition.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{definition.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{definition.name}</h4>
+                        <p className="text-white/80 text-sm">{definition.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Business Terms Master!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {terms.length} business terms with their definitions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding business terms is essential for financial literacy and entrepreneurship!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {terms.length} business terms correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each business term means in practical situations!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

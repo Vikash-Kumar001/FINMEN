@@ -9,7 +9,7 @@ const AIInBankingQuiz = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-32";
+  const gameId = "ai-teen-36";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -60,21 +60,18 @@ const AIInBankingQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Correct - AI detects unusual transaction patterns",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Fraud detection is a major AI application",
+          emoji: "❌",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only for large amounts", 
           emoji: "💰", 
-          description: "Partially correct but not comprehensive",
           isCorrect: false
         }
       ],
@@ -88,22 +85,19 @@ const AIInBankingQuiz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - AI processes applications quickly",
+          emoji: "✅",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - AI accelerates loan processing",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only for small loans", 
           emoji: "📉", 
-          description: "Too limited - AI works for all loan sizes",
           isCorrect: false
         }
       ],
@@ -118,21 +112,18 @@ const AIInBankingQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Incorrect - Markets are unpredictable",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Correct - Perfect prediction is impossible",
+          emoji: "❌",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only with insider information", 
           emoji: "🕵️", 
-          description: "Illegal and still not perfect",
           isCorrect: false
         }
       ],
@@ -147,21 +138,18 @@ const AIInBankingQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Correct - Chatbots handle routine inquiries",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - Customer service bots are common",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only during business hours", 
           emoji: "🕐", 
-          description: "Too limited - AI works 24/7",
           isCorrect: false
         }
       ],
@@ -176,21 +164,18 @@ const AIInBankingQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Incorrect - Human judgment remains important",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Correct - Humans provide essential services",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only for simple tasks", 
-          emoji: "🧮", 
-          description: "Partially correct but oversimplified",
+          emoji: "🧮",
           isCorrect: false
         }
       ],

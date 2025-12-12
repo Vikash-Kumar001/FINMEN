@@ -1,297 +1,345 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeCollegeDreamer = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [badgeEarned, setBadgeEarned] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ehe-kids-70";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const questions = [
+  const challenges = [
     {
       id: 1,
-      text: "What is the main purpose of college education?",
+      title: "College Purpose",
+      question: "What is the main purpose of college education?",
       options: [
-        {
-          id: "a",
-          text: "Gain knowledge and skills",
-          emoji: "📚",
-          description: "Perfect! College helps you gain valuable knowledge and skills!",
+        { 
+          text: "Just to party", 
+          emoji: "🎉", 
+          isCorrect: false
+        },
+        { 
+          text: "Avoid working", 
+          emoji: "😴", 
+          isCorrect: false
+        },
+        
+        { 
+          text: "Make lots of money quickly", 
+          emoji: "💸", 
+          isCorrect: false
+        },
+        { 
+          text: "Gain knowledge and skills", 
+          emoji: "📚", 
           isCorrect: true
         },
-        {
-          id: "b",
-          text: "Just to party",
-          emoji: "🎉",
-          description: "Socializing is part of college, but learning is the main purpose!",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Avoid working",
-          emoji: "😴",
-          description: "College requires hard work and dedication!",
-          isCorrect: false
-        }
-      ]
+      ],
+      feedback: {
+        correct: "Perfect! College helps you gain valuable knowledge and skills!",
+        wrong: "The main purpose of college is to gain knowledge and skills for your future career."
+      }
     },
     {
       id: 2,
-      text: "Why is it important to have college dreams?",
+      title: "Importance of Dreams",
+      question: "Why is it important to have college dreams?",
       options: [
-        {
-          id: "a",
-          text: "They motivate you to study hard",
-          emoji: "💪",
-          description: "Exactly! Dreams motivate you to work toward your goals!",
+        { 
+          text: "Just to impress others", 
+          emoji: "👀", 
+          isCorrect: false
+        },
+        { 
+          text: "No reason at all", 
+          emoji: "🤷", 
+          isCorrect: false
+        },
+        { 
+          text: "They motivate you to study hard", 
+          emoji: "💪", 
           isCorrect: true
         },
-        {
-          id: "b",
-          text: "Just to impress others",
-          emoji: "👀",
-          description: "Having dreams is about personal growth, not just impressing others!",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "No reason at all",
-          emoji: "🤷",
-          description: "Dreams give you direction and purpose!",
+        { 
+          text: "To skip school", 
+          emoji: "🏃", 
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Exactly! Dreams motivate you to work toward your goals!",
+        wrong: "Having college dreams motivates you to study hard and work toward your future goals."
+      }
     },
     {
       id: 3,
-      text: "What should you consider when choosing a college?",
+      title: "Choosing a College",
+      question: "What should you consider when choosing a college?",
       options: [
-        {
-          id: "a",
-          text: "Programs offered and your interests",
-          emoji: "🎯",
-          description: "Perfect! Choose a college that aligns with your interests and goals!",
+        { 
+          text: "Programs offered and your interests", 
+          emoji: "🎯", 
           isCorrect: true
         },
-        {
-          id: "b",
-          text: "Only the most expensive one",
-          emoji: "💰",
-          description: "Cost is a factor, but not the only one to consider!",
+        { 
+          text: "Only the most expensive one", 
+          emoji: "💰", 
           isCorrect: false
         },
-        {
-          id: "c",
-          text: "What your friends are doing",
-          emoji: "👥",
-          description: "Your choice should be based on your own goals!",
+        { 
+          text: "What your friends are doing", 
+          emoji: "👥", 
+          isCorrect: false
+        },
+        
+        { 
+          text: "The closest one to home", 
+          emoji: "🏠", 
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Perfect! Choose a college that aligns with your interests and goals!",
+        wrong: "When choosing a college, consider programs offered and how they align with your interests and career goals."
+      }
     },
     {
       id: 4,
-      text: "How can you prepare for college while still in school?",
+      title: "College Preparation",
+      question: "How can you prepare for college while still in school?",
       options: [
-        {
-          id: "a",
-          text: "Study hard and develop good habits",
-          emoji: "📖",
-          description: "Exactly! Good study habits prepare you for college success!",
+        { 
+          text: "Just wait for it to come", 
+          emoji: "⏳", 
+          isCorrect: false
+        },
+        { 
+          text: "Study hard and develop good habits", 
+          emoji: "📖", 
           isCorrect: true
         },
-        {
-          id: "b",
-          text: "Just wait for it to come",
-          emoji: "⏳",
-          description: "Preparation is key to college success!",
+        { 
+          text: "Avoid all challenges", 
+          emoji: "🚫", 
           isCorrect: false
         },
-        {
-          id: "c",
-          text: "Avoid all challenges",
-          emoji: "🚫",
-          description: "Challenges help you grow and prepare for college!",
+        
+        { 
+          text: "Focus only on sports", 
+          emoji: "⚽", 
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Exactly! Good study habits prepare you for college success!",
+        wrong: "Preparing for college involves studying hard and developing good academic habits."
+      }
     },
     {
       id: 5,
-      text: "What is a benefit of having clear college goals?",
+      title: "Goal Setting",
+      question: "What is a benefit of having clear college goals?",
       options: [
-        {
-          id: "a",
-          text: "Better focus and direction",
-          emoji: "🧭",
-          description: "Perfect! Clear goals provide focus and direction!",
+        { 
+          text: "No benefits at all", 
+          emoji: "❌", 
+          isCorrect: false
+        },
+        { 
+          text: "Less need to study", 
+          emoji: "😴", 
+          isCorrect: false
+        },
+        { 
+          text: "Better focus and direction", 
+          emoji: "🧭", 
           isCorrect: true
         },
-        {
-          id: "b",
-          text: "No benefits at all",
-          emoji: "❌",
-          description: "Clear goals have many benefits for your future!",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Less need to study",
-          emoji: "😴",
-          description: "Clear goals actually motivate you to study more!",
+        { 
+          text: "Automatic admission", 
+          emoji: "✅", 
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Perfect! Clear goals provide focus and direction!",
+        wrong: "Having clear college goals provides better focus and direction for your academic journey."
+      }
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (isCorrect, optionIndex) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    setSelectedAnswer(optionIndex);
+    resetFeedback();
+    
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
+    const isLastChallenge = challenge === challenges.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+      if (isLastChallenge) {
+        setShowResult(true);
       } else {
-        // Check if user earned the badge (at least 4 correct answers)
-        const correctAnswers = [...choices, { question: currentQuestion, optionId, isCorrect }]
-          .filter(choice => choice.isCorrect).length;
-        
-        if (isCorrect && correctAnswers >= 4) {
-          setBadgeEarned(true);
-        } else if (!isCorrect && correctAnswers >= 4) {
-          setBadgeEarned(true);
-        }
-        
-        setGameFinished(true);
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
       }
-    }, 1500);
+    }, 2000);
   };
 
-  const handleNext = () => {
-    navigate("/games/ehe/kids");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
+  const currentChallenge = challenges[challenge];
 
   return (
     <GameShell
       title="Badge: College Dreamer"
-      subtitle={gameFinished ? "Game Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
-      gameId="ehe-kids-70"
+      subtitle={showResult ? "Game Complete!" : `Challenge ${challenge + 1} of ${challenges.length}`}
+      showGameOver={showResult}
+      score={score}
+      gameId={gameId}
       gameType="ehe"
-      totalLevels={10}
-      currentLevel={70}
-      showConfetti={gameFinished && badgeEarned}
-      flashPoints={flashPoints}
-      backPath="/games/ehe/kids"
-      showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      totalLevels={challenges.length}
       coinsPerLevel={coinsPerLevel}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 4}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/ehe/kids"
+    >
       <div className="space-y-8">
-        {!gameFinished ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-              <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-            </div>
-            
-            <h2 className="text-xl font-semibold text-white mb-6">
-              {getCurrentQuestion().text}
-            </h2>
-
-            <div className="grid grid-cols-1 gap-4">
-              {getCurrentQuestion().options.map(option => {
-                const isSelected = choices.some(c => 
-                  c.question === currentQuestion && c.optionId === option.id
-                );
-                const showFeedback = choices.some(c => c.question === currentQuestion);
-                
-                return (
+        {!showResult && currentChallenge ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallenge.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, idx) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.id)}
-                    disabled={showFeedback}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                    key={idx}
+                    onClick={() => handleAnswer(option.isCorrect, idx)}
+                    disabled={answered}
+                    className={`bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3 ${
+                      answered && selectedAnswer === idx
+                        ? option.isCorrect
+                          ? "ring-4 ring-green-400"
+                          : "ring-4 ring-red-400"
+                        : ""
+                    }`}
                   >
-                    <div className="flex items-center">
-                      <div className="text-2xl mr-4">{option.emoji}</div>
-                      <div>
-                        <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                        {showFeedback && isSelected && (
-                          <p className="text-white/90">{option.description}</p>
-                        )}
-                      </div>
-                    </div>
+                    <span className="text-2xl">{option.emoji}</span>
+                    <span className="font-bold text-lg">{option.text}</span>
                   </button>
-                );
-              })}
+                ))}
+              </div>
+              
+              {answered && (
+                <div className={`mt-4 p-4 rounded-xl ${
+                  currentChallenge.options[selectedAnswer]?.isCorrect
+                    ? "bg-green-500/20 border border-green-500/30"
+                    : "bg-red-500/20 border border-red-500/30"
+                }`}>
+                  <p className="text-white font-semibold">
+                    {currentChallenge.options[selectedAnswer]?.isCorrect
+                      ? currentChallenge.feedback.correct
+                      : currentChallenge.feedback.wrong}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
-            <h2 className="text-2xl font-bold text-white mb-6">College Dreamer</h2>
-            
-            {badgeEarned ? (
-              <>
-                <div className="mb-6">
-                  <div className="inline-block bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full p-4 mb-4">
-                    <span className="text-6xl">🏆</span>
-                  </div>
-                  <h3 className="text-3xl font-bold text-yellow-400 mb-2">Congratulations!</h3>
-                  <p className="text-xl text-white/90">You've earned the College Dreamer Badge!</p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 4 ? (
+              <div>
+                <div className="text-6xl mb-4">🏆</div>
+                <h3 className="text-3xl font-bold text-white mb-4">College Dreamer Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-6">
+                  You demonstrated strong higher education awareness with {score} correct answers out of {challenges.length}!
+                </p>
+                
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-2xl mb-6">
+                  <h4 className="text-2xl font-bold mb-2">🎉 Achievement Unlocked!</h4>
+                  <p className="text-xl">Badge: College Dreamer</p>
                 </div>
                 
-                <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl p-6 border border-white/10 mb-6">
-                  <h4 className="text-lg font-semibold text-white mb-2">Your Achievement</h4>
-                  <p className="text-white/80">
-                    You correctly identified {choices.filter(c => c.isCorrect).length} out of {questions.length} higher education awareness skills!
-                  </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-green-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-green-300 mb-2">Educational Planning</h4>
+                    <p className="text-white/90 text-sm">
+                      You understand the purpose of college education and how to prepare for it.
+                    </p>
+                  </div>
+                  <div className="bg-blue-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-blue-300 mb-2">Goal Setting</h4>
+                    <p className="text-white/90 text-sm">
+                      You know how setting clear college goals can provide focus and direction.
+                    </p>
+                  </div>
                 </div>
-              </>
+                
+                <button
+                  onClick={() => {
+                    window.location.href = "/games/ehe/kids";
+                  }}
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white py-3 px-8 rounded-full font-bold text-lg transition-all mb-4"
+                >
+                  Continue Learning
+                </button>
+              </div>
             ) : (
-              <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl p-6 border border-white/10">
-                <h3 className="text-xl font-semibold text-white mb-4">Keep Dreaming Big!</h3>
-                <p className="text-white/80 mb-4">
-                  You identified {choices.filter(c => c.isCorrect).length} out of {questions.length} higher education awareness skills correctly.
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Dreaming Big!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {score} questions correctly out of {challenges.length}.
                 </p>
-                <p className="text-white/80">
-                  Continue learning about higher education to earn your College Dreamer Badge!
+                <p className="text-white/90 mb-6">
+                  Review higher education concepts to strengthen your knowledge and earn your badge.
                 </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
               </div>
             )}
-            
-            <div className="mt-6">
-              <p className="text-white/70">
-                {badgeEarned 
-                  ? "You're on your way to becoming a college expert!" 
-                  : "Keep exploring higher education concepts to improve your skills!"}
-              </p>
-            </div>
           </div>
         )}
       </div>

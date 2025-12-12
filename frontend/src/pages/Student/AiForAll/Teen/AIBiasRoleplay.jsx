@@ -9,7 +9,7 @@ const AIBiasRoleplay = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-bias-roleplay";
+  const gameId = "ai-teen-68";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -60,23 +60,21 @@ const AIBiasRoleplay = () => {
           id: 1, 
           text: "Hire boys only", 
           emoji: "👦", 
-          description: "Incorrect - Perpetuates gender bias",
           isCorrect: false
         },
+       
         { 
           id: 2, 
-          text: "Hire boys + girls", 
-          emoji: "👦👧", 
-          description: "Correct - Ensures gender diversity",
-          isCorrect: true
-        },
-        { 
-          id: 3, 
           text: "Let AI decide completely", 
           emoji: "🤖", 
-          description: "Incorrect - Ignores bias correction",
           isCorrect: false
-        }
+        },
+         { 
+          id: 3, 
+          text: "Hire boys + girls", 
+          emoji: "👦👧", 
+          isCorrect: true
+        },
       ],
       explanation: "Hire boys + girls! AI systems can perpetuate biases present in their training data, such as historical hiring patterns favoring one gender. Responsible AI usage involves recognizing these biases and ensuring diverse, fair selection processes that give equal opportunities to all qualified candidates."
     },
@@ -89,21 +87,18 @@ const AIBiasRoleplay = () => {
           id: 1, 
           text: "Accept AI choice", 
           emoji: "👨", 
-          description: "Incorrect - Maintains unfair bias",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Adjust for fairness", 
           emoji: "👩👨", 
-          description: "Correct - Actively corrects bias",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Replace all male candidates", 
-          emoji: "👩", 
-          description: "Incorrect - Creates reverse bias",
+          emoji: "👩",
           isCorrect: false
         }
       ],
@@ -114,25 +109,23 @@ const AIBiasRoleplay = () => {
       text: "AI shows only male interns in recommendations. What do you do?",
       emoji: "🎓",
       options: [
+        
         { 
           id: 1, 
-          text: "Hire only shown candidates", 
-          emoji: "👦", 
-          description: "Incorrect - Limits diversity",
-          isCorrect: false
+          text: "Include qualified girls", 
+          emoji: "👧", 
+          isCorrect: true
         },
         { 
           id: 2, 
-          text: "Include qualified girls", 
-          emoji: "👧", 
-          description: "Correct - Expands candidate pool",
-          isCorrect: true
+          text: "Hire only shown candidates", 
+          emoji: "👦",
+          isCorrect: false
         },
         { 
           id: 3, 
           text: "Ignore AI recommendations", 
           emoji: "🙈", 
-          description: "Incomplete - Doesn't leverage AI benefits",
           isCorrect: false
         }
       ],
@@ -147,21 +140,18 @@ const AIBiasRoleplay = () => {
           id: 1, 
           text: "Go with AI suggestion", 
           emoji: "👨", 
-          description: "Incorrect - Perpetuates leadership imbalance",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Balance male + female leads", 
           emoji: "👨👩", 
-          description: "Correct - Promotes inclusive leadership",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Choose randomly", 
           emoji: "🎲", 
-          description: "Incorrect - Ignores qualifications",
           isCorrect: false
         }
       ],
@@ -172,25 +162,23 @@ const AIBiasRoleplay = () => {
       text: "Why is addressing AI bias important?",
       emoji: "⚖️",
       options: [
+        
         { 
           id: 1, 
-          text: "Ensures fair opportunities", 
-          emoji: "✅", 
-          description: "Correct - Core reason for addressing bias",
-          isCorrect: true
+          text: "Makes AI faster", 
+          emoji: "⚡", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "Makes AI faster", 
-          emoji: "⚡", 
-          description: "Incorrect - Speed isn't related to fairness",
-          isCorrect: false
+          text: "Ensures fair opportunities", 
+          emoji: "✅", 
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Reduces electricity usage", 
           emoji: "🔌", 
-          description: "Incorrect - Environmental impact unrelated",
           isCorrect: false
         }
       ],

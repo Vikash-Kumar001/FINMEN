@@ -10,8 +10,8 @@ const DataLabelingGamee = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("ai-teen-20");
-  const gameId = gameData?.id || "ai-teen-20";
+  const gameData = getGameDataById("ai-teen-51");
+  const gameId = gameData?.id || "ai-teen-51";
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
@@ -43,8 +43,8 @@ const DataLabelingGamee = () => {
       emoji: "🏫",
       question: "What type of AI learning uses labeled data?",
       choices: [
-        { id: 1, text: "Supervised", emoji: "👨‍🏫", isCorrect: true },
-        { id: 2, text: "Unsupervised", emoji: "🧩", isCorrect: false },
+        { id: 1, text: "Unsupervised", emoji: "🧩", isCorrect: false },
+        { id: 2, text: "Supervised", emoji: "👨‍🏫", isCorrect: true },
         { id: 3, text: "Reinforcement", emoji: "🏆", isCorrect: false },
       ],
     },

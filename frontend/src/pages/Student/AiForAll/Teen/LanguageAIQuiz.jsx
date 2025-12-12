@@ -59,22 +59,19 @@ const LanguageAIQuiz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✓", 
-          description: "Correct - Google Translate uses Natural Language Processing (NLP)",
+          emoji: "✓",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "✗", 
-          description: "Incorrect - Google Translate is powered by AI technology",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only for popular languages", 
           emoji: "🔤", 
-          description: "Partially correct but not the best answer",
           isCorrect: false
         }
       ],
@@ -88,22 +85,19 @@ const LanguageAIQuiz = () => {
         { 
           id: 1, 
           text: "Yes, easily", 
-          emoji: "😄", 
-          description: "Incorrect - Sarcasm is challenging for AI",
+          emoji: "😄",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No, it struggles", 
-          emoji: "😅", 
-          description: "Correct - Context and tone make sarcasm difficult for AI",
+          emoji: "😅",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only with emojis", 
           emoji: "😊", 
-          description: "Incorrect - Emojis help but aren't sufficient",
           isCorrect: false
         }
       ],
@@ -117,22 +111,19 @@ const LanguageAIQuiz = () => {
         { 
           id: 1, 
           text: "Yes, advanced AI", 
-          emoji: "🤖", 
-          description: "Incorrect - Spell-check uses simpler technology",
+          emoji: "🤖",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No, it's basic rules", 
-          emoji: "📋", 
-          description: "Correct - Spell-check compares against dictionaries",
+          emoji: "📋",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only in newer versions", 
-          emoji: "🔄", 
-          description: "Incorrect - Traditional spell-check doesn't use AI",
+          emoji: "🔄",
           isCorrect: false
         }
       ],
@@ -147,21 +138,18 @@ const LanguageAIQuiz = () => {
           id: 1, 
           text: "Yes, creatively", 
           emoji: "🖋️", 
-          description: "Partially correct - AI can generate poems but with limitations",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No, no creativity", 
           emoji: "🚫", 
-          description: "Incorrect - AI can produce creative outputs",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Yes, but with patterns", 
-          emoji: "🔁", 
-          description: "Most accurate - AI uses patterns from existing poetry",
+          emoji: "🔁",
           isCorrect: true
         }
       ],
@@ -175,22 +163,19 @@ const LanguageAIQuiz = () => {
         { 
           id: 1, 
           text: "Yes, definitely", 
-          emoji: "✅", 
-          description: "Correct - Voice recognition uses machine learning",
+          emoji: "✅",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No, just sound waves", 
-          emoji: "❌", 
-          description: "Incorrect - More than basic sound processing is involved",
+          emoji: "❌",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only with accents", 
           emoji: "🗣️", 
-          description: "Incorrect - Works with all speech patterns",
           isCorrect: false
         }
       ],

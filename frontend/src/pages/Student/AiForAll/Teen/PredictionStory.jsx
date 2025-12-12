@@ -57,19 +57,20 @@ const PredictionStory = () => {
       id: 1,
       text: "You check your weather app in the morning. It predicts it will rain in the afternoon. The prediction is very accurate. Who made this prediction?",
       options: [
-        { 
-          id: "ai", 
-          text: "Artificial Intelligence analyzing weather patterns", 
-          emoji: "🤖", 
-          description: "Weather apps use AI to analyze massive amounts of data - temperature, humidity, wind patterns, historical data - to make accurate predictions",
-          isCorrect: true
-        },
+        
         { 
           id: "meteorologist", 
           text: "A meteorologist typing it manually", 
           emoji: "👨‍🔬", 
           description: "While meteorologists contribute expertise, modern weather predictions are primarily made by AI systems processing vast data sets",
           isCorrect: false
+        },
+        { 
+          id: "ai", 
+          text: "Artificial Intelligence analyzing weather patterns", 
+          emoji: "🤖", 
+          description: "Weather apps use AI to analyze massive amounts of data - temperature, humidity, wind patterns, historical data - to make accurate predictions",
+          isCorrect: true
         },
         { 
           id: "guessing", 
@@ -84,13 +85,7 @@ const PredictionStory = () => {
       id: 2,
       text: "Your streaming service recommends a movie you love. How did it know you'd like it?",
       options: [
-        { 
-          id: "ai", 
-          text: "AI analyzing your viewing history", 
-          emoji: "🤖", 
-          description: "Recommendation systems use machine learning to analyze your preferences and suggest content you're likely to enjoy",
-          isCorrect: true
-        },
+        
         { 
           id: "friends", 
           text: "Your friends told the app", 
@@ -104,7 +99,14 @@ const PredictionStory = () => {
           emoji: "🍀", 
           description: "Recommendations are based on data analysis, not chance",
           isCorrect: false
-        }
+        },
+        { 
+          id: "ai", 
+          text: "AI analyzing your viewing history", 
+          emoji: "🤖", 
+          description: "Recommendation systems use machine learning to analyze your preferences and suggest content you're likely to enjoy",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -138,19 +140,20 @@ const PredictionStory = () => {
       id: 4,
       text: "Your phone's voice assistant understands your commands. What enables this?",
       options: [
-        { 
-          id: "ai", 
-          text: "Natural Language Processing AI", 
-          emoji: "🤖", 
-          description: "Voice assistants use AI technologies like speech recognition and natural language processing to understand and respond to commands",
-          isCorrect: true
-        },
+       
         { 
           id: "telepathy", 
           text: "Telepathic connection", 
           emoji: "🧠", 
           description: "Voice recognition is based on analyzing sound waves and linguistic patterns, not telepathy",
           isCorrect: false
+        },
+         { 
+          id: "ai", 
+          text: "Natural Language Processing AI", 
+          emoji: "🤖", 
+          description: "Voice assistants use AI technologies like speech recognition and natural language processing to understand and respond to commands",
+          isCorrect: true
         },
         { 
           id: "person", 
@@ -165,19 +168,20 @@ const PredictionStory = () => {
       id: 5,
       text: "Online shops suggest products based on your browsing. What's behind this?",
       options: [
-        { 
-          id: "ai", 
-          text: "AI predicting your interests", 
-          emoji: "🤖", 
-          description: "E-commerce platforms use AI to analyze your behavior and recommend products based on predictive modeling",
-          isCorrect: true
-        },
+        
         { 
           id: "psychic", 
           text: "Psychic powers", 
           emoji: "🔮", 
           description: "Product suggestions are based on data analysis, not supernatural abilities",
           isCorrect: false
+        },
+        { 
+          id: "ai", 
+          text: "AI predicting your interests", 
+          emoji: "🤖", 
+          description: "E-commerce platforms use AI to analyze your behavior and recommend products based on predictive modeling",
+          isCorrect: true
         },
         { 
           id: "coincidence", 

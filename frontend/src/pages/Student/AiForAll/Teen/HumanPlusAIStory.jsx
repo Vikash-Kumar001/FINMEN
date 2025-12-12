@@ -111,13 +111,7 @@ const HumanPlusAIStory = () => {
       id: 3,
       text: "AI detects anomalies in X-rays. Who confirms the diagnosis?",
       options: [
-        { 
-          id: "doctor", 
-          text: "Doctor", 
-          emoji: "👨‍⚕️", 
-          description: "Medical professionals interpret diagnostic results and make clinical decisions",
-          isCorrect: true
-        },
+       
         { 
           id: "ai", 
           text: "AI", 
@@ -131,26 +125,34 @@ const HumanPlusAIStory = () => {
           emoji: "🖥️", 
           description: "Diagnostic equipment captures images, but interpretation requires human expertise",
           isCorrect: false
-        }
+        },
+         { 
+          id: "doctor", 
+          text: "Doctor", 
+          emoji: "👨‍⚕️", 
+          description: "Medical professionals interpret diagnostic results and make clinical decisions",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 4,
       text: "AI suggests medication for a patient. Who approves the prescription?",
       options: [
-        { 
-          id: "doctor", 
-          text: "Doctor", 
-          emoji: "👨‍⚕️", 
-          description: "Licensed physicians have legal authority to prescribe medications",
-          isCorrect: true
-        },
+        
         { 
           id: "ai", 
           text: "AI", 
           emoji: "🤖", 
           description: "AI can recommend treatments but cannot legally prescribe medications",
           isCorrect: false
+        },
+        { 
+          id: "doctor", 
+          text: "Doctor", 
+          emoji: "👨‍⚕️", 
+          description: "Licensed physicians have legal authority to prescribe medications",
+          isCorrect: true
         },
         { 
           id: "pharmacist", 
@@ -165,19 +167,20 @@ const HumanPlusAIStory = () => {
       id: 5,
       text: "AI monitors patient's vital signs continuously. Who interprets critical alerts?",
       options: [
-        { 
-          id: "doctor", 
-          text: "Doctor", 
-          emoji: "👨‍⚕️", 
-          description: "Medical professionals evaluate alerts and determine appropriate responses",
-          isCorrect: true
-        },
+        
         { 
           id: "ai", 
           text: "AI", 
           emoji: "🤖", 
           description: "AI can detect anomalies but cannot make clinical decisions about patient care",
           isCorrect: false
+        },
+        { 
+          id: "doctor", 
+          text: "Doctor", 
+          emoji: "👨‍⚕️", 
+          description: "Medical professionals evaluate alerts and determine appropriate responses",
+          isCorrect: true
         },
         { 
           id: "monitor", 

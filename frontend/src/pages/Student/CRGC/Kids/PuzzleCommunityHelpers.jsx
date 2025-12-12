@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -10,246 +10,260 @@ const PuzzleCommunityHelpers = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
   const [selectedHelper, setSelectedHelper] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const [shuffledHelpers, setShuffledHelpers] = useState([]);
-  const [shuffledRoles, setShuffledRoles] = useState([]);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      helper: "Doctor",
-      emoji: "👨‍⚕️",
-      role: "Health",
-      roleEmoji: "🩺",
-      description: "Doctors help keep us healthy by treating illnesses and injuries."
-    },
-    {
-      id: 2,
-      helper: "Firefighter",
-      emoji: "👨‍🚒",
-      role: "Safety",
-      roleEmoji: "🚒",
-      description: "Firefighters protect us by putting out fires and rescuing people."
-    },
-    {
-      id: 3,
-      helper: "Teacher",
-      emoji: "👩‍🏫",
-      role: "Education",
-      roleEmoji: "📚",
-      description: "Teachers help us learn new things and develop our skills."
-    },
-    {
-      id: 4,
-      helper: "Police Officer",
-      emoji: "👮",
-      role: "Protection",
-      roleEmoji: "🚔",
-      description: "Police officers keep our communities safe by enforcing laws."
-    },
-    {
-      id: 5,
-      helper: "Volunteer",
-      emoji: " volunte️",
-      role: "Service",
-      roleEmoji: "❤️",
-      description: "Volunteers help others and improve communities without expecting payment."
-    }
+  // Helpers (left side) - 5 items
+  const helpers = [
+    { id: 1, name: "Doctor", emoji: "👨‍⚕️", description: "Medical professional who treats patients" },
+    { id: 2, name: "Firefighter", emoji: "👨‍🚒", description: "Emergency responder who fights fires" },
+    { id: 3, name: "Teacher", emoji: "👩‍🏫", description: "Educator who teaches students" },
+    { id: 4, name: "Police Officer", emoji: "👮", description: "Law enforcement officer who maintains order" },
+    { id: 5, name: "Volunteer", emoji: " volunte️", description: "Person who helps others without payment" }
   ];
 
-  // Shuffle arrays when component mounts
-  useEffect(() => {
-    const shuffleArray = (array) => {
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    };
+  // Roles (right side) - 5 items
+  const roles = [
+    { id: 2, name: "Safety", emoji: "🚒", description: "Protection from harm and danger" },
+    { id: 5, name: "Service", emoji: "❤️", description: "Act of helping others in need" },
+    { id: 1, name: "Health", emoji: "🩺", description: "Maintaining physical and mental well-being" },
+    { id: 3, name: "Education", emoji: "📚", description: "Process of gaining knowledge and skills" },
+    { id: 4, name: "Protection", emoji: "🚔", description: "Shielding from threats and crime" },
+  ];
 
-    setShuffledHelpers(shuffleArray(puzzles.map(p => p.helper)));
-    setShuffledRoles(shuffleArray(puzzles.map(p => p.role)));
-  }, []);
+  // Correct matches
+  const correctMatches = [
+    { helperId: 1, roleId: 1 }, // Doctor → Health
+    { helperId: 2, roleId: 2 }, // Firefighter → Safety
+    { helperId: 3, roleId: 3 }, // Teacher → Education
+    { helperId: 4, roleId: 4 }, // Police Officer → Protection
+    { helperId: 5, roleId: 5 }  // Volunteer → Service
+  ];
 
   const handleHelperSelect = (helper) => {
-    if (selectedRole) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.helper === helper && p.role === selectedRole);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedHelper(null);
-      setSelectedRole(null);
-    } else {
-      setSelectedHelper(helper);
-    }
+    if (gameFinished) return;
+    setSelectedHelper(helper);
   };
 
   const handleRoleSelect = (role) => {
-    if (selectedHelper) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.helper === selectedHelper && p.role === role);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedHelper(null);
-      setSelectedRole(null);
+    if (gameFinished) return;
+    setSelectedRole(role);
+  };
+
+  const handleMatch = () => {
+    if (!selectedHelper || !selectedRole || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      helperId: selectedHelper.id,
+      roleId: selectedRole.id,
+      isCorrect: correctMatches.some(
+        match => match.helperId === selectedHelper.id && match.roleId === selectedRole.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setSelectedRole(role);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === helpers.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedHelper(null);
+    setSelectedRole(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedHelper(null);
+    setSelectedRole(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/kids");
   };
 
-  const isMatched = (id) => matchedPairs.includes(id);
-  const isHelperSelected = (helper) => selectedHelper === helper;
-  const isRoleSelected = (role) => selectedRole === role;
+  // Check if a helper is already matched
+  const isHelperMatched = (helperId) => {
+    return matches.some(match => match.helperId === helperId);
+  };
+
+  // Check if a role is already matched
+  const isRoleMatched = (roleId) => {
+    return matches.some(match => match.roleId === roleId);
+  };
+
+  // Get match result for a helper
+  const getMatchResult = (helperId) => {
+    const match = matches.find(m => m.helperId === helperId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Community Helpers"
-      subtitle={`Match helpers to their roles! ${matchedPairs.length}/${puzzles.length} matched`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Community Helpers with Their Roles (${matches.length}/${helpers.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="civic-responsibility-kids-54"
       gameType="civic-responsibility"
-      totalLevels={60}
-      currentLevel={54}
-      showConfetti={gameFinished}
+      totalLevels={helpers.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/civic-responsibility/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={60} // Max score is total number of questions (all correct)
+      backPath="/games/civic-responsibility/kids"
+      maxScore={helpers.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Helpers column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Community Helpers</h3>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Helpers */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Community Helpers</h3>
               <div className="space-y-4">
-                {shuffledHelpers.map((helper, index) => {
-                  const puzzle = puzzles.find(p => p.helper === helper);
-                  return (
-                    <button
-                      key={`helper-${index}`}
-                      onClick={() => handleHelperSelect(helper)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isHelperSelected(helper)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.emoji}</span>
-                        <span className="text-white/90 text-lg">{helper}</span>
+                {helpers.map(helper => (
+                  <button
+                    key={helper.id}
+                    onClick={() => handleHelperSelect(helper)}
+                    disabled={isHelperMatched(helper.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isHelperMatched(helper.id)
+                        ? getMatchResult(helper.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedHelper?.id === helper.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{helper.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{helper.name}</h4>
+                        <p className="text-white/80 text-sm">{helper.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
-            
-            {/* Roles column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Roles</h3>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedHelper 
+                    ? `Selected: ${selectedHelper.name}` 
+                    : "Select a Helper"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedHelper || !selectedRole}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedHelper && selectedRole
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{helpers.length}</p>
+                  <p>Matched: {matches.length}/{helpers.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Roles */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Roles</h3>
               <div className="space-y-4">
-                {shuffledRoles.map((role, index) => {
-                  const puzzle = puzzles.find(p => p.role === role);
-                  return (
-                    <button
-                      key={`role-${index}`}
-                      onClick={() => handleRoleSelect(role)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isRoleSelected(role)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.roleEmoji}</span>
-                        <span className="text-white/90 text-lg">{role}</span>
+                {roles.map(role => (
+                  <button
+                    key={role.id}
+                    onClick={() => handleRoleSelect(role)}
+                    disabled={isRoleMatched(role.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isRoleMatched(role.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedRole?.id === role.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{role.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{role.name}</h4>
+                        <p className="text-white/80 text-sm">{role.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-          
-          {/* Feedback area */}
-          {selectedHelper && selectedRole && (
-            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
-              <p className="text-white/90 text-center">
-                Matching: {selectedHelper} → {selectedRole}
-              </p>
-            </div>
-          )}
-          
-          {selectedHelper && !selectedRole && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedHelper}. Now select a role to match!
-              </p>
-            </div>
-          )}
-          
-          {!selectedHelper && selectedRole && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedRole}. Now select a helper to match!
-              </p>
-            </div>
-          )}
-          
-          {/* Completion message */}
-          {gameFinished && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
-              <p className="text-green-300 text-center font-bold">
-                Great job! You matched all community helpers to their roles!
-              </p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {helpers.length} community helpers with their roles!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Community helpers play important roles in keeping our neighborhoods safe, healthy, and educated!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {helpers.length} helpers correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each community helper does to help people in their daily work!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

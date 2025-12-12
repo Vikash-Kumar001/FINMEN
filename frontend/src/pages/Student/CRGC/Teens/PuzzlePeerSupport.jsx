@@ -10,150 +10,260 @@ const PuzzlePeerSupport = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matches, setMatches] = useState({});
-  const [completed, setCompleted] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedScenario, setSelectedScenario] = useState(null);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const pairs = [
-    { id: 1, left: "Friend Sad", emoji: "🤗", right: "Comfort", description: "When a friend is sad, offering comfort and support helps them feel valued and cared for." },
-    { id: 2, left: "Cyberbully", emoji: "📱", right: "Report", description: "Reporting cyberbullying to appropriate authorities helps stop harmful behavior and protect victims." },
-    { id: 3, left: "Bully Victim", emoji: "🛡️", right: "Defend", description: "Defending someone being bullied shows courage and helps create a safer environment for everyone." },
-    { id: 4, left: "New Student", emoji: "👋", right: "Include", description: "Including new students helps them feel welcomed and builds a more inclusive community." },
-    { id: 5, left: "Someone Excluded", emoji: "😢", right: "Reach Out", description: "Reaching out to someone who's been excluded helps them feel valued and prevents isolation." }
+  // Scenarios (left side) - 5 items
+  const scenarios = [
+    { id: 1, name: "Friend Sad", emoji: "🤗", description: "Someone close to you is feeling down" },
+    { id: 2, name: "Cyberbully", emoji: "📱", description: "Someone harassing others online" },
+    { id: 3, name: "Bully Victim", emoji: "🛡️", description: "Someone being physically intimidated" },
+    { id: 4, name: "New Student", emoji: "👋", description: "Person joining your school or group" },
+    { id: 5, name: "Someone Excluded", emoji: "😢", description: "Person being left out by others" }
   ];
 
-  const handleMatch = (pairId) => {
-    if (matches[pairId]) return; // Already matched
-    
-    const newMatches = { ...matches, [pairId]: true };
+  // Actions (right side) - 5 items
+  const actions = [
+    { id: 1, name: "Comfort", emoji: "🫂", description: "Provide emotional support and care" },
+    { id: 4, name: "Include", emoji: "🎉", description: "Make sure someone can participate" },
+    { id: 2, name: "Report", emoji: "📢", description: "Inform authorities about wrongdoing" },
+    { id: 3, name: "Defend", emoji: "⚔️", description: "Stand up for someone being mistreated" },
+    { id: 5, name: "Reach Out", emoji: "💌", description: "Initiate contact with someone isolated" }
+  ];
+
+  // Correct matches
+  const correctMatches = [
+    { scenarioId: 1, actionId: 1 }, // Friend Sad → Comfort
+    { scenarioId: 2, actionId: 2 }, // Cyberbully → Report
+    { scenarioId: 3, actionId: 3 }, // Bully Victim → Defend
+    { scenarioId: 4, actionId: 4 }, // New Student → Include
+    { scenarioId: 5, actionId: 5 }  // Someone Excluded → Reach Out
+  ];
+
+  const handleScenarioSelect = (scenario) => {
+    if (gameFinished) return;
+    setSelectedScenario(scenario);
+  };
+
+  const handleActionSelect = (action) => {
+    if (gameFinished) return;
+    setSelectedAction(action);
+  };
+
+  const handleMatch = () => {
+    if (!selectedScenario || !selectedAction || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      scenarioId: selectedScenario.id,
+      actionId: selectedAction.id,
+      isCorrect: correctMatches.some(
+        match => match.scenarioId === selectedScenario.id && match.actionId === selectedAction.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
     setMatches(newMatches);
-    
-    // Add coin for each correct match
-    setCoins(prev => prev + 1);
-    showCorrectAnswerFeedback(1, true);
-    
-    // Check if all pairs are matched
-    if (Object.keys(newMatches).length === pairs.length) {
-      setTimeout(() => setCompleted(true), 1000);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === scenarios.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedScenario(null);
+    setSelectedAction(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedScenario(null);
+    setSelectedAction(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/teens");
   };
 
-  if (completed) {
-    return (
-      <GameShell
-        title="Puzzle: Peer Support"
-        subtitle="Puzzle Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teens-34"
-        gameType="civic-responsibility"
-        totalLevels={40}
-        currentLevel={34}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
-      
-      maxScore={40} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🧩</div>
-          <h2 className="text-2xl font-bold mb-4">Puzzle Complete!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} out of {pairs.length} points!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You've mastered peer support concepts!
-          </div>
-          <p className="text-white/80">
-            Remember: Supporting peers creates a caring community where everyone feels valued!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  // Check if a scenario is already matched
+  const isScenarioMatched = (scenarioId) => {
+    return matches.some(match => match.scenarioId === scenarioId);
+  };
+
+  // Check if an action is already matched
+  const isActionMatched = (actionId) => {
+    return matches.some(match => match.actionId === actionId);
+  };
+
+  // Get match result for a scenario
+  const getMatchResult = (scenarioId) => {
+    const match = matches.find(m => m.scenarioId === scenarioId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Peer Support"
-      subtitle="Match the peer support scenarios with appropriate actions"
+      subtitle={gameFinished ? "Game Complete!" : `Match Peer Support Scenarios with Actions (${matches.length}/${scenarios.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="civic-responsibility-teens-34"
+      gameType="civic-responsibility"
+      totalLevels={scenarios.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/teens"
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Peer Support Puzzle</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Scenarios</h3>
-              {pairs.map(pair => (
-                <button
-                  key={`left-${pair.id}`}
-                  onClick={() => handleMatch(pair.id)}
-                  disabled={matches[pair.id]}
-                  className={`w-full p-4 rounded-xl text-left transition-all ${
-                    matches[pair.id]
-                      ? 'bg-green-500/20 border-2 border-green-500'
-                      : 'bg-white/10 hover:bg-white/20 border-2 border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-2xl mr-4">{pair.emoji}</div>
-                    <span className="text-white font-medium">{pair.left}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-            
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Actions</h3>
-              {pairs.map(pair => (
-                <button
-                  key={`right-${pair.id}`}
-                  onClick={() => handleMatch(pair.id)}
-                  disabled={matches[pair.id]}
-                  className={`w-full p-4 rounded-xl text-left transition-all ${
-                    matches[pair.id]
-                      ? 'bg-green-500/20 border-2 border-green-500'
-                      : 'bg-white/10 hover:bg-white/20 border-2 border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <span className="text-white font-medium">{pair.right}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          <div className="mt-8">
-            <h3 className="text-lg font-semibold text-white mb-4">Matched Pairs:</h3>
-            <div className="space-y-3">
-              {pairs.filter(pair => matches[pair.id]).map(pair => (
-                <div key={`matched-${pair.id}`} className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-                  <div className="flex items-center">
-                    <div className="text-2xl mr-3">{pair.emoji}</div>
-                    <div>
-                      <p className="text-white font-medium">{pair.left} → {pair.right}</p>
-                      <p className="text-white/80 text-sm mt-1">{pair.description}</p>
+      maxScore={scenarios.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Scenarios */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Peer Scenarios</h3>
+              <div className="space-y-4">
+                {scenarios.map(scenario => (
+                  <button
+                    key={scenario.id}
+                    onClick={() => handleScenarioSelect(scenario)}
+                    disabled={isScenarioMatched(scenario.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isScenarioMatched(scenario.id)
+                        ? getMatchResult(scenario.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedScenario?.id === scenario.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{scenario.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{scenario.name}</h4>
+                        <p className="text-white/80 text-sm">{scenario.description}</p>
+                      </div>
                     </div>
-                  </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedScenario 
+                    ? `Selected: ${selectedScenario.name}` 
+                    : "Select a Peer Scenario"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedScenario || !selectedAction}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedScenario && selectedAction
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{scenarios.length}</p>
+                  <p>Matched: {matches.length}/{scenarios.length}</p>
                 </div>
-              ))}
+              </div>
+            </div>
+
+            {/* Right column - Actions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Support Actions</h3>
+              <div className="space-y-4">
+                {actions.map(action => (
+                  <button
+                    key={action.id}
+                    onClick={() => handleActionSelect(action)}
+                    disabled={isActionMatched(action.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isActionMatched(action.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedAction?.id === action.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{action.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{action.name}</h4>
+                        <p className="text-white/80 text-sm">{action.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🧩</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {scenarios.length} peer support scenarios with appropriate actions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Knowing how to respond appropriately to peer situations helps build stronger, more supportive communities!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {scenarios.length} peer support scenarios correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what supportive action would be most appropriate for each peer scenario!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

@@ -1,181 +1,161 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { PenSquare } from 'lucide-react';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const JournalOfJustice = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentPrompt, setCurrentPrompt] = useState(0);
-  const [entries, setEntries] = useState({});
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
-
-  const prompts = [
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "civic-responsibility-teens-67";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [entry, setEntry] = useState("");
+  const [showResult, setShowResult] = useState(false);
+  
+  const stages = [
     {
-      id: 1,
-      text: "One unfair thing I noticed is ___",
-      example: "Example: Not all students in my school have equal access to advanced courses or extracurricular activities.",
-      reflection: "Recognizing injustice is the first step toward addressing it. Being aware of inequalities helps us become advocates for change."
+      question: 'Write: "One unfair thing I noticed is ___"',
+      minLength: 10,
     },
     {
-      id: 2,
-      text: "A way I can promote fairness is ___",
-      example: "Example: I can treat all my classmates with respect regardless of their background or abilities.",
-      reflection: "Promoting fairness starts with our individual actions. Small acts of kindness and respect can create a more inclusive environment."
+      question: 'Write: "A way I can promote fairness is ___"',
+      minLength: 10,
     },
     {
-      id: 3,
-      text: "A social justice issue I care about is ___",
-      example: "Example: I care about educational equity because all children deserve quality learning opportunities regardless of their zip code.",
-      reflection: "Identifying issues you care about helps focus your efforts and motivates sustained involvement in creating positive change."
+      question: 'Write: "A social justice issue I care about is ___"',
+      minLength: 10,
     },
     {
-      id: 4,
-      text: "Someone who inspires me to fight for justice is ___",
-      example: "Example: Malala Yousafzai inspires me because she risked her life to advocate for girls' education worldwide.",
-      reflection: "Learning about justice champions helps us understand effective approaches to advocacy and inspires us to take action."
+      question: 'Write: "Someone who inspires me to fight for justice is ___"',
+      minLength: 10,
     },
     {
-      id: 5,
-      text: "One change I want to see in my community is ___",
-      example: "Example: I want to see more mentorship programs that connect high school students with younger kids who need support.",
-      reflection: "Envisioning specific changes helps translate concern into actionable goals and creates a roadmap for making a difference."
-    }
+      question: 'Write: "One change I want to see in my community is ___"',
+      minLength: 10,
+    },
   ];
 
-  const handleEntryChange = (text) => {
-    setEntries({
-      ...entries,
-      [currentPrompt]: text
-    });
-  };
-
   const handleSubmit = () => {
-    if (!entries[currentPrompt] || entries[currentPrompt].trim().length < 10) {
-      setShowFeedback(true);
-      return;
-    }
-
-    setCoins(prev => prev + 1);
-    showCorrectAnswerFeedback(1, true);
-    setShowFeedback(false);
-
-    setTimeout(() => {
-      if (currentPrompt < prompts.length - 1) {
-        setCurrentPrompt(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
-  };
-
-  const handleNext = () => {
-    navigate("/games/civic-responsibility/teens");
-  };
-
-  const getCurrentPrompt = () => prompts[currentPrompt];
-
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Journal of Justice"
-        subtitle="Journal Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teens-67"
-        gameType="civic-responsibility"
-        totalLevels={70}
-        currentLevel={67}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
+    if (showResult) return; // Prevent multiple submissions
+    
+    resetFeedback();
+    const entryText = entry.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
       
-      maxScore={70} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">✍️</div>
-          <h2 className="text-2xl font-bold mb-4">Great Reflection!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} coins by completing your justice journal!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You're thinking about fairness and justice!
-          </div>
-          <p className="text-white/80">
-            Remember: Reflecting on justice issues helps you become a more aware and active citizen!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setShowResult(true);
+        } else {
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
+        }
+      }, 1500);
+    }
+  };
+
+  const finalScore = score;
+
+  // Log when game completes
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Journal of Justice game completed! Score: ${finalScore}/${stages.length}, gameId: ${gameId}`);
+    }
+  }, [showResult, finalScore, gameId, stages.length]);
 
   return (
     <GameShell
       title="Journal of Justice"
-      subtitle={`Prompt ${currentPrompt + 1} of ${prompts.length}`}
-      backPath="/games/civic-responsibility/teens"
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Justice Journal</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              {getCurrentPrompt().text}
-            </h2>
-            
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mb-4">
-              <p className="text-white/80 italic">
-                {getCurrentPrompt().example}
-              </p>
-            </div>
-            
-            <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4">
-              <p className="text-white/80">
-                {getCurrentPrompt().reflection}
-              </p>
-            </div>
-          </div>
-
-          <div className="mb-6">
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on Justice!` : "Journal Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={stages.length}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="civic-responsibility"
+      maxScore={stages.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === stages.length}
+      backPath="/games/civic-responsibility/teens">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center text-center text-white space-y-6 md:space-y-8 max-w-4xl mx-auto px-4 py-4">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-6 md:p-8 rounded-xl md:rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-8 h-8 md:w-10 md:h-10 text-yellow-300" />
+            <h3 className="text-xl md:text-2xl font-bold mb-4 text-white">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4 text-sm md:text-base">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-xs md:text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
+            </p>
             <textarea
-              value={entries[currentPrompt] || ''}
-              onChange={(e) => handleEntryChange(e.target.value)}
-              placeholder="Write your response here..."
-              className="w-full h-32 p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-base md:text-lg bg-white/90 min-h-[120px] md:min-h-[150px]"
+              disabled={showResult}
             />
+            <div className="mt-2 text-white/50 text-xs md:text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
+            </div>
+            <button
+              onClick={handleSubmit}
+              className={`mt-4 px-6 md:px-8 py-3 md:py-4 rounded-full text-base md:text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
+            >
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
+            </button>
           </div>
-
-          {showFeedback && (
-            <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded-lg">
-              <p className="text-red-300">
-                Please write at least 10 characters before submitting.
+        )}
+        
+        {showResult && (
+          <div className="bg-white/10 backdrop-blur-md p-6 md:p-8 rounded-xl md:rounded-2xl border border-white/20 text-center">
+            <div className="text-4xl mb-4">⚖️</div>
+            <h2 className="text-2xl font-bold text-white mb-6">Justice Complete!</h2>
+            
+            <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl p-4 border border-green-400/30 mb-6">
+              <p className="text-green-300 font-bold">
+                🎉 Excellent! You've completed your justice journal!
+              </p>
+              <p className="text-green-300 mt-2">
+                Recording your thoughts on justice helps develop your civic awareness!
               </p>
             </div>
-          )}
-
-          <button
-            onClick={handleSubmit}
-            disabled={!entries[currentPrompt] || entries[currentPrompt].trim().length < 10}
-            className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Submit Entry
-          </button>
-        </div>
+            
+            <div className="bg-white/5 rounded-xl p-6 border border-white/10 mb-6 text-left">
+              <h3 className="text-lg font-semibold text-white mb-3">Your Entries:</h3>
+              <div className="space-y-3">
+                {stages.map((stage, index) => (
+                  <div key={index} className="text-white/90 text-sm">
+                    <span className="font-medium">Q{index + 1}:</span> {stage.question}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

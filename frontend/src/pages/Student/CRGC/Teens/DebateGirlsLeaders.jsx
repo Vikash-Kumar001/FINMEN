@@ -15,15 +15,15 @@ const DebateGirlsLeaders = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Should girls lead nations?",
       options: [
-        { id: "a", text: "Yes, leadership has no gender" },
         { id: "b", text: "No, men are natural leaders" },
+        { id: "a", text: "Yes, leadership has no gender" },
         { id: "c", text: "Only in certain areas" }
       ],
       correctAnswer: "a",
@@ -44,9 +44,9 @@ const DebateGirlsLeaders = () => {
       id: 3,
       text: "How does gender diversity in leadership benefit organizations?",
       options: [
-        { id: "a", text: "It brings diverse perspectives and improves decision-making" },
         { id: "b", text: "It creates confusion and conflict" },
-        { id: "c", text: "It doesn't make a difference" }
+        { id: "c", text: "It doesn't make a difference" },
+        { id: "a", text: "It brings diverse perspectives and improves decision-making" },
       ],
       correctAnswer: "a",
       explanation: "Gender diversity in leadership brings different perspectives, experiences, and problem-solving approaches, which leads to better decision-making and innovation."
@@ -55,8 +55,8 @@ const DebateGirlsLeaders = () => {
       id: 4,
       text: "Why is it important to encourage girls to pursue leadership roles?",
       options: [
-        { id: "a", text: "To ensure equal representation and opportunities for all" },
         { id: "b", text: "To replace male leaders" },
+        { id: "a", text: "To ensure equal representation and opportunities for all" },
         { id: "c", text: "To fulfill a quota requirement" }
       ],
       correctAnswer: "a",
@@ -78,12 +78,14 @@ const DebateGirlsLeaders = () => {
   const handleOptionSelect = (optionId) => {
     if (selectedOption || showFeedback) return;
     
+    resetFeedback(); // Reset any existing feedback
+    
     setSelectedOption(optionId);
     const isCorrect = optionId === questions[currentQuestion].correctAnswer;
     
     if (isCorrect) {
-      setCoins(prev => prev + 2); // 2 coins for debate questions
-      showCorrectAnswerFeedback(2, true);
+      setCoins(prev => prev + 1); // 1 coin per correct answer
+      showCorrectAnswerFeedback(1, true);
     }
     
     setShowFeedback(true);
@@ -108,60 +110,68 @@ const DebateGirlsLeaders = () => {
   return (
     <GameShell
       title="Debate: Girls as Leaders?"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={`Debate ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
       gameId="civic-responsibility-teens-26"
       gameType="civic-responsibility"
-      totalLevels={30}
-      currentLevel={26}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
       showConfetti={gameFinished}
       backPath="/games/civic-responsibility/teens"
     
       maxScore={questions.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}>
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Debate Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-white/80">Debate {currentQuestion + 1}/{questions.length}</span>
             <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
           
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
-          </h2>
+          <div className="text-center mb-6">
+            <div className="text-5xl mb-4">👑</div>
+            <h3 className="text-2xl font-bold text-white mb-2">Leadership Debate</h3>
+          </div>
 
-          <div className="space-y-3">
+          <p className="text-white text-lg mb-6">
+            {getCurrentQuestion().text}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {getCurrentQuestion().options.map(option => {
               const isSelected = selectedOption === option.id;
               const isCorrect = option.id === getCurrentQuestion().correctAnswer;
               const showCorrect = showFeedback && isCorrect;
               const showIncorrect = showFeedback && isSelected && !isCorrect;
               
+              // Add emojis for each option like in the reference game
+              const optionEmojis = {
+                a: "✅",
+                b: "❌",
+                c: "⚠️"
+              };
+              
               return (
                 <button
                   key={option.id}
                   onClick={() => handleOptionSelect(option.id)}
                   disabled={showFeedback}
-                  className={`w-full p-4 rounded-xl text-left transition-all text-white ${
-                    showCorrect
-                      ? 'bg-green-500/20 border-2 border-green-500'
-                      : showIncorrect
-                      ? 'bg-red-500/20 border-2 border-red-500'
-                      : isSelected
-                      ? 'bg-blue-500/20 border-2 border-blue-500'
-                      : 'bg-white/10 border border-white/20 hover:bg-white/20'
+                  className={`bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${
+                    showFeedback ? (isCorrect ? 'ring-4 ring-green-500' : isSelected ? 'ring-4 ring-red-500' : '') : ''
                   }`}
                 >
                   <div className="flex items-center">
-                    <div className="text-lg mr-3 font-bold">
-                      {option.id.toUpperCase()}.
+                    <div className="text-2xl mr-4">{optionEmojis[option.id] || '❓'}</div>
+                    <div>
+                      <h3 className="font-bold text-xl mb-1">{option.text}</h3>
                     </div>
-                    <div>{option.text}</div>
                   </div>
                 </button>
               );

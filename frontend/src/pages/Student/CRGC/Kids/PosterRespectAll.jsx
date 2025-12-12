@@ -1,103 +1,142 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
+import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PosterRespectAll = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [gameStarted, setGameStarted] = useState(false);
-  const [posterCreated, setPosterCreated] = useState(false);
-  
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setGameStarted(true);
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, []);
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // 1 coin per question
+  const totalCoins = location.state?.totalCoins || 5; // Total coins for 5 questions
+  const totalXp = location.state?.totalXp || 10; // Total XP
+  const [score, setScore] = useState(0);
+  const [currentStage, setCurrentStage] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const handleCreatePoster = () => {
-    setPosterCreated(true);
+  const stages = [
+    {
+      question: 'Which poster would best show "Listening to Others"?',
+      choices: [
+        { text: "Poster showing talking over others 🚫", correct: false },
+        { text: "Poster showing giving full attention when someone speaks 👂", correct: true },
+        { text: "Poster showing others' opinions don't matter 😔", correct: false },
+      ],
+    },
+    {
+      question: 'Which poster would best show "Valuing Differences"?',
+      choices: [
+        { text: "Poster showing celebrating diverse backgrounds 🌍", correct: true },
+        { text: "Poster showing making fun of differences 🚫", correct: false },
+        { text: "Poster showing differences are bad 😔", correct: false },
+      ],
+    },
+    {
+      question: 'Which poster would best show "Being Polite"?',
+      choices: [
+        { text: "Poster showing using harsh words 🚫", correct: false },
+        { text: "Poster showing politeness is weakness 😔", correct: false },
+        { text: "Poster showing saying please and thank you kindly 😊", correct: true },
+      ],
+    },
+    {
+      question: 'Which poster would best show "Respecting Personal Space"?',
+      choices: [
+        { text: "Poster showing invading others' space 🚫", correct: false },
+        { text: "Poster showing understanding personal boundaries ⚖️", correct: true },
+        { text: "Poster showing personal space doesn't matter 😔", correct: false },
+      ],
+    },
+    {
+      question: 'Which poster would best show "Every Voice Matters"?',
+      choices: [
+        { text: "Poster showing silencing quiet voices 🚫", correct: false },
+        { text: "Poster showing only some voices matter 😔", correct: false },
+        { text: "Poster showing everyone deserves to be heard 🗣️", correct: true },
+      ],
+    },
+  ];
+
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    const isLastStage = currentStage === stages.length - 1;
+    
+    setTimeout(() => {
+      if (isLastStage) {
+        setShowResult(true);
+      } else {
+        setCurrentStage(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/kids");
   };
 
-  if (!gameStarted) {
-    return (
-      <GameShell
-        title="Poster: Respect All"
-        subtitle="Loading..."
-        backPath="/games/civic-responsibility/kids"
-      
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-pulse text-center">
-            <div className="text-6xl mb-4">🎨</div>
-            <p className="text-white">Getting your poster ready...</p>
-          </div>
-        </div>
-      </GameShell>
-    );
-  }
+  const currentStageData = stages[currentStage];
 
   return (
     <GameShell
       title="Poster: Respect All"
-      subtitle="Create Your Poster"
+      score={score}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}` : "Poster Complete!"}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showGameOver={showResult}
       onNext={handleNext}
-      nextEnabled={posterCreated}
       nextButtonText="Back to Games"
-      showGameOver={posterCreated}
-      score={posterCreated ? 1 : 0}
       gameId="civic-responsibility-kids-16"
       gameType="civic-responsibility"
-      totalLevels={20}
-      currentLevel={16}
-      showConfetti={posterCreated}
+      totalLevels={stages.length}
+      currentLevel={currentStage + 1}
+      maxScore={stages.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/kids"
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <h2 className="text-2xl font-bold text-center mb-6 text-white">
-            Create a Poster: "Every Voice Matters"
-          </h2>
-          
-          <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-8 rounded-2xl text-center mb-8">
-            <div className="text-6xl mb-4">🗣️</div>
-            <h3 className="text-3xl font-bold text-white mb-4">Every Voice Matters</h3>
-            <p className="text-white/90">
-              Draw or design a poster showing how everyone deserves to be heard and respected!
-            </p>
-          </div>
-          
-          {!posterCreated ? (
-            <button
-              onClick={handleCreatePoster}
-              className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-xl text-lg transition-all transform hover:scale-105"
-            >
-              🎨 Create My Poster
-            </button>
-          ) : (
-            <div className="text-center p-6 bg-green-500/20 rounded-xl border border-green-500/30">
-              <div className="text-4xl mb-2">🎉</div>
-              <h3 className="text-xl font-bold text-green-300 mb-2">Great Job!</h3>
-              <p className="text-white/90">You've created an amazing poster!</p>
-              <p className="text-yellow-300 font-medium mt-2">Badge Unlocked: Respect Artist</p>
+        {!showResult && currentStageData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentStage + 1}/{stages.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{stages.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentStageData.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentStageData.choices.map((choice, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleChoice(choice.correct)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <p className="font-semibold text-lg">{choice.text}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
-          
-          <div className="mt-6 text-sm text-white/60">
-            <p>Tip: Show your poster to friends and family to teach them about respect!</p>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

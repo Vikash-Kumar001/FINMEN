@@ -10,10 +10,10 @@ const SimulationCleanUpDrive = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
   const [currentScenario, setCurrentScenario] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const scenarios = [
@@ -26,21 +26,24 @@ const SimulationCleanUpDrive = () => {
           id: "a",
           text: "Organize a community clean-up event",
           emoji: " volunte",
-          description: "That's right! Organizing a clean-up brings people together to address the problem effectively and creates positive community impact.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Walk away and let someone else handle it",
           emoji: "🚶",
-          description: "That's not helpful. Taking initiative to address community issues is part of being a responsible citizen.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Blame the city for not maintaining the park properly",
           emoji: "😠",
-          description: "That's not constructive. While municipalities have responsibilities, community members can also take positive action.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Post about the issue on social media to raise awareness",
+          emoji: "📱",
           isCorrect: false
         }
       ]
@@ -50,25 +53,29 @@ const SimulationCleanUpDrive = () => {
       title: "Beach Pollution",
       description: "The group discovers plastic waste polluting a nearby beach. How should they respond?",
       options: [
-        {
-          id: "a",
-          text: "Document the issue and contact environmental organizations",
-          emoji: "📱",
-          description: "Perfect! Documenting the problem and connecting with experts helps address the issue at both local and systemic levels.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Post angry messages on social media about the pollution",
           emoji: "💻",
-          description: "That's not effective. While raising awareness is important, constructive action is more valuable than just expressing anger.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Decide it's not their problem and go home",
           emoji: "😴",
-          description: "That's not responsible. Environmental issues affect everyone, and taking action helps protect shared resources.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Document the issue and contact environmental organizations",
+          emoji: "📱",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Create signs to educate beach visitors about pollution",
+          emoji: "📢",
           isCorrect: false
         }
       ]
@@ -78,25 +85,29 @@ const SimulationCleanUpDrive = () => {
       title: "School Grounds",
       description: "They notice litter accumulating around their school. What's the best approach?",
       options: [
-        {
-          id: "a",
-          text: "Start a regular clean-up schedule and educate classmates",
-          emoji: "📅",
-          description: "That's right! Creating ongoing solutions and raising awareness helps prevent future littering and builds environmental responsibility.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Complain to teachers without offering solutions",
           emoji: "😤",
-          description: "That's not productive. Offering solutions along with concerns is more likely to lead to positive change.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Start a regular clean-up schedule and educate classmates",
+          emoji: "📅",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Ignore it since it's the school's responsibility",
           emoji: "🤷",
-          description: "That's not community-minded. Taking ownership of shared spaces helps create a better environment for everyone.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Ask the principal for permission to organize a school-wide campaign",
+          emoji: "🏫",
           isCorrect: false
         }
       ]
@@ -110,21 +121,24 @@ const SimulationCleanUpDrive = () => {
           id: "a",
           text: "Contact local authorities for proper disposal",
           emoji: "📞",
-          description: "Perfect! Hazardous materials require special handling, and contacting authorities ensures safe and proper disposal.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Try to dispose of hazardous items themselves",
           emoji: "⚠️",
-          description: "That's not safe. Hazardous materials can be dangerous and should only be handled by trained professionals.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Leave hazardous items and only collect regular trash",
           emoji: "🗑️",
-          description: "That's not responsible. Properly addressing hazardous materials prevents harm to people and the environment.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Warn neighbors about the hazardous materials",
+          emoji: "⚠️",
           isCorrect: false
         }
       ]
@@ -134,25 +148,29 @@ const SimulationCleanUpDrive = () => {
       title: "Community Engagement",
       description: "Their clean-up efforts attract media attention. How should they handle the publicity?",
       options: [
-        {
-          id: "a",
-          text: "Use the attention to encourage others to volunteer",
-          emoji: "📢",
-          description: "That's right! Leveraging positive attention to inspire others amplifies the impact of their community service efforts.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Avoid media and keep their efforts private",
           emoji: "🤫",
-          description: "That's not strategic. Sharing positive community actions can inspire others and create broader social impact.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Use the attention to encourage others to volunteer",
+          emoji: "📢",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Focus attention on themselves rather than the cause",
           emoji: "👑",
-          description: "That's not the purpose. Community service is about helping others and improving society, not personal recognition.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Thank the media and direct attention to environmental issues",
+          emoji: "📺",
           isCorrect: false
         }
       ]
@@ -160,12 +178,12 @@ const SimulationCleanUpDrive = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentScenario().options.find(opt => opt.id === optionId);
+    const selectedOption = scenarios[currentScenario].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
-      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { scenario: currentScenario, optionId, isCorrect }]);
@@ -192,7 +210,7 @@ const SimulationCleanUpDrive = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={coins} // Use coins for score
       gameId="civic-responsibility-teens-58"
       gameType="civic-responsibility"
       totalLevels={60}
@@ -201,7 +219,6 @@ const SimulationCleanUpDrive = () => {
       flashPoints={flashPoints}
       backPath="/games/civic-responsibility/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
       maxScore={scenarios.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
@@ -210,7 +227,7 @@ const SimulationCleanUpDrive = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Scenario {currentScenario + 1}/{scenarios.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
           </div>
           
           <h2 className="text-xl font-semibold text-white mb-4">
@@ -221,21 +238,17 @@ const SimulationCleanUpDrive = () => {
             {getCurrentScenario().description}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.scenario === currentScenario)}
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.scenario === currentScenario && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
-                    )}
                   </div>
                 </div>
               </button>

@@ -15,7 +15,7 @@ const DebateIgnoreOrReport = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -33,8 +33,8 @@ const DebateIgnoreOrReport = () => {
       id: 2,
       text: "What is the most effective way to address cyberbullying?",
       options: [
-        { id: "a", text: "Retaliate against the bully online" },
         { id: "b", text: "Document evidence and report to adults" },
+        { id: "a", text: "Retaliate against the bully online" },
         { id: "c", text: "Hope it will stop on its own" }
       ],
       correctAnswer: "b",
@@ -45,8 +45,8 @@ const DebateIgnoreOrReport = () => {
       text: "Why is it important for bystanders to report bullying?",
       options: [
         { id: "a", text: "To gain popularity among peers" },
+        { id: "c", text: "To avoid getting in trouble themselves" },
         { id: "b", text: "To help stop the bullying and support victims" },
-        { id: "c", text: "To avoid getting in trouble themselves" }
       ],
       correctAnswer: "b",
       explanation: "Bystanders play a crucial role in stopping bullying by reporting it. This helps protect victims, holds bullies accountable, and creates a safer environment for everyone."
@@ -66,8 +66,8 @@ const DebateIgnoreOrReport = () => {
       id: 5,
       text: "How does reporting bullying benefit the school community?",
       options: [
-        { id: "a", text: "It creates more conflict and drama" },
         { id: "b", text: "It helps create a safer, more inclusive environment" },
+        { id: "a", text: "It creates more conflict and drama" },
         { id: "c", text: "It makes the school look bad to outsiders" }
       ],
       correctAnswer: "b",
@@ -78,12 +78,14 @@ const DebateIgnoreOrReport = () => {
   const handleOptionSelect = (optionId) => {
     if (selectedOption || showFeedback) return;
     
+    resetFeedback(); // Reset any existing feedback
+    
     setSelectedOption(optionId);
     const isCorrect = optionId === questions[currentQuestion].correctAnswer;
     
     if (isCorrect) {
-      setCoins(prev => prev + 2); // 2 coins for debate questions
-      showCorrectAnswerFeedback(2, true);
+      setCoins(prev => prev + 1); // 1 coin per correct answer
+      showCorrectAnswerFeedback(1, true);
     }
     
     setShowFeedback(true);
@@ -108,60 +110,68 @@ const DebateIgnoreOrReport = () => {
   return (
     <GameShell
       title="Debate: Ignore or Report?"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={`Debate ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
       gameId="civic-responsibility-teens-36"
       gameType="civic-responsibility"
-      totalLevels={40}
-      currentLevel={36}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
       showConfetti={gameFinished}
       backPath="/games/civic-responsibility/teens"
     
       maxScore={questions.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}>
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Debate Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-white/80">Debate {currentQuestion + 1}/{questions.length}</span>
             <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
           
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
-          </h2>
+          <div className="text-center mb-6">
+            <div className="text-5xl mb-4">📢</div>
+            <h3 className="text-2xl font-bold text-white mb-2">Bullying Debate</h3>
+          </div>
 
-          <div className="space-y-3">
+          <p className="text-white text-lg mb-6">
+            {getCurrentQuestion().text}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {getCurrentQuestion().options.map(option => {
               const isSelected = selectedOption === option.id;
               const isCorrect = option.id === getCurrentQuestion().correctAnswer;
               const showCorrect = showFeedback && isCorrect;
               const showIncorrect = showFeedback && isSelected && !isCorrect;
               
+              // Add emojis for each option like in the reference game
+              const optionEmojis = {
+                a: "✅",
+                b: "❌",
+                c: "⚠️"
+              };
+              
               return (
                 <button
                   key={option.id}
                   onClick={() => handleOptionSelect(option.id)}
                   disabled={showFeedback}
-                  className={`w-full p-4 rounded-xl text-left transition-all text-white ${
-                    showCorrect
-                      ? 'bg-green-500/20 border-2 border-green-500'
-                      : showIncorrect
-                      ? 'bg-red-500/20 border-2 border-red-500'
-                      : isSelected
-                      ? 'bg-blue-500/20 border-2 border-blue-500'
-                      : 'bg-white/10 border border-white/20 hover:bg-white/20'
+                  className={`bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${
+                    showFeedback ? (isCorrect ? 'ring-4 ring-green-500' : isSelected ? 'ring-4 ring-red-500' : '') : ''
                   }`}
                 >
                   <div className="flex items-center">
-                    <div className="text-lg mr-3 font-bold">
-                      {option.id.toUpperCase()}.
+                    <div className="text-2xl mr-4">{optionEmojis[option.id] || '❓'}</div>
+                    <div>
+                      <h3 className="font-bold text-xl mb-1">{option.text}</h3>
                     </div>
-                    <div>{option.text}</div>
                   </div>
                 </button>
               );

@@ -1,184 +1,324 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeInclusionLeader = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "civic-responsibility-teens-20";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const tasks = [
+  const challenges = [
     {
       id: 1,
-      title: "Include a New Student",
-      description: "Welcome and include a new student in your class or school activities",
-      completed: false,
-      coins: 2
+      title: "Welcoming New Students",
+      question: "What is the best way to welcome a new student to your school?",
+      options: [
+        { 
+          text: "Ignore them until they approach you", 
+          isCorrect: false
+        },
+        { 
+          text: "Introduce yourself and invite them to join activities", 
+          isCorrect: true
+        },
+        { 
+          text: "Tell your friends not to talk to them", 
+          isCorrect: false
+        },
+        { 
+          text: "Ask them personal questions immediately", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Introducing yourself and inviting them to activities helps new students feel welcomed and included.",
+        wrong: "Introducing yourself and inviting them to activities helps new students feel welcomed and included."
+      }
     },
     {
       id: 2,
-      title: "Stand Against Exclusion",
-      description: "Intervene when you see someone being left out or excluded",
-      completed: false,
-      coins: 2
+      title: "Standing Against Exclusion",
+      question: "What should you do if you notice someone being left out of a group activity?",
+      options: [
+        { 
+          text: "Join the group that's excluding others", 
+          isCorrect: false
+        },
+        
+        { 
+          text: "Ignore the situation", 
+          isCorrect: false
+        },
+        { 
+          text: "Tell others to exclude more people", 
+          isCorrect: false
+        },
+        { 
+          text: "Invite the excluded person to join your group", 
+          isCorrect: true
+        },
+      ],
+      feedback: {
+        correct: "Inviting excluded individuals to join activities promotes inclusion and belonging.",
+        wrong: "Inviting excluded individuals to join activities promotes inclusion and belonging."
+      }
     },
     {
       id: 3,
-      title: "Learn About a Different Culture",
-      description: "Take time to learn about and appreciate a culture different from your own",
-      completed: false,
-      coins: 2
+      title: "Cultural Appreciation",
+      question: "How can you show appreciation for a culture different from your own?",
+      options: [
+        { 
+          text: "Make fun of their traditions", 
+          isCorrect: false
+        },
+        { 
+          text: "Learn about their customs and celebrate diversity", 
+          isCorrect: true
+        },
+        { 
+          text: "Avoid people from different cultures", 
+          isCorrect: false
+        },
+        { 
+          text: "Force others to adopt your culture", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Learning about and celebrating different cultures promotes understanding and inclusion.",
+        wrong: "Learning about and celebrating different cultures promotes understanding and inclusion."
+      }
     },
     {
       id: 4,
-      title: "Promote Equal Participation",
-      description: "Ensure everyone has a chance to participate in group activities",
-      completed: false,
-      coins: 2
+      title: "Equal Participation",
+      question: "What is the best way to ensure equal participation in group activities?",
+      options: [
+        { 
+          text: "Let the loudest voices dominate", 
+          isCorrect: false
+        },
+        { 
+          text: "Give everyone a chance to contribute and share ideas", 
+          isCorrect: true
+        },
+        { 
+          text: "Exclude quieter members", 
+          isCorrect: false
+        },
+        { 
+          text: "Make all decisions yourself", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Ensuring everyone has a chance to contribute creates an inclusive environment where all voices are valued.",
+        wrong: "Ensuring everyone has a chance to contribute creates an inclusive environment where all voices are valued."
+      }
     },
     {
       id: 5,
-      title: "Respect Different Viewpoints",
-      description: "Listen respectfully to opinions that differ from your own",
-      completed: false,
-      coins: 2
+      title: "Respecting Differences",
+      question: "How should you respond when someone has a different opinion than yours?",
+      options: [
+        { 
+          text: "Insist that your opinion is the only correct one", 
+          isCorrect: false
+        },
+        { 
+          text: "Listen respectfully and try to understand their perspective", 
+          isCorrect: true
+        },
+        { 
+          text: "Mock their viewpoint", 
+          isCorrect: false
+        },
+        { 
+          text: "Avoid all discussions about differing opinions", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Listening respectfully to different opinions promotes understanding and inclusive dialogue.",
+        wrong: "Listening respectfully to different opinions promotes understanding and inclusive dialogue."
+      }
     }
   ];
 
-  const handleTaskComplete = (taskId) => {
-    if (completedTasks.includes(taskId)) return; // Already completed
+  const handleAnswer = (isCorrect, optionIndex) => {
+    if (answered) return;
     
-    const newCompletedTasks = [...completedTasks, taskId];
-    setCompletedTasks(newCompletedTasks);
+    setAnswered(true);
+    setSelectedAnswer(optionIndex);
+    resetFeedback();
     
-    // Add coins for task completion
-    const task = tasks.find(t => t.id === taskId);
-    if (task) {
-      setCoins(prev => prev + task.coins);
-      showCorrectAnswerFeedback(task.coins, true);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
-    // Check if all tasks are completed
-    if (newCompletedTasks.length === tasks.length) {
-      setTimeout(() => setGameFinished(true), 1500);
-    }
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
   };
 
-  const handleNext = () => {
-    navigate("/games/civic-responsibility/teens");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
   };
 
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Badge: Inclusion Leader"
-        subtitle="Badge Earned!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teens-20"
-        gameType="civic-responsibility"
-        totalLevels={20}
-        currentLevel={20}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
-      
-      maxScore={20} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🏅</div>
-          <h2 className="text-2xl font-bold mb-4">Inclusion Leader Badge Earned!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} coins by completing all inclusion challenges!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You're a true leader in inclusion!
-          </div>
-          <p className="text-white/80">
-            Remember: Leading with inclusion creates positive change in your community and beyond!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  const currentChallenge = challenges[challenge];
 
   return (
     <GameShell
       title="Badge: Inclusion Leader"
-      subtitle="Complete 5 inclusion actions to earn your badge"
+      subtitle={showResult ? "Game Complete!" : `Challenge ${challenge + 1} of ${challenges.length}`}
+      showGameOver={showResult}
+      score={score}
+      gameId={gameId}
+      gameType="civic-responsibility"
+      totalLevels={challenges.length}
+      coinsPerLevel={coinsPerLevel}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 4}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/teens"
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Inclusion Challenges</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+        {!showResult && currentChallenge ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallenge.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(option.isCorrect, idx)}
+                    disabled={answered}
+                    className={`bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3 ${
+                      answered && selectedAnswer === idx
+                        ? option.isCorrect
+                          ? "ring-4 ring-green-400"
+                          : "ring-4 ring-red-400"
+                        : ""
+                    }`}
+                  >
+                    <span className="font-bold text-lg">{option.text}</span>
+                  </button>
+                ))}
+              </div>
+              
+              {answered && (
+                <div className={`mt-4 p-4 rounded-xl ${
+                  currentChallenge.options[selectedAnswer]?.isCorrect
+                    ? "bg-green-500/20 border border-green-500/30"
+                    : "bg-red-500/20 border border-red-500/30"
+                }`}>
+                  <p className="text-white font-semibold">
+                    {currentChallenge.options[selectedAnswer]?.isCorrect
+                      ? currentChallenge.feedback.correct
+                      : currentChallenge.feedback.wrong}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-          
-          <div className="space-y-4">
-            {tasks.map(task => (
-              <div 
-                key={task.id}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  completedTasks.includes(task.id)
-                    ? 'bg-green-500/20 border-green-500'
-                    : 'bg-white/10 border-white/20'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">{task.title}</h3>
-                    <p className="text-white/80 mt-1">{task.description}</p>
-                  </div>
-                  
-                  {completedTasks.includes(task.id) ? (
-                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                      <span className="text-white">✓</span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleTaskComplete(task.id)}
-                      className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg font-medium transition-all"
-                    >
-                      Mark Done
-                    </button>
-                  )}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 4 ? (
+              <div>
+                <div className="text-6xl mb-4">🏅</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Inclusion Leader Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-6">
+                  You demonstrated strong inclusion leadership with {score} correct answers out of {challenges.length}!
+                </p>
+                
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-2xl mb-6">
+                  <h4 className="text-2xl font-bold mb-2">🎉 Achievement Unlocked!</h4>
+                  <p className="text-xl">Badge: Inclusion Leader</p>
                 </div>
                 
-                {!completedTasks.includes(task.id) && (
-                  <div className="mt-3 text-sm text-yellow-400">
-                    Reward: {task.coins} coins
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-green-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-green-300 mb-2">Inclusive Practices</h4>
+                    <p className="text-white/90 text-sm">
+                      You understand how to create welcoming environments for everyone.
+                    </p>
                   </div>
-                )}
+                  <div className="bg-blue-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-blue-300 mb-2">Cultural Awareness</h4>
+                    <p className="text-white/90 text-sm">
+                      You recognize the value of diversity and different perspectives.
+                    </p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    window.location.href = "/games/civic-responsibility/teens";
+                  }}
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white py-3 px-8 rounded-full font-bold text-lg transition-all mb-4"
+                >
+                  Continue Learning
+                </button>
               </div>
-            ))}
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Promoting Inclusion!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {score} questions correctly out of {challenges.length}.
+                </p>
+                <p className="text-white/90 mb-6">
+                  Review inclusion concepts to strengthen your leadership skills.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
           </div>
-          
-          <div className="mt-8 pt-6 border-t border-white/20">
-            <div className="flex justify-between items-center">
-              <span className="text-white">Progress:</span>
-              <span className="text-white font-bold">{completedTasks.length}/{tasks.length} completed</span>
-            </div>
-            <div className="mt-2 bg-white/10 rounded-full h-3 overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500"
-                style={{ width: `${(completedTasks.length / tasks.length) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

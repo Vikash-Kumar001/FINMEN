@@ -1,184 +1,326 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeJusticeTeen = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "civic-responsibility-teens-70";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const tasks = [
+  const challenges = [
     {
       id: 1,
-      title: "Identify a Social Injustice",
-      description: "Research and document an example of social injustice in your community or the world",
-      completed: false,
-      coins: 2
+      title: "Identifying Social Injustice",
+      question: "Which scenario represents a social injustice that should be addressed?",
+      options: [
+        { 
+          text: "Someone choosing not to attend a party", 
+          isCorrect: false
+        },
+        { 
+          text: "People being denied opportunities based on their race or gender", 
+          isCorrect: true
+        },
+        { 
+          text: "A store running out of a popular item", 
+          isCorrect: false
+        },
+        { 
+          text: "Students having different favorite subjects", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Denying opportunities based on race or gender is a form of discrimination that violates principles of equality and justice.",
+        wrong: "Denying opportunities based on race or gender is a form of discrimination that violates principles of equality and justice."
+      }
     },
     {
       id: 2,
-      title: "Stand Up Against Discrimination",
-      description: "Intervene when you witness discrimination or unfair treatment of someone",
-      completed: false,
-      coins: 2
+      title: "Standing Against Discrimination",
+      question: "What is the best way to respond when you witness discrimination?",
+      options: [
+        { 
+          text: "Ignore it to avoid conflict", 
+          isCorrect: false
+        },
+        
+        { 
+          text: "Join in with the discriminatory behavior", 
+          isCorrect: false
+        },
+        { 
+          text: "Support the victim and report the incident appropriately", 
+          isCorrect: true
+        },
+        { 
+          text: "Tell others about it for entertainment", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Supporting victims and reporting discrimination helps protect those being harmed and can prevent future incidents.",
+        wrong: "Supporting victims and reporting discrimination helps protect those being harmed and can prevent future incidents."
+      }
     },
     {
       id: 3,
-      title: "Educate Others",
-      description: "Share information about a justice issue with friends, family, or on social media",
-      completed: false,
-      coins: 2
+      title: "Educating Others About Justice",
+      question: "How can you effectively educate others about social justice issues?",
+      options: [
+        { 
+          text: "Force your views on others without discussion", 
+          isCorrect: false
+        },
+        { 
+          text: "Share factual information and encourage thoughtful dialogue", 
+          isCorrect: true
+        },
+        { 
+          text: "Only discuss issues on social media anonymously", 
+          isCorrect: false
+        },
+        { 
+          text: "Avoid all conversations about controversial topics", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Sharing factual information and encouraging dialogue helps others understand issues and form informed opinions.",
+        wrong: "Sharing factual information and encouraging dialogue helps others understand issues and form informed opinions."
+      }
     },
     {
       id: 4,
-      title: "Support a Cause",
-      description: "Volunteer time or resources to an organization working on social justice",
-      completed: false,
-      coins: 2
+      title: "Supporting Justice Causes",
+      question: "What is an effective way to support organizations working on social justice?",
+      options: [
+        { 
+          text: "Donate time, resources, or skills based on your abilities", 
+          isCorrect: true
+        },
+        { 
+          text: "Only provide financial support when convenient", 
+          isCorrect: false
+        },
+        
+        { 
+          text: "Expect recognition for your contributions", 
+          isCorrect: false
+        },
+        { 
+          text: "Only support causes that align with your personal benefits", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Contributing time, resources, or skills based on your abilities provides meaningful support to justice organizations.",
+        wrong: "Contributing time, resources, or skills based on your abilities provides meaningful support to justice organizations."
+      }
     },
     {
       id: 5,
-      title: "Advocate for Policy Change",
-      description: "Contact a representative or participate in a campaign for legislative change",
-      completed: false,
-      coins: 2
+      title: "Advocating for Policy Change",
+      question: "Why is advocating for legislative change important for social justice?",
+      options: [
+        { 
+          text: "To gain personal political advantage", 
+          isCorrect: false
+        },
+        
+        { 
+          text: "To eliminate all individual responsibility", 
+          isCorrect: false
+        },
+        { 
+          text: "To avoid community-based solutions", 
+          isCorrect: false
+        },
+        { 
+          text: "To create systemic solutions that address root causes of injustice", 
+          isCorrect: true
+        },
+      ],
+      feedback: {
+        correct: "Legislative change can create systemic solutions that address the root causes of injustice and protect rights.",
+        wrong: "Legislative change can create systemic solutions that address the root causes of injustice and protect rights."
+      }
     }
   ];
 
-  const handleTaskComplete = (taskId) => {
-    if (completedTasks.includes(taskId)) return; // Already completed
+  const handleAnswer = (isCorrect, optionIndex) => {
+    if (answered) return;
     
-    const newCompletedTasks = [...completedTasks, taskId];
-    setCompletedTasks(newCompletedTasks);
+    setAnswered(true);
+    setSelectedAnswer(optionIndex);
+    resetFeedback();
     
-    // Add coins for task completion
-    const task = tasks.find(t => t.id === taskId);
-    if (task) {
-      setCoins(prev => prev + task.coins);
-      showCorrectAnswerFeedback(task.coins, true);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
-    // Check if all tasks are completed
-    if (newCompletedTasks.length === tasks.length) {
-      setTimeout(() => setGameFinished(true), 1500);
-    }
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
   };
 
-  const handleNext = () => {
-    navigate("/games/civic-responsibility/teens");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
   };
 
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Badge: Justice Teen"
-        subtitle="Badge Earned!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teens-70"
-        gameType="civic-responsibility"
-        totalLevels={70}
-        currentLevel={70}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
-      
-      maxScore={70} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🏅</div>
-          <h2 className="text-2xl font-bold mb-4">Justice Teen Badge Earned!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} coins by completing all social justice challenges!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You're a champion of justice and equality!
-          </div>
-          <p className="text-white/80">
-            Remember: Your commitment to justice helps create a fairer and more equitable world for everyone!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  const currentChallenge = challenges[challenge];
 
   return (
     <GameShell
       title="Badge: Justice Teen"
-      subtitle="Complete 5 social justice cases to earn your badge"
+      subtitle={showResult ? "Game Complete!" : `Challenge ${challenge + 1} of ${challenges.length}`}
+      showGameOver={showResult}
+      score={score}
+      gameId={gameId}
+      gameType="civic-responsibility"
+      totalLevels={challenges.length}
+      coinsPerLevel={coinsPerLevel}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 4}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/teens"
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Social Justice Challenges</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+        {!showResult && currentChallenge ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallenge.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(option.isCorrect, idx)}
+                    disabled={answered}
+                    className={`bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3 ${
+                      answered && selectedAnswer === idx
+                        ? option.isCorrect
+                          ? "ring-4 ring-green-400"
+                          : "ring-4 ring-red-400"
+                        : ""
+                    }`}
+                  >
+                    <span className="font-bold text-lg">{option.text}</span>
+                  </button>
+                ))}
+              </div>
+              
+              {answered && (
+                <div className={`mt-4 p-4 rounded-xl ${
+                  currentChallenge.options[selectedAnswer]?.isCorrect
+                    ? "bg-green-500/20 border border-green-500/30"
+                    : "bg-red-500/20 border border-red-500/30"
+                }`}>
+                  <p className="text-white font-semibold">
+                    {currentChallenge.options[selectedAnswer]?.isCorrect
+                      ? currentChallenge.feedback.correct
+                      : currentChallenge.feedback.wrong}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-          
-          <div className="space-y-4">
-            {tasks.map(task => (
-              <div 
-                key={task.id}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  completedTasks.includes(task.id)
-                    ? 'bg-green-500/20 border-green-500'
-                    : 'bg-white/10 border-white/20'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">{task.title}</h3>
-                    <p className="text-white/80 mt-1">{task.description}</p>
-                  </div>
-                  
-                  {completedTasks.includes(task.id) ? (
-                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                      <span className="text-white">✓</span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleTaskComplete(task.id)}
-                      className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg font-medium transition-all"
-                    >
-                      Mark Done
-                    </button>
-                  )}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 4 ? (
+              <div>
+                <div className="text-6xl mb-4">🏅</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Justice Teen Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-6">
+                  You demonstrated strong commitment to justice with {score} correct answers out of {challenges.length}!
+                </p>
+                
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-2xl mb-6">
+                  <h4 className="text-2xl font-bold mb-2">🎉 Achievement Unlocked!</h4>
+                  <p className="text-xl">Badge: Justice Teen</p>
                 </div>
                 
-                {!completedTasks.includes(task.id) && (
-                  <div className="mt-3 text-sm text-yellow-400">
-                    Reward: {task.coins} coins
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-green-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-green-300 mb-2">Social Awareness</h4>
+                    <p className="text-white/90 text-sm">
+                      You understand how to identify and respond to social injustices in your community.
+                    </p>
                   </div>
-                )}
+                  <div className="bg-blue-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-blue-300 mb-2">Advocacy Skills</h4>
+                    <p className="text-white/90 text-sm">
+                      You know how to effectively support causes and advocate for systemic change.
+                    </p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    window.location.href = "/games/civic-responsibility/teens";
+                  }}
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white py-3 px-8 rounded-full font-bold text-lg transition-all mb-4"
+                >
+                  Continue Learning
+                </button>
               </div>
-            ))}
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Fighting for Justice!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {score} questions correctly out of {challenges.length}.
+                </p>
+                <p className="text-white/90 mb-6">
+                  Review social justice concepts to strengthen your advocacy skills.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
           </div>
-          
-          <div className="mt-8 pt-6 border-t border-white/20">
-            <div className="flex justify-between items-center">
-              <span className="text-white">Progress:</span>
-              <span className="text-white font-bold">{completedTasks.length}/{tasks.length} completed</span>
-            </div>
-            <div className="mt-2 bg-white/10 rounded-full h-3 overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500"
-                style={{ width: `${(completedTasks.length / tasks.length) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

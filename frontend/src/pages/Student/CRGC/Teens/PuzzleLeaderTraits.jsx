@@ -10,206 +10,260 @@ const PuzzleLeaderTraits = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matches, setMatches] = useState({});
-  const [completed, setCompleted] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedTrait, setSelectedTrait] = useState(null);
+  const [selectedOutcome, setSelectedOutcome] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const pairs = [
-    { 
-      id: 1, 
-      left: "Honesty", 
-      emoji: "🤝", 
-      right: "Trust", 
-      description: "Honesty builds trust, which is the foundation of effective leadership." 
-    },
-    { 
-      id: 2, 
-      left: "Courage", 
-      emoji: "✨", 
-      right: "Inspire", 
-      description: "Courage to take action and make difficult decisions inspires others to follow." 
-    },
-    { 
-      id: 3, 
-      left: "Respect", 
-      emoji: "❤️", 
-      right: "Loyalty", 
-      description: "Respecting others fosters loyalty and creates a positive team environment." 
-    },
-    { 
-      id: 4, 
-      left: "Communication", 
-      emoji: "💬", 
-      right: "Clarity", 
-      description: "Clear communication ensures everyone understands goals and expectations." 
-    },
-    { 
-      id: 5, 
-      left: "Empathy", 
-      emoji: "🤗", 
-      right: "Connection", 
-      description: "Empathy helps leaders connect with and understand their team members." 
-    }
+  // Leadership Traits (left side) - 5 items
+  const traits = [
+    { id: 1, name: "Honesty", emoji: "🤝", description: "Being truthful and transparent" },
+    { id: 2, name: "Courage", emoji: "🦁", description: "Bravery to face challenges" },
+    { id: 3, name: "Respect", emoji: "🙌", description: "Valuing others' opinions and dignity" },
+    { id: 4, name: "Communication", emoji: "🗣️", description: "Effectively sharing ideas and listening" },
+    { id: 5, name: "Empathy", emoji: "❤️", description: "Understanding others' feelings" }
   ];
 
-  const handleMatch = (leftId, rightId) => {
-    // Check if this is a correct match
-    const pair = pairs.find(p => p.left === leftId);
-    const isCorrect = pair && pair.right === rightId;
-    
-    // Update matches state
-    const newMatches = { ...matches, [leftId]: rightId };
+  // Outcomes (right side) - 5 items
+  const outcomes = [
+    { id: 2, name: "Inspire", emoji: "⭐", description: "Motivate others to act" },
+    { id: 5, name: "Connection", emoji: "🔗", description: "Strong interpersonal bonds" },
+    { id: 1, name: "Trust", emoji: "🔒", description: "Confidence in reliability" },
+    { id: 3, name: "Loyalty", emoji: "⚓", description: "Faithful commitment to leaders" },
+    { id: 4, name: "Clarity", emoji: "🔍", description: "Clear understanding of goals" },
+  ];
+
+  // Correct matches
+  const correctMatches = [
+    { traitId: 1, outcomeId: 1 }, // Honesty → Trust
+    { traitId: 2, outcomeId: 2 }, // Courage → Inspire
+    { traitId: 3, outcomeId: 3 }, // Respect → Loyalty
+    { traitId: 4, outcomeId: 4 }, // Communication → Clarity
+    { traitId: 5, outcomeId: 5 }  // Empathy → Connection
+  ];
+
+  const handleTraitSelect = (trait) => {
+    if (gameFinished) return;
+    setSelectedTrait(trait);
+  };
+
+  const handleOutcomeSelect = (outcome) => {
+    if (gameFinished) return;
+    setSelectedOutcome(outcome);
+  };
+
+  const handleMatch = () => {
+    if (!selectedTrait || !selectedOutcome || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      traitId: selectedTrait.id,
+      outcomeId: selectedOutcome.id,
+      isCorrect: correctMatches.some(
+        match => match.traitId === selectedTrait.id && match.outcomeId === selectedOutcome.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
     setMatches(newMatches);
-    
-    // Check if all pairs are matched
-    const allMatched = pairs.every(p => newMatches[p.left] === p.right);
-    
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      
-      if (allMatched) {
-        setTimeout(() => setCompleted(true), 1000);
-      }
-    } else if (allMatched) {
-      // If all matched but some are incorrect, still complete the game
-      setTimeout(() => setCompleted(true), 1000);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === traits.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedTrait(null);
+    setSelectedOutcome(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedTrait(null);
+    setSelectedOutcome(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/teens");
   };
 
-  if (completed) {
-    return (
-      <GameShell
-        title="Puzzle: Leader Traits"
-        subtitle="Puzzle Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teens-94"
-        gameType="civic-responsibility"
-        totalLevels={100}
-        currentLevel={94}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
-      
-      maxScore={100} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">✨</div>
-          <h2 className="text-2xl font-bold mb-4">Well Done!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} coins by matching leadership traits!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You know your leadership qualities!
-          </div>
-          <p className="text-white/80">
-            Remember: These traits work together to create effective and inspiring leaders!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  // Check if a trait is already matched
+  const isTraitMatched = (traitId) => {
+    return matches.some(match => match.traitId === traitId);
+  };
 
-  // Shuffle the right side options
-  const shuffledRights = [...pairs].sort(() => Math.random() - 0.5);
+  // Check if an outcome is already matched
+  const isOutcomeMatched = (outcomeId) => {
+    return matches.some(match => match.outcomeId === outcomeId);
+  };
+
+  // Get match result for a trait
+  const getMatchResult = (traitId) => {
+    const match = matches.find(m => m.traitId === traitId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Leader Traits"
-      subtitle="Match leadership traits with their outcomes"
+      subtitle={gameFinished ? "Game Complete!" : `Match Leadership Traits with Outcomes (${matches.length}/${traits.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="civic-responsibility-teens-94"
+      gameType="civic-responsibility"
+      totalLevels={traits.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/teens"
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Leadership Traits Puzzle</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Left column - Traits */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Traits</h3>
-              {pairs.map((pair) => (
-                <div 
-                  key={pair.id}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                    matches[pair.left]
-                      ? 'bg-green-500/20 border-green-500'
-                      : 'bg-white/10 border-white/20 hover:bg-white/20'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-2xl mr-3">{pair.emoji}</div>
-                    <span className="text-white font-medium">{pair.left}</span>
-                  </div>
-                  {matches[pair.left] && (
-                    <div className="mt-2 text-sm text-white/80">
-                      Matched with: {matches[pair.left]}
+      maxScore={traits.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Leadership Traits */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Leadership Traits</h3>
+              <div className="space-y-4">
+                {traits.map(trait => (
+                  <button
+                    key={trait.id}
+                    onClick={() => handleTraitSelect(trait)}
+                    disabled={isTraitMatched(trait.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isTraitMatched(trait.id)
+                        ? getMatchResult(trait.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedTrait?.id === trait.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{trait.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{trait.name}</h4>
+                        <p className="text-white/80 text-sm">{trait.description}</p>
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
-            
-            {/* Right column - Outcomes */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Outcomes</h3>
-              {shuffledRights.map((pair) => (
-                <div 
-                  key={pair.id}
-                  onClick={() => {
-                    // Find the first unmatched left item
-                    const unmatchedLeft = pairs.find(p => !matches[p.left]);
-                    if (unmatchedLeft) {
-                      handleMatch(unmatchedLeft.left, pair.right);
-                    }
-                  }}
-                  className="p-4 rounded-xl border-2 bg-white/10 border-white/20 hover:bg-white/20 cursor-pointer transition-all"
-                >
-                  <span className="text-white font-medium">{pair.right}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Feedback for matches */}
-          <div className="mt-8 space-y-3">
-            {Object.entries(matches).map(([left, right]) => {
-              const pair = pairs.find(p => p.left === left);
-              const isCorrect = pair && pair.right === right;
-              
-              return (
-                <div 
-                  key={left}
-                  className={`p-3 rounded-lg ${
-                    isCorrect 
-                      ? 'bg-green-500/20 border border-green-500' 
-                      : 'bg-red-500/20 border border-red-500'
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedTrait 
+                    ? `Selected: ${selectedTrait.name}` 
+                    : "Select a Leadership Trait"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedTrait || !selectedOutcome}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedTrait && selectedOutcome
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  <div className="flex items-center">
-                    <div className="text-xl mr-2">{pair?.emoji}</div>
-                    <span className="text-white">
-                      {left} → {right} {isCorrect ? '✓' : '✗'}
-                    </span>
-                  </div>
-                  <p className="text-sm text-white/80 mt-1">{pair?.description}</p>
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{traits.length}</p>
+                  <p>Matched: {matches.length}/{traits.length}</p>
                 </div>
-              );
-            })}
+              </div>
+            </div>
+
+            {/* Right column - Outcomes */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Outcomes</h3>
+              <div className="space-y-4">
+                {outcomes.map(outcome => (
+                  <button
+                    key={outcome.id}
+                    onClick={() => handleOutcomeSelect(outcome)}
+                    disabled={isOutcomeMatched(outcome.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isOutcomeMatched(outcome.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedOutcome?.id === outcome.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{outcome.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{outcome.name}</h4>
+                        <p className="text-white/80 text-sm">{outcome.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">✨</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Exceptional Work!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {traits.length} leadership traits with their outcomes!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding leadership traits helps you develop the qualities needed to inspire and guide others effectively!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Developing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {traits.length} leadership traits correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about how each leadership trait naturally leads to a specific positive outcome!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

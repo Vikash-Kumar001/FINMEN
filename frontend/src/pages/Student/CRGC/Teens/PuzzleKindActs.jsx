@@ -10,150 +10,260 @@ const PuzzleKindActs = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matches, setMatches] = useState({});
-  const [completed, setCompleted] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedAct, setSelectedAct] = useState(null);
+  const [selectedResponse, setSelectedResponse] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const pairs = [
-    { id: 1, left: "Help Elderly", emoji: "🧓", right: "Carry Bags", description: "Assisting elderly people with heavy items shows respect and care for our seniors." },
-    { id: 2, left: "Help Animals", emoji: "🐕", right: "Feed", description: "Feeding stray animals demonstrates compassion for all living beings." },
-    { id: 3, left: "Help Friends", emoji: "👂", right: "Listen", description: "Listening to friends who need to talk provides emotional support and strengthens relationships." },
-    { id: 4, left: "Help Neighbors", emoji: "🏘️", right: "Check On", description: "Checking on neighbors, especially during difficult times, builds community bonds." },
-    { id: 5, left: "Help Environment", emoji: "🌍", right: "Plant Trees", description: "Planting trees helps protect our planet for future generations." }
+  // Acts (left side) - 5 items
+  const acts = [
+    { id: 1, name: "Help Elderly", emoji: "🧓", description: "Assist older people in daily tasks" },
+    { id: 2, name: "Help Animals", emoji: "🐕", description: "Care for animals in need" },
+    { id: 3, name: "Help Friends", emoji: "👂", description: "Support friends during tough times" },
+    { id: 4, name: "Help Neighbors", emoji: "🏘️", description: "Support people living nearby" },
+    { id: 5, name: "Help Environment", emoji: "🌍", description: "Take care of our planet Earth" }
   ];
 
-  const handleMatch = (pairId) => {
-    if (matches[pairId]) return; // Already matched
-    
-    const newMatches = { ...matches, [pairId]: true };
+  // Responses (right side) - 5 items
+  const responses = [
+    { id: 2, name: "Feed", emoji: "🍖", description: "Provide food for hungry animals" },
+    { id: 3, name: "Listen", emoji: "💬", description: "Give attention to someone's concerns" },
+    { id: 1, name: "Carry Bags", emoji: "🛍️", description: "Help with heavy shopping items" },
+    { id: 5, name: "Plant Trees", emoji: "🌳", description: "Grow plants to clean the air" },
+    { id: 4, name: "Check On", emoji: "CallCheck On", description: "Visit to see if they need help" },
+  ];
+
+  // Correct matches
+  const correctMatches = [
+    { actId: 1, responseId: 1 }, // Help Elderly → Carry Bags
+    { actId: 2, responseId: 2 }, // Help Animals → Feed
+    { actId: 3, responseId: 3 }, // Help Friends → Listen
+    { actId: 4, responseId: 4 }, // Help Neighbors → Check On
+    { actId: 5, responseId: 5 }  // Help Environment → Plant Trees
+  ];
+
+  const handleActSelect = (act) => {
+    if (gameFinished) return;
+    setSelectedAct(act);
+  };
+
+  const handleResponseSelect = (response) => {
+    if (gameFinished) return;
+    setSelectedResponse(response);
+  };
+
+  const handleMatch = () => {
+    if (!selectedAct || !selectedResponse || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      actId: selectedAct.id,
+      responseId: selectedResponse.id,
+      isCorrect: correctMatches.some(
+        match => match.actId === selectedAct.id && match.responseId === selectedResponse.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
     setMatches(newMatches);
-    
-    // Add coin for each correct match
-    setCoins(prev => prev + 1);
-    showCorrectAnswerFeedback(1, true);
-    
-    // Check if all pairs are matched
-    if (Object.keys(newMatches).length === pairs.length) {
-      setTimeout(() => setCompleted(true), 1000);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === acts.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedAct(null);
+    setSelectedResponse(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedAct(null);
+    setSelectedResponse(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/teens");
   };
 
-  if (completed) {
-    return (
-      <GameShell
-        title="Puzzle: Kind Acts"
-        subtitle="Puzzle Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teensonsibility-teens-4"
-        gameType="civic-responsibility"
-        totalLevels={10}
-        currentLevel={4}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
-      
-      maxScore={10} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🎉</div>
-          <h2 className="text-2xl font-bold mb-4">Puzzle Complete!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} out of {pairs.length} points!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You've mastered kind acts!
-          </div>
-          <p className="text-white/80">
-            Remember: Small acts of kindness make a big difference in the world!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  // Check if an act is already matched
+  const isActMatched = (actId) => {
+    return matches.some(match => match.actId === actId);
+  };
+
+  // Check if a response is already matched
+  const isResponseMatched = (responseId) => {
+    return matches.some(match => match.responseId === responseId);
+  };
+
+  // Get match result for an act
+  const getMatchResult = (actId) => {
+    const match = matches.find(m => m.actId === actId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Kind Acts"
-      subtitle="Match the kind acts with their descriptions"
+      subtitle={gameFinished ? "Game Complete!" : `Match Kind Acts with Their Responses (${matches.length}/${acts.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="civic-responsibility-teens-4"
+      gameType="civic-responsibility"
+      totalLevels={acts.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/teens"
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Kind Acts Puzzle</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Actions</h3>
-              {pairs.map(pair => (
-                <button
-                  key={`left-${pair.id}`}
-                  onClick={() => handleMatch(pair.id)}
-                  disabled={matches[pair.id]}
-                  className={`w-full p-4 rounded-xl text-left transition-all ${
-                    matches[pair.id]
-                      ? 'bg-green-500/20 border-2 border-green-500'
-                      : 'bg-white/10 hover:bg-white/20 border-2 border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-2xl mr-4">{pair.emoji}</div>
-                    <span className="text-white font-medium">{pair.left}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-            
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Kind Responses</h3>
-              {pairs.map(pair => (
-                <button
-                  key={`right-${pair.id}`}
-                  onClick={() => handleMatch(pair.id)}
-                  disabled={matches[pair.id]}
-                  className={`w-full p-4 rounded-xl text-left transition-all ${
-                    matches[pair.id]
-                      ? 'bg-green-500/20 border-2 border-green-500'
-                      : 'bg-white/10 hover:bg-white/20 border-2 border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <span className="text-white font-medium">{pair.right}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          <div className="mt-8">
-            <h3 className="text-lg font-semibold text-white mb-4">Matched Pairs:</h3>
-            <div className="space-y-3">
-              {pairs.filter(pair => matches[pair.id]).map(pair => (
-                <div key={`matched-${pair.id}`} className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-                  <div className="flex items-center">
-                    <div className="text-2xl mr-3">{pair.emoji}</div>
-                    <div>
-                      <p className="text-white font-medium">{pair.left} → {pair.right}</p>
-                      <p className="text-white/80 text-sm mt-1">{pair.description}</p>
+      maxScore={acts.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Acts */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Kind Acts</h3>
+              <div className="space-y-4">
+                {acts.map(act => (
+                  <button
+                    key={act.id}
+                    onClick={() => handleActSelect(act)}
+                    disabled={isActMatched(act.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isActMatched(act.id)
+                        ? getMatchResult(act.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedAct?.id === act.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{act.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{act.name}</h4>
+                        <p className="text-white/80 text-sm">{act.description}</p>
+                      </div>
                     </div>
-                  </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedAct 
+                    ? `Selected: ${selectedAct.name}` 
+                    : "Select a Kind Act"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedAct || !selectedResponse}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedAct && selectedResponse
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{acts.length}</p>
+                  <p>Matched: {matches.length}/{acts.length}</p>
                 </div>
-              ))}
+              </div>
+            </div>
+
+            {/* Right column - Responses */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Kind Responses</h3>
+              <div className="space-y-4">
+                {responses.map(response => (
+                  <button
+                    key={response.id}
+                    onClick={() => handleResponseSelect(response)}
+                    disabled={isResponseMatched(response.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isResponseMatched(response.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedResponse?.id === response.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{response.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{response.name}</h4>
+                        <p className="text-white/80 text-sm">{response.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {acts.length} kind acts with their responses!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Small acts of kindness make a big difference in making the world a better place!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {acts.length} kind acts correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what kind response would match each helpful act!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

@@ -10,206 +10,260 @@ const PuzzleGlobalLeaders = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matches, setMatches] = useState({});
-  const [completed, setCompleted] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedOrg, setSelectedOrg] = useState(null);
+  const [selectedFocus, setSelectedFocus] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const pairs = [
-    { 
-      id: 1, 
-      left: "UNICEF", 
-      emoji: "👧", 
-      right: "Children", 
-      description: "UNICEF works to protect and support children's rights and wellbeing around the world." 
-    },
-    { 
-      id: 2, 
-      left: "WHO", 
-      emoji: "🩺", 
-      right: "Health", 
-      description: "The World Health Organization leads global efforts to improve health and combat disease." 
-    },
-    { 
-      id: 3, 
-      left: "UNESCO", 
-      emoji: "📚", 
-      right: "Education", 
-      description: "UNESCO promotes education, science, and culture to build peace and sustainable development." 
-    },
-    { 
-      id: 4, 
-      left: "UNHCR", 
-      emoji: "HomeAsylum", 
-      right: "Refugees", 
-      description: "The UN Refugee Agency protects and supports refugees and displaced people worldwide." 
-    },
-    { 
-      id: 5, 
-      left: "FAO", 
-      emoji: "🌾", 
-      right: "Food", 
-      description: "The Food and Agriculture Organization works to eliminate hunger and improve nutrition globally." 
-    }
+  // Global Organizations (left side) - 5 items
+  const organizations = [
+    { id: 1, name: "UNICEF", emoji: "👧", description: "United Nations Children's Fund" },
+    { id: 2, name: "WHO", emoji: "🩺", description: "World Health Organization" },
+    { id: 3, name: "UNESCO", emoji: "📚", description: "United Nations Educational, Scientific and Cultural Organization" },
+    { id: 4, name: "UNHCR", emoji: "HomeAsylum", description: "UN Refugee Agency" },
+    { id: 5, name: "FAO", emoji: "🌾", description: "Food and Agriculture Organization" }
   ];
 
-  const handleMatch = (leftId, rightId) => {
-    // Check if this is a correct match
-    const pair = pairs.find(p => p.left === leftId);
-    const isCorrect = pair && pair.right === rightId;
-    
-    // Update matches state
-    const newMatches = { ...matches, [leftId]: rightId };
+  // Focus Areas (right side) - 5 items
+  const focusAreas = [
+    { id: 2, name: "Health", emoji: "💊", description: "Improving global wellness" },
+    { id: 4, name: "Refugees", emoji: "🏠", description: "Assisting displaced populations" },
+    { id: 3, name: "Education", emoji: "🎓", description: "Promoting learning opportunities" },
+    { id: 5, name: "Food", emoji: "🍎", description: "Ensuring nutrition security" },
+    { id: 1, name: "Children", emoji: "🧸", description: "Protecting and supporting youth" },
+  ];
+
+  // Correct matches
+  const correctMatches = [
+    { orgId: 1, focusId: 1 }, // UNICEF → Children
+    { orgId: 2, focusId: 2 }, // WHO → Health
+    { orgId: 3, focusId: 3 }, // UNESCO → Education
+    { orgId: 4, focusId: 4 }, // UNHCR → Refugees
+    { orgId: 5, focusId: 5 }  // FAO → Food
+  ];
+
+  const handleOrgSelect = (org) => {
+    if (gameFinished) return;
+    setSelectedOrg(org);
+  };
+
+  const handleFocusSelect = (focus) => {
+    if (gameFinished) return;
+    setSelectedFocus(focus);
+  };
+
+  const handleMatch = () => {
+    if (!selectedOrg || !selectedFocus || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      orgId: selectedOrg.id,
+      focusId: selectedFocus.id,
+      isCorrect: correctMatches.some(
+        match => match.orgId === selectedOrg.id && match.focusId === selectedFocus.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
     setMatches(newMatches);
-    
-    // Check if all pairs are matched
-    const allMatched = pairs.every(p => newMatches[p.left] === p.right);
-    
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      
-      if (allMatched) {
-        setTimeout(() => setCompleted(true), 1000);
-      }
-    } else if (allMatched) {
-      // If all matched but some are incorrect, still complete the game
-      setTimeout(() => setCompleted(true), 1000);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === organizations.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedOrg(null);
+    setSelectedFocus(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedOrg(null);
+    setSelectedFocus(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/teens");
   };
 
-  if (completed) {
-    return (
-      <GameShell
-        title="Puzzle: Global Leaders"
-        subtitle="Puzzle Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teens-84"
-        gameType="civic-responsibility"
-        totalLevels={90}
-        currentLevel={84}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
-      
-      maxScore={90} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">✨</div>
-          <h2 className="text-2xl font-bold mb-4">Well Done!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} coins by matching global organizations!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You know your global leaders!
-          </div>
-          <p className="text-white/80">
-            Remember: These organizations work together to address global challenges and improve lives worldwide!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  // Check if an organization is already matched
+  const isOrgMatched = (orgId) => {
+    return matches.some(match => match.orgId === orgId);
+  };
 
-  // Shuffle the right side options
-  const shuffledRights = [...pairs].sort(() => Math.random() - 0.5);
+  // Check if a focus area is already matched
+  const isFocusMatched = (focusId) => {
+    return matches.some(match => match.focusId === focusId);
+  };
+
+  // Get match result for an organization
+  const getMatchResult = (orgId) => {
+    const match = matches.find(m => m.orgId === orgId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Global Leaders"
-      subtitle="Match global organizations with their focuses"
+      subtitle={gameFinished ? "Game Complete!" : `Match Global Organizations with Focus Areas (${matches.length}/${organizations.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="civic-responsibility-teens-84"
+      gameType="civic-responsibility"
+      totalLevels={organizations.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/teens"
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Global Organizations Puzzle</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Left column - Organizations */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Organizations</h3>
-              {pairs.map((pair) => (
-                <div 
-                  key={pair.id}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                    matches[pair.left]
-                      ? 'bg-green-500/20 border-green-500'
-                      : 'bg-white/10 border-white/20 hover:bg-white/20'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-2xl mr-3">{pair.emoji}</div>
-                    <span className="text-white font-medium">{pair.left}</span>
-                  </div>
-                  {matches[pair.left] && (
-                    <div className="mt-2 text-sm text-white/80">
-                      Matched with: {matches[pair.left]}
+      maxScore={organizations.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Global Organizations */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Global Organizations</h3>
+              <div className="space-y-4">
+                {organizations.map(org => (
+                  <button
+                    key={org.id}
+                    onClick={() => handleOrgSelect(org)}
+                    disabled={isOrgMatched(org.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isOrgMatched(org.id)
+                        ? getMatchResult(org.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedOrg?.id === org.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{org.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{org.name}</h4>
+                        <p className="text-white/80 text-sm">{org.description}</p>
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
-            
-            {/* Right column - Focus Areas */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Focus Areas</h3>
-              {shuffledRights.map((pair) => (
-                <div 
-                  key={pair.id}
-                  onClick={() => {
-                    // Find the first unmatched left item
-                    const unmatchedLeft = pairs.find(p => !matches[p.left]);
-                    if (unmatchedLeft) {
-                      handleMatch(unmatchedLeft.left, pair.right);
-                    }
-                  }}
-                  className="p-4 rounded-xl border-2 bg-white/10 border-white/20 hover:bg-white/20 cursor-pointer transition-all"
-                >
-                  <span className="text-white font-medium">{pair.right}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Feedback for matches */}
-          <div className="mt-8 space-y-3">
-            {Object.entries(matches).map(([left, right]) => {
-              const pair = pairs.find(p => p.left === left);
-              const isCorrect = pair && pair.right === right;
-              
-              return (
-                <div 
-                  key={left}
-                  className={`p-3 rounded-lg ${
-                    isCorrect 
-                      ? 'bg-green-500/20 border border-green-500' 
-                      : 'bg-red-500/20 border border-red-500'
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedOrg 
+                    ? `Selected: ${selectedOrg.name}` 
+                    : "Select a Global Organization"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedOrg || !selectedFocus}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedOrg && selectedFocus
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  <div className="flex items-center">
-                    <div className="text-xl mr-2">{pair?.emoji}</div>
-                    <span className="text-white">
-                      {left} → {right} {isCorrect ? '✓' : '✗'}
-                    </span>
-                  </div>
-                  <p className="text-sm text-white/80 mt-1">{pair?.description}</p>
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{organizations.length}</p>
+                  <p>Matched: {matches.length}/{organizations.length}</p>
                 </div>
-              );
-            })}
+              </div>
+            </div>
+
+            {/* Right column - Focus Areas */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Focus Areas</h3>
+              <div className="space-y-4">
+                {focusAreas.map(focus => (
+                  <button
+                    key={focus.id}
+                    onClick={() => handleFocusSelect(focus)}
+                    disabled={isFocusMatched(focus.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isFocusMatched(focus.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedFocus?.id === focus.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{focus.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{focus.name}</h4>
+                        <p className="text-white/80 text-sm">{focus.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">✨</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Outstanding Achievement!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {organizations.length} global organizations with their focus areas!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding global organizations helps you appreciate international cooperation for worldwide challenges!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Exploring!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {organizations.length} global organizations correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each global organization is primarily known for and what issues they address!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

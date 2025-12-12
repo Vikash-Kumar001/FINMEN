@@ -7,14 +7,15 @@ const BloodDonationCampStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // 1 coin per question
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -25,21 +26,18 @@ const BloodDonationCampStory = () => {
           id: "a",
           text: "Stay home since she can't donate",
           emoji: "🏠",
-          description: "That's not helpful. There are many ways to contribute to a blood donation camp even if you can't donate.",
           isCorrect: false
         },
         {
           id: "b",
           text: "Assist with organizing and supporting the camp",
           emoji: "🤝",
-          description: "That's right! Helping with organization, registration, or providing refreshments is valuable support.",
           isCorrect: true
         },
         {
           id: "c",
           text: "Tell others not to donate blood",
           emoji: "🚫",
-          description: "That's not right. Blood donation saves lives, and discouraging it harms those in need.",
           isCorrect: false
         }
       ]
@@ -52,21 +50,18 @@ const BloodDonationCampStory = () => {
           id: "a",
           text: "Ignore them and focus on her own tasks",
           emoji: "😶",
-          description: "That's not compassionate. Offering support to someone who's nervous can make a big difference.",
           isCorrect: false
         },
         {
           id: "b",
           text: "Offer words of encouragement and stay nearby",
           emoji: "🤗",
-          description: "Perfect! Providing emotional support helps nervous donors feel more comfortable and confident.",
           isCorrect: true
         },
         {
           id: "c",
           text: "Tell them to just get over their fear",
           emoji: "😤",
-          description: "That's not supportive. Fear is natural, and dismissing someone's feelings isn't helpful.",
           isCorrect: false
         }
       ]
@@ -79,21 +74,18 @@ const BloodDonationCampStory = () => {
           id: "a",
           text: "Point it out to the coordinator and offer to help restock",
           emoji: "📋",
-          description: "That's right! Being observant and proactive in offering help keeps the camp running smoothly.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Wait for someone else to notice and handle it",
           emoji: "🕰️",
-          description: "That's not proactive. Taking initiative when you see a need helps the entire operation.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Complain about poor organization to other volunteers",
           emoji: "😠",
-          description: "That's not constructive. Criticizing doesn't solve problems and can create negativity.",
           isCorrect: false
         }
       ]
@@ -106,21 +98,18 @@ const BloodDonationCampStory = () => {
           id: "a",
           text: "That every contribution, big or small, matters",
           emoji: "🌟",
-          description: "Perfect! Recognizing that all contributions have value encourages continued community involvement.",
           isCorrect: true
         },
         {
           id: "b",
           text: "That she should wait until she's old enough to donate",
           emoji: "⏳",
-          description: "That's not the main point. While age restrictions exist, there are always ways to contribute regardless of age.",
           isCorrect: false
         },
         {
           id: "c",
           text: "That organizing events is more important than participating",
           emoji: "📋",
-          description: "That's not right. Both organizing and participating are valuable, and one isn't inherently more important.",
           isCorrect: false
         }
       ]
@@ -129,49 +118,69 @@ const BloodDonationCampStory = () => {
       id: 5,
       text: "How might she apply what she learned to future volunteer opportunities?",
       options: [
-        {
-          id: "a",
-          text: "Look for ways to support causes even when she can't directly participate",
-          emoji: "🌱",
-          description: "That's right! This approach allows her to contribute meaningfully to causes she cares about in various ways.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Only volunteer for activities she can personally benefit from",
           emoji: "🎁",
-          description: "That's not the spirit of volunteering. Volunteer work is about helping others and contributing to the community.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Avoid volunteering until she's old enough for all activities",
           emoji: "😴",
-          description: "That's not helpful. There are always opportunities to volunteer and make a positive impact regardless of age.",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Look for ways to support causes even when she can't directly participate",
+          emoji: "🌱",
+          isCorrect: true
+        },
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: optionId,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect;
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
+  };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
@@ -183,56 +192,88 @@ const BloodDonationCampStory = () => {
   return (
     <GameShell
       title="Blood Donation Camp Story"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
       score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      showGameOver={showResult}
       gameId="civic-responsibility-teens-51"
       gameType="civic-responsibility"
-      totalLevels={60}
-      currentLevel={51}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/civic-responsibility/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/civic-responsibility/teens"
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <h2 className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-4">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
-                    )}
-                  </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">💉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Community Service Hero!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand how to contribute to your community even when you can't directly participate!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
                 </div>
-              </button>
-            ))}
+                <p className="text-white/80 text-sm md:text-base">
+                  Great job! You know that everyone can contribute to important causes in meaningful ways!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, there are always ways to help your community, regardless of your age or circumstances!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows how to contribute to community service activities.
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

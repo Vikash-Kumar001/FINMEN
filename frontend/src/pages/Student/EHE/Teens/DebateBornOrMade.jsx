@@ -146,7 +146,7 @@ const DebateBornOrMade = () => {
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
-      showCorrectAnswerFeedback(2, true);
+      showCorrectAnswerFeedback(1, true);
     }
 
     setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
@@ -173,7 +173,7 @@ const DebateBornOrMade = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length * 2}
+      score={choices.filter(c => c.isCorrect).length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -190,7 +190,7 @@ const DebateBornOrMade = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Debate {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length * 2}</span>
+            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
           </div>
 
           <div className="text-center mb-6">

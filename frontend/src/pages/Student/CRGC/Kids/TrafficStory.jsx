@@ -7,14 +7,15 @@ const TrafficStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // 1 coin per question
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -25,21 +26,18 @@ const TrafficStory = () => {
           id: "a",
           text: "Cross quickly before cars come",
           emoji: "🏃",
-          description: "That's dangerous! Red lights mean stop for a reason - to keep pedestrians safe.",
           isCorrect: false
         },
         {
           id: "b",
           text: "Wait patiently for the green light",
           emoji: "✋",
-          description: "That's right! Following traffic signals keeps everyone safe.",
           isCorrect: true
         },
         {
           id: "c",
           text: "Run back home to avoid crossing",
           emoji: "🏠",
-          description: "That's not necessary. Traffic lights are designed to help us cross safely when they turn green.",
           isCorrect: false
         }
       ]
@@ -49,24 +47,22 @@ const TrafficStory = () => {
       text: "Your friend wants to jaywalk because they're in a hurry. What do you do?",
       options: [
         {
-          id: "a",
-          text: "Follow your friend to jaywalk",
-          emoji: "👥",
-          description: "That's not safe. Following others in breaking rules can put everyone at risk.",
-          isCorrect: false
-        },
-        {
           id: "b",
           text: "Tell your friend it's dangerous and wait for the signal",
           emoji: "🚦",
-          description: "Perfect! Being a good friend means keeping each other safe.",
           isCorrect: true
         },
+        {
+          id: "a",
+          text: "Follow your friend to jaywalk",
+          emoji: "👥",
+          isCorrect: false
+        },
+        
         {
           id: "c",
           text: "Ignore your friend and walk away",
           emoji: "🚶",
-          description: "While safety is important, being a good friend means communicating about safety concerns.",
           isCorrect: false
         }
       ]
@@ -75,25 +71,23 @@ const TrafficStory = () => {
       id: 3,
       text: "You see a classmate riding a bicycle without a helmet. What should you do?",
       options: [
-        {
-          id: "a",
-          text: "Tell them helmets are important for safety",
-          emoji: "⛑️",
-          description: "Great! Helmets protect the head in case of accidents.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Join them without a helmet since they're not wearing one",
           emoji: "🚴",
-          description: "That's not safe. Safety rules apply to everyone regardless of what others are doing.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Tell them helmets are important for safety",
+          emoji: "⛑️",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Tell the teacher immediately",
           emoji: "👩‍🏫",
-          description: "While safety is important, it's better to first kindly remind your friend about safety rules.",
           isCorrect: false
         }
       ]
@@ -106,21 +100,18 @@ const TrafficStory = () => {
           id: "a",
           text: "Ask the driver to slow down for safety",
           emoji: "🛑",
-          description: "That's right! Everyone in the car should speak up about safety concerns.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Stay quiet to avoid conflict",
           emoji: "🤐",
-          description: "Safety is more important than avoiding conflict. Speaking up could prevent an accident.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Start screaming to get attention",
           emoji: "😱",
-          description: "That's not helpful. Calmly discussing safety concerns is more effective.",
           isCorrect: false
         }
       ]
@@ -133,21 +124,18 @@ const TrafficStory = () => {
           id: "a",
           text: "Ignore the sign and enter anyway",
           emoji: "🚫",
-          description: "That's not safe. Signs are there for important reasons, often related to safety or traffic flow.",
           isCorrect: false
         },
         {
           id: "b",
           text: "Find another route or ask for directions",
           emoji: "🗺️",
-          description: "Excellent! Following signs and finding alternative routes keeps everyone safe and prevents confusion.",
           isCorrect: true
         },
         {
           id: "c",
           text: "Climb over the barrier to get through",
           emoji: "🧗",
-          description: "That's dangerous. Barriers are there for safety reasons and should not be crossed.",
           isCorrect: false
         }
       ]
@@ -155,23 +143,45 @@ const TrafficStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: optionId,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect;
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
+  };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
@@ -183,56 +193,88 @@ const TrafficStory = () => {
   return (
     <GameShell
       title="Traffic Story"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
       score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      showGameOver={showResult}
       gameId="civic-responsibility-kids-71"
       gameType="civic-responsibility"
-      totalLevels={80}
-      currentLevel={71}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/civic-responsibility/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/civic-responsibility/kids"
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <h2 className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
-                    )}
-                  </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🚦</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Traffic Safety Expert!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand how to stay safe on the roads!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
                 </div>
-              </button>
-            ))}
+                <p className="text-white/80 text-sm md:text-base">
+                  Great job! You know how to follow traffic rules and keep yourself and others safe!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, following traffic rules keeps everyone safe!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows how to follow traffic rules safely.
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

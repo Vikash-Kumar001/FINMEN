@@ -7,14 +7,15 @@ const EducationStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // 1 coin per question
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -25,15 +26,19 @@ const EducationStory = () => {
           id: "a",
           text: "Yes, engineering is not for girls",
           emoji: "🚫",
-          description: "That's not right. Engineering is a field that anyone can pursue regardless of gender.",
           isCorrect: false
         },
         {
           id: "b",
           text: "No, support her dreams",
           emoji: "🎓",
-          description: "That's right! Everyone should have the opportunity to pursue their educational goals regardless of gender.",
           isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Tell her to study something easier",
+          emoji: "📝",
+          isCorrect: false
         }
       ]
     },
@@ -45,14 +50,18 @@ const EducationStory = () => {
           id: "a",
           text: "Encourage her to continue in STEM fields",
           emoji: "🔬",
-          description: "Perfect! Supporting girls in STEM fields helps break down gender barriers in education.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Tell her to focus on arts instead",
           emoji: "🎨",
-          description: "That's not inclusive. Girls should be encouraged to pursue any field they're interested in and excel at.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ignore her academic performance",
+          emoji: "😴",
           isCorrect: false
         }
       ]
@@ -65,15 +74,19 @@ const EducationStory = () => {
           id: "a",
           text: "Yes, boys are naturally better at math",
           emoji: "♂️",
-          description: "That's a harmful stereotype. There's no scientific basis for claiming one gender is naturally better at math.",
           isCorrect: false
         },
         {
           id: "b",
           text: "No, educational opportunities should be equal",
           emoji: "⚖️",
-          description: "Great choice! Educational opportunities should be available to all students regardless of gender.",
           isCorrect: true
+        },
+        {
+          id: "c",
+          text: "It depends on the school's budget",
+          emoji: "💰",
+          isCorrect: false
         }
       ]
     },
@@ -82,18 +95,23 @@ const EducationStory = () => {
       text: "A girl wants to attend university, but her family expects her to marry instead. What should she do?",
       options: [
         {
-          id: "a",
-          text: "Follow family expectations to avoid conflict",
-          emoji: "🏠",
-          description: "That's not empowering. Everyone should have the right to make their own life choices.",
-          isCorrect: false
-        },
-        {
           id: "b",
           text: "Pursue her education and communicate with her family",
           emoji: "📚",
-          description: "Wonderful! Pursuing education while maintaining family relationships shows strength and determination.",
           isCorrect: true
+        },
+        {
+          id: "a",
+          text: "Follow family expectations to avoid conflict",
+          emoji: "🏠",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "Run away from home",
+          emoji: "🏃",
+          isCorrect: false
         }
       ]
     },
@@ -105,38 +123,64 @@ const EducationStory = () => {
           id: "a",
           text: "Yes, boys need more support in education",
           emoji: "💰",
-          description: "That's not equitable. Scholarships should be based on merit and need, not gender.",
           isCorrect: false
         },
         {
           id: "b",
           text: "No, scholarships should be gender-neutral",
           emoji: "✅",
-          description: "Excellent! Scholarships should be available to all qualified students regardless of gender.",
           isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Only if boys have lower grades",
+          emoji: "📉",
+          isCorrect: false
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: optionId,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect;
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
+  };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
@@ -148,56 +192,88 @@ const EducationStory = () => {
   return (
     <GameShell
       title="Education Story"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
       score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      showGameOver={showResult}
       gameId="civic-responsibility-teens-21"
       gameType="civic-responsibility"
-      totalLevels={30}
-      currentLevel={21}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/civic-responsibility/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/civic-responsibility/teens"
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <h2 className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
-                    )}
-                  </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎓</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Educational Equality Champion!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand the importance of equal educational opportunities for all!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
                 </div>
-              </button>
-            ))}
+                <p className="text-white/80 text-sm md:text-base">
+                  Great job! You know that everyone deserves equal access to education regardless of gender!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, equal educational opportunities help everyone reach their potential!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows how to promote equal educational opportunities.
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

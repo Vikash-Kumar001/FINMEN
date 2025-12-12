@@ -452,8 +452,10 @@ const App = () => {
     location.pathname.startsWith("/student/ai-for-all/teen/") ||
     location.pathname.startsWith("/student/ehe/kids/") ||
     location.pathname.startsWith("/student/ehe/teen/") ||
+    location.pathname.startsWith("/student/ehe/teens/") ||
     location.pathname.startsWith("/student/civic-responsibility/kids/") ||
     location.pathname.startsWith("/student/civic-responsibility/teen/") ||
+    location.pathname.startsWith("/student/civic-responsibility/teens/") ||
     location.pathname.startsWith("/games/") ||
     location.pathname.startsWith("/tools/") ||
     location.pathname.startsWith("/learn/") ||

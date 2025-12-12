@@ -15,75 +15,151 @@ const QuizOnCyberbullying = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "What is cyberbullying?",
+      emoji: "💻",
       options: [
-        { id: "a", text: "Online teasing, harassment, or abuse" },
-        { id: "b", text: "Playing sports online" },
-        { id: "c", text: "Studying for exams using technology" }
-      ],
-      correctAnswer: "a",
-      explanation: "Cyberbullying involves using digital technologies to tease, harass, or abuse others. It can happen through social media, messaging apps, gaming platforms, and mobile phones."
+        {
+          id: "a",
+          text: "Online teasing, harassment, or abuse",
+          emoji: "📱",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Playing sports online",
+          emoji: "🎮",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Studying for exams using technology",
+          emoji: "📚",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "Which of these is an example of cyberbullying?",
+      emoji: "📲",
       options: [
-        { id: "a", text: "Sending a kind message to a friend" },
-        { id: "b", text: "Sharing embarrassing photos of someone without their permission" },
-        { id: "c", text: "Posting about your weekend activities" }
-      ],
-      correctAnswer: "b",
-      explanation: "Sharing embarrassing photos without someone's permission is a form of cyberbullying that violates their privacy and can cause emotional harm."
+        {
+          id: "a",
+          text: "Sending a kind message to a friend",
+          emoji: "💌",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Sharing embarrassing photos of someone without their permission",
+          emoji: "📸",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Posting about your weekend activities",
+          emoji: "📅",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "What should you do if you witness cyberbullying?",
+      emoji: "👁️",
       options: [
-        { id: "a", text: "Join in to fit in with the crowd" },
-        { id: "b", text: "Ignore it completely" },
-        { id: "c", text: "Report it and support the victim" }
-      ],
-      correctAnswer: "c",
-      explanation: "When you witness cyberbullying, it's important to report it to a trusted adult and offer support to the victim. This helps stop the bullying and provides comfort to those affected."
+        {
+          id: "a",
+          text: "Join in to fit in with the crowd",
+          emoji: "👥",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Ignore it completely",
+          emoji: "🙈",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Report it and support the victim",
+          emoji: "👮",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
       text: "Why is cyberbullying particularly harmful?",
+      emoji: "⚠️",
       options: [
-        { id: "a", text: "It can happen 24/7 and reach a wide audience" },
-        { id: "b", text: "It only happens during school hours" },
-        { id: "c", text: "It's easier to ignore than face-to-face bullying" }
-      ],
-      correctAnswer: "a",
-      explanation: "Cyberbullying can happen at any time and reach a large audience quickly, making it especially harmful because victims may feel like they can't escape it."
+        {
+          id: "a",
+          text: "It can happen 24/7 and reach a wide audience",
+          emoji: "⏰",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "It only happens during school hours",
+          emoji: "🏫",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "It's easier to ignore than face-to-face bullying",
+          emoji: "😌",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       text: "What is a healthy way to deal with cyberbullying?",
+      emoji: "🛡️",
       options: [
-        { id: "a", text: "Retaliate by bullying the bully back" },
-        { id: "b", text: "Talk to a trusted adult and save evidence" },
-        { id: "c", text: "Keep it a secret to avoid embarrassment" }
-      ],
-      correctAnswer: "b",
-      explanation: "Talking to a trusted adult and saving evidence of cyberbullying are important steps in addressing it effectively. This helps ensure proper action is taken and provides support for the victim."
+        {
+          id: "a",
+          text: "Retaliate by bullying the bully back",
+          emoji: "👊",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Talk to a trusted adult and save evidence",
+          emoji: "👨‍🏫",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Keep it a secret to avoid embarrassment",
+          emoji: "🤐",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || showFeedback) return;
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
     
     setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correctAnswer;
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
     
     setShowFeedback(true);
@@ -93,102 +169,97 @@ const QuizOnCyberbullying = () => {
         setCurrentQuestion(prev => prev + 1);
         setSelectedOption(null);
         setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 2000);
+    }, isCorrect ? 1000 : 800);
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/teens");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = coins;
 
   return (
     <GameShell
       title="Quiz on Cyberbullying"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={finalScore}
       gameId="civic-responsibility-teens-32"
       gameType="civic-responsibility"
       totalLevels={40}
       currentLevel={32}
       showConfetti={gameFinished}
       backPath="/games/civic-responsibility/teens"
-    
       maxScore={questions.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="space-y-3">
-            {getCurrentQuestion().options.map(option => {
-              const isSelected = selectedOption === option.id;
-              const isCorrect = option.id === getCurrentQuestion().correctAnswer;
-              const showCorrect = showFeedback && isCorrect;
-              const showIncorrect = showFeedback && isSelected && !isCorrect;
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
               
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleOptionSelect(option.id)}
-                  disabled={showFeedback}
-                  className={`w-full p-4 rounded-xl text-left transition-all text-white ${
-                    showCorrect
-                      ? 'bg-green-500/20 border-2 border-green-500'
-                      : showIncorrect
-                      ? 'bg-red-500/20 border-2 border-red-500'
-                      : isSelected
-                      ? 'bg-blue-500/20 border-2 border-blue-500'
-                      : 'bg-white/10 border border-white/20 hover:bg-white/20'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-lg mr-3 font-bold">
-                      {option.id.toUpperCase()}.
-                    </div>
-                    <div>{option.text}</div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {showFeedback && (
-            <div className={`mt-6 p-4 rounded-xl ${
-              selectedOption === getCurrentQuestion().correctAnswer
-                ? 'bg-green-500/20 border border-green-500/30'
-                : 'bg-red-500/20 border border-red-500/30'
-            }`}>
-              <p className={`font-semibold ${
-                selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'text-green-300'
-                  : 'text-red-300'
-              }`}>
-                {selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'Correct! 🎉'
-                  : 'Not quite right!'}
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
-              <p className="text-white/90 mt-2">
-                {getCurrentQuestion().explanation}
-              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        ) : null}
       </div>
     </GameShell>
   );

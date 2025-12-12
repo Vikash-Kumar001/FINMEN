@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const ReflexKindness = () => {
   const navigate = useNavigate();
@@ -10,232 +13,282 @@ const ReflexKindness = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(5);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedback, setFeedback] = useState({ correct: false, message: '' });
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
   const questions = [
     {
       id: 1,
-      text: "Quick! Tap ❤️ for 'Sharing Snacks' or ❌ for 'Laughing at Friend'",
-      correctAnswer: '❤️',
+      question: "Which action shows kindness to a friend who is sad?",
+      emoji: "😢",
+      correctAnswer: "Listen and comfort them",
+      options: [
+        { text: "Ignore them", isCorrect: false },
+        { text: "Make fun of them", isCorrect: false },
+        { text: "Listen and comfort them", isCorrect: true },
+        { text: "Tell others about their feelings", isCorrect: false }
+      ],
       feedback: {
-        correct: "Great job! Sharing snacks shows kindness and generosity!",
-        incorrect: "Remember, laughing at friends isn't kind. Sharing is much better!"
+        correct: "Great job! Listening and comforting someone shows empathy and kindness!",
+        incorrect: "Remember, ignoring or making fun of someone who is sad isn't kind. Listening and comforting them is much better!"
       }
     },
     {
       id: 2,
-      text: "Tap ❤️ for 'Helping Classmate' or ❌ for 'Ignoring Someone in Need'",
-      correctAnswer: '❤️',
+      question: "What should you do if someone drops their books?",
+      emoji: "📚",
+      correctAnswer: "Help pick them up",
+      options: [
+        { text: "Step on them", isCorrect: false },
+        { text: "Help pick them up", isCorrect: true },
+        { text: "Laugh at them", isCorrect: false },
+        { text: "Walk away", isCorrect: false }
+      ],
       feedback: {
-        correct: "Excellent! Helping classmates shows empathy and kindness!",
-        incorrect: "Don't forget to help others when they need it!"
+        correct: "Excellent! Helping someone pick up their books shows kindness and consideration!",
+        incorrect: "Don't forget to help others when they need it! Walking away or laughing isn't kind."
       }
     },
     {
       id: 3,
-      text: "Quick! Tap ❤️ for 'Saying Sorry' or ❌ for 'Blaming Others'",
-      correctAnswer: '❤️',
+      question: "How should you react if someone says sorry to you?",
+      emoji: "🙏",
+      correctAnswer: "Accept their apology kindly",
+      options: [
+        { text: "Yell at them", isCorrect: false },
+        { text: "Ignore them", isCorrect: false },
+        { text: "Accept their apology kindly", isCorrect: true },
+        { text: "Get revenge", isCorrect: false }
+      ],
       feedback: {
-        correct: "Perfect! Taking responsibility and saying sorry shows maturity!",
-        incorrect: "Blaming others doesn't solve problems. Taking responsibility is better!"
+        correct: "Perfect! Accepting apologies kindly shows maturity and forgiveness!",
+        incorrect: "Yelling or getting revenge doesn't solve problems. Accepting apologies kindly is better!"
       }
     },
     {
       id: 4,
-      text: "Tap ❤️ for 'Including Everyone' or ❌ for 'Leaving Someone Out'",
-      correctAnswer: '❤️',
+      question: "What's the best way to include a new student?",
+      emoji: "👋",
+      correctAnswer: "Invite them to join your group",
+      options: [
+        { text: "Leave them out", isCorrect: false },
+        { text: "Invite them to join your group", isCorrect: true },
+        { text:"Make fun of them", isCorrect: false },
+        { text: "Talk about them behind their back", isCorrect: false }
+      ],
       feedback: {
-        correct: "Well done! Including everyone makes everyone feel welcome!",
-        incorrect: "Leaving people out hurts their feelings. Inclusion is important!"
+        correct: "Well done! Inviting new students to join your group makes everyone feel welcome!",
+        incorrect: "Leaving people out or talking about them behind their backs hurts feelings. Inclusion is important!"
       }
     },
     {
       id: 5,
-      text: "Quick! Tap ❤️ for 'Complimenting' or ❌ for 'Making Fun of Others'",
-      correctAnswer: '❤️',
+      question: "How can you spread positivity in your classroom?",
+      emoji: "😊",
+      correctAnswer: "Give genuine compliments",
+      options: [
+        { text: "Gossip about others", isCorrect: false },
+        { text: "Give genuine compliments", isCorrect: true },
+        { text: "Make fun of classmates", isCorrect: false },
+        { text: "Ignore good things", isCorrect: false }
+      ],
       feedback: {
-        correct: "Awesome! Giving compliments builds others up and spreads positivity!",
-        incorrect: "Making fun of others brings them down. Compliments are much better!"
+        correct: "Awesome! Giving genuine compliments builds others up and spreads positivity!",
+        incorrect: "Making fun of others or gossiping brings people down. Genuine compliments are much better!"
       }
     }
   ];
 
-  // Start the game automatically when component mounts
   useEffect(() => {
-    if (!gameStarted) {
-      startGame();
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
     }
   }, []);
 
+  // Timer effect
   useEffect(() => {
-    if (gameStarted && timeLeft > 0 && !showFeedback) {
-      const timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-      return () => clearTimeout(timer);
-    } 
-  }, [timeLeft, gameStarted, showFeedback]);
-
-  const startGame = () => {
-    setGameStarted(true);
-  };
-
-  const handleAnswer = (answer) => {
-    const currentQ = questions[currentQuestion];
-    const isCorrect = answer === currentQ.correctAnswer;
-    
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-      setFeedback({ correct: true, message: currentQ.feedback.correct });
     } else {
-      setFeedback({ correct: false, message: currentQ.feedback.incorrect });
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     }
 
-    setShowFeedback(true);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
+    resetFeedback();
+  };
+
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const currentQuestion = questions[currentRound - 1];
+    const isCorrect = option.isCorrect;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
 
     setTimeout(() => {
-      setShowFeedback(false);
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setTimeLeft(5);
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
       } else {
-        setGameFinished(true);
+        setGameState("finished");
       }
-    }, 2000);
+    }, 500);
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/kids");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
-  // Show loading state while game starts
-  if (!gameStarted) {
-    return (
-      <GameShell
-        title="Reflex Kindness"
-      score={coins}
-        subtitle="Loading..."
-        backPath="/games/civic-responsibility/kids"
-      
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="flex items-center justify-center min-h-[300px]">
-          <div className="animate-pulse text-center">
-            <div className="text-6xl mb-4">⏱️</div>
-            <p className="text-white">Starting game...</p>
-          </div>
-        </div>
-      </GameShell>
-    );
-  }
-
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Reflex Kindness"
-        subtitle="Game Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        
-        gameId="civic-responsibility-kids-3"
-        gameType="civic-responsibility"
-        totalLevels={10}
-        currentLevel={3}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/kids"
-      >
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🎉</div>
-          <h2 className="text-2xl font-bold mb-4">Great Job!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} out of {questions.length} points!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg">
-            Keep spreading kindness!
-          </div>
-        </div>
-      </GameShell>
-    );
-  }
+  const finalScore = score;
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Kindness"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Quick kindness choices!` : "Quick kindness choices!"}
+      onNext={handleNext}
+      nextEnabled={gameState === "finished"}
+      showGameOver={gameState === "finished"}
+      score={finalScore}
+      gameId="civic-responsibility-kids-3"
+      gameType="civic-responsibility"
+      totalLevels={TOTAL_ROUNDS}
+      currentLevel={currentRound}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
+      flashPoints={flashPoints}
       backPath="/games/civic-responsibility/kids"
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex flex-col items-center justify-center min-h-[300px]">
-            <div className="flex justify-between items-center w-full mb-8">
-              <div className="bg-blue-500/20 px-4 py-2 rounded-full">
-                <span className="text-white font-bold">{timeLeft}s</span>
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={TOTAL_ROUNDS} // Max score is total number of questions (all correct)
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">❤️🙏😊👋😢</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Quick kindness choices!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
-              <div className="bg-yellow-500/20 px-4 py-2 rounded-full">
-                <span className="text-yellow-400 font-bold">Score: {coins}</span>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
               </div>
             </div>
-            
-            <div className="text-center mb-10">
-              <div className="text-6xl mb-6 bg-white/10 p-6 rounded-2xl inline-block">
-                <span className="text-white">{getCurrentQuestion().text.split(' ')[0]}</span>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+              
+              <div className="bg-gray-800/50 rounded-xl p-12 mb-6 flex justify-center items-center">
+                <div className="text-9xl animate-pulse">{currentQuestion.emoji}</div>
               </div>
-              <p className="text-xl text-white mt-4">
-                {getCurrentQuestion().text.split(' ').slice(1).join(' ')}
-              </p>
-            </div>
-            
-            {showFeedback ? (
-              <div className={`p-6 rounded-2xl text-center mb-8 w-full max-w-md mx-auto ${
-                feedback.correct 
-                  ? 'bg-green-500/20 border border-green-500/30' 
-                  : 'bg-red-500/20 border border-red-500/30'
-              }`}>
-                <p className={`text-lg ${feedback.correct ? 'text-green-300' : 'text-red-300'}`}>
-                  {feedback.message}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-4 w-full max-w-md mx-auto">
-                {['❤️', '❌'].map((emoji) => (
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={emoji}
-                    onClick={() => handleAnswer(emoji)}
-                    disabled={showFeedback}
-                    className="bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-4xl p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 active:scale-95 text-white"
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    {emoji}
+                    {option.text}
                   </button>
                 ))}
               </div>
-            )}
-            
-            <div className="mt-8 w-full max-w-md">
-              <div className="bg-white/10 rounded-full h-3 w-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-1000 ease-linear rounded-full"
-                  style={{ width: `${(timeLeft / 5) * 100}%` }}
-                ></div>
-              </div>
-              <p className="text-center text-white/70 text-sm mt-2">
-                Time remaining: {timeLeft}s
+            </div>
+          </div>
+        )}
+
+        {gameState === "finished" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <h2 className="text-3xl font-bold text-white mb-4">Game Over!</h2>
+            <p className="text-xl text-white/80 mb-2">Your final score: <span className="text-yellow-400 font-bold">{finalScore}</span>/{TOTAL_ROUNDS}</p>
+            <p className="text-white/80 mb-6">You earned {finalScore} coins!</p>
+            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl p-4 border border-white/10">
+              <h3 className="text-lg font-semibold text-white mb-2">How did you do?</h3>
+              <p className="text-white/80">
+                {finalScore >= 4 ? "Excellent job! You're a kindness expert!" : 
+                 finalScore >= 3 ? "Good work! Keep practicing kindness!" : 
+                 "Keep practicing acts of kindness and you'll improve!"}
               </p>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

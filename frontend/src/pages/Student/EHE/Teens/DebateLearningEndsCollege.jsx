@@ -13,7 +13,7 @@ const DebateLearningEndsCollege = () => {
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const coinsPerLevel = 1; // Set to 1 for +1 coin per correct answer
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
@@ -28,47 +28,45 @@ const DebateLearningEndsCollege = () => {
       id: 1,
       text: "Does learning stop after getting a degree?",
       options: [
-        { id: "a", text: "No, it continues throughout life", correct: true },
-        { id: "b", text: "Yes, completely stops", correct: false },
-        { id: "c", text: "Only in certain fields", correct: false },
-        
+        { id: "a", text: "No, it continues throughout life", correct: true, emoji: "✅" },
+        { id: "b", text: "Yes, completely stops", correct: false, emoji: "❌" },
+        { id: "c", text: "Only in certain fields", correct: false, emoji: "⚠️" }
       ]
     },
     {
       id: 2,
       text: "Why is lifelong learning important in today's world?",
       options: [
-        { id: "a", text: "Rapid changes require constant adaptation", correct: true },
-        { id: "b", text: "Things never change", correct: false },
-        { id: "c", text: "Knowledge becomes obsolete slowly", correct: false },
-    
+        { id: "b", text: "Things never change", correct: false, emoji: "⏸️" },
+        { id: "a", text: "Rapid changes require constant adaptation", correct: true, emoji: "⚡" },
+        { id: "c", text: "Knowledge becomes obsolete slowly", correct: false, emoji: "🐌" }
       ]
     },
     {
       id: 3,
       text: "What is a growth mindset in learning?",
       options: [
-        { id: "a", text: "Belief that abilities can be developed", correct: true },
-        { id: "b", text: "Belief that talents are fixed", correct: false },
-        { id: "c", text: "Avoiding challenges", correct: false },
+        { id: "a", text: "Belief that abilities can be developed", correct: true, emoji: "🌱" },
+        { id: "b", text: "Belief that talents are fixed", correct: false, emoji: "🗿" },
+        { id: "c", text: "Avoiding challenges", correct: false, emoji: "🛡️" }
       ]
     },
     {
       id: 4,
       text: "How can professionals stay relevant in their careers?",
       options: [
-        { id: "a", text: "Continuously update skills and knowledge", correct: true },
-        { id: "b", text: "Rely only on past education", correct: false },
-        { id: "c", text: "Avoid new technologies", correct: false },
+        { id: "b", text: "Rely only on past education", correct: false, emoji: "📚" },
+        { id: "a", text: "Continuously update skills and knowledge", correct: true, emoji: "📈" },
+        { id: "c", text: "Avoid new technologies", correct: false, emoji: "📵" }
       ]
     },
     {
       id: 5,
       text: "What are benefits of being a lifelong learner?",
       options: [
-        { id: "a", text: "Better opportunities and personal fulfillment", correct: true },
-        { id: "b", text: "Increased stress and pressure", correct: false },
-        { id: "c", text: "Less job security", correct: false },
+        { id: "b", text: "Increased stress and pressure", correct: false, emoji: "😫" },
+        { id: "c", text: "Less job security", correct: false, emoji: "📉" },
+        { id: "a", text: "Better opportunities and personal fulfillment", correct: true, emoji: "🌟" },
       ]
     }
   ];
@@ -77,10 +75,10 @@ const DebateLearningEndsCollege = () => {
     resetFeedback();
     
     if (option.correct) {
-      const newCoins = coins + coinsPerLevel;
+      const newCoins = coins + 1; // Award 1 coin per correct answer
       setCoins(newCoins);
       setFinalScore(finalScore + 1);
-      showCorrectAnswerFeedback(newCoins);
+      showCorrectAnswerFeedback(1, true); // Show feedback for 1 point
     }
     
     setTimeout(() => {
@@ -100,16 +98,16 @@ const DebateLearningEndsCollege = () => {
     <GameShell
       title="Debate: Learning Ends After College?"
       score={coins}
-      subtitle={showResult ? "Debate Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={showResult ? "Debate Complete!" : `Debate ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
+      showGameOver={showResult}
       gameId="ehe-teen-96"
       gameType="ehe"
       totalLevels={questions.length}
       currentLevel={currentQuestion + 1}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       onNext={handleNext}
@@ -121,26 +119,31 @@ const DebateLearningEndsCollege = () => {
           <div className="space-y-4 md:space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
-                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-white/80 text-sm md:text-base">Debate {currentQuestion + 1}/{questions.length}</span>
                 <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
               </div>
               
-              <h3 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-4">📚</div>
+                <h3 className="text-2xl font-bold text-white mb-2">Lifelong Learning Debate</h3>
+              </div>
+
+              <p className="text-white text-lg mb-6">
                 {questions[currentQuestion].text}
-              </h3>
+              </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-6">
                 {questions[currentQuestion].options.map((option) => (
                   <button
                     key={option.id}
                     onClick={() => handleAnswerSelect(option)}
-                    className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
+                    className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
                   >
                     <div className="flex items-center">
-                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        {option.id}
-                      </span>
-                      <span className="font-medium">{option.text}</span>
+                      <div className="text-2xl mr-4">{option.emoji}</div>
+                      <div>
+                        <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                      </div>
                     </div>
                   </button>
                 ))}
@@ -152,19 +155,17 @@ const DebateLearningEndsCollege = () => {
             <div className="inline-block p-4 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 mb-6">
               <div className="bg-white p-2 rounded-full">
                 <div className="text-4xl">
-                  {finalScore >= 3 ? "🏆" : "📚"}
+                  🏆
                 </div>
               </div>
             </div>
             
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-              {finalScore >= 3 ? "Great Job!" : "Good Effort!"}
+              Excellent Debate!
             </h2>
             
             <p className="text-white/80 mb-6 max-w-2xl mx-auto">
-              {finalScore >= 3 
-                ? "You've shown excellent understanding of lifelong learning and growth mindset!" 
-                : "You're on the right track! Review the concepts and try again."}
+              You understand the importance of lifelong learning and growth mindset!
             </p>
             
             <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 border border-white/20 max-w-md mx-auto mb-6">
@@ -177,6 +178,10 @@ const DebateLearningEndsCollege = () => {
                 <span className="text-xl font-bold text-yellow-400">{coins}</span>
               </div>
             </div>
+            
+            <p className="text-white/80 max-w-2xl mx-auto">
+              Remember: Learning is a lifelong journey that continues well beyond college!
+            </p>
           </div>
         )}
       </div>

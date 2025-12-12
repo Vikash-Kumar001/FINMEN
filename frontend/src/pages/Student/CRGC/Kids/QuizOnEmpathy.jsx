@@ -15,75 +15,152 @@ const QuizOnEmpathy = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Empathy means?",
+      text: "What does empathy mean?",
+      emoji: "❤️",
       options: [
-        { id: "a", text: "Feeling with others" },
-        { id: "b", text: "Ignoring others" },
-        { id: "c", text: "Thinking only about yourself" }
-      ],
-      correctAnswer: "a",
-      explanation: "Empathy is the ability to understand and share the feelings of others. It helps us connect with people and show compassion."
+        {
+          id: "a",
+          text: "Understanding others' feelings",
+          emoji: "💭",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Thinking only about yourself",
+          emoji: "👤",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ignoring others completely",
+          emoji: "🔇",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "Which action shows empathy?",
+      emoji: "🤝",
       options: [
-        { id: "a", text: "Laughing at someone's mistake" },
-        { id: "b", text: "Helping a friend who is sad" },
-        { id: "c", text: "Ignoring someone who needs help" }
-      ],
-      correctAnswer: "b",
-      explanation: "Helping a friend who is sad shows empathy because you recognize their feelings and want to support them."
+        {
+          id: "a",
+          text: "Laughing at someone's mistake",
+          emoji: "😂",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Helping a friend who is sad",
+          emoji: "🤗",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Ignoring someone who needs help",
+          emoji: "🙈",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "Why is empathy important?",
+      emoji: "🌟",
       options: [
-        { id: "a", text: "It makes you feel superior" },
-        { id: "b", text: "It helps you ignore others" },
-        { id: "c", text: "It helps build better relationships" }
-      ],
-      correctAnswer: "c",
-      explanation: "Empathy helps us understand others, which leads to stronger, more meaningful relationships and a more compassionate community."
+        {
+          id: "a",
+          text: "It makes you feel superior",
+          emoji: "👆",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "It helps build better relationships",
+          emoji: "💞",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "It helps you ignore others",
+          emoji: "👂",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
       text: "Which situation requires empathy?",
+      emoji: "🤔",
       options: [
-        { id: "a", text: "Getting a new toy" },
-        { id: "b", text: "A classmate fails a test" },
-        { id: "c", text: "Winning a game" }
-      ],
-      correctAnswer: "b",
-      explanation: "When a classmate fails a test, they might feel disappointed or upset. Showing empathy helps them feel supported during difficult times."
+        {
+          id: "a",
+          text: "Getting a new toy",
+          emoji: "🎁",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "Winning a game",
+          emoji: "🏆",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "A classmate fails a test",
+          emoji: "😔",
+          isCorrect: true
+        },
+      ]
     },
     {
       id: 5,
       text: "How can you show empathy?",
+      emoji: "👂",
       options: [
-        { id: "a", text: "Interrupt others when speaking" },
-        { id: "b", text: "Make fun of others' feelings" },
-        { id: "c", text: "Listen actively to others" }
-      ],
-      correctAnswer: "c",
-      explanation: "Listening actively shows that you care about what others are saying and helps you understand their perspective and feelings."
+        {
+          id: "a",
+          text: "Interrupt others when speaking",
+          emoji: "✋",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Listen actively to others",
+          emoji: "👂",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Make fun of others' feelings",
+          emoji: "😆",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || showFeedback) return;
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
     
     setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correctAnswer;
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
     
     setShowFeedback(true);
@@ -93,102 +170,97 @@ const QuizOnEmpathy = () => {
         setCurrentQuestion(prev => prev + 1);
         setSelectedOption(null);
         setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 2000);
+    }, isCorrect ? 1000 : 800);
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/kids");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = coins;
 
   return (
     <GameShell
       title="Quiz on Empathy"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={finalScore}
       gameId="civic-responsibility-kids-2"
       gameType="civic-responsibility"
       totalLevels={10}
       currentLevel={2}
       showConfetti={gameFinished}
       backPath="/games/civic-responsibility/kids"
-    
       maxScore={questions.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="space-y-3">
-            {getCurrentQuestion().options.map(option => {
-              const isSelected = selectedOption === option.id;
-              const isCorrect = option.id === getCurrentQuestion().correctAnswer;
-              const showCorrect = showFeedback && isCorrect;
-              const showIncorrect = showFeedback && isSelected && !isCorrect;
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
               
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleOptionSelect(option.id)}
-                  disabled={showFeedback}
-                  className={`w-full p-4 rounded-xl text-left transition-all ${
-                    showCorrect
-                      ? 'bg-green-500/20 border-2 border-green-500 text-white'
-                      : showIncorrect
-                      ? 'bg-red-500/20 border-2 border-red-500 text-white'
-                      : isSelected
-                      ? 'bg-blue-500/20 border-2 border-blue-500 text-white'
-                      : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-lg mr-3 font-bold">
-                      {option.id.toUpperCase()}.
-                    </div>
-                    <div>{option.text}</div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {showFeedback && (
-            <div className={`mt-6 p-4 rounded-xl ${
-              selectedOption === getCurrentQuestion().correctAnswer
-                ? 'bg-green-500/20 border border-green-500/30'
-                : 'bg-red-500/20 border border-red-500/30'
-            }`}>
-              <p className={`font-semibold ${
-                selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'text-green-300'
-                  : 'text-red-300'
-              }`}>
-                {selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'Correct! 🎉'
-                  : 'Not quite right!'}
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
-              <p className="text-white/90 mt-2">
-                {getCurrentQuestion().explanation}
-              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        ) : null}
       </div>
     </GameShell>
   );

@@ -10,206 +10,260 @@ const PuzzleVolunteerAreas = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matches, setMatches] = useState({});
-  const [completed, setCompleted] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedArea, setSelectedArea] = useState(null);
+  const [selectedActivity, setSelectedActivity] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const pairs = [
-    { 
-      id: 1, 
-      left: "Hospital", 
-      emoji: "🏥", 
-      right: "Support", 
-      description: "Hospitals need volunteers to support patients, families, and medical staff with various non-medical tasks." 
-    },
-    { 
-      id: 2, 
-      left: "School", 
-      emoji: "📚", 
-      right: "Tutor", 
-      description: "Schools often need volunteers to tutor students, assist teachers, or help with extracurricular activities." 
-    },
-    { 
-      id: 3, 
-      left: "Nature", 
-      emoji: "🌳", 
-      right: "Plant Trees", 
-      description: "Nature conservation efforts often involve volunteers in tree planting, habitat restoration, and environmental education." 
-    },
-    { 
-      id: 4, 
-      left: "Community Center", 
-      emoji: "🏘️", 
-      right: "Organize Events", 
-      description: "Community centers rely on volunteers to organize events, manage programs, and support local initiatives." 
-    },
-    { 
-      id: 5, 
-      left: "Animal Shelter", 
-      emoji: "🐶", 
-      right: "Care for Animals", 
-      description: "Animal shelters depend on volunteers to care for animals, assist with adoptions, and maintain facilities." 
-    }
+  // Volunteer Areas (left side) - 5 items
+  const areas = [
+    { id: 1, name: "Hospital", emoji: "🏥", description: "Medical facility providing healthcare" },
+    { id: 2, name: "School", emoji: "📚", description: "Educational institution for learning" },
+    { id: 3, name: "Nature", emoji: "🌳", description: "Natural environment and ecosystems" },
+    { id: 4, name: "Community Center", emoji: "🏘️", description: "Local hub for community activities" },
+    { id: 5, name: "Animal Shelter", emoji: "🐶", description: "Facility caring for homeless animals" }
   ];
 
-  const handleMatch = (leftId, rightId) => {
-    // Check if this is a correct match
-    const pair = pairs.find(p => p.left === leftId);
-    const isCorrect = pair && pair.right === rightId;
-    
-    // Update matches state
-    const newMatches = { ...matches, [leftId]: rightId };
+  // Volunteer Activities (right side) - 5 items
+  const activities = [
+    { id: 1, name: "Support", emoji: "🤝", description: "Provide assistance and help to others" },
+    { id: 3, name: "Plant Trees", emoji: "🌱", description: "Contribute to environmental restoration" },
+    { id: 2, name: "Tutor", emoji: "📖", description: "Help students with their studies" },
+    { id: 5, name: "Care for Animals", emoji: "🐾", description: "Provide love and attention to pets" },
+    { id: 4, name: "Organize Events", emoji: "🎉", description: "Plan and coordinate community gatherings" },
+  ];
+
+  // Correct matches
+  const correctMatches = [
+    { areaId: 1, activityId: 1 }, // Hospital → Support
+    { areaId: 2, activityId: 2 }, // School → Tutor
+    { areaId: 3, activityId: 3 }, // Nature → Plant Trees
+    { areaId: 4, activityId: 4 }, // Community Center → Organize Events
+    { areaId: 5, activityId: 5 }  // Animal Shelter → Care for Animals
+  ];
+
+  const handleAreaSelect = (area) => {
+    if (gameFinished) return;
+    setSelectedArea(area);
+  };
+
+  const handleActivitySelect = (activity) => {
+    if (gameFinished) return;
+    setSelectedActivity(activity);
+  };
+
+  const handleMatch = () => {
+    if (!selectedArea || !selectedActivity || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      areaId: selectedArea.id,
+      activityId: selectedActivity.id,
+      isCorrect: correctMatches.some(
+        match => match.areaId === selectedArea.id && match.activityId === selectedActivity.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
     setMatches(newMatches);
-    
-    // Check if all pairs are matched
-    const allMatched = pairs.every(p => newMatches[p.left] === p.right);
-    
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      
-      if (allMatched) {
-        setTimeout(() => setCompleted(true), 1000);
-      }
-    } else if (allMatched) {
-      // If all matched but some are incorrect, still complete the game
-      setTimeout(() => setCompleted(true), 1000);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === areas.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedArea(null);
+    setSelectedActivity(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedArea(null);
+    setSelectedActivity(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/teens");
   };
 
-  if (completed) {
-    return (
-      <GameShell
-        title="Puzzle: Volunteer Areas"
-        subtitle="Puzzle Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teens-54"
-        gameType="civic-responsibility"
-        totalLevels={60}
-        currentLevel={54}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
-      
-      maxScore={60} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🧩</div>
-          <h2 className="text-2xl font-bold mb-4">Well Done!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} coins by matching volunteer areas!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You understand where volunteers are needed!
-          </div>
-          <p className="text-white/80">
-            Remember: There are countless opportunities to volunteer and make a positive impact in your community!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  // Check if an area is already matched
+  const isAreaMatched = (areaId) => {
+    return matches.some(match => match.areaId === areaId);
+  };
 
-  // Shuffle the right side options
-  const shuffledRights = [...pairs].sort(() => Math.random() - 0.5);
+  // Check if an activity is already matched
+  const isActivityMatched = (activityId) => {
+    return matches.some(match => match.activityId === activityId);
+  };
+
+  // Get match result for an area
+  const getMatchResult = (areaId) => {
+    const match = matches.find(m => m.areaId === areaId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Volunteer Areas"
-      subtitle="Match volunteer areas with their activities"
+      subtitle={gameFinished ? "Game Complete!" : `Match Volunteer Areas with Activities (${matches.length}/${areas.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="civic-responsibility-teens-54"
+      gameType="civic-responsibility"
+      totalLevels={areas.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/teens"
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Volunteer Areas Puzzle</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Left column - Areas */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Areas</h3>
-              {pairs.map((pair) => (
-                <div 
-                  key={pair.id}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                    matches[pair.left]
-                      ? 'bg-green-500/20 border-green-500'
-                      : 'bg-white/10 border-white/20 hover:bg-white/20'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-2xl mr-3">{pair.emoji}</div>
-                    <span className="text-white font-medium">{pair.left}</span>
-                  </div>
-                  {matches[pair.left] && (
-                    <div className="mt-2 text-sm text-white/80">
-                      Matched with: {matches[pair.left]}
+      maxScore={areas.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Volunteer Areas */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Volunteer Areas</h3>
+              <div className="space-y-4">
+                {areas.map(area => (
+                  <button
+                    key={area.id}
+                    onClick={() => handleAreaSelect(area)}
+                    disabled={isAreaMatched(area.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isAreaMatched(area.id)
+                        ? getMatchResult(area.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedArea?.id === area.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{area.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{area.name}</h4>
+                        <p className="text-white/80 text-sm">{area.description}</p>
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
-            
-            {/* Right column - Activities */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Activities</h3>
-              {shuffledRights.map((pair) => (
-                <div 
-                  key={pair.id}
-                  onClick={() => {
-                    // Find the first unmatched left item
-                    const unmatchedLeft = pairs.find(p => !matches[p.left]);
-                    if (unmatchedLeft) {
-                      handleMatch(unmatchedLeft.left, pair.right);
-                    }
-                  }}
-                  className="p-4 rounded-xl border-2 bg-white/10 border-white/20 hover:bg-white/20 cursor-pointer transition-all"
-                >
-                  <span className="text-white font-medium">{pair.right}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Feedback for matches */}
-          <div className="mt-8 space-y-3">
-            {Object.entries(matches).map(([left, right]) => {
-              const pair = pairs.find(p => p.left === left);
-              const isCorrect = pair && pair.right === right;
-              
-              return (
-                <div 
-                  key={left}
-                  className={`p-3 rounded-lg ${
-                    isCorrect 
-                      ? 'bg-green-500/20 border border-green-500' 
-                      : 'bg-red-500/20 border border-red-500'
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedArea 
+                    ? `Selected: ${selectedArea.name}` 
+                    : "Select a Volunteer Area"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedArea || !selectedActivity}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedArea && selectedActivity
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  <div className="flex items-center">
-                    <div className="text-xl mr-2">{pair?.emoji}</div>
-                    <span className="text-white">
-                      {left} → {right} {isCorrect ? '✓' : '✗'}
-                    </span>
-                  </div>
-                  <p className="text-sm text-white/80 mt-1">{pair?.description}</p>
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{areas.length}</p>
+                  <p>Matched: {matches.length}/{areas.length}</p>
                 </div>
-              );
-            })}
+              </div>
+            </div>
+
+            {/* Right column - Volunteer Activities */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Volunteer Activities</h3>
+              <div className="space-y-4">
+                {activities.map(activity => (
+                  <button
+                    key={activity.id}
+                    onClick={() => handleActivitySelect(activity)}
+                    disabled={isActivityMatched(activity.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isActivityMatched(activity.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedActivity?.id === activity.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{activity.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{activity.name}</h4>
+                        <p className="text-white/80 text-sm">{activity.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🧩</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Excellent Work!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {areas.length} volunteer areas with their activities!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding where volunteers are needed helps you contribute meaningfully to your community!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {areas.length} volunteer areas correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what kind of volunteer work would be most appropriate for each area!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

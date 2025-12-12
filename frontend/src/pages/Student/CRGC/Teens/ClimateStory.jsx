@@ -7,14 +7,15 @@ const ClimateStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // 1 coin per question
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -25,21 +26,18 @@ const ClimateStory = () => {
           id: "a",
           text: "Yes, we're all connected",
           emoji: "🌍",
-          description: "That's right! Climate change affects everyone globally, and showing compassion for others is an important part of global citizenship.",
           isCorrect: true
         },
         {
           id: "b",
           text: "No, it's not my problem",
           emoji: "🚫",
-          description: "That's not right. As global citizens, we should care about the wellbeing of people everywhere, especially children affected by climate disasters.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Only if they can help me",
           emoji: "💼",
-          description: "That's not the spirit of global citizenship. Helping others should be based on compassion, not personal gain.",
           isCorrect: false
         }
       ]
@@ -48,25 +46,23 @@ const ClimateStory = () => {
       id: 2,
       text: "How can you help children affected by climate change?",
       options: [
-        {
-          id: "a",
-          text: "Support organizations working on climate relief",
-          emoji: "🤝",
-          description: "That's right! Supporting organizations that provide aid to climate victims is a meaningful way to help from afar.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Ignore the problem completely",
           emoji: "🤐",
-          description: "That's not helpful. Ignoring global issues doesn't make them disappear and leaves vulnerable people without support.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Support organizations working on climate relief",
+          emoji: "🤝",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Blame the affected children",
           emoji: "😠",
-          description: "That's not right. Blaming victims is never appropriate and doesn't solve the underlying issues.",
           isCorrect: false
         }
       ]
@@ -79,21 +75,18 @@ const ClimateStory = () => {
           id: "a",
           text: "Climate change from human activities",
           emoji: "🏭",
-          description: "That's right! Human activities like burning fossil fuels contribute to climate change, which increases the frequency and severity of extreme weather events.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Natural cycles only",
           emoji: "🌀",
-          description: "That's partially true but incomplete. While natural cycles play a role, human activities have significantly intensified climate-related disasters.",
           isCorrect: false
         },
         {
           id: "c",
           text: "It's just bad luck",
           emoji: "🍀",
-          description: "That's not accurate. Climate disasters are the result of complex environmental factors, not random chance.",
           isCorrect: false
         }
       ]
@@ -102,27 +95,25 @@ const ClimateStory = () => {
       id: 4,
       text: "What can you do to reduce climate change?",
       options: [
-        {
-          id: "a",
-          text: "Reduce energy use and support clean energy",
-          emoji: "💡",
-          description: "That's right! Individual actions like conserving energy and supporting renewable energy can collectively make a significant impact.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Nothing, it's too late",
           emoji: "⏰",
-          description: "That's not true. While climate change is a serious challenge, individual and collective actions can still make a meaningful difference.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Only focus on personal comfort",
           emoji: "🛋️",
-          description: "That's not responsible. Prioritizing personal comfort over environmental impact contributes to the problem rather than solving it.",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Reduce energy use and support clean energy",
+          emoji: "💡",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -133,21 +124,18 @@ const ClimateStory = () => {
           id: "a",
           text: "Climate change affects everyone, everywhere",
           emoji: "🌐",
-          description: "That's right! Climate change is a global issue that requires coordinated international efforts to address effectively.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Only some countries are affected",
           emoji: "🗺️",
-          description: "That's not accurate. While some regions are more vulnerable, climate change affects all countries through various impacts.",
           isCorrect: false
         },
         {
           id: "c",
           text: "It's only a local problem",
           emoji: "🏡",
-          description: "That's not right. Climate change is a global phenomenon that transcends national borders and requires global solutions.",
           isCorrect: false
         }
       ]
@@ -155,23 +143,45 @@ const ClimateStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: optionId,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect;
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
+  };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
@@ -183,56 +193,88 @@ const ClimateStory = () => {
   return (
     <GameShell
       title="Climate Story"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
       score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      showGameOver={showResult}
       gameId="civic-responsibility-teens-81"
       gameType="civic-responsibility"
-      totalLevels={90}
-      currentLevel={81}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/civic-responsibility/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/civic-responsibility/teens"
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <h2 className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-4">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
-                    )}
-                  </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🌱</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Climate Guardian!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand the importance of global climate action and compassion!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
                 </div>
-              </button>
-            ))}
+                <p className="text-white/80 text-sm md:text-base">
+                  Great job! You know that climate change affects everyone and we must act together!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, climate change is a global challenge that requires collective action!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows global responsibility and environmental awareness.
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

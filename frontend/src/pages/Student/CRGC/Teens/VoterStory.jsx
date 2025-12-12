@@ -7,14 +7,15 @@ const VoterStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // 1 coin per question
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -25,21 +26,18 @@ const VoterStory = () => {
           id: "a",
           text: "Right to vote",
           emoji: "🗳️",
-          description: "That's right! At 18, citizens gain the right to vote in elections, which is both a right and a civic duty.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Right to drive",
           emoji: "🚗",
-          description: "That's not correct. While you can get a driver's license at 18 in many places, the civic duty that begins at 18 is voting.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Right to drink alcohol",
           emoji: "🍺",
-          description: "That's not right. The legal drinking age varies by country and is not necessarily connected to civic duties at 18.",
           isCorrect: false
         }
       ]
@@ -48,25 +46,23 @@ const VoterStory = () => {
       id: 2,
       text: "Why is voting important for democracy?",
       options: [
-        {
-          id: "a",
-          text: "It allows citizens to choose their representatives",
-          emoji: "🏛️",
-          description: "That's right! Voting is the foundation of democracy, allowing citizens to select leaders who represent their interests and values.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "It's just for entertainment",
           emoji: "🎮",
-          description: "That's not correct. Voting is a serious civic responsibility that shapes the direction of government and society.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "It allows citizens to choose their representatives",
+          emoji: "🏛️",
+          isCorrect: true
         },
         {
           id: "c",
           text: "It's only for politicians",
           emoji: "👨‍💼",
-          description: "That's not right. Voting is a right and duty for all eligible citizens, not just politicians.",
           isCorrect: false
         }
       ]
@@ -75,27 +71,25 @@ const VoterStory = () => {
       id: 3,
       text: "What should you do before voting in an election?",
       options: [
-        {
-          id: "a",
-          text: "Research candidates and issues",
-          emoji: "🔍",
-          description: "That's right! Being informed about candidates' positions and issues helps you make thoughtful voting decisions.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Ask friends to vote the same way",
           emoji: "👥",
-          description: "That's not the best approach. While discussion is good, you should make your own informed decision based on research.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Vote without any preparation",
           emoji: "😴",
-          description: "That's not responsible. Voting without understanding the issues and candidates doesn't serve democracy well.",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Research candidates and issues",
+          emoji: "🔍",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -106,21 +100,18 @@ const VoterStory = () => {
           id: "a",
           text: "Government may not represent all citizens",
           emoji: "🤔",
-          description: "That's right! Low turnout can lead to governments that don't reflect the views of the entire population, undermining democratic representation.",
           isCorrect: true
         },
         {
           id: "b",
           text: "More entertainment options",
           emoji: "📺",
-          description: "That's not correct. Voter turnout affects governance, not entertainment choices.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Better weather",
           emoji: "☀️",
-          description: "That's not right. Voter turnout has no connection to weather patterns.",
           isCorrect: false
         }
       ]
@@ -129,25 +120,23 @@ const VoterStory = () => {
       id: 5,
       text: "How can young voters make a difference?",
       options: [
-        {
-          id: "a",
-          text: "By participating in elections and advocating for issues",
-          emoji: "✊",
-          description: "That's right! Young voters can influence policy by voting and raising awareness about issues that matter to their generation.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "By ignoring politics completely",
           emoji: "😴",
-          description: "That's not helpful. Ignoring politics means giving up the power to influence decisions that affect your future.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "By participating in elections and advocating for issues",
+          emoji: "✊",
+          isCorrect: true
         },
         {
           id: "c",
           text: "By following others without thinking",
           emoji: "🐑",
-          description: "That's not effective. Making a difference requires independent thinking and active participation, not blind following.",
           isCorrect: false
         }
       ]
@@ -155,23 +144,45 @@ const VoterStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: optionId,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect;
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
+  };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
@@ -183,56 +194,88 @@ const VoterStory = () => {
   return (
     <GameShell
       title="Voter Story"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
       score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      showGameOver={showResult}
       gameId="civic-responsibility-teens-75"
       gameType="civic-responsibility"
-      totalLevels={80}
-      currentLevel={75}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/civic-responsibility/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/civic-responsibility/teens"
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <h2 className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-4">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
-                    )}
-                  </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🗳️</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Democratic Champion!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand the importance of voting and civic participation!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
                 </div>
-              </button>
-            ))}
+                <p className="text-white/80 text-sm md:text-base">
+                  Great job! You know that voting is both a right and responsibility in a democracy!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, voting is a cornerstone of democracy and civic engagement!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows responsible civic participation.
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

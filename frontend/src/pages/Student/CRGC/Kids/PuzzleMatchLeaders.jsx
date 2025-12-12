@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -10,219 +10,162 @@ const PuzzleMatchLeaders = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const [shuffledLeaders, setShuffledLeaders] = useState([]);
-  const [shuffledRoles, setShuffledRoles] = useState([]);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      leader: "Class Monitor",
-      emoji: "📚",
-      role: "Responsibility",
-      roleEmoji: "📋",
-      description: "A class monitor helps maintain order and assists the teacher in classroom management."
-    },
-    {
-      id: 2,
-      leader: "Mayor",
-      emoji: "🏙️",
-      role: "City",
-      roleEmoji: "🏢",
-      description: "A mayor leads a city, making decisions about local services, infrastructure, and community development."
-    },
-    {
-      id: 3,
-      leader: "Prime Minister",
-      emoji: "🇮🇳",
-      role: "Country",
-      roleEmoji: "🏛️",
-      description: "A Prime Minister leads a country, overseeing government operations and representing the nation."
-    },
-    {
-      id: 4,
-      leader: "Team Captain",
-      emoji: "⚽",
-      role: "Sports Team",
-      roleEmoji: "🏅",
-      description: "A team captain leads a sports team, motivating players and communicating with coaches."
-    },
-    {
-      id: 5,
-      leader: "Community Volunteer",
-      emoji: "🤝",
-      role: "Neighborhood",
-      roleEmoji: "🏘️",
-      description: "A community volunteer leads local initiatives to improve neighborhood conditions and help residents."
-    }
+  // Leaders (left side) - 5 items
+  const leaders = [
+    { id: 1, name: "Class Monitor", emoji: "📚", description: "Student who helps manage classroom" },
+    { id: 2, name: "Mayor", emoji: "🏙️", description: "Leader of a city or town" },
+    { id: 3, name: "Prime Minister", emoji: "🇮🇳", description: "Head of government of a country" },
+    { id: 4, name: "Team Captain", emoji: "⚽", description: "Leader of a sports team" },
+    { id: 5, name: "Community Volunteer", emoji: "🤝", description: "Person who helps local community" }
   ];
 
-  // Shuffle arrays for random positioning
-  const shuffleArray = (array) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
+  // Roles (right side) - 5 items
+  const roles = [
+    { id: 3, name: "Country", emoji: "🏛️", description: "Nation with government and borders" },
+    { id: 2, name: "City", emoji: "🏢", description: "Urban area with buildings and people" },
+    { id: 5, name: "Neighborhood", emoji: "🏘️", description: "Local residential community area" },
+    { id: 4, name: "Sports Team", emoji: "🏅", description: "Group of athletes in competition" },
+    { id: 1, name: "Responsibility", emoji: "📋", description: "Duty to take care of tasks" },
+  ];
 
-  useEffect(() => {
-    setShuffledLeaders(shuffleArray(puzzles));
-    setShuffledRoles(shuffleArray(puzzles));
-  }, []);
+  // Correct matches
+  const correctMatches = [
+    { leaderId: 1, roleId: 1 }, // Class Monitor → Responsibility
+    { leaderId: 2, roleId: 2 }, // Mayor → City
+    { leaderId: 3, roleId: 3 }, // Prime Minister → Country
+    { leaderId: 4, roleId: 4 }, // Team Captain → Sports Team
+    { leaderId: 5, roleId: 5 }  // Community Volunteer → Neighborhood
+  ];
 
   const handleLeaderSelect = (leader) => {
-    if (matchedPairs.some(pair => pair.leaderId === leader.id)) return;
-    
-    if (selectedRole) {
-      // Check if it's a correct match
-      if (selectedRole.id === leader.id) {
-        const newPair = { leaderId: leader.id, roleId: selectedRole.id };
-        setMatchedPairs(prev => [...prev, newPair]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all pairs are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => {
-            setGameFinished(true);
-            showAnswerConfetti();
-          }, 1000);
-        }
-      }
-      
-      // Reset selections
-      setSelectedLeader(null);
-      setSelectedRole(null);
-    } else {
-      setSelectedLeader(leader);
-    }
+    if (gameFinished) return;
+    setSelectedLeader(leader);
   };
 
   const handleRoleSelect = (role) => {
-    if (matchedPairs.some(pair => pair.roleId === role.id)) return;
-    
-    if (selectedLeader) {
-      // Check if it's a correct match
-      if (selectedLeader.id === role.id) {
-        const newPair = { leaderId: selectedLeader.id, roleId: role.id };
-        setMatchedPairs(prev => [...prev, newPair]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all pairs are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => {
-            setGameFinished(true);
-            showAnswerConfetti();
-          }, 1000);
-        }
-      }
-      
-      // Reset selections
-      setSelectedLeader(null);
-      setSelectedRole(null);
+    if (gameFinished) return;
+    setSelectedRole(role);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeader || !selectedRole || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      leaderId: selectedLeader.id,
+      roleId: selectedRole.id,
+      isCorrect: correctMatches.some(
+        match => match.leaderId === selectedLeader.id && match.roleId === selectedRole.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setSelectedRole(role);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === leaders.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedLeader(null);
+    setSelectedRole(null);
   };
 
-  const isLeaderMatched = (leaderId) => {
-    return matchedPairs.some(pair => pair.leaderId === leaderId);
-  };
-
-  const isRoleMatched = (roleId) => {
-    return matchedPairs.some(pair => pair.roleId === roleId);
-  };
-
-  const isLeaderSelected = (leader) => {
-    return selectedLeader && selectedLeader.id === leader.id;
-  };
-
-  const isRoleSelected = (role) => {
-    return selectedRole && selectedRole.id === role.id;
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedLeader(null);
+    setSelectedRole(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/kids");
   };
 
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Puzzle: Match Leaders"
-        subtitle="Puzzle Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-kids-94"
-        gameType="civic-responsibility"
-        totalLevels={100}
-        currentLevel={94}
-        showConfetti={true}
-        flashPoints={flashPoints}
-        backPath="/games/civic-responsibility/kids"
-      
-      maxScore={100} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🎉</div>
-          <h2 className="text-2xl font-bold mb-4">Great Job!</h2>
-          <p className="text-white mb-6">
-            You matched all {puzzles.length} leader-role pairs!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You're a leadership expert!
-          </div>
-          <p className="text-white/80">
-            Remember: Leadership can happen at any level, from classroom to country!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  // Check if a leader is already matched
+  const isLeaderMatched = (leaderId) => {
+    return matches.some(match => match.leaderId === leaderId);
+  };
+
+  // Check if a role is already matched
+  const isRoleMatched = (roleId) => {
+    return matches.some(match => match.roleId === roleId);
+  };
+
+  // Get match result for a leader
+  const getMatchResult = (leaderId) => {
+    const match = matches.find(m => m.leaderId === leaderId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Match Leaders"
-      subtitle={`Match leaders with their responsibilities | Score: ${coins}/${puzzles.length}`}
-      backPath="/games/civic-responsibility/kids"
+      subtitle={gameFinished ? "Game Complete!" : `Match Leaders with Their Responsibilities (${matches.length}/${leaders.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="civic-responsibility-kids-94"
+      gameType="civic-responsibility"
+      totalLevels={leaders.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Leaders column */}
-            <div>
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/civic-responsibility/kids"
+      maxScore={leaders.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Leaders */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <h3 className="text-xl font-bold text-white mb-4 text-center">Leaders</h3>
               <div className="space-y-4">
-                {shuffledLeaders.map((leader) => (
+                {leaders.map(leader => (
                   <button
                     key={leader.id}
                     onClick={() => handleLeaderSelect(leader)}
                     disabled={isLeaderMatched(leader.id)}
-                    className={`w-full p-4 rounded-2xl text-left transition-all transform ${
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
                       isLeaderMatched(leader.id)
-                        ? "bg-green-500/30 border-2 border-green-500"
-                        : isLeaderSelected(leader)
-                        ? "bg-blue-500/30 border-2 border-blue-500 scale-95"
-                        : "bg-white/10 hover:bg-white/20 border-2 border-transparent hover:scale-105"
+                        ? getMatchResult(leader.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedLeader?.id === leader.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <div className="text-3xl mr-4">{leader.emoji}</div>
+                      <div className="text-2xl mr-3">{leader.emoji}</div>
                       <div>
-                        <h4 className="font-bold text-lg text-white">{leader.leader}</h4>
+                        <h4 className="font-bold text-white">{leader.name}</h4>
+                        <p className="text-white/80 text-sm">{leader.description}</p>
                       </div>
                     </div>
                   </button>
@@ -230,27 +173,54 @@ const PuzzleMatchLeaders = () => {
               </div>
             </div>
 
-            {/* Roles column */}
-            <div>
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedLeader 
+                    ? `Selected: ${selectedLeader.name}` 
+                    : "Select a Leader"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedLeader || !selectedRole}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedLeader && selectedRole
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{leaders.length}</p>
+                  <p>Matched: {matches.length}/{leaders.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Roles */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <h3 className="text-xl font-bold text-white mb-4 text-center">Responsibilities</h3>
               <div className="space-y-4">
-                {shuffledRoles.map((role) => (
+                {roles.map(role => (
                   <button
                     key={role.id}
                     onClick={() => handleRoleSelect(role)}
                     disabled={isRoleMatched(role.id)}
-                    className={`w-full p-4 rounded-2xl text-left transition-all transform ${
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
                       isRoleMatched(role.id)
-                        ? "bg-green-500/30 border-2 border-green-500"
-                        : isRoleSelected(role)
-                        ? "bg-blue-500/30 border-2 border-blue-500 scale-95"
-                        : "bg-white/10 hover:bg-white/20 border-2 border-transparent hover:scale-105"
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedRole?.id === role.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <div className="text-3xl mr-4">{role.roleEmoji}</div>
+                      <div className="text-2xl mr-3">{role.emoji}</div>
                       <div>
-                        <h4 className="font-bold text-lg text-white">{role.role}</h4>
+                        <h4 className="font-bold text-white">{role.name}</h4>
+                        <p className="text-white/80 text-sm">{role.description}</p>
                       </div>
                     </div>
                   </button>
@@ -258,23 +228,42 @@ const PuzzleMatchLeaders = () => {
               </div>
             </div>
           </div>
-
-          {/* Show description when a pair is matched */}
-          {matchedPairs.length > 0 && (
-            <div className="mt-8 p-4 bg-blue-500/20 rounded-2xl border border-blue-500/30">
-              <h4 className="font-bold text-blue-300 mb-2">Leadership Insight:</h4>
-              <p className="text-white/90">
-                {puzzles.find(p => p.id === matchedPairs[matchedPairs.length - 1].leaderId)?.description}
-              </p>
-            </div>
-          )}
-
-          <div className="mt-6 text-center">
-            <p className="text-white/80">
-              Match each leader with their area of responsibility!
-            </p>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {leaders.length} leaders with their responsibilities!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Leadership happens at all levels - from classrooms to countries - and involves taking responsibility for others!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {leaders.length} leaders correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what area of responsibility each leader has!
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

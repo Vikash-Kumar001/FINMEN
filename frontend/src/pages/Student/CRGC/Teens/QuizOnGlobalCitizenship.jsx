@@ -15,195 +15,252 @@ const QuizOnGlobalCitizenship = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "What does global citizenship mean?",
+      emoji: "🌍",
       options: [
-        { id: "a", text: "Caring for the whole world" },
-        { id: "b", text: "Only caring about yourself" },
-        { id: "c", text: "Ignoring other countries" }
-      ],
-      correctAnswer: "a",
-      explanation: "Global citizenship means caring for the whole world and recognizing our interconnectedness with people everywhere."
+        {
+          id: "a",
+          text: "Caring for the whole world",
+          emoji: "❤️",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Only caring about yourself",
+          emoji: "👤",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ignoring other countries",
+          emoji: "🚫",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "Which is a responsibility of a global citizen?",
+      emoji: "🎯",
       options: [
-        { id: "a", text: "Respecting different cultures" },
-        { id: "b", text: "Judging others based on stereotypes" },
-        { id: "c", text: "Ignoring global issues" }
-      ],
-      correctAnswer: "a",
-      explanation: "Respecting different cultures is a key responsibility of global citizens who value diversity and inclusion."
+        {
+          id: "a",
+          text: "Respecting different cultures",
+          emoji: "🤝",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Judging others based on stereotypes",
+          emoji: "🧐",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ignoring global issues",
+          emoji: "🙈",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "How can global citizens contribute to solving world problems?",
+      emoji: "🔧",
       options: [
-        { id: "a", text: "By taking action in their communities" },
-        { id: "b", text: "By staying uninformed" },
-        { id: "c", text: "By avoiding responsibility" }
-      ],
-      correctAnswer: "a",
-      explanation: "Global citizens contribute by taking action in their communities, which collectively creates positive change worldwide."
+        {
+          id: "a",
+          text: "By taking action in their communities",
+          emoji: "🏘️",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "By staying uninformed",
+          emoji: "❓",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "By avoiding responsibility",
+          emoji: "😴",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
       text: "What is cultural awareness?",
+      emoji: "🧠",
       options: [
-        { id: "a", text: "Understanding and appreciating different cultures" },
-        { id: "b", text: "Thinking one's own culture is superior" },
-        { id: "c", text: "Ignoring cultural differences" }
-      ],
-      correctAnswer: "a",
-      explanation: "Cultural awareness involves understanding and appreciating different cultures, which promotes harmony and cooperation."
+        {
+          id: "a",
+          text: "Understanding and appreciating different cultures",
+          emoji: "さまざ",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Thinking one's own culture is superior",
+          emoji: "👑",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ignoring cultural differences",
+          emoji: "😶",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       text: "Why is global citizenship important?",
+      emoji: "⭐",
       options: [
-        { id: "a", text: "It helps create a more connected and compassionate world" },
-        { id: "b", text: "It isolates people from each other" },
-        { id: "c", text: "It encourages selfishness" }
-      ],
-      correctAnswer: "a",
-      explanation: "Global citizenship helps create a more connected and compassionate world by fostering understanding and cooperation."
+        
+        {
+          id: "b",
+          text: "It isolates people from each other",
+          emoji: "🏝️",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "It helps create a more connected and compassionate world",
+          emoji: "🌐",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "It encourages selfishness",
+          emoji: "😈",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption) return; // Prevent changing answer after selection
-    
-    const currentQ = questions[currentQuestion];
-    const isCorrect = optionId === currentQ.correctAnswer;
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
     
     setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
     
     setShowFeedback(true);
     
     setTimeout(() => {
-      setShowFeedback(false);
-      setSelectedOption(null);
-      
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 2000);
+    }, isCorrect ? 1000 : 800);
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/teens");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Quiz on Global Citizenship"
-        subtitle="Quiz Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teens-82"
-        gameType="civic-responsibility"
-        totalLevels={90}
-        currentLevel={82}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
-      
-      maxScore={questions.length} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🎯</div>
-          <h2 className="text-2xl font-bold mb-4">Great Job!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} out of {questions.length} points!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You understand global citizenship!
-          </div>
-          <p className="text-white/80">
-            Remember: Global citizenship means caring for the whole world and recognizing our interconnectedness with people everywhere!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = coins;
 
   return (
     <GameShell
       title="Quiz on Global Citizenship"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={finalScore}
+      gameId="civic-responsibility-teens-82"
+      gameType="civic-responsibility"
+      totalLevels={90}
+      currentLevel={82}
+      showConfetti={gameFinished}
       backPath="/games/civic-responsibility/teens"
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="space-y-4">
-            {getCurrentQuestion().options.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => handleOptionSelect(option.id)}
-                disabled={selectedOption}
-                className={`w-full text-left p-4 rounded-xl transition-all ${
-                  selectedOption
-                    ? option.id === getCurrentQuestion().correctAnswer
-                      ? 'bg-green-500/20 border-2 border-green-500'
-                      : selectedOption === option.id
-                      ? 'bg-red-500/20 border-2 border-red-500'
-                      : 'bg-white/10 border border-white/20'
-                    : 'bg-white/10 hover:bg-white/20 border border-white/20'
-                }`}
-              >
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mr-4">
-                    <span className="font-bold text-white">{option.id.toUpperCase()}</span>
-                  </div>
-                  <span className="text-white">{option.text}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {showFeedback && (
-            <div className={`mt-6 p-4 rounded-xl ${
-              selectedOption === getCurrentQuestion().correctAnswer
-                ? 'bg-green-500/20 border border-green-500'
-                : 'bg-red-500/20 border border-red-500'
-            }`}>
-              <p className={selectedOption === getCurrentQuestion().correctAnswer ? 'text-green-300' : 'text-red-300'}>
-                {selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'Correct! '
-                  : 'Incorrect. '}
-                {getCurrentQuestion().explanation}
+      maxScore={questions.length} // Max score is total number of questions (all correct)
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        ) : null}
       </div>
     </GameShell>
   );

@@ -15,77 +15,151 @@ const QuizOnCivicAction = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "What does civic action mean?",
+      emoji: "🤝",
       options: [
-        { id: "a", text: "Playing video games only" },
-        { id: "b", text: "Helping improve your community" },
-        { id: "c", text: "Watching TV all day" }
-      ],
-      correctAnswer: "b",
-      explanation: "Civic action means taking part in activities that help improve your community and society."
+        {
+          id: "a",
+          text: "Playing video games only",
+          emoji: "🎮",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Helping improve your community",
+          emoji: "🏘️",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Watching TV all day",
+          emoji: "📺",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "Which of these is an example of civic action?",
+      emoji: "🗳️",
       options: [
-        { id: "a", text: "Voting in elections when old enough" },
-        { id: "b", text: "Ignoring problems in your neighborhood" },
-        { id: "c", text: "Only focusing on personal entertainment" }
-      ],
-      correctAnswer: "a",
-      explanation: "Voting is a key civic action that allows citizens to participate in democracy and have a say in how their community is governed."
+        {
+          id: "a",
+          text: "Voting in elections when old enough",
+          emoji: "✅",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Ignoring problems in your neighborhood",
+          emoji: "🙈",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Only focusing on personal entertainment",
+          emoji: "📱",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "Why is it important to participate in civic actions?",
+      emoji: "⭐",
       options: [
-        { id: "a", text: "To avoid responsibilities" },
-        { id: "b", text: "To help create positive changes in society" },
-        { id: "c", text: "To stay away from community activities" }
-      ],
-      correctAnswer: "b",
-      explanation: "Participating in civic actions helps create positive changes in society by addressing community needs and improving the quality of life for everyone."
+        {
+          id: "a",
+          text: "To avoid responsibilities",
+          emoji: "😴",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "To help create positive changes in society",
+          emoji: "🌱",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "To stay away from community activities",
+          emoji: "🚪",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
       text: "What is one way kids can engage in civic action?",
+      emoji: "🧒",
       options: [
-        { id: "a", text: "Organizing a neighborhood clean-up" },
-        { id: "b", text: "Ignoring community problems" },
-        { id: "c", text: "Complaining without taking action" }
-      ],
-      correctAnswer: "a",
-      explanation: "Organizing a neighborhood clean-up is a great way for kids to engage in civic action by improving their community environment."
+        {
+          id: "a",
+          text: "Organizing a neighborhood clean-up",
+          emoji: "🧹",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Ignoring community problems",
+          emoji: "🙉",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Complaining without taking action",
+          emoji: "😠",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       text: "Which civic action helps protect the environment?",
+      emoji: "🌍",
       options: [
-        { id: "a", text: "Littering in public spaces" },
-        { id: "b", text: "Planting trees in your community" },
-        { id: "c", text: "Using more plastic bags" }
-      ],
-      correctAnswer: "b",
-      explanation: "Planting trees helps protect the environment by providing oxygen, reducing pollution, and creating habitats for wildlife."
+        {
+          id: "a",
+          text: "Littering in public spaces",
+          emoji: "🗑️",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Planting trees in your community",
+          emoji: "🌳",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Using more plastic bags",
+          emoji: "🛍️",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (showFeedback) return;
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
     
     setSelectedOption(optionId);
+    resetFeedback();
     
-    const currentQ = questions[currentQuestion];
-    const isCorrect = optionId === currentQ.correctAnswer;
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
     
     setShowFeedback(true);
@@ -95,118 +169,97 @@ const QuizOnCivicAction = () => {
         setCurrentQuestion(prev => prev + 1);
         setSelectedOption(null);
         setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 2000);
+    }, isCorrect ? 1000 : 800);
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/kids");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Quiz on Civic Action"
-        subtitle="Game Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-kids-92"
-        gameType="civic-responsibility"
-        totalLevels={100}
-        currentLevel={92}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/kids"
-      
-      maxScore={questions.length} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🎉</div>
-          <h2 className="text-2xl font-bold mb-4">Great Job!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} out of {questions.length} points!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You're becoming a civic action expert!
-          </div>
-          <p className="text-white/80">
-            Remember: Civic action helps create positive changes in our communities!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = coins;
 
   return (
     <GameShell
       title="Quiz on Civic Action"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={finalScore}
+      gameId="civic-responsibility-kids-92"
+      gameType="civic-responsibility"
+      totalLevels={100}
+      currentLevel={92}
+      showConfetti={gameFinished}
       backPath="/games/civic-responsibility/kids"
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="space-y-4">
-            {getCurrentQuestion().options.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => handleOptionSelect(option.id)}
-                disabled={showFeedback}
-                className={`w-full p-4 rounded-xl text-left transition-all text-white ${
-                  selectedOption === option.id
-                    ? showFeedback
-                      ? option.id === getCurrentQuestion().correctAnswer
-                        ? "bg-green-500/30 border-2 border-green-500"
-                        : "bg-red-500/30 border-2 border-red-500"
-                      : "bg-blue-500/30 border-2 border-blue-500"
-                    : "bg-white/10 hover:bg-white/20 border-2 border-transparent"
-                }`}
-              >
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mr-4">
-                    <span className="font-bold">{option.id.toUpperCase()}</span>
-                  </div>
-                  <span className="text-lg">{option.text}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {showFeedback && (
-            <div className={`p-4 rounded-xl mt-6 ${
-              selectedOption === getCurrentQuestion().correctAnswer 
-                ? 'bg-green-500/20 border border-green-500/30' 
-                : 'bg-red-500/20 border border-red-500/30'
-            }`}>
-              <p className={`text-lg font-semibold ${
-                selectedOption === getCurrentQuestion().correctAnswer 
-                  ? 'text-green-300' 
-                  : 'text-red-300'
-              }`}>
-                {selectedOption === getCurrentQuestion().correctAnswer 
-                  ? 'Correct! 🎉' 
-                  : 'Not quite right!'}
+      maxScore={questions.length} // Max score is total number of questions (all correct)
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
-              <p className="text-white/90 mt-2">{getCurrentQuestion().explanation}</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        ) : null}
       </div>
     </GameShell>
   );

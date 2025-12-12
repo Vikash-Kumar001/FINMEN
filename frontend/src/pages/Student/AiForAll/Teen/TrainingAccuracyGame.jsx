@@ -10,8 +10,8 @@ const TrainingAccuracyGame = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("ai-teen-training-accuracy");
-  const gameId = gameData?.id || "ai-teen-training-accuracy";
+  const gameData = getGameDataById("ai-teen-58");
+  const gameId = gameData?.id || "ai-teen-58";
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
@@ -32,9 +32,9 @@ const TrainingAccuracyGame = () => {
       emoji: "🎯",
       question: "What helps improve AI model accuracy?",
       choices: [
-        { id: 1, text: "Correct mistakes", emoji: "✅", isCorrect: true },
-        { id: 2, text: "Ignore errors", emoji: "🙈", isCorrect: false },
-        { id: 3, text: "Restart training", emoji: "🔄", isCorrect: false },
+        { id: 1, text: "Ignore errors", emoji: "🙈", isCorrect: false },
+        { id: 2, text: "Restart training", emoji: "🔄", isCorrect: false },
+        { id: 2, text: "Correct mistakes", emoji: "✅", isCorrect: true },
       ],
     },
     {
@@ -54,8 +54,8 @@ const TrainingAccuracyGame = () => {
       emoji: "⚖️",
       question: "How to reduce AI bias in training?",
       choices: [
-        { id: 1, text: "Diverse datasets", emoji: "さまざます", isCorrect: true },
-        { id: 2, text: "More data", emoji: "📈", isCorrect: false },
+        { id: 1, text: "More data", emoji: "📈", isCorrect: false },
+        { id: 2, text: "Diverse datasets", emoji: "📊", isCorrect: true },
         { id: 3, text: "Faster GPUs", emoji: "⚡", isCorrect: false },
       ],
     },
@@ -65,8 +65,8 @@ const TrainingAccuracyGame = () => {
       emoji: "🔧",
       question: "When should you retrain an AI model?",
       choices: [
-        { id: 1, text: "After corrections", emoji: "🔁", isCorrect: true },
-        { id: 2, text: "Monthly schedule", emoji: "📅", isCorrect: false },
+        { id: 1, text: "Monthly schedule", emoji: "📅", isCorrect: false },
+        { id: 2, text: "After corrections", emoji: "🔁", isCorrect: true },
         { id: 3, text: "Never update", emoji: "🔒", isCorrect: false },
       ],
     },

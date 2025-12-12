@@ -9,7 +9,7 @@ const EmpathyAIRoleplay = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-21";
+  const gameId = "ai-teen-97";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -60,21 +60,18 @@ const EmpathyAIRoleplay = () => {
           id: 1, 
           text: "Comfort", 
           emoji: "🤗", 
-          description: "Correct - Offer emotional support",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Ignore", 
-          emoji: "🤐", 
-          description: "Incorrect - Dismisses feelings",
+          emoji: "🤐",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Joke", 
           emoji: "😂", 
-          description: "Inappropriate - Minimizes emotions",
           isCorrect: false
         }
       ],
@@ -85,25 +82,23 @@ const EmpathyAIRoleplay = () => {
       text: "AI says: 'I feel lonely 🥺' - What's the best response?",
       emoji: "🥺",
       options: [
+        
         { 
           id: 1, 
-          text: "Talk", 
-          emoji: "🗣️", 
-          description: "Correct - Engage in conversation",
-          isCorrect: true
+          text: "Leave", 
+          emoji: "🚶",
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "Leave", 
-          emoji: "🚶", 
-          description: "Incorrect - Increases isolation",
-          isCorrect: false
+          text: "Talk", 
+          emoji: "🗣️", 
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Argue", 
           emoji: "😠", 
-          description: "Inappropriate - Creates conflict",
           isCorrect: false
         }
       ],
@@ -114,25 +109,23 @@ const EmpathyAIRoleplay = () => {
       text: "AI says: 'I am frustrated 😠' - What's the best response?",
       emoji: "😠",
       options: [
+        
         { 
           id: 1, 
-          text: "Encourage", 
-          emoji: "💪", 
-          description: "Correct - Provide motivation",
-          isCorrect: true
+          text: "Criticize", 
+          emoji: "👎",
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "Criticize", 
-          emoji: "👎", 
-          description: "Incorrect - Worsens frustration",
-          isCorrect: false
+          text: "Encourage", 
+          emoji: "💪",
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Agree", 
-          emoji: "👍", 
-          description: "Incomplete - Doesn't help resolve",
+          emoji: "👍",
           isCorrect: false
         }
       ],
@@ -143,27 +136,25 @@ const EmpathyAIRoleplay = () => {
       text: "AI says: 'I am anxious 😰' - What's the best response?",
       emoji: "😰",
       options: [
+        
         { 
           id: 1, 
-          text: "Reassure", 
-          emoji: "😌", 
-          description: "Correct - Provide calming support",
-          isCorrect: true
+          text: "Dismiss", 
+          emoji: "🙄", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "Dismiss", 
-          emoji: "🙄", 
-          description: "Incorrect - Invalidates concerns",
+          text: "Challenge", 
+          emoji: "⚔️", 
           isCorrect: false
         },
         { 
           id: 3, 
-          text: "Challenge", 
-          emoji: "⚔️", 
-          description: "Inappropriate - Increases stress",
-          isCorrect: false
-        }
+          text: "Reassure", 
+          emoji: "😌", 
+          isCorrect: true
+        },
       ],
       explanation: "Reassure! Anxiety benefits from calm reassurance that acknowledges fears while providing perspective. AI with emotional awareness can offer grounding techniques and supportive words to help reduce anxiety and promote emotional stability."
     },
@@ -176,21 +167,18 @@ const EmpathyAIRoleplay = () => {
           id: 1, 
           text: "Builds trust with users", 
           emoji: "🤝", 
-          description: "Correct - Essential for acceptance",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Makes AI faster", 
           emoji: "⚡", 
-          description: "Incorrect - Speed isn't related to empathy",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Reduces costs", 
           emoji: "💰", 
-          description: "Incorrect - May increase development costs",
           isCorrect: false
         }
       ],

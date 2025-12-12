@@ -61,21 +61,18 @@ const TrainWithSounds = () => {
           id: 1, 
           text: "Dog", 
           emoji: "🐶", 
-          description: "Correct - Dogs bark 'woof'",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Cat", 
           emoji: "🐱", 
-          description: "Incorrect - Cats meow, not woof",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Bird", 
-          emoji: "🐦", 
-          description: "Incorrect - Birds chirp, not woof",
+          emoji: "🐦",
           isCorrect: false
         }
       ],
@@ -91,21 +88,18 @@ const TrainWithSounds = () => {
           id: 1, 
           text: "Dog", 
           emoji: "🐶", 
-          description: "Incorrect - Dogs bark, not meow",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Cat", 
           emoji: "🐱", 
-          description: "Correct - Cats meow",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Cow", 
           emoji: "🐮", 
-          description: "Incorrect - Cows moo, not meow",
           isCorrect: false
         }
       ],
@@ -120,22 +114,19 @@ const TrainWithSounds = () => {
         { 
           id: 1, 
           text: "Dog", 
-          emoji: "🐕", 
-          description: "Correct - Dogs bark 'woof'",
+          emoji: "🐕",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Cat", 
           emoji: "😿", 
-          description: "Incorrect - Cats don't bark",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Horse", 
           emoji: "🐴", 
-          description: "Incorrect - Horses neigh, not woof",
           isCorrect: false
         }
       ],
@@ -151,21 +142,18 @@ const TrainWithSounds = () => {
           id: 1, 
           text: "Dog", 
           emoji: "🐶", 
-          description: "Incorrect - Dogs don't meow",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Cat", 
           emoji: "😺", 
-          description: "Correct - Cats meow",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Pig", 
-          emoji: "🐷", 
-          description: "Incorrect - Pigs oink, not meow",
+          emoji: "🐷",
           isCorrect: false
         }
       ],
@@ -181,21 +169,18 @@ const TrainWithSounds = () => {
           id: 1, 
           text: "Understand the environment", 
           emoji: "🌍", 
-          description: "Correct - Sound helps AI perceive surroundings",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "See better", 
-          emoji: "👀", 
-          description: "Incorrect - Sound doesn't improve vision",
+          emoji: "👀",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Move faster", 
           emoji: "🏃", 
-          description: "Incorrect - Sound processing doesn't increase speed",
           isCorrect: false
         }
       ],

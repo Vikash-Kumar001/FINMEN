@@ -59,15 +59,19 @@ const AiDoctorQuizz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - AI can analyze medical images to detect diseases",
+          emoji: "✓", 
           isCorrect: true 
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - AI is used in medical imaging for disease detection",
+          emoji: "✗", 
+          isCorrect: false 
+        },
+        { 
+          id: 3, 
+          text: "Only in research labs", 
+          emoji: "🔬", 
           isCorrect: false 
         }
       ],
@@ -81,15 +85,19 @@ const AiDoctorQuizz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - AI analyzes patient data to recommend treatments",
+          emoji: "✓", 
           isCorrect: true 
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Personalized medicine uses AI to tailor treatments",
+          emoji: "✗", 
+          isCorrect: false 
+        },
+        { 
+          id: 3, 
+          text: "Only for common illnesses", 
+          emoji: "📋", 
           isCorrect: false 
         }
       ],
@@ -103,16 +111,20 @@ const AiDoctorQuizz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Incorrect - Surgical robots require human oversight",
+          emoji: "✓", 
           isCorrect: false 
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Correct - AI assists but doesn't replace surgeons",
+          emoji: "✗", 
           isCorrect: true 
+        },
+        { 
+          id: 3, 
+          text: "Only for minor procedures", 
+          emoji: "🔧", 
+          isCorrect: false 
         }
       ],
       explanation: "While AI assists in surgeries, human supervision is essential. AI enhances precision but doesn't replace surgeons."
@@ -125,15 +137,19 @@ const AiDoctorQuizz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - AI continuously tracks patient vitals",
+          emoji: "✓", 
           isCorrect: true 
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Real-time monitoring uses AI technology",
+          emoji: "✗", 
+          isCorrect: false 
+        },
+        { 
+          id: 3, 
+          text: "Only in ICUs", 
+          emoji: "🛏️", 
           isCorrect: false 
         }
       ],
@@ -147,16 +163,20 @@ const AiDoctorQuizz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Incorrect - AI supports but doesn't replace doctors",
+          emoji: "✓", 
           isCorrect: false 
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Correct - Doctors provide irreplaceable human judgment",
+          emoji: "✗", 
           isCorrect: true 
+        },
+        { 
+          id: 3, 
+          text: "In some specialties only", 
+          emoji: "📚", 
+          isCorrect: false 
         }
       ],
       explanation: "AI enhances healthcare but cannot replace human doctors. Empathy, ethics, and complex decision-making require human expertise."
@@ -231,7 +251,7 @@ const AiDoctorQuizz = () => {
                 {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {currentQuestionData.options.map(option => {
                   const isSelected = selectedOption === option.id;
                   const showCorrect = answered && option.isCorrect;
@@ -254,7 +274,6 @@ const AiDoctorQuizz = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

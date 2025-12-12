@@ -28,13 +28,67 @@ const DataCleaningReflex = () => {
   const timerRef = useRef(null);
   const currentRoundRef = useRef(0);
 
-  // 5 sample images with "Keep" for clear, "Delete" for blurry
-  const images = [
-    { id: 1, label: "Clear Photo 🏞️", correctAction: "Keep" },
-    { id: 2, label: "Blurry Photo 🌫️", correctAction: "Delete" },
-    { id: 3, label: "Clear Photo 🐶", correctAction: "Keep" },
-    { id: 4, label: "Blurry Photo 🤳", correctAction: "Delete" },
-    { id: 5, label: "Clear Photo 📸", correctAction: "Keep" },
+  const questions = [
+    {
+      id: 1,
+      question: "You see a blurry photo labeled 'Mountain View'. What should you do?",
+      image: { label: "Blurry Photo 🌫️", text: "Mountain View" },
+      correctAnswer: "Delete the photo",
+      options: [
+        { text: "Keep the photo", isCorrect: false, emoji: "💾" },
+        { text: "Delete the photo", isCorrect: true, emoji: "🗑️" },
+        { text: "Enhance the photo", isCorrect: false, emoji: "✨" },
+        { text: "Tag for review", isCorrect: false, emoji: "🏷️" }
+      ]
+    },
+    {
+      id: 2,
+      question: "You see a clear photo labeled 'Family Portrait'. What should you do?",
+      image: { label: "Clear Photo 🏞️", text: "Family Portrait" },
+      correctAnswer: "Keep the photo",
+      options: [
+        { text: "Keep the photo", isCorrect: true, emoji: "💾" },
+        { text: "Delete the photo", isCorrect: false, emoji: "🗑️" },
+        { text: "Crop the photo", isCorrect: false, emoji: "✂️" },
+        { text: "Share immediately", isCorrect: false, emoji: "📲" }
+      ]
+    },
+    {
+      id: 3,
+      question: "You see a clear photo labeled 'Pet Dog'. What should you do?",
+      image: { label: "Clear Photo 🐶", text: "Pet Dog" },
+      correctAnswer: "Keep the photo",
+      options: [
+        { text: "Keep the photo", isCorrect: true, emoji: "💾" },
+        { text: "Delete the photo", isCorrect: false, emoji: "🗑️" },
+        { text: "Rename the photo", isCorrect: false, emoji: "📝" },
+        { text: "Compress the photo", isCorrect: false, emoji: "📦" }
+      ]
+    },
+    {
+      id: 4,
+      question: "You see a blurry photo labeled 'Selfie'. What should you do?",
+      image: { label: "Blurry Photo 🤳", text: "Selfie" },
+      correctAnswer: "Delete the photo",
+      options: [
+        { text: "Keep the photo", isCorrect: false, emoji: "💾" },
+        { text: "Delete the photo", isCorrect: true, emoji: "🗑️" },
+        { text: "Retake the photo", isCorrect: false, emoji: "📸" },
+        { text: "Blur more", isCorrect: false, emoji: "🌫️" }
+      ]
+    },
+    {
+      id: 5,
+      question: "You see a clear photo labeled 'Vacation'. What should you do?",
+      image: { label: "Clear Photo 📸", text: "Vacation" },
+      correctAnswer: "Keep the photo",
+      options: [
+        { text: "Delete the photo", isCorrect: false, emoji: "🗑️" },
+        { text: "Back up the photo", isCorrect: false, emoji: "☁️" },
+        { text: "Print the photo", isCorrect: false, emoji: "🖨️" },
+        { text: "Keep the photo", isCorrect: true, emoji: "💾" },
+      ]
+    }
   ];
 
   useEffect(() => {
@@ -93,14 +147,14 @@ const DataCleaningReflex = () => {
     resetFeedback();
   };
 
-  const handleAction = (action) => {
+  const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentImageData = images[currentRound - 1];
-    const isCorrect = action === currentImageData.correctAction;
+    const currentQuestion = questions[currentRound - 1];
+    const isCorrect = option.isCorrect;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -119,13 +173,13 @@ const DataCleaningReflex = () => {
   };
 
   const finalScore = score;
-  const currentImageData = images[currentRound - 1];
+  const currentQuestion = questions[currentRound - 1];
   const accuracy = Math.round((score / TOTAL_ROUNDS) * 100);
 
   return (
     <GameShell
       title="Data Cleaning Reflex"
-      subtitle={gameState === "playing" ? `Image ${currentRound}/${TOTAL_ROUNDS}: Click "Keep" for clear photos or "Delete" for blurry ones!` : "Test your data cleaning skills!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your data cleaning skills!` : "Test your data cleaning skills!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -135,6 +189,7 @@ const DataCleaningReflex = () => {
       showAnswerConfetti={showAnswerConfetti}
       score={finalScore}
       gameId={gameId}
+
       gameType="ai"
       maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
@@ -147,8 +202,8 @@ const DataCleaningReflex = () => {
             <div className="text-5xl mb-6">🧹</div>
             <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
             <p className="text-white/90 text-lg mb-6">
-              Clean the data by keeping clear photos and deleting blurry ones!<br />
-              You have {ROUND_TIME} seconds for each image.
+              Test your data cleaning skills!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
             <p className="text-white/80 mb-6">
               You have {TOTAL_ROUNDS} images with {ROUND_TIME} seconds each!
@@ -162,11 +217,11 @@ const DataCleaningReflex = () => {
           </div>
         )}
 
-        {gameState === "playing" && currentImageData && (
+        {gameState === "playing" && currentQuestion && (
           <div className="space-y-8">
             <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <div className="text-white">
-                <span className="font-bold">Image:</span> {currentRound}/{TOTAL_ROUNDS}
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
               <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
                 <span className="text-white">Time:</span> {timeLeft}s
@@ -176,33 +231,27 @@ const DataCleaningReflex = () => {
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <h3 className="text-white text-xl font-bold mb-6 text-center">
-                Click "Keep" for clear photos or "Delete" for blurry ones!
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
               </h3>
-
-              <div className="bg-blue-500/20 rounded-xl p-12 mb-6 text-center text-6xl">
-                {currentImageData.label}
+              
+              <div className="bg-blue-500/20 rounded-xl p-8 mb-6 text-center">
+                <div className="text-4xl mb-2">{currentQuestion.image.label}</div>
+                <p className="text-white text-xl font-bold">{currentQuestion.image.text}</p>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => handleAction("Keep")}
-                  disabled={answered}
-                  className="w-full min-h-[80px] bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <div className="text-3xl mr-2">✅</div>
-                  <div className="text-white font-bold text-xl">KEEP</div>
-                </button>
-
-                <button
-                  onClick={() => handleAction("Delete")}
-                  disabled={answered}
-                  className="w-full min-h-[80px] bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <div className="text-3xl mr-2">🗑️</div>
-                  <div className="text-white font-bold text-xl">DELETE</div>
-                </button>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

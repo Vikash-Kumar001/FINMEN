@@ -1,237 +1,182 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const DebateDegreeOrSkill = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const navigate = useNavigate();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ehe-teen-56";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "In today's job market, what's more important for career success?",
+      text: "Which is more important for career success - degree or skill?",
       options: [
-        {
-          id: "a",
-          text: "Degree only",
-          emoji: "🎓",
-          description: "While degrees are valuable, skills are increasingly important in modern careers",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Skills with degree are best",
-          emoji: "✅",
-          description: "Exactly! Combining formal education with practical skills maximizes career opportunities",
-          isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Skills only",
-          emoji: "🔧",
-          description: "Skills are crucial but degrees often provide foundational knowledge and credibility",
-          isCorrect: false
-        }
+        { id: "a", text: "Degree alone is enough", correct: false },
+        { id: "b", text: "Skills with degree are best", correct: true },
+        { id: "c", text: "Skills alone are enough", correct: false }
       ]
     },
     {
       id: 2,
-      text: "How do employers typically view candidates with both degree and skills?",
+      text: "Why are both degrees and skills important in today's job market?",
       options: [
-        {
-          id: "a",
-          text: "Highly favorable - well-rounded candidates",
-          emoji: "🌟",
-          description: "Perfect! Employers value candidates who combine theoretical knowledge with practical abilities",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "No different from others",
-          emoji: "😐",
-          description: "Having both degree and skills typically gives candidates a competitive advantage",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Overqualified for most positions",
-          emoji: "🤯",
-          description: "Being well-qualified is generally seen as an asset, not a disadvantage",
-          isCorrect: false
-        }
+        { id: "a", text: "Only degrees matter", correct: false },
+        { id: "b", text: "Degrees show commitment, skills show capability", correct: true },
+        { id: "c", text: "Only skills matter", correct: false }
       ]
     },
     {
       id: 3,
-      text: "Which approach leads to better long-term career growth?",
+      text: "How can someone develop skills while pursuing a degree?",
       options: [
-        {
-          id: "a",
-          text: "Continuously developing both academic knowledge and practical skills",
-          emoji: "📈",
-          description: "Exactly! Ongoing learning in both areas ensures adaptability and advancement",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Focusing on just one area",
-          emoji: "🎯",
-          description: "Specialization has value but versatility often leads to broader opportunities",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Avoiding formal education entirely",
-          emoji: "❌",
-          description: "Formal education provides foundational knowledge that complements skill development",
-          isCorrect: false
-        }
+        { id: "a", text: "Just attend lectures", correct: false },
+        { id: "b", text: "Internships, projects, and practical experience", correct: true },
+        { id: "c", text: "Avoid practical work", correct: false }
       ]
     },
     {
       id: 4,
-      text: "How do skills and degrees complement each other?",
+      text: "What happens to professionals who stop developing skills?",
       options: [
-        {
-          id: "a",
-          text: "Degrees provide theory, skills provide application",
-          emoji: "🔄",
-          description: "Perfect! Theory and practice together create well-rounded professional capabilities",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "They compete with each other",
-          emoji: "⚔️",
-          description: "Degrees and skills are complementary rather than competing elements",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "One replaces the need for the other",
-          emoji: "🔄",
-          description: "Both elements contribute uniquely to professional development and success",
-          isCorrect: false
-        }
+        { id: "a", text: "Automatically succeed", correct: false },
+        { id: "b", text: "Become less competitive over time", correct: true },
+        { id: "c", text: "Remain equally competitive", correct: false }
       ]
     },
     {
       id: 5,
-      text: "What's the modern employer's perspective on education and skills?",
+      text: "How can continuous skill development benefit career growth?",
       options: [
-        {
-          id: "a",
-          text: "Value both formal credentials and demonstrable abilities",
-          emoji: "⚖️",
-          description: "Exactly! Modern employers seek candidates with both educational background and proven skills",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Only care about prestigious degrees",
-          emoji: "🏛️",
-          description: "While degrees matter, employers increasingly prioritize practical skills and competencies",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Only care about years of experience",
-          emoji: "📅",
-          description: "Experience is valuable but skills and education provide different types of value",
-          isCorrect: false
-        }
+        { id: "a", text: "Limits career options", correct: false },
+        { id: "b", text: "Opens new opportunities and increases value", correct: true },
+        { id: "c", text: "Makes no difference", correct: false }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
-    if (isCorrect) {
-      showCorrectAnswerFeedback(2, true);
+  const handleAnswerSelect = (option) => {
+    resetFeedback();
+    
+    if (option.correct) {
+      const newCoins = coins + coinsPerLevel;
+      setCoins(newCoins);
+      setFinalScore(finalScore + 1);
+      showCorrectAnswerFeedback(newCoins);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+        setCurrentQuestion(currentQuestion + 1);
       } else {
-        setGameFinished(true);
+        setShowResult(true);
       }
     }, 1500);
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   const handleNext = () => {
-    navigate("/student/ehe/teens/journal-teen-paths");
+    navigate("/games/ehe/teens");
   };
 
   return (
     <GameShell
       title="Debate: Degree or Skill?"
-      subtitle={`Debate ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length * 2}
+      score={coins}
+      subtitle={showResult ? "Debate Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
       gameId="ehe-teen-56"
       gameType="ehe"
-      totalLevels={60}
-      currentLevel={56}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/teens"
       showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/ehe/teens"
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Debate {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length * 2}</span>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">
+                {questions[currentQuestion].text}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-6">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswerSelect(option)}
+                    className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
+                  >
+                    <div className="flex items-center">
+                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                        {option.id}
+                      </span>
+                      <span className="font-medium">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🎭</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Education vs Skills Debate</h3>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+        ) : (
+          <div className="text-center py-8">
+            <div className="inline-block p-4 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 mb-6">
+              <div className="bg-white p-2 rounded-full">
+                <div className="text-4xl">
+                  {finalScore >= 3 ? "🏆" : "📚"}
                 </div>
-              </button>
-            ))}
+              </div>
+            </div>
+            
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              {finalScore >= 3 ? "Great Job!" : "Good Effort!"}
+            </h2>
+            
+            <p className="text-white/80 mb-6 max-w-2xl mx-auto">
+              {finalScore >= 3 
+                ? "You've shown excellent understanding of the balance between degrees and skills!" 
+                : "You're on the right track! Review the concepts and try again."}
+            </p>
+            
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 border border-white/20 max-w-md mx-auto mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Your Score</span>
+                <span className="text-xl font-bold text-yellow-400">{finalScore}/{questions.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">Coins Earned</span>
+                <span className="text-xl font-bold text-yellow-400">{coins}</span>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

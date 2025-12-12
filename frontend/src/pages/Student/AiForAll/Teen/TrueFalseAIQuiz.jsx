@@ -60,21 +60,18 @@ const TrueFalseAIQuiz = () => {
           id: 1, 
           text: "True", 
           emoji: "✓", 
-          description: "Incorrect - Calculators follow fixed rules, not AI",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "False", 
           emoji: "✗", 
-          description: "Correct - Calculators are automation, not AI",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Sometimes", 
-          emoji: "🤔", 
-          description: "Partially correct but not the best answer",
+          emoji: "🤔",
           isCorrect: false
         }
       ],
@@ -89,21 +86,18 @@ const TrueFalseAIQuiz = () => {
           id: 1, 
           text: "True", 
           emoji: "✅", 
-          description: "Correct - AI can generate musical compositions",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "False", 
-          emoji: "❌", 
-          description: "Incorrect - AI can create music",
+          emoji: "❌",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only with human input", 
           emoji: "👤", 
-          description: "Partially correct but not entirely accurate",
           isCorrect: false
         }
       ],
@@ -118,21 +112,18 @@ const TrueFalseAIQuiz = () => {
           id: 1, 
           text: "True", 
           emoji: "✅", 
-          description: "Incorrect - Not all automation involves AI",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "False", 
-          emoji: "❌", 
-          description: "Correct - Automation can be rule-based without AI",
+          emoji: "❌",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only modern automation", 
           emoji: "⏱️", 
-          description: "Partially correct but oversimplified",
           isCorrect: false
         }
       ],
@@ -146,22 +137,19 @@ const TrueFalseAIQuiz = () => {
         { 
           id: 1, 
           text: "True", 
-          emoji: "✅", 
-          description: "Correct - AI can analyze emotional cues",
+          emoji: "✅",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "False", 
           emoji: "❌", 
-          description: "Incorrect - AI can detect emotions",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only facial expressions", 
           emoji: "👁️", 
-          description: "Too narrow - AI uses multiple indicators",
           isCorrect: false
         }
       ],
@@ -175,22 +163,19 @@ const TrueFalseAIQuiz = () => {
         { 
           id: 1, 
           text: "True", 
-          emoji: "✅", 
-          description: "Incorrect - AI can perpetuate biases",
+          emoji: "✅",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "False", 
           emoji: "❌", 
-          description: "Correct - AI can be biased based on training data",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only with oversight", 
           emoji: "🧐", 
-          description: "Partially correct but not comprehensive",
           isCorrect: false
         }
       ],

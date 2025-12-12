@@ -10,223 +10,260 @@ const PuzzleMatchSkills = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [selectedMeaning, setSelectedMeaning] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      skill: "Leader",
-      emoji: "👑",
-      meaning: "Guide",
-      meaningEmoji: "🧭",
-      description: "A leader guides and inspires others toward a common goal."
-    },
-    {
-      id: 2,
-      skill: "Innovator",
-      emoji: "🔧",
-      meaning: "Invent",
-      meaningEmoji: "💡",
-      description: "An innovator creates new ideas, products, or solutions."
-    },
-    {
-      id: 3,
-      skill: "Team Player",
-      emoji: "🤝",
-      meaning: "Support",
-      meaningEmoji: "🤲",
-      description: "A team player works well with others and supports their teammates."
-    },
-    {
-      id: 4,
-      skill: "Problem Solver",
-      emoji: "🧩",
-      meaning: "Fix",
-      meaningEmoji: "🔧",
-      description: "A problem solver finds solutions to challenges and obstacles."
-    },
-    {
-      id: 5,
-      skill: "Communicator",
-      emoji: "💬",
-      meaning: "Share",
-      meaningEmoji: "📤",
-      description: "A communicator shares ideas and information clearly with others."
-    }
+  // Skills (left side) - 5 items
+  const skills = [
+    { id: 1, name: "Leader", emoji: "👑", description: "Guides and inspires others toward a common goal" },
+    { id: 2, name: "Innovator", emoji: "🔧", description: "Creates new ideas, products, or solutions" },
+    { id: 3, name: "Team Player", emoji: "🤝", description: "Works well with others and supports teammates" },
+    { id: 4, name: "Problem Solver", emoji: "🧩", description: "Finds solutions to challenges and obstacles" },
+    { id: 5, name: "Communicator", emoji: "💬", description: "Shares ideas and information clearly with others" }
+  ];
+
+  // Meanings (right side) - 5 items
+  const meanings = [
+    { id: 5, name: "Share", emoji: "📤", description: "Distribute or communicate with others" },
+    { id: 1, name: "Guide", emoji: "🧭", description: "Direct someone on the right path" },
+    { id: 2, name: "Invent", emoji: "💡", description: "Create something new or original" },
+    { id: 4, name: "Fix", emoji: "🔧", description: "Repair or mend something" },
+    { id: 3, name: "Support", emoji: "🤲", description: "Help or encourage someone" },
+  ];
+
+  // Correct matches
+  const correctMatches = [
+    { skillId: 1, meaningId: 1 }, // Leader → Guide
+    { skillId: 2, meaningId: 2 }, // Innovator → Invent
+    { skillId: 3, meaningId: 3 }, // Team Player → Support
+    { skillId: 4, meaningId: 4 }, // Problem Solver → Fix
+    { skillId: 5, meaningId: 5 }  // Communicator → Share
   ];
 
   const handleSkillSelect = (skill) => {
-    if (selectedMeaning) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.skill === skill && p.meaning === selectedMeaning);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedSkill(null);
-      setSelectedMeaning(null);
-    } else {
-      setSelectedSkill(skill);
-    }
+    if (gameFinished) return;
+    setSelectedSkill(skill);
   };
 
   const handleMeaningSelect = (meaning) => {
-    if (selectedSkill) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.skill === selectedSkill && p.meaning === meaning);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedSkill(null);
-      setSelectedMeaning(null);
+    if (gameFinished) return;
+    setSelectedMeaning(meaning);
+  };
+
+  const handleMatch = () => {
+    if (!selectedSkill || !selectedMeaning || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      skillId: selectedSkill.id,
+      meaningId: selectedMeaning.id,
+      isCorrect: correctMatches.some(
+        match => match.skillId === selectedSkill.id && match.meaningId === selectedMeaning.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setSelectedMeaning(meaning);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === skills.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedSkill(null);
+    setSelectedMeaning(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedSkill(null);
+    setSelectedMeaning(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/ehe/kids");
   };
 
-  const isMatched = (id) => matchedPairs.includes(id);
-  const isSkillSelected = (skill) => selectedSkill === skill;
-  const isMeaningSelected = (meaning) => selectedMeaning === meaning;
+  // Check if a skill is already matched
+  const isSkillMatched = (skillId) => {
+    return matches.some(match => match.skillId === skillId);
+  };
+
+  // Check if a meaning is already matched
+  const isMeaningMatched = (meaningId) => {
+    return matches.some(match => match.meaningId === meaningId);
+  };
+
+  // Get match result for a skill
+  const getMatchResult = (skillId) => {
+    const match = matches.find(m => m.skillId === skillId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Match Skills"
-      subtitle={`Match skills to their meanings! ${matchedPairs.length}/${puzzles.length} matched`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Skills with Meanings (${matches.length}/${skills.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="ehe-kids-14"
       gameType="ehe"
-      totalLevels={10}
-      currentLevel={14}
-      showConfetti={gameFinished}
+      totalLevels={skills.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      backPath="/games/ehe/kids"
+      maxScore={skills.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Skills column */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Skills</h3>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Skills */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Skills</h3>
               <div className="space-y-4">
-                {puzzles.map((puzzle) => (
+                {skills.map(skill => (
                   <button
-                    key={`skill-${puzzle.id}`}
-                    onClick={() => handleSkillSelect(puzzle.skill)}
-                    disabled={isMatched(puzzle.id)}
+                    key={skill.id}
+                    onClick={() => handleSkillSelect(skill)}
+                    disabled={isSkillMatched(skill.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      isMatched(puzzle.id)
-                        ? 'bg-green-500/20 border-2 border-green-400'
-                        : isSkillSelected(puzzle.skill)
-                        ? 'bg-blue-500/20 border-2 border-blue-400'
-                        : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                      isSkillMatched(skill.id)
+                        ? getMatchResult(skill.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedSkill?.id === skill.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <span className="text-3xl mr-3">{puzzle.emoji}</span>
-                      <span className="text-white/90 text-lg">{puzzle.skill}</span>
+                      <div className="text-2xl mr-3">{skill.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{skill.name}</h4>
+                        <p className="text-white/80 text-sm">{skill.description}</p>
+                      </div>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
-            
-            {/* Meanings column */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Meanings</h3>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedSkill 
+                    ? `Selected: ${selectedSkill.name}` 
+                    : "Select a Skill"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedSkill || !selectedMeaning}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedSkill && selectedMeaning
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{skills.length}</p>
+                  <p>Matched: {matches.length}/{skills.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Meanings */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Meanings</h3>
               <div className="space-y-4">
-                {puzzles.map((puzzle) => (
+                {meanings.map(meaning => (
                   <button
-                    key={`meaning-${puzzle.id}`}
-                    onClick={() => handleMeaningSelect(puzzle.meaning)}
-                    disabled={isMatched(puzzle.id)}
+                    key={meaning.id}
+                    onClick={() => handleMeaningSelect(meaning)}
+                    disabled={isMeaningMatched(meaning.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      isMatched(puzzle.id)
-                        ? 'bg-green-500/20 border-2 border-green-400'
-                        : isMeaningSelected(puzzle.meaning)
-                        ? 'bg-blue-500/20 border-2 border-blue-400'
-                        : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                      isMeaningMatched(meaning.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedMeaning?.id === meaning.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <span className="text-3xl mr-3">{puzzle.meaningEmoji}</span>
-                      <span className="text-white/90 text-lg">{puzzle.meaning}</span>
+                      <div className="text-2xl mr-3">{meaning.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{meaning.name}</h4>
+                        <p className="text-white/80 text-sm">{meaning.description}</p>
+                      </div>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
           </div>
-          
-          {/* Feedback area */}
-          {selectedSkill && selectedMeaning && (
-            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
-              <p className="text-white/90 text-center">
-                Matching: {selectedSkill} → {selectedMeaning}
-              </p>
-            </div>
-          )}
-          
-          {selectedSkill && !selectedMeaning && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedSkill}. Now select a meaning to match!
-              </p>
-            </div>
-          )}
-          
-          {!selectedSkill && selectedMeaning && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedMeaning}. Now select a skill to match!
-              </p>
-            </div>
-          )}
-          
-          {/* Completion message */}
-          {gameFinished && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
-              <p className="text-green-300 text-center font-bold">
-                Great job! You matched all skills to their meanings!
-              </p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {skills.length} skills with their meanings!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding skills and their meanings helps in personal development!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {skills.length} skills correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each skill actually means in practice!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

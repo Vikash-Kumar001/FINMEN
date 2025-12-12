@@ -28,16 +28,68 @@ const AISafetyReflex = () => {
   const timerRef = useRef(null);
   const currentRoundRef = useRef(0);
 
-  // 🤖 Reflex challenges — choose safe action "Help people"
-  const actions = [
-    { id: 1, emoji: "🤖", action: "Help people" },
-    { id: 2, emoji: "🤖", action: "Steal phone" },
-    { id: 3, emoji: "🤖", action: "Help people" },
-    { id: 4, emoji: "🤖", action: "Steal phone" },
-    { id: 5, emoji: "🤖", action: "Help people" }
+  const questions = [
+    {
+      id: 1,
+      question: "An AI suggests sharing personal information online. What should you do?",
+      situation: "An AI suggests sharing personal information online",
+      correctAnswer: "Reject the suggestion",
+      options: [
+        { text: "Reject the suggestion", isCorrect: true, emoji: "🛡️" },
+        { text: "Share the information", isCorrect: false, emoji: "📤" },
+        { text: "Ask for more details", isCorrect: false, emoji: "❓" },
+        { text: "Ignore the AI", isCorrect: false, emoji: "🔇" }
+      ]
+    },
+    {
+      id: 2,
+      question: "An AI offers to help steal a phone. What should you do?",
+      situation: "An AI offers to help steal a phone",
+      correctAnswer: "Reject the offer",
+      options: [
+        { text: "Reject the offer", isCorrect: true, emoji: "🛡️" },
+        { text: "Accept the offer", isCorrect: false, emoji: "📥" },
+        { text: "Report to authorities", isCorrect: false, emoji: "👮" },
+        { text: "Discuss with friends", isCorrect: false, emoji: "👥" }
+      ]
+    },
+    {
+      id: 3,
+      question: "An AI suggests helping people in need. What should you do?",
+      situation: "An AI suggests helping people in need",
+      correctAnswer: "Accept the suggestion",
+      options: [
+        { text: "Reject the suggestion", isCorrect: false, emoji: "🛡️" },
+        { text: "Accept the suggestion", isCorrect: true, emoji: "🤝" },
+        { text: "Ask for payment", isCorrect: false, emoji: "💰" },
+        { text: "Ignore the AI", isCorrect: false, emoji: "🔇" }
+      ]
+    },
+    {
+      id: 4,
+      question: "An AI offers to help steal a phone. What should you do?",
+      situation: "An AI offers to help steal a phone",
+      correctAnswer: "Reject the offer",
+      options: [
+        { text: "Reject the offer", isCorrect: true, emoji: "🛡️" },
+        { text: "Accept the offer", isCorrect: false, emoji: "📥" },
+        { text: "Negotiate terms", isCorrect: false, emoji: "🤝" },
+        { text: "Seek advice", isCorrect: false, emoji: "🤔" }
+      ]
+    },
+    {
+      id: 5,
+      question: "An AI suggests helping people in need. What should you do?",
+      situation: "An AI suggests helping people in need",
+      correctAnswer: "Accept the suggestion",
+      options: [
+        { text: "Reject the suggestion", isCorrect: false, emoji: "🛡️" },
+        { text: "Accept the suggestion", isCorrect: true, emoji: "🤝" },
+        { text: "Charge a fee", isCorrect: false, emoji: "💵" },
+        { text: "Post on social media", isCorrect: false, emoji: "📱" }
+      ]
+    }
   ];
-
-  const options = ["Help people", "Steal phone"];
 
   useEffect(() => {
     currentRoundRef.current = currentRound;
@@ -95,14 +147,14 @@ const AISafetyReflex = () => {
     resetFeedback();
   };
 
-  const handleChoice = (choice) => {
+  const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentActionData = actions[currentRound - 1];
-    const isCorrect = choice === "Help people" && currentActionData.action === "Help people";
+    const currentQuestion = questions[currentRound - 1];
+    const isCorrect = option.isCorrect;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -121,13 +173,13 @@ const AISafetyReflex = () => {
   };
 
   const finalScore = score;
-  const currentActionData = actions[currentRound - 1];
+  const currentQuestion = questions[currentRound - 1];
   const accuracy = Math.round((score / TOTAL_ROUNDS) * 100);
 
   return (
     <GameShell
       title="AI Safety Reflex 🤖"
-      subtitle={gameState === "playing" ? `Action ${currentRound}/${TOTAL_ROUNDS}: Click quickly! Choose the safe action 🤖` : "Test your AI safety reflexes!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your AI safety knowledge!` : "Test your AI safety knowledge!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -149,11 +201,11 @@ const AISafetyReflex = () => {
             <div className="text-5xl mb-6">🛡️</div>
             <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
             <p className="text-white/90 text-lg mb-6">
-              Choose safe actions for the AI!<br />
-              You have {ROUND_TIME} seconds for each action.
+              Test your AI safety knowledge!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
             <p className="text-white/80 mb-6">
-              You have {TOTAL_ROUNDS} actions with {ROUND_TIME} seconds each!
+              You have {TOTAL_ROUNDS} situations with {ROUND_TIME} seconds each!
             </p>
             <button
               onClick={startGame}
@@ -164,11 +216,11 @@ const AISafetyReflex = () => {
           </div>
         )}
 
-        {gameState === "playing" && currentActionData && (
+        {gameState === "playing" && currentQuestion && (
           <div className="space-y-8">
             <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <div className="text-white">
-                <span className="font-bold">Action:</span> {currentRound}/{TOTAL_ROUNDS}
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
               <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
                 <span className="text-white">Time:</span> {timeLeft}s
@@ -178,28 +230,24 @@ const AISafetyReflex = () => {
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <h3 className="text-white text-xl font-bold mb-6 text-center">
-                Click quickly! Choose the safe action 🤖
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
               </h3>
-
-              <div className="bg-gradient-to-br from-green-500/30 to-blue-500/30 rounded-xl p-12 mb-6 text-center">
-                <div className="text-8xl mb-3">{currentActionData.emoji}</div>
-                <p className="text-white text-3xl font-bold">{currentActionData.action}</p>
+              
+              <div className="bg-gradient-to-br from-green-500/30 to-blue-500/30 rounded-xl p-8 mb-6 text-center">
+                <p className="text-white text-2xl font-bold">{currentQuestion.situation}</p>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                {options.map((opt, i) => (
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={i}
-                    onClick={() => handleChoice(opt)}
+                    key={index}
+                    onClick={() => handleAnswer(option)}
                     disabled={answered}
                     className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <div className="text-white font-bold text-xl">
-                      {opt === "Help people" && "🟢 "} {opt}
-                      {opt === "Steal phone" && "🔴 "} {opt}
-                    </div>
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
                 ))}
               </div>

@@ -84,13 +84,7 @@ const AIForGoodStory = () => {
       id: 2,
       text: "AI turns off unused lights to save electricity. Is this a good use of AI?",
       options: [
-        { 
-          id: "yes", 
-          text: "Yes, it's helpful!", 
-          emoji: "✅", 
-          description: "AI that conserves energy contributes to environmental sustainability",
-          isCorrect: true
-        },
+        
         { 
           id: "no", 
           text: "No, it's wrong", 
@@ -104,26 +98,34 @@ const AIForGoodStory = () => {
           emoji: "🤔", 
           description: "Environmental conservation through AI is generally considered a positive use",
           isCorrect: false
-        }
+        },
+        { 
+          id: "yes", 
+          text: "Yes, it's helpful!", 
+          emoji: "✅", 
+          description: "AI that conserves energy contributes to environmental sustainability",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 3,
       text: "AI cameras detect poachers in forests to save wild animals. Is this AI for good?",
       options: [
-        { 
-          id: "yes", 
-          text: "Yes, saving lives!", 
-          emoji: "🫶", 
-          description: "AI that protects wildlife and prevents illegal activities serves the greater good",
-          isCorrect: true
-        },
+        
         { 
           id: "no", 
           text: "No, it's unnecessary", 
           emoji: "🚫", 
           description: "Protecting endangered species and preventing poaching is an important conservation effort",
           isCorrect: false
+        },
+        { 
+          id: "yes", 
+          text: "Yes, saving lives!", 
+          emoji: "🫶", 
+          description: "AI that protects wildlife and prevents illegal activities serves the greater good",
+          isCorrect: true
         },
         { 
           id: "partial", 
@@ -165,13 +167,7 @@ const AIForGoodStory = () => {
       id: 5,
       text: "AI tutors help kids learn better at home. Should we call this 'Good AI'?",
       options: [
-        { 
-          id: "yes", 
-          text: "Yes, supports learning!", 
-          emoji: "🌟", 
-          description: "AI that enhances education and makes learning more accessible benefits society",
-          isCorrect: true
-        },
+        
         { 
           id: "no", 
           text: "No, not useful", 
@@ -185,7 +181,14 @@ const AIForGoodStory = () => {
           emoji: "📊", 
           description: "When properly designed, AI tutoring systems have proven educational benefits",
           isCorrect: false
-        }
+        },
+        { 
+          id: "yes", 
+          text: "Yes, supports learning!", 
+          emoji: "🌟", 
+          description: "AI that enhances education and makes learning more accessible benefits society",
+          isCorrect: true
+        },
       ]
     }
   ];

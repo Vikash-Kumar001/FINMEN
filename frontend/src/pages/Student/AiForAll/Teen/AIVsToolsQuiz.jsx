@@ -60,21 +60,18 @@ const AIVsToolsQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✓", 
-          description: "Incorrect - Microwaves follow pre-set instructions, not AI",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "✗", 
-          description: "Correct - Microwaves are automated tools, not AI systems",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Sometimes", 
           emoji: "🤔", 
-          description: "Incorrect - Microwaves are consistently non-AI tools",
           isCorrect: false
         }
       ],
@@ -89,21 +86,18 @@ const AIVsToolsQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✓", 
-          description: "Incorrect - Calculators follow fixed mathematical rules",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "✗", 
-          description: "Correct - Calculators are deterministic tools, not AI",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Sometimes", 
           emoji: "🤔", 
-          description: "Incorrect - Calculators consistently operate without AI",
           isCorrect: false
         }
       ],
@@ -118,21 +112,18 @@ const AIVsToolsQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✓", 
-          description: "Correct - Siri uses natural language processing, a form of AI",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "✗", 
-          description: "Incorrect - Siri does use AI to understand and respond",
+          emoji: "✗",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Sometimes", 
           emoji: "🤔", 
-          description: "Incorrect - Siri consistently uses AI technology",
           isCorrect: false
         }
       ],
@@ -146,22 +137,19 @@ const AIVsToolsQuiz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✓", 
-          description: "Incorrect - Traditional thermostats follow simple rules",
+          emoji: "✓",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "✗", 
-          description: "Correct - Basic thermostats are rule-based, not AI",
+          emoji: "✗",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Sometimes", 
           emoji: "🤔", 
-          description: "Partially correct - Smart thermostats may use AI, but basic ones don't",
           isCorrect: false
         }
       ],
@@ -176,21 +164,18 @@ const AIVsToolsQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✓", 
-          description: "Correct - Autonomous vehicles use multiple AI technologies",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "✗", 
-          description: "Incorrect - Self-driving cars heavily rely on AI",
+          emoji: "✗",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Sometimes", 
           emoji: "🤔", 
-          description: "Incorrect - Self-driving capability requires consistent AI use",
           isCorrect: false
         }
       ],

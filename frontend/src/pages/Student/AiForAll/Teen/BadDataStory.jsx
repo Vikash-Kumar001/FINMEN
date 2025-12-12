@@ -61,21 +61,18 @@ const BadDataStory = () => {
           id: "labels", 
           text: "Data Labels", 
           emoji: "🏷️", 
-          description: "Incorrect labels in training data directly cause AI misclassification errors",
           isCorrect: true
         },
         { 
           id: "ui", 
           text: "User Interface", 
           emoji: "🎨", 
-          description: "User interface affects how people interact with AI but doesn't fix underlying data problems",
           isCorrect: false
         },
         { 
           id: "hardware", 
           text: "Computer Hardware", 
           emoji: "💻", 
-          description: "Better hardware improves processing speed but doesn't correct data quality issues",
           isCorrect: false
         }
       ]
@@ -84,52 +81,48 @@ const BadDataStory = () => {
       id: 2,
       text: "AI mistakes a banana for a pear. What caused this error?",
       options: [
-        { 
-          id: "data", 
-          text: "Incorrect Training Data", 
-          emoji: "📝", 
-          description: "AI learns from training data, so incorrect data leads to incorrect predictions",
-          isCorrect: true
-        },
+       
         { 
           id: "speed", 
           text: "Server Speed", 
           emoji: "⚡", 
-          description: "Slow servers affect response time but don't cause classification errors",
           isCorrect: false
         },
         { 
           id: "design", 
           text: "Website Design", 
-          emoji: "🌐", 
-          description: "Website design affects user experience but doesn't influence AI learning accuracy",
+          emoji: "🌐",
           isCorrect: false
-        }
+        },
+         { 
+          id: "data", 
+          text: "Incorrect Training Data", 
+          emoji: "📝", 
+          isCorrect: true
+        },
       ]
     },
     {
       id: 3,
       text: "The model thinks oranges are lemons. What principle does this illustrate?",
       options: [
-        { 
-          id: "garbage", 
-          text: "Garbage in, garbage out", 
-          emoji: "🚫", 
-          description: "Poor quality input data inevitably produces poor quality AI outputs",
-          isCorrect: true
-        },
+       
         { 
           id: "hardware", 
           text: "Faster hardware = smarter AI", 
           emoji: "⚡", 
-          description: "Hardware speed affects processing time but not the fundamental accuracy of AI models",
           isCorrect: false
+        },
+         { 
+          id: "garbage", 
+          text: "Garbage in, garbage out", 
+          emoji: "🚫",
+          isCorrect: true
         },
         { 
           id: "network", 
           text: "Internet Connection", 
           emoji: "📶", 
-          description: "Network connectivity affects data transfer but not AI model accuracy",
           isCorrect: false
         }
       ]
@@ -141,22 +134,19 @@ const BadDataStory = () => {
         { 
           id: "improve", 
           text: "Improve Training Data", 
-          emoji: "✅", 
-          description: "High-quality, accurately labeled training data is essential for reliable AI performance",
+          emoji: "✅",
           isCorrect: true
         },
         { 
           id: "colors", 
           text: "Change Screen Colors", 
-          emoji: "🎨", 
-          description: "Changing visual appearance doesn't address the underlying data quality issues",
+          emoji: "🎨",
           isCorrect: false
         },
         { 
           id: "volume", 
           text: "Increase Volume", 
           emoji: "🔊", 
-          description: "Audio volume affects user experience but doesn't improve AI classification accuracy",
           isCorrect: false
         }
       ]
@@ -165,25 +155,23 @@ const BadDataStory = () => {
       id: 5,
       text: "After fixing labels, AI recognizes fruits correctly. What lesson do we learn?",
       options: [
-        { 
-          id: "clean", 
-          text: "Clean data = reliable AI", 
-          emoji: "🌟", 
-          description: "Quality training data is the foundation of trustworthy AI systems",
-          isCorrect: true
-        },
+        
         { 
           id: "emojis", 
           text: "Add more emojis", 
           emoji: "🥳", 
-          description: "Emojis enhance user experience but don't improve AI reliability or accuracy",
           isCorrect: false
+        },
+        { 
+          id: "clean", 
+          text: "Clean data = reliable AI", 
+          emoji: "🌟", 
+          isCorrect: true
         },
         { 
           id: "updates", 
           text: "Frequent Software Updates", 
-          emoji: "🔄", 
-          description: "Software updates can add features but won't fix data quality problems",
+          emoji: "🔄",
           isCorrect: false
         }
       ]

@@ -20,27 +20,25 @@ const DebateInnovationTech = () => {
       id: 1,
       text: "Is innovation only about technology and gadgets?",
       options: [
-        {
-          id: "a",
-          text: "No, any new idea or improvement counts",
-          emoji: "🔄",
-          description: "Correct! Innovation can happen in processes, services, business models, and more.",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Yes, only technology counts as innovation",
           emoji: "💻",
-          description: "This narrow view misses opportunities for innovation in many other areas.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Innovation is impossible without huge investment",
           emoji: "💰",
-          description: "Many innovations start small and grow - investment isn't always required upfront.",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "No, any new idea or improvement counts",
+          emoji: "🔄",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -51,21 +49,18 @@ const DebateInnovationTech = () => {
           id: "a",
           text: "New teaching method in a classroom",
           emoji: "📚",
-          description: "Exactly! Educational innovations improve learning without requiring technology.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Only creating new smartphone apps",
           emoji: "📱",
-          description: "This is just one type of innovation - there are many others.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Copying existing solutions exactly",
           emoji: "📎",
-          description: "Copying isn't innovation - it's replication without improvement.",
           isCorrect: false
         }
       ]
@@ -78,21 +73,18 @@ const DebateInnovationTech = () => {
           id: "a",
           text: "It encourages creative problem-solving in all areas",
           emoji: "🎯",
-          description: "Great! A broader view empowers more people to innovate in their own contexts.",
           isCorrect: true
         },
         {
           id: "b",
           text: "It makes innovation more exclusive",
           emoji: "🔒",
-          description: "Exclusivity limits innovation rather than encouraging it.",
           isCorrect: false
         },
         {
           id: "c",
           text: "It focuses only on wealthy sectors",
           emoji: "💎",
-          description: "Innovation can happen anywhere, not just in wealthy sectors.",
           isCorrect: false
         }
       ]
@@ -101,25 +93,23 @@ const DebateInnovationTech = () => {
       id: 4,
       text: "What role does social innovation play?",
       options: [
-        {
-          id: "a",
-          text: "Creates solutions for societal challenges",
-          emoji: "🌍",
-          description: "Perfect! Social innovations address community needs and improve lives.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Only benefits corporations",
           emoji: "🏢",
-          description: "Social innovation benefits communities and society as a whole.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Creates solutions for societal challenges",
+          emoji: "🌍",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Isn't as valuable as tech innovation",
           emoji: "📉",
-          description: "All types of innovation have value depending on context and impact.",
           isCorrect: false
         }
       ]
@@ -128,27 +118,25 @@ const DebateInnovationTech = () => {
       id: 5,
       text: "How can teens innovate without technology?",
       options: [
-        {
-          id: "a",
-          text: "Improve processes, create art, solve community problems",
-          emoji: "🌟",
-          description: "Correct! Innovation takes many forms beyond technology.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Only by starting businesses",
           emoji: "💼",
-          description: "Entrepreneurship is one form of innovation, but not the only one.",
           isCorrect: false
         },
         {
           id: "c",
           text: "By avoiding all challenges",
           emoji: "🚫",
-          description: "Avoiding challenges prevents the opportunity to innovate.",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Improve processes, create art, solve community problems",
+          emoji: "🌟",
+          isCorrect: true
+        },
       ]
     }
   ];
@@ -191,8 +179,8 @@ const DebateInnovationTech = () => {
       totalXp={totalXp}
       gameId="ehe-teen-36"
       gameType="ehe"
-      totalLevels={40}
-      currentLevel={36}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/ehe/teens"
@@ -214,7 +202,7 @@ const DebateInnovationTech = () => {
             {getCurrentQuestion().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {getCurrentQuestion().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +213,6 @@ const DebateInnovationTech = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

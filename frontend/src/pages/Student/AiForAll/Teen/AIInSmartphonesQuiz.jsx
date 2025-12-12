@@ -60,21 +60,18 @@ const AIInSmartphonesQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✓", 
-          description: "Correct - Face unlock uses computer vision AI",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "✗", 
-          description: "Incorrect - Face unlock does use AI technology",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only on iPhones", 
           emoji: "🍎", 
-          description: "Partially correct but not the best answer",
           isCorrect: false
         }
       ],
@@ -85,27 +82,25 @@ const AIInSmartphonesQuiz = () => {
       text: "Does predictive text use AI?",
       emoji: "💬",
       options: [
-        { 
+         { 
           id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - Predictive text uses machine learning",
-          isCorrect: true
+          text: "Only with internet", 
+          emoji: "🌐",
+          isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - Predictive text is powered by AI",
           isCorrect: false
         },
+       
         { 
           id: 3, 
-          text: "Only with internet", 
-          emoji: "🌐", 
-          description: "Partially correct but not entirely accurate",
-          isCorrect: false
-        }
+          text: "Yes", 
+          emoji: "✅", 
+          isCorrect: true
+        },
       ],
       explanation: "Predictive text uses AI to analyze your typing patterns, vocabulary, and context to suggest the next word. It learns from your usage to provide more accurate suggestions over time."
     },
@@ -117,22 +112,19 @@ const AIInSmartphonesQuiz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "🔊", 
-          description: "Correct - Voice assistants use NLP and machine learning",
+          emoji: "🔊",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "🔇", 
-          description: "Incorrect - Voice assistants are AI-powered",
+          emoji: "🔇",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only when connected", 
-          emoji: "📶", 
-          description: "Partially correct but misses the main point",
+          emoji: "📶",
           isCorrect: false
         }
       ],
@@ -147,21 +139,18 @@ const AIInSmartphonesQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "🏷️", 
-          description: "Correct - Photo tagging uses computer vision AI",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - Photo tagging is AI-powered",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only on social media", 
           emoji: "📱", 
-          description: "Too narrow - AI tagging is used in many apps",
           isCorrect: false
         }
       ],
@@ -174,23 +163,20 @@ const AIInSmartphonesQuiz = () => {
       options: [
         { 
           id: 1, 
-          text: "Yes", 
-          emoji: "🧠", 
-          description: "Correct - Adaptive brightness uses machine learning",
-          isCorrect: true
+          text: "No", 
+          emoji: "❌",
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Adaptive brightness is AI-powered",
-          isCorrect: false
+          text: "Yes", 
+          emoji: "🧠", 
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Only on Android", 
           emoji: "🤖", 
-          description: "Incorrect - Both platforms use this technology",
           isCorrect: false
         }
       ],

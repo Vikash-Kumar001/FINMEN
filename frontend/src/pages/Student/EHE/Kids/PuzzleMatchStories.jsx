@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -10,246 +10,260 @@ const PuzzleMatchStories = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
   const [selectedStory, setSelectedStory] = useState(null);
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const [shuffledStories, setShuffledStories] = useState([]);
-  const [shuffledSkills, setShuffledSkills] = useState([]);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      story: "Girl Sells Crafts",
-      emoji: "🎨",
-      skill: "Creativity",
-      skillEmoji: "💡",
-      description: "Creating and selling handmade crafts shows creativity and artistic skills."
-    },
-    {
-      id: 2,
-      story: "Boy Runs App",
-      emoji: "💻",
-      skill: "Tech",
-      skillEmoji: "🖥️",
-      description: "Developing and managing an app requires technical and digital skills."
-    },
-    {
-      id: 3,
-      story: "Teen Sells Cakes",
-      emoji: "🎂",
-      skill: "Cooking",
-      skillEmoji: "👩‍🍳",
-      description: "Baking and selling cakes demonstrates culinary expertise."
-    },
-    {
-      id: 4,
-      story: "Kid Repairs Toys",
-      emoji: "🔧",
-      skill: "Problem-solving",
-      skillEmoji: "🧩",
-      description: "Fixing broken toys shows technical knowledge and problem-solving abilities."
-    },
-    {
-      id: 5,
-      story: "Student Teaches Peers",
-      emoji: "📚",
-      skill: "Leadership",
-      skillEmoji: "👑",
-      description: "Teaching others requires leadership and communication skills."
-    }
+  // Stories (left side) - 5 items
+  const stories = [
+    { id: 1, name: "Girl Sells Crafts", emoji: "🎨", description: "Creating and selling handmade crafts shows creativity and artistic skills" },
+    { id: 2, name: "Boy Runs App", emoji: "💻", description: "Developing and managing an app requires technical and digital skills" },
+    { id: 3, name: "Teen Sells Cakes", emoji: "🎂", description: "Baking and selling cakes demonstrates culinary expertise" },
+    { id: 4, name: "Kid Repairs Toys", emoji: "🔧", description: "Fixing broken toys shows technical knowledge and problem-solving abilities" },
+    { id: 5, name: "Student Teaches Peers", emoji: "📚", description: "Teaching others requires leadership and communication skills" }
   ];
 
-  // Shuffle arrays when component mounts
-  useEffect(() => {
-    const shuffleArray = (array) => {
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    };
+  // Skills (right side) - 5 items
+  const skills = [
+    { id: 4, name: "Problem-solving", emoji: "🧩", description: "The process of finding solutions to difficult challenges" },
+    { id: 3, name: "Cooking", emoji: "👩‍🍳", description: "The skill of preparing food through various techniques" },
+    { id: 2, name: "Tech", emoji: "🖥️", description: "Knowledge and skills related to technology and computers" },
+    { id: 1, name: "Creativity", emoji: "💡", description: "The ability to create original ideas or solutions" },
+    { id: 5, name: "Leadership", emoji: "👑", description: "The ability to guide and influence others toward goals" },
+  ];
 
-    setShuffledStories(shuffleArray(puzzles.map(p => p.story)));
-    setShuffledSkills(shuffleArray(puzzles.map(p => p.skill)));
-  }, []);
+  // Correct matches
+  const correctMatches = [
+    { storyId: 1, skillId: 1 }, // Girl Sells Crafts → Creativity
+    { storyId: 2, skillId: 2 }, // Boy Runs App → Tech
+    { storyId: 3, skillId: 3 }, // Teen Sells Cakes → Cooking
+    { storyId: 4, skillId: 4 }, // Kid Repairs Toys → Problem-solving
+    { storyId: 5, skillId: 5 }  // Student Teaches Peers → Leadership
+  ];
 
   const handleStorySelect = (story) => {
-    if (selectedSkill) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.story === story && p.skill === selectedSkill);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedStory(null);
-      setSelectedSkill(null);
-    } else {
-      setSelectedStory(story);
-    }
+    if (gameFinished) return;
+    setSelectedStory(story);
   };
 
   const handleSkillSelect = (skill) => {
-    if (selectedStory) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.story === selectedStory && p.skill === skill);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedStory(null);
-      setSelectedSkill(null);
+    if (gameFinished) return;
+    setSelectedSkill(skill);
+  };
+
+  const handleMatch = () => {
+    if (!selectedStory || !selectedSkill || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      storyId: selectedStory.id,
+      skillId: selectedSkill.id,
+      isCorrect: correctMatches.some(
+        match => match.storyId === selectedStory.id && match.skillId === selectedSkill.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setSelectedSkill(skill);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === stories.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedStory(null);
+    setSelectedSkill(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedStory(null);
+    setSelectedSkill(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/ehe/kids");
   };
 
-  const isMatched = (id) => matchedPairs.includes(id);
-  const isStorySelected = (story) => selectedStory === story;
-  const isSkillSelected = (skill) => selectedSkill === skill;
+  // Check if a story is already matched
+  const isStoryMatched = (storyId) => {
+    return matches.some(match => match.storyId === storyId);
+  };
+
+  // Check if a skill is already matched
+  const isSkillMatched = (skillId) => {
+    return matches.some(match => match.skillId === skillId);
+  };
+
+  // Get match result for a story
+  const getMatchResult = (storyId) => {
+    const match = matches.find(m => m.storyId === storyId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Match Stories"
-      subtitle={`Match stories to skills! ${matchedPairs.length}/${puzzles.length} matched`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Stories with Skills (${matches.length}/${stories.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="ehe-kids-44"
       gameType="ehe"
-      totalLevels={10}
-      currentLevel={44}
-      showConfetti={gameFinished}
+      totalLevels={stories.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      backPath="/games/ehe/kids"
+      maxScore={stories.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Stories column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Stories</h3>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Stories */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Stories</h3>
               <div className="space-y-4">
-                {shuffledStories.map((story, index) => {
-                  const puzzle = puzzles.find(p => p.story === story);
-                  return (
-                    <button
-                      key={`story-${index}`}
-                      onClick={() => handleStorySelect(story)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isStorySelected(story)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.emoji}</span>
-                        <span className="text-white/90 text-lg">{story}</span>
+                {stories.map(story => (
+                  <button
+                    key={story.id}
+                    onClick={() => handleStorySelect(story)}
+                    disabled={isStoryMatched(story.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isStoryMatched(story.id)
+                        ? getMatchResult(story.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedStory?.id === story.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{story.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{story.name}</h4>
+                        <p className="text-white/80 text-sm">{story.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
-            
-            {/* Skills column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Skills</h3>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedStory 
+                    ? `Selected: ${selectedStory.name}` 
+                    : "Select a Story"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedStory || !selectedSkill}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedStory && selectedSkill
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{stories.length}</p>
+                  <p>Matched: {matches.length}/{stories.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Skills */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Skills</h3>
               <div className="space-y-4">
-                {shuffledSkills.map((skill, index) => {
-                  const puzzle = puzzles.find(p => p.skill === skill);
-                  return (
-                    <button
-                      key={`skill-${index}`}
-                      onClick={() => handleSkillSelect(skill)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isSkillSelected(skill)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.skillEmoji}</span>
-                        <span className="text-white/90 text-lg">{skill}</span>
+                {skills.map(skill => (
+                  <button
+                    key={skill.id}
+                    onClick={() => handleSkillSelect(skill)}
+                    disabled={isSkillMatched(skill.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isSkillMatched(skill.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedSkill?.id === skill.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{skill.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{skill.name}</h4>
+                        <p className="text-white/80 text-sm">{skill.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-          
-          {/* Feedback area */}
-          {selectedStory && selectedSkill && (
-            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
-              <p className="text-white/90 text-center">
-                Matching: {selectedStory} → {selectedSkill}
-              </p>
-            </div>
-          )}
-          
-          {selectedStory && !selectedSkill && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedStory}. Now select a skill to match!
-              </p>
-            </div>
-          )}
-          
-          {!selectedStory && selectedSkill && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedSkill}. Now select a story to match!
-              </p>
-            </div>
-          )}
-          
-          {/* Completion message */}
-          {gameFinished && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
-              <p className="text-green-300 text-center font-bold">
-                Great job! You matched all stories to their skills!
-              </p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {stories.length} stories with their skills!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Different life situations require different skills for success!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {stories.length} stories correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what skills each person would need in their situation!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

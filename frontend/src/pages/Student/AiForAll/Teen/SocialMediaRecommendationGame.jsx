@@ -32,8 +32,8 @@ const SocialMediaRecommendationGame = () => {
       emoji: "🤖",
       question: "What technology suggests content you might like on social media?",
       choices: [
-        { id: 1, text: "Recommender AI", emoji: "🧠", isCorrect: true },
-        { id: 2, text: "Manual curation", emoji: "✋", isCorrect: false },
+        { id: 1, text: "Manual curation", emoji: "✋", isCorrect: false },
+        { id: 2, text: "Recommender AI", emoji: "🧠", isCorrect: true },
         { id: 3, text: "Random selection", emoji: "🎲", isCorrect: false },
       ],
     },
@@ -65,9 +65,9 @@ const SocialMediaRecommendationGame = () => {
       emoji: "🔍",
       question: "How does AI filter what content to show you?",
       choices: [
-        { id: 1, text: "Pattern matching", emoji: "🔄", isCorrect: true },
-        { id: 2, text: "Chronological", emoji: "⏰", isCorrect: false },
-        { id: 3, text: "Random shuffle", emoji: "🔀", isCorrect: false },
+        { id: 1, text: "Chronological", emoji: "⏰", isCorrect: false },
+        { id: 2, text: "Random shuffle", emoji: "🔀", isCorrect: false },
+        { id: 3, text: "Pattern matching", emoji: "🔄", isCorrect: true },
       ],
     },
     {

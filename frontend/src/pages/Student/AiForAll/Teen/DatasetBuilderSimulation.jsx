@@ -12,7 +12,7 @@ const DatasetBuilderSimulation = () => {
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti } = useGameFeedback();
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
@@ -58,13 +58,7 @@ const DatasetBuilderSimulation = () => {
       id: 2,
       text: "You want AI to understand animal noises 🐶🐱🐘. What do you collect?",
       options: [
-        { 
-          id: "sounds", 
-          text: "🔊 Sounds", 
-          emoji: "🎵", 
-          description: "Audio recordings of animals",
-          isCorrect: true
-        },
+        
         { 
           id: "images", 
           text: "📸 Images", 
@@ -78,6 +72,13 @@ const DatasetBuilderSimulation = () => {
           emoji: "📄", 
           description: "Written descriptions",
           isCorrect: false
+        },
+        { 
+          id: "sounds", 
+          text: "🔊 Sounds", 
+          emoji: "🎵", 
+          description: "Audio recordings of animals",
+          isCorrect: true
         },
         { 
           id: "smells", 
@@ -126,13 +127,7 @@ const DatasetBuilderSimulation = () => {
       id: 4,
       text: "AI learning traffic signs 🚦 needs what type of dataset?",
       options: [
-        { 
-          id: "images", 
-          text: "📸 Images", 
-          emoji: "🖼️", 
-          description: "Visual representations of signs",
-          isCorrect: true
-        },
+        
         { 
           id: "sounds", 
           text: "🔊 Sounds", 
@@ -148,6 +143,13 @@ const DatasetBuilderSimulation = () => {
           isCorrect: false
         },
         { 
+          id: "images", 
+          text: "📸 Images", 
+          emoji: "🖼️", 
+          description: "Visual representations of signs",
+          isCorrect: true
+        },
+        { 
           id: "maps", 
           text: "🗺️ Maps", 
           emoji: "📍", 
@@ -160,13 +162,7 @@ const DatasetBuilderSimulation = () => {
       id: 5,
       text: "If AI must identify birds by their songs 🐦🎶, what data do you need?",
       options: [
-        { 
-          id: "sounds", 
-          text: "🔊 Sounds", 
-          emoji: "🎵", 
-          description: "Audio recordings of bird calls",
-          isCorrect: true
-        },
+        
         { 
           id: "photos", 
           text: "📸 Photos", 
@@ -187,7 +183,14 @@ const DatasetBuilderSimulation = () => {
           emoji: "🎬", 
           description: "Moving visual content",
           isCorrect: false
-        }
+        },
+        { 
+          id: "sounds", 
+          text: "🔊 Sounds", 
+          emoji: "🎵", 
+          description: "Audio recordings of bird calls",
+          isCorrect: true
+        },
       ]
     }
   ];
@@ -247,7 +250,7 @@ const DatasetBuilderSimulation = () => {
       nextEnabled={showResult}
       showGameOver={showResult && finalScore >= 3}
       score={coins}
-      gameId="ai-teen-20"
+      gameId="ai-teen-61"
       gameType="ai"
       totalLevels={questions.length}
       currentLevel={currentQuestion + 1}
@@ -256,7 +259,9 @@ const DatasetBuilderSimulation = () => {
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}>
       <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
         {!showResult ? (
           <div className="space-y-4 md:space-y-6">

@@ -58,25 +58,23 @@ const PredictNextWord = () => {
       options: [
         { 
           id: 1, 
-          text: "East", 
-          emoji: "➡️", 
-          description: "Correct - The sun rises in the east",
-          isCorrect: true
+          text: "North", 
+          emoji: "⬆️",
+          isCorrect: false
         },
+        
         { 
           id: 2, 
           text: "West", 
-          emoji: "⬅️", 
-          description: "Incorrect - The sun sets in the west",
+          emoji: "⬅️",
           isCorrect: false
         },
         { 
           id: 3, 
-          text: "North", 
-          emoji: "⬆️", 
-          description: "Incorrect - Not the direction of sunrise",
-          isCorrect: false
-        }
+          text: "East", 
+          emoji: "➡️",
+          isCorrect: true
+        },
       ],
       explanation: "East! The sun always rises in the east due to Earth's rotation. AI language models learn these factual patterns from vast amounts of text data, allowing them to predict common phrases and factual information."
     },
@@ -89,21 +87,18 @@ const PredictNextWord = () => {
           id: 1, 
           text: "Celsius", 
           emoji: "🌡️", 
-          description: "Correct - Standard boiling point measurement",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Fahrenheit", 
           emoji: "🔥", 
-          description: "Incorrect - That would be 212°F",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Kelvin", 
-          emoji: "❄️", 
-          description: "Incorrect - That would be 373K",
+          emoji: "❄️",
           isCorrect: false
         }
       ],
@@ -118,21 +113,18 @@ const PredictNextWord = () => {
           id: 1, 
           text: "Paris", 
           emoji: "🗼", 
-          description: "Correct - Paris is France's capital",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "London", 
           emoji: "🇬🇧", 
-          description: "Incorrect - That's England's capital",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Berlin", 
           emoji: "🇩🇪", 
-          description: "Incorrect - That's Germany's capital",
           isCorrect: false
         }
       ],
@@ -145,23 +137,20 @@ const PredictNextWord = () => {
       options: [
         { 
           id: 1, 
-          text: "Week", 
-          emoji: "📆", 
-          description: "Correct - Standard time measurement",
-          isCorrect: true
+          text: "Month", 
+          emoji: "🗓️", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "Month", 
-          emoji: "🗓️", 
-          description: "Incorrect - Months have 28-31 days",
-          isCorrect: false
+          text: "Week", 
+          emoji: "📆", 
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Year", 
-          emoji: "🗓", 
-          description: "Incorrect - Years have 365 days",
+          emoji: "🗓",
           isCorrect: false
         }
       ],
@@ -174,25 +163,22 @@ const PredictNextWord = () => {
       options: [
         { 
           id: 1, 
-          text: "Pattern recognition", 
-          emoji: "🧩", 
-          description: "Correct - AI identifies text patterns",
-          isCorrect: true
+          text: "Human input", 
+          emoji: "🧑", 
+          isCorrect: false
         },
         { 
           id: 2, 
           text: "Random guessing", 
-          emoji: "🎲", 
-          description: "Incorrect - AI uses data-driven approaches",
+          emoji: "🎲",
           isCorrect: false
         },
         { 
           id: 3, 
-          text: "Human input", 
-          emoji: "🧑", 
-          description: "Incorrect - Models work autonomously",
-          isCorrect: false
-        }
+          text: "Pattern recognition", 
+          emoji: "🧩",
+          isCorrect: true
+        },
       ],
       explanation: "Pattern recognition! AI language models analyze billions of text examples to learn common word sequences and relationships. When you type, the AI predicts what word might come next based on these learned patterns, making suggestions feel intuitive and helpful."
     }

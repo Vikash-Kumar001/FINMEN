@@ -9,7 +9,7 @@ const GlobalFairnessQuiz = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-14";
+  const gameId = "ai-teen-94";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -60,21 +60,18 @@ const GlobalFairnessQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Correct - Digital equality is a human right",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - Gender should not limit digital access",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only in developed countries", 
           emoji: "🏙️", 
-          description: "Too limited - Equal rights should be universal",
           isCorrect: false
         }
       ],
@@ -85,25 +82,23 @@ const GlobalFairnessQuiz = () => {
       text: "Should everyone have access to the internet?",
       emoji: "💻",
       options: [
-        { 
-          id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - Internet access is increasingly essential",
-          isCorrect: true
-        },
+        
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - Connectivity is vital for modern life",
           isCorrect: false
+        },
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✅", 
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Only those who can afford it", 
           emoji: "💰", 
-          description: "Problematic - Creates inequality gaps",
           isCorrect: false
         }
       ],
@@ -114,27 +109,25 @@ const GlobalFairnessQuiz = () => {
       text: "Should girls get same coding opportunities as boys?",
       emoji: "👩‍💻",
       options: [
-        { 
-          id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - Equal opportunities foster innovation",
-          isCorrect: true
-        },
+        
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - Gender shouldn't limit career paths",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only if they show interest", 
           emoji: "🤔", 
-          description: "Biased assumption - Interest can be nurtured",
           isCorrect: false
-        }
+        },
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✅", 
+          isCorrect: true
+        },
       ],
       explanation: "Yes! Girls should have the same coding opportunities as boys. Encouraging diverse perspectives in technology leads to more innovative solutions and helps address gender imbalances in STEM fields. Early exposure and encouragement are key."
     },
@@ -143,25 +136,23 @@ const GlobalFairnessQuiz = () => {
       text: "Should boys and girls get equal AI learning access?",
       emoji: "🤖",
       options: [
-        { 
-          id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - Equal AI literacy is essential",
-          isCorrect: true
-        },
+        
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - AI education should be inclusive",
           isCorrect: false
+        },
+        { 
+          id: 1, 
+          text: "Yes", 
+          emoji: "✅",
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Only in advanced courses", 
           emoji: "🎓", 
-          description: "Too restrictive - Foundational knowledge for all",
           isCorrect: false
         }
       ],
@@ -176,21 +167,18 @@ const GlobalFairnessQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Correct - Online equality reflects human dignity",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - Digital spaces should be inclusive",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only in professional contexts", 
           emoji: "💼", 
-          description: "Too narrow - Respect should be universal",
           isCorrect: false
         }
       ],

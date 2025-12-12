@@ -34,10 +34,10 @@ const PatternPredictionPuzzle = () => {
 
   // Answers (right side) - 6 items, rearranged to split matches
   const rightItems = [
-    { id: 2, name: "10", emoji: "🔟", description: "Next even number" },
-    { id: 4, name: "30", emoji: "㉞", description: "Next multiple of 5" },
-    { id: 3, name: "36", emoji: "㉟", description: "Next perfect square" },
     { id: 1, name: "50", emoji: "㊿", description: "Next in decreasing sequence" },
+    { id: 2, name: "10", emoji: "🔟", description: "Next even number" },
+    { id: 3, name: "36", emoji: "㉟", description: "Next perfect square" },
+    { id: 4, name: "30", emoji: "㉞", description: "Next multiple of 5" },
     { id: 5, name: "8", emoji: "⑧", description: "Next Fibonacci number" }
     
   ];

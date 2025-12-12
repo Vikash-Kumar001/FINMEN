@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -10,246 +10,260 @@ const PuzzleMatchStudies = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
   const [selectedProfession, setSelectedProfession] = useState(null);
   const [selectedCollege, setSelectedCollege] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const [shuffledProfessions, setShuffledProfessions] = useState([]);
-  const [shuffledColleges, setShuffledColleges] = useState([]);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      profession: "Doctor",
-      emoji: "👨‍⚕️",
-      college: "Medical College",
-      collegeEmoji: "🏥",
-      description: "Doctors study at medical colleges to learn about human anatomy, diseases, and treatments."
-    },
-    {
-      id: 2,
-      profession: "Lawyer",
-      emoji: "👨‍⚖️",
-      college: "Law College",
-      collegeEmoji: "⚖️",
-      description: "Lawyers attend law colleges to study legal principles, court procedures, and case laws."
-    },
-    {
-      id: 3,
-      profession: "Artist",
-      emoji: "🎨",
-      college: "Design College",
-      collegeEmoji: "🎭",
-      description: "Artists develop their creative skills at design colleges through practice and exploration."
-    },
-    {
-      id: 4,
-      profession: "Engineer",
-      emoji: "⚙️",
-      college: "Engineering College",
-      collegeEmoji: "🏗️",
-      description: "Engineers study at engineering colleges to learn mathematics, physics, and technical skills."
-    },
-    {
-      id: 5,
-      profession: "Chef",
-      emoji: "👨‍🍳",
-      college: "Culinary School",
-      collegeEmoji: "🔪",
-      description: "Chefs train at culinary schools to master cooking techniques and food preparation."
-    }
+  // Professions (left side) - 5 items
+  const professions = [
+    { id: 1, name: "Doctor", emoji: "👨‍⚕️", description: "Diagnoses and treats illnesses and injuries" },
+    { id: 2, name: "Lawyer", emoji: "👨‍⚖️", description: "Provides legal advice and represents clients in court" },
+    { id: 3, name: "Artist", emoji: "🎨", description: "Creates visual or performing art" },
+    { id: 4, name: "Engineer", emoji: "⚙️", description: "Designs and builds machines, structures, or systems" },
+    { id: 5, name: "Chef", emoji: "👨‍🍳", description: "Prepares and cooks food in restaurants or other establishments" }
   ];
 
-  // Shuffle arrays when component mounts
-  useEffect(() => {
-    const shuffleArray = (array) => {
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    };
+  // Colleges (right side) - 5 items
+  const colleges = [
+    { id: 1, name: "Medical College", emoji: "🏥", description: "Educational institution focused on medicine and healthcare" },
+    { id: 5, name: "Culinary School", emoji: "🔪", description: "Specialized school for learning cooking and food preparation" },
+    { id: 3, name: "Design College", emoji: "🎭", description: "Educational institution focused on visual or performing arts" },
+    { id: 2, name: "Law College", emoji: "⚖️", description: "Educational institution focused on legal studies" },
+    { id: 4, name: "Engineering College", emoji: "🏗️", description: "Educational institution focused on engineering disciplines" },
+  ];
 
-    setShuffledProfessions(shuffleArray(puzzles.map(p => p.profession)));
-    setShuffledColleges(shuffleArray(puzzles.map(p => p.college)));
-  }, []);
+  // Correct matches
+  const correctMatches = [
+    { professionId: 1, collegeId: 1 }, // Doctor → Medical College
+    { professionId: 2, collegeId: 2 }, // Lawyer → Law College
+    { professionId: 3, collegeId: 3 }, // Artist → Design College
+    { professionId: 4, collegeId: 4 }, // Engineer → Engineering College
+    { professionId: 5, collegeId: 5 }  // Chef → Culinary School
+  ];
 
   const handleProfessionSelect = (profession) => {
-    if (selectedCollege) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.profession === profession && p.college === selectedCollege);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedProfession(null);
-      setSelectedCollege(null);
-    } else {
-      setSelectedProfession(profession);
-    }
+    if (gameFinished) return;
+    setSelectedProfession(profession);
   };
 
   const handleCollegeSelect = (college) => {
-    if (selectedProfession) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.profession === selectedProfession && p.college === college);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedProfession(null);
-      setSelectedCollege(null);
+    if (gameFinished) return;
+    setSelectedCollege(college);
+  };
+
+  const handleMatch = () => {
+    if (!selectedProfession || !selectedCollege || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      professionId: selectedProfession.id,
+      collegeId: selectedCollege.id,
+      isCorrect: correctMatches.some(
+        match => match.professionId === selectedProfession.id && match.collegeId === selectedCollege.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setSelectedCollege(college);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === professions.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedProfession(null);
+    setSelectedCollege(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedProfession(null);
+    setSelectedCollege(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/ehe/kids");
   };
 
-  const isMatched = (id) => matchedPairs.includes(id);
-  const isProfessionSelected = (profession) => selectedProfession === profession;
-  const isCollegeSelected = (college) => selectedCollege === college;
+  // Check if a profession is already matched
+  const isProfessionMatched = (professionId) => {
+    return matches.some(match => match.professionId === professionId);
+  };
+
+  // Check if a college is already matched
+  const isCollegeMatched = (collegeId) => {
+    return matches.some(match => match.collegeId === collegeId);
+  };
+
+  // Get match result for a profession
+  const getMatchResult = (professionId) => {
+    const match = matches.find(m => m.professionId === professionId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Match Studies"
-      subtitle={`Match professions to colleges! ${matchedPairs.length}/${puzzles.length} matched`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Professions with Colleges (${matches.length}/${professions.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="ehe-kids-64"
       gameType="ehe"
-      totalLevels={10}
-      currentLevel={64}
-      showConfetti={gameFinished}
+      totalLevels={professions.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      backPath="/games/ehe/kids"
+      maxScore={professions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Professions column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Professions</h3>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Professions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Professions</h3>
               <div className="space-y-4">
-                {shuffledProfessions.map((profession, index) => {
-                  const puzzle = puzzles.find(p => p.profession === profession);
-                  return (
-                    <button
-                      key={`profession-${index}`}
-                      onClick={() => handleProfessionSelect(profession)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isProfessionSelected(profession)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.emoji}</span>
-                        <span className="text-white/90 text-lg">{profession}</span>
+                {professions.map(profession => (
+                  <button
+                    key={profession.id}
+                    onClick={() => handleProfessionSelect(profession)}
+                    disabled={isProfessionMatched(profession.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isProfessionMatched(profession.id)
+                        ? getMatchResult(profession.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedProfession?.id === profession.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{profession.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{profession.name}</h4>
+                        <p className="text-white/80 text-sm">{profession.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
-            
-            {/* Colleges column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Colleges</h3>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedProfession 
+                    ? `Selected: ${selectedProfession.name}` 
+                    : "Select a Profession"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedProfession || !selectedCollege}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedProfession && selectedCollege
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{professions.length}</p>
+                  <p>Matched: {matches.length}/{professions.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Colleges */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Colleges</h3>
               <div className="space-y-4">
-                {shuffledColleges.map((college, index) => {
-                  const puzzle = puzzles.find(p => p.college === college);
-                  return (
-                    <button
-                      key={`college-${index}`}
-                      onClick={() => handleCollegeSelect(college)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isCollegeSelected(college)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.collegeEmoji}</span>
-                        <span className="text-white/90 text-lg">{college}</span>
+                {colleges.map(college => (
+                  <button
+                    key={college.id}
+                    onClick={() => handleCollegeSelect(college)}
+                    disabled={isCollegeMatched(college.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isCollegeMatched(college.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedCollege?.id === college.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{college.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{college.name}</h4>
+                        <p className="text-white/80 text-sm">{college.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-          
-          {/* Feedback area */}
-          {selectedProfession && selectedCollege && (
-            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
-              <p className="text-white/90 text-center">
-                Matching: {selectedProfession} → {selectedCollege}
-              </p>
-            </div>
-          )}
-          
-          {selectedProfession && !selectedCollege && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedProfession}. Now select a college to match!
-              </p>
-            </div>
-          )}
-          
-          {!selectedProfession && selectedCollege && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedCollege}. Now select a profession to match!
-              </p>
-            </div>
-          )}
-          
-          {/* Completion message */}
-          {gameFinished && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
-              <p className="text-green-300 text-center font-bold">
-                Great job! You matched all professions to their colleges!
-              </p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {professions.length} professions with their colleges!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Different professions require specialized education and training!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {professions.length} professions correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what education each profession would require!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

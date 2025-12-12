@@ -28,12 +28,67 @@ const SelfDrivingCarReflex = () => {
   const timerRef = useRef(null);
   const currentRoundRef = useRef(0);
 
-  const signals = [
-    { id: 1, light: "green", emoji: "🟢", correct: "go" },
-    { id: 2, light: "red", emoji: "🔴", correct: "stop" },
-    { id: 3, light: "green", emoji: "🟢", correct: "go" },
-    { id: 4, light: "red", emoji: "🔴", correct: "stop" },
-    { id: 5, light: "green", emoji: "🟢", correct: "go" }
+  const questions = [
+    {
+      id: 1,
+      question: "What should you do when you see this traffic signal?",
+      signal: "🟢",
+      correctAnswer: "Go",
+      options: [
+        { text: "Go", isCorrect: true, emoji: "▶️" },
+        { text: "Stop", isCorrect: false, emoji: "🛑" },
+        { text: "Slow Down", isCorrect: false, emoji: "🐢" },
+        { text: "Honk", isCorrect: false, emoji: "📢" }
+      ]
+    },
+    {
+      id: 2,
+      question: "What should you do when you see this traffic signal?",
+      signal: "🔴",
+      correctAnswer: "Stop",
+      options: [
+        { text: "Go", isCorrect: false, emoji: "▶️" },
+        { text: "Speed Up", isCorrect: false, emoji: "⚡" },
+        { text: "Stop", isCorrect: true, emoji: "🛑" },
+        { text: "Turn Around", isCorrect: false, emoji: "🔄" }
+      ]
+    },
+    {
+      id: 3,
+      question: "What should you do when you see this traffic signal?",
+      signal: "🟢",
+      correctAnswer: "Go",
+      options: [
+        { text: "Go", isCorrect: true, emoji: "▶️" },
+        { text: "Stop", isCorrect: false, emoji: "🛑" },
+        { text: "Park", isCorrect: false, emoji: "🅿️" },
+        { text: "Reverse", isCorrect: false, emoji: "◀️" }
+      ]
+    },
+    {
+      id: 4,
+      question: "What should you do when you see this traffic signal?",
+      signal: "🔴",
+      correctAnswer: "Stop",
+      options: [
+        { text: "Go", isCorrect: false, emoji: "▶️" },
+        { text: "Stop", isCorrect: true, emoji: "🛑" },
+        { text: "Merge", isCorrect: false, emoji: "🔀" },
+        { text: "Overtake", isCorrect: false, emoji: "💨" }
+      ]
+    },
+    {
+      id: 5,
+      question: "What should you do when you see this traffic signal?",
+      signal: "🟢",
+      correctAnswer: "Go",
+      options: [
+        { text: "Stop", isCorrect: false, emoji: "🛑" },
+        { text: "Wait", isCorrect: false, emoji: "⏳" },
+        { text: "Exit", isCorrect: false, emoji: "🚪" },
+        { text: "Go", isCorrect: true, emoji: "▶️" },
+      ]
+    }
   ];
 
   useEffect(() => {
@@ -92,14 +147,14 @@ const SelfDrivingCarReflex = () => {
     resetFeedback();
   };
 
-  const handleChoice = (choice) => {
+  const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentSignalData = signals[currentRound - 1];
-    const isCorrect = choice === currentSignalData.correct;
+    const currentQuestion = questions[currentRound - 1];
+    const isCorrect = option.isCorrect;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -118,12 +173,12 @@ const SelfDrivingCarReflex = () => {
   };
 
   const finalScore = score;
-  const currentSignalData = signals[currentRound - 1];
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Self-Driving Car Reflex"
-      subtitle={gameState === "playing" ? `Signal ${currentRound}/${TOTAL_ROUNDS}: React fast to the signal!` : "Test your self-driving car reflexes!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: React fast to the signal!` : "Test your self-driving car reflexes!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -160,11 +215,11 @@ const SelfDrivingCarReflex = () => {
           </div>
         )}
 
-        {gameState === "playing" && currentSignalData && (
+        {gameState === "playing" && currentQuestion && (
           <div className="space-y-8">
             <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <div className="text-white">
-                <span className="font-bold">Signal:</span> {currentRound}/{TOTAL_ROUNDS}
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
               <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
                 <span className="text-white">Time:</span> {timeLeft}s
@@ -174,29 +229,26 @@ const SelfDrivingCarReflex = () => {
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-12 border border-white/20">
-              <div className="text-6xl mb-4 text-center">🚗</div>
-              <h3 className="text-white text-xl font-bold mb-6 text-center">React fast to the signal!</h3>
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
               
               <div className="bg-gray-800/50 rounded-xl p-12 mb-6 flex justify-center items-center">
-                <div className="text-9xl animate-pulse">{currentSignalData.emoji}</div>
+                <div className="text-9xl animate-pulse">{currentQuestion.signal}</div>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => handleChoice("stop")}
-                  disabled={answered}
-                  className="w-full min-h-[80px] bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <div className="text-3xl mr-2">🛑</div> STOP
-                </button>
-                <button
-                  onClick={() => handleChoice("go")}
-                  disabled={answered}
-                  className="w-full min-h-[80px] bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <div className="text-3xl mr-2">▶️</div> GO
-                </button>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

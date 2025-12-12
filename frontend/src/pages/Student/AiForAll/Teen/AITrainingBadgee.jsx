@@ -8,7 +8,7 @@ const AITrainingBadgee = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-18";
+  const gameId = "ai-teen-60";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -60,11 +60,7 @@ const AITrainingBadgee = () => {
       title: "Dataset Quality",
       question: "Why is data quality crucial for AI training?",
       options: [
-        { 
-          text: "Poor quality data leads to unreliable AI performance", 
-          emoji: "⚠️", 
-          isCorrect: true
-        },
+        
         { 
           text: "More data is always better regardless of quality", 
           emoji: "📦", 
@@ -79,7 +75,12 @@ const AITrainingBadgee = () => {
           text: "Data quality affects processing speed only", 
           emoji: "⚡", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Poor quality data leads to unreliable AI performance", 
+          emoji: "⚠️", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Correct! The saying 'garbage in, garbage out' applies perfectly to AI - quality data is essential for reliable models!",
@@ -91,11 +92,7 @@ const AITrainingBadgee = () => {
       title: "Training Process",
       question: "What does the term 'overfitting' mean in AI training?",
       options: [
-        { 
-          text: "Model memorizes training data but fails on new data", 
-          emoji: "🧠", 
-          isCorrect: true
-        },
+        
         { 
           text: "Model trains too slowly", 
           emoji: "⏳", 
@@ -105,6 +102,11 @@ const AITrainingBadgee = () => {
           text: "Model uses too little data", 
           emoji: "📉", 
           isCorrect: false
+        },
+        { 
+          text: "Model memorizes training data but fails on new data", 
+          emoji: "🧠", 
+          isCorrect: true
         },
         { 
           text: "Model requires too much computing power", 
@@ -122,15 +124,16 @@ const AITrainingBadgee = () => {
       title: "Model Evaluation",
       question: "Which metric is commonly used to evaluate classification AI models?",
       options: [
-        { 
-          text: "Accuracy", 
-          emoji: "🎯", 
-          isCorrect: true
-        },
+       
         { 
           text: "Color intensity", 
           emoji: "🌈", 
           isCorrect: false
+        },
+         { 
+          text: "Accuracy", 
+          emoji: "🎯", 
+          isCorrect: true
         },
         { 
           text: "File size", 
@@ -153,11 +156,7 @@ const AITrainingBadgee = () => {
       title: "Continuous Learning",
       question: "Why is continuous retraining important for AI models?",
       options: [
-        { 
-          text: "Data patterns and real-world conditions change over time", 
-          emoji: "🔄", 
-          isCorrect: true
-        },
+       
         { 
           text: "Retraining uses less computational resources", 
           emoji: "🔋", 
@@ -167,6 +166,11 @@ const AITrainingBadgee = () => {
           text: "Old models stop working after a fixed period", 
           emoji: "⏰", 
           isCorrect: false
+        },
+         { 
+          text: "Data patterns and real-world conditions change over time", 
+          emoji: "🔄", 
+          isCorrect: true
         },
         { 
           text: "Retraining is only needed for marketing purposes", 

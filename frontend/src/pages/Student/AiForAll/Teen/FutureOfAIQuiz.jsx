@@ -59,22 +59,19 @@ const FutureOfAIQuiz = () => {
         { 
           id: 1, 
           text: "Maybe", 
-          emoji: "🤔", 
-          description: "Best answer - Future tech is uncertain",
+          emoji: "🤔",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Overconfident - Tech challenges remain",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "No", 
           emoji: "❌", 
-          description: "Too pessimistic - Progress is likely",
           isCorrect: false
         }
       ],
@@ -85,25 +82,23 @@ const FutureOfAIQuiz = () => {
       text: "Will AI teachers replace humans completely?",
       emoji: "🧑‍🏫🤖",
       options: [
+        
         { 
           id: 1, 
-          text: "Maybe", 
-          emoji: "🧠", 
-          description: "Best answer - Human connection is irreplaceable",
-          isCorrect: true
+          text: "Yes", 
+          emoji: "✅", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Incorrect - Emotional intelligence matters",
-          isCorrect: false
+          text: "Maybe", 
+          emoji: "🧠", 
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "No", 
           emoji: "❌", 
-          description: "Too absolute - AI can supplement teaching",
           isCorrect: false
         }
       ],
@@ -114,27 +109,25 @@ const FutureOfAIQuiz = () => {
       text: "Could AI create its own city one day?",
       emoji: "🏙️🤖",
       options: [
+        
         { 
           id: 1, 
-          text: "Maybe", 
-          emoji: "🤔", 
-          description: "Best answer - Complex systems require oversight",
-          isCorrect: true
+          text: "Yes", 
+          emoji: "✅", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Overconfident - Urban planning needs human values",
+          text: "No", 
+          emoji: "❌",
           isCorrect: false
         },
         { 
           id: 3, 
-          text: "No", 
-          emoji: "❌", 
-          description: "Too restrictive - AI can aid urban design",
-          isCorrect: false
-        }
+          text: "Maybe", 
+          emoji: "🤔", 
+          isCorrect: true
+        },
       ],
       explanation: "Maybe! AI can optimize city layouts, traffic flows, and resource distribution, but creating livable communities requires understanding human needs, culture, and values that only humans can provide. AI would likely assist rather than lead."
     },
@@ -143,25 +136,23 @@ const FutureOfAIQuiz = () => {
       text: "Will AI become smarter than humans?",
       emoji: "🧠⚡",
       options: [
+        
         { 
           id: 1, 
-          text: "Maybe", 
-          emoji: "🤔", 
-          description: "Best answer - Intelligence is multifaceted",
-          isCorrect: true
+          text: "Yes", 
+          emoji: "✅", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Too simplistic - Different types of intelligence",
-          isCorrect: false
+          text: "Maybe", 
+          emoji: "🤔", 
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "No", 
-          emoji: "❌", 
-          description: "Too definitive - AI excels in specific areas",
+          emoji: "❌",
           isCorrect: false
         }
       ],
@@ -176,21 +167,18 @@ const FutureOfAIQuiz = () => {
           id: 1, 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Best answer - Consciousness is mysterious",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Speculative - Dreams require consciousness",
+          emoji: "✅",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "No", 
           emoji: "❌", 
-          description: "Too certain - Future possibilities are unknown",
           isCorrect: false
         }
       ],

@@ -60,23 +60,21 @@ const AIEverywhereQuiz = () => {
           id: 1, 
           text: "Yes - AI is only in robots", 
           emoji: "🤖", 
-          description: "Incorrect - AI is much more widespread than just robots",
           isCorrect: false
         },
         { 
           id: 2, 
-          text: "No - AI is everywhere!", 
-          emoji: "🌐", 
-          description: "Correct - AI is integrated into many aspects of daily life",
-          isCorrect: true
+          text: "Only in science fiction", 
+          emoji: "📚", 
+          isCorrect: false
         },
         { 
           id: 3, 
-          text: "Only in science fiction", 
-          emoji: "📚", 
-          description: "Incorrect - AI is a real technology in everyday use",
-          isCorrect: false
-        }
+          text: "No - AI is everywhere!", 
+          emoji: "🌐", 
+          isCorrect: true
+        },
+        
       ],
       explanation: "Absolutely correct! AI is EVERYWHERE:\n\n📱 Your Phone: Face unlock, voice assistants, predictive text\n🎬 Entertainment: Netflix, YouTube, Spotify recommendations\n🛒 Shopping: Amazon, online stores, personalized ads\n🚗 Transportation: GPS navigation, self-driving cars\n🏥 Healthcare: Disease diagnosis, drug discovery\n🎮 Gaming: Smart NPCs, procedural generation\n🏠 Home: Smart devices, thermostats, security\n💬 Communication: Email filters, translation, chatbots\n📸 Photos: Face recognition, filters, image enhancement\n🔍 Search: Google, Bing use AI to understand your queries\n\nAI is integrated into almost every aspect of modern life!"
     },
@@ -88,22 +86,19 @@ const AIEverywhereQuiz = () => {
         { 
           id: 1, 
           text: "Yes - Only big companies use AI", 
-          emoji: "💼", 
-          description: "Incorrect - AI is used across many industries and sizes",
+          emoji: "💼",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No - Many industries use AI", 
-          emoji: "🏭", 
-          description: "Correct - AI is used in healthcare, agriculture, education, etc.",
+          emoji: "🏭",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only in research labs", 
-          emoji: "🔬", 
-          description: "Incorrect - AI has practical commercial applications",
+          emoji: "🔬",
           isCorrect: false
         }
       ],
@@ -114,25 +109,23 @@ const AIEverywhereQuiz = () => {
       text: "Is AI only for adults?",
       emoji: "🧑‍🤝‍🧑",
       options: [
+       
         { 
           id: 1, 
-          text: "Yes - Only adults use AI", 
-          emoji: "👨‍💼", 
-          description: "Incorrect - Children regularly interact with AI",
-          isCorrect: false
-        },
-        { 
-          id: 2, 
           text: "No - Kids use AI too", 
           emoji: "🧒", 
-          description: "Correct - Children use AI in games, apps, and devices",
           isCorrect: true
+        },
+         { 
+          id: 2, 
+          text: "Yes - Only adults use AI", 
+          emoji: "👨‍💼", 
+          isCorrect: false
         },
         { 
           id: 3, 
           text: "Only for experts", 
-          emoji: "🤓", 
-          description: "Incorrect - AI is designed to be user-friendly for everyone",
+          emoji: "🤓",
           isCorrect: false
         }
       ],
@@ -146,22 +139,19 @@ const AIEverywhereQuiz = () => {
         { 
           id: 1, 
           text: "Yes - Only in software", 
-          emoji: "🖥️", 
-          description: "Incorrect - AI is also in hardware devices",
+          emoji: "🖥️",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No - Hardware uses AI too", 
-          emoji: "🔧", 
-          description: "Correct - AI chips and specialized hardware exist",
+          emoji: "🔧",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only in the cloud", 
           emoji: "☁️", 
-          description: "Incorrect - AI runs on local devices as well",
           isCorrect: false
         }
       ],
@@ -176,23 +166,21 @@ const AIEverywhereQuiz = () => {
           id: 1, 
           text: "Yes - Just for fun", 
           emoji: "🎮", 
-          description: "Incorrect - AI has serious practical applications",
           isCorrect: false
         },
         { 
           id: 2, 
-          text: "No - Serious applications too", 
-          emoji: "🏥", 
-          description: "Correct - AI saves lives and solves critical problems",
-          isCorrect: true
+          text: "Only for business", 
+          emoji: "💼", 
+          isCorrect: false
         },
         { 
           id: 3, 
-          text: "Only for business", 
-          emoji: "💼", 
-          description: "Incorrect - AI benefits society in many ways",
-          isCorrect: false
-        }
+          text: "No - Serious applications too", 
+          emoji: "🏥",
+          isCorrect: true
+        },
+        
       ],
       explanation: "AI tackles serious global challenges: climate modeling, disease diagnosis, disaster prediction, accessibility tools for disabilities, scientific research, space exploration, and more. Entertainment is just one small application among many life-changing uses."
     }

@@ -12,7 +12,7 @@ const AICreativitySimulation = () => {
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti } = useGameFeedback();
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
@@ -24,13 +24,7 @@ const AICreativitySimulation = () => {
       id: 1,
       text: "What is a key difference between human and AI creativity?",
       options: [
-        { 
-          id: "experience", 
-          text: "Personal experiences", 
-          emoji: "👤", 
-          description: "Unique life events shaping creativity",
-          isCorrect: true
-        },
+       
         { 
           id: "speed", 
           text: "Processing speed", 
@@ -51,26 +45,34 @@ const AICreativitySimulation = () => {
           emoji: "🔍", 
           description: "Identifying recurring structures",
           isCorrect: false
-        }
+        },
+         { 
+          id: "experience", 
+          text: "Personal experiences", 
+          emoji: "👤", 
+          description: "Unique life events shaping creativity",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 2,
       text: "Which approach helps AI generate creative content?",
       options: [
-        { 
-          id: "training", 
-          text: "Training on diverse datasets", 
-          emoji: "📚", 
-          description: "Learning from varied examples",
-          isCorrect: true
-        },
+       
         { 
           id: "rules", 
           text: "Following strict rules", 
           emoji: "📏", 
           description: "Adhering to fixed guidelines",
           isCorrect: false
+        },
+         { 
+          id: "training", 
+          text: "Training on diverse datasets", 
+          emoji: "📚", 
+          description: "Learning from varied examples",
+          isCorrect: true
         },
         { 
           id: "random", 
@@ -92,19 +94,20 @@ const AICreativitySimulation = () => {
       id: 3,
       text: "What is a limitation of AI in creative fields?",
       options: [
-        { 
-          id: "originality", 
-          text: "True originality", 
-          emoji: "🆕", 
-          description: "Creating genuinely new concepts",
-          isCorrect: true
-        },
+        
         { 
           id: "speed", 
           text: "Generation speed", 
           emoji: "⏱️", 
           description: "Time to produce content",
           isCorrect: false
+        },
+        { 
+          id: "originality", 
+          text: "True originality", 
+          emoji: "🆕", 
+          description: "Creating genuinely new concepts",
+          isCorrect: true
         },
         { 
           id: "volume", 
@@ -160,19 +163,20 @@ const AICreativitySimulation = () => {
       id: 5,
       text: "What is essential for evaluating AI-generated creative work?",
       options: [
-        { 
-          id: "criteria", 
-          text: "Clear evaluation criteria", 
-          emoji: "✅", 
-          description: "Defined standards for assessment",
-          isCorrect: true
-        },
+        
         { 
           id: "quantity", 
           text: "High quantity", 
           emoji: "🔢", 
           description: "Large volume of outputs",
           isCorrect: false
+        },
+        { 
+          id: "criteria", 
+          text: "Clear evaluation criteria", 
+          emoji: "✅", 
+          description: "Defined standards for assessment",
+          isCorrect: true
         },
         { 
           id: "speed", 
@@ -247,7 +251,7 @@ const AICreativitySimulation = () => {
       nextEnabled={showResult}
       showGameOver={showResult && finalScore >= 3}
       score={coins}
-      gameId="ai-teen-20"
+      gameId="ai-teen-96"
       gameType="ai"
       totalLevels={questions.length}
       currentLevel={currentQuestion + 1}
@@ -256,7 +260,9 @@ const AICreativitySimulation = () => {
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}>
       <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
         {!showResult ? (
           <div className="space-y-4 md:space-y-6">

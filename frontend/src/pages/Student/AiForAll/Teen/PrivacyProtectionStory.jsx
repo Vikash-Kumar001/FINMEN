@@ -85,19 +85,20 @@ const PrivacyProtectionStory = () => {
       text: "The AI asks for your personal phone number to 'improve experience'.",
       options: [
         { 
-          id: "share", 
-          text: "Share it", 
-          emoji: "📞", 
-          description: "Phone numbers are sensitive personal information that should not be shared unnecessarily",
-          isCorrect: false
-        },
-        { 
           id: "private", 
           text: "Keep it private", 
           emoji: "🔒", 
           description: "Legitimate services rarely need your personal phone number for basic functionality",
           isCorrect: true
         },
+        { 
+          id: "share", 
+          text: "Share it", 
+          emoji: "📞", 
+          description: "Phone numbers are sensitive personal information that should not be shared unnecessarily",
+          isCorrect: false
+        },
+        
         { 
           id: "fake", 
           text: "Provide fake number", 
@@ -145,6 +146,14 @@ const PrivacyProtectionStory = () => {
           description: "Birth dates are personally identifiable information that can be used for identity theft",
           isCorrect: false
         },
+        
+        { 
+          id: "approximate", 
+          text: "Share approximate age", 
+          emoji: "🔢", 
+          description: "Approximate age may still be sufficient for personalization while protecting your privacy",
+          isCorrect: false
+        },
         { 
           id: "private", 
           text: "Keep private", 
@@ -152,13 +161,6 @@ const PrivacyProtectionStory = () => {
           description: "Age verification can often be done without sharing your exact birth date",
           isCorrect: true
         },
-        { 
-          id: "approximate", 
-          text: "Share approximate age", 
-          emoji: "🔢", 
-          description: "Approximate age may still be sufficient for personalization while protecting your privacy",
-          isCorrect: false
-        }
       ]
     },
     {

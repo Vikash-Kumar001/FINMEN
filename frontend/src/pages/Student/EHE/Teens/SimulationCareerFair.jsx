@@ -13,6 +13,7 @@ const SimulationCareerFair = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const scenarios = [
@@ -20,25 +21,29 @@ const SimulationCareerFair = () => {
       id: 1,
       text: "You arrive at the career fair. What's your first move?",
       options: [
-        {
-          id: "a",
-          text: "Ask questions and gather information",
-          emoji: "❓",
-          description: "Great! Active engagement helps you learn about different careers",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Stay silent and observe from a distance",
           emoji: "🤫",
-          description: "Passive observation misses valuable opportunities to learn",
           isCorrect: false
         },
         {
           id: "c",
           text: "Leave early because it seems boring",
           emoji: "🚪",
-          description: "Early departure prevents you from discovering interesting careers",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Ask questions and gather information",
+          emoji: "❓",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Visit only the popular booths with giveaways",
+          emoji: "🎁",
           isCorrect: false
         }
       ]
@@ -47,25 +52,29 @@ const SimulationCareerFair = () => {
       id: 2,
       text: "A representative from a tech company approaches you. How do you respond?",
       options: [
-        {
-          id: "a",
-          text: "Ask about daily responsibilities and career path",
-          emoji: "👨‍💻",
-          description: "Perfect! Specific questions help you understand if this career fits you",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Pretend to be busy and walk away",
           emoji: "🚶",
-          description: "Missed opportunities prevent valuable career insights",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Ask about daily responsibilities and career path",
+          emoji: "👨‍💻",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Only ask about salary and benefits",
           emoji: "💰",
-          description: "While important, focusing only on compensation misses other key factors",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Share your resume without asking questions",
+          emoji: "📄",
           isCorrect: false
         }
       ]
@@ -78,21 +87,24 @@ const SimulationCareerFair = () => {
           id: "a",
           text: "Ask about education requirements and how to get started",
           emoji: "📚",
-          description: "Excellent! Understanding pathways helps you plan your career journey",
           isCorrect: true
         },
         {
           id: "b",
           text: "Decide it's impossible and move on",
           emoji: "❌",
-          description: "Every career has accessible entry points with proper planning",
           isCorrect: false
         },
         {
           id: "c",
           text: "Pretend you already know everything about it",
           emoji: "😎",
-          description: "Honesty about your knowledge level leads to better guidance",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Ask if they have internships available",
+          emoji: "💼",
           isCorrect: false
         }
       ]
@@ -101,27 +113,31 @@ const SimulationCareerFair = () => {
       id: 4,
       text: "A representative offers you business cards and brochures. What's your approach?",
       options: [
-        {
-          id: "a",
-          text: "Collect materials and take notes on key information",
-          emoji: "📝",
-          description: "Great! Documentation helps you remember and research later",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Take everything without looking at it",
           emoji: "🗑️",
-          description: "Unfocused collection wastes resources and learning opportunities",
           isCorrect: false
         },
         {
           id: "c",
           text: "Refuse because you're not interested",
           emoji: "🙅",
-          description: "Even uninteresting materials might contain useful information",
           isCorrect: false
-        }
+        },
+        {
+          id: "d",
+          text: "Exchange contact information for follow-up",
+          emoji: "📇",
+          isCorrect: false
+        },
+         {
+          id: "a",
+          text: "Collect materials and take notes on key information",
+          emoji: "📝",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -132,21 +148,24 @@ const SimulationCareerFair = () => {
           id: "a",
           text: "Review materials and follow up with interesting contacts",
           emoji: "✅",
-          description: "Perfect! Follow-up converts fair experiences into real opportunities",
           isCorrect: true
         },
         {
           id: "b",
           text: "Forget about it and do nothing",
           emoji: "😴",
-          description: "Inaction wastes the time and effort invested in attending",
           isCorrect: false
         },
         {
           id: "c",
           text: "Immediately choose a career based on one conversation",
           emoji: "🎲",
-          description: "Rushing decisions without reflection often lead to poor outcomes",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Organize your findings in a career journal",
+          emoji: "📓",
           isCorrect: false
         }
       ]
@@ -159,6 +178,7 @@ const SimulationCareerFair = () => {
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { step: currentStep, optionId, isCorrect }]);
@@ -185,14 +205,14 @@ const SimulationCareerFair = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       gameId="ehe-teen-8"
       gameType="ehe"
-      totalLevels={10}
-      currentLevel={8}
+      totalLevels={scenarios.length}
+      currentLevel={currentStep + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/ehe/teens"
@@ -214,7 +234,7 @@ const SimulationCareerFair = () => {
             {getCurrentScenario().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +245,7 @@ const SimulationCareerFair = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+
                   </div>
                 </div>
               </button>

@@ -32,9 +32,9 @@ const SmartCityTrafficGamee = () => {
       emoji: "🚦",
       question: "What technology helps manage traffic lights in smart cities?",
       choices: [
-        { id: 1, text: "AI Traffic Systems", emoji: "🤖", isCorrect: true },
-        { id: 2, text: "Manual control", emoji: "✋", isCorrect: false },
-        { id: 3, text: "Random timing", emoji: "🎲", isCorrect: false },
+        { id: 1, text: "Manual control", emoji: "✋", isCorrect: false },
+        { id: 2, text: "Random timing", emoji: "🎲", isCorrect: false },
+        { id: 3, text: "AI Traffic Systems", emoji: "🤖", isCorrect: true },
       ],
     },
     {
@@ -54,8 +54,8 @@ const SmartCityTrafficGamee = () => {
       emoji: "⏱️",
       question: "How does AI traffic management benefit cities?",
       choices: [
-        { id: 1, text: "Reduces congestion", emoji: "📉", isCorrect: true },
-        { id: 2, text: "Increases accidents", emoji: "💥", isCorrect: false },
+        { id: 1, text: "Increases accidents", emoji: "💥", isCorrect: false },
+        { id: 2, text: "Reduces congestion", emoji: "📉", isCorrect: true },
         { id: 3, text: "Slows vehicles", emoji: "🐢", isCorrect: false },
       ],
     },
@@ -65,7 +65,7 @@ const SmartCityTrafficGamee = () => {
       emoji: "🚑",
       question: "How does AI prioritize emergency vehicles?",
       choices: [
-        { id: 1, text: "Clears pathways", emoji: "绿色通道", isCorrect: true },
+        { id: 1, text: "Clears pathways", emoji: "🟢", isCorrect: true },
         { id: 2, text: "Ignores them", emoji: "🚫", isCorrect: false },
         { id: 3, text: "Slows traffic", emoji: "🐢", isCorrect: false },
       ],
@@ -76,8 +76,8 @@ const SmartCityTrafficGamee = () => {
       emoji: "🔮",
       question: "What's a future application of traffic AI?",
       choices: [
-        { id: 1, text: "Autonomous coordination", emoji: "🚙", isCorrect: true },
-        { id: 2, text: "Manual override", emoji: "🎛️", isCorrect: false },
+        { id: 1, text: "Manual override", emoji: "🎛️", isCorrect: false },
+        { id: 2, text: "Autonomous coordination", emoji: "🚙", isCorrect: true },
         { id: 3, text: "Increased delays", emoji: "⏱️", isCorrect: false },
       ],
     },

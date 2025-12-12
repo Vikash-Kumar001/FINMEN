@@ -84,13 +84,7 @@ const RobotConfusionStoryy = () => {
       id: 2,
       text: "AI thinks a tomato is an apple. What's the correction?",
       options: [
-        { 
-          id: "labels", 
-          text: "Add correct fruit labels", 
-          emoji: "🏷️", 
-          description: "Accurate labeling helps AI learn the distinguishing features of different fruits",
-          isCorrect: true
-        },
+        
         { 
           id: "wrong", 
           text: "Keep wrong label", 
@@ -104,7 +98,14 @@ const RobotConfusionStoryy = () => {
           emoji: "🍅", 
           description: "Removing examples limits AI learning rather than correcting it",
           isCorrect: false
-        }
+        },
+        { 
+          id: "labels", 
+          text: "Add correct fruit labels", 
+          emoji: "🏷️", 
+          description: "Accurate labeling helps AI learn the distinguishing features of different fruits",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -138,19 +139,20 @@ const RobotConfusionStoryy = () => {
       id: 4,
       text: "AI mistakes cats for dogs. How do you help AI learn better?",
       options: [
-        { 
-          id: "cat", 
-          text: "Add more cat photos", 
-          emoji: "🐱", 
-          description: "More cat examples help AI recognize the distinguishing features of cats vs dogs",
-          isCorrect: true
-        },
+        
         { 
           id: "dogs", 
           text: "Only show dogs", 
           emoji: "🐶", 
           description: "Showing only dogs prevents the AI from learning about cats at all",
           isCorrect: false
+        },
+        { 
+          id: "cat", 
+          text: "Add more cat photos", 
+          emoji: "🐱", 
+          description: "More cat examples help AI recognize the distinguishing features of cats vs dogs",
+          isCorrect: true
         },
         { 
           id: "blur", 
@@ -165,19 +167,20 @@ const RobotConfusionStoryy = () => {
       id: 5,
       text: "AI confuses chairs with tables. What's the best fix?",
       options: [
-        { 
-          id: "both", 
-          text: "Train with both furniture types", 
-          emoji: "🪑🪵", 
-          description: "Showing both types of furniture helps AI learn to distinguish between them",
-          isCorrect: true
-        },
+
         { 
           id: "fewer", 
           text: "Use fewer examples", 
           emoji: "❌", 
           description: "Fewer examples make it harder for AI to learn distinguishing features",
           isCorrect: false
+        },
+                { 
+          id: "both", 
+          text: "Train with both furniture types", 
+          emoji: "🪑🪵", 
+          description: "Showing both types of furniture helps AI learn to distinguish between them",
+          isCorrect: true
         },
         { 
           id: "same", 

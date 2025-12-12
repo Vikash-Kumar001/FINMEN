@@ -4,8 +4,8 @@ import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
-const TOTAL_ROUNDS = 10;
-const ROUND_TIME = 5;
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const VoiceAssistantReflex = () => {
   const location = useLocation();
@@ -28,12 +28,67 @@ const VoiceAssistantReflex = () => {
   const timerRef = useRef(null);
   const currentRoundRef = useRef(0);
 
-  const items = [
-    { id: 1, emoji: "🎵", text: "Play Music", type: "voice" },
-    { id: 2, emoji: "⏰", text: "Set Alarm", type: "voice" },
-    { id: 3, emoji: "📷", text: "Open Camera", type: "other" },
-    { id: 4, emoji: "📰", text: "Read News", type: "voice" },
-    { id: 5, emoji: "💡", text: "Turn on Lights", type: "other" }
+  const questions = [
+    {
+      id: 1,
+      question: "Can a voice assistant do this task?",
+      task: { emoji: "🎵", text: "Play Music" },
+      correctAnswer: "Yes",
+      options: [
+        { text: "Yes", isCorrect: true, emoji: "✅" },
+        { text: "No", isCorrect: false, emoji: "❌" },
+        { text: "Sometimes", isCorrect: false, emoji: "⏰" },
+        { text: "Only with app", isCorrect: false, emoji: "📱" }
+      ]
+    },
+    {
+      id: 2,
+      question: "Can a voice assistant do this task?",
+      task: { emoji: "⏰", text: "Set Alarm" },
+      correctAnswer: "Yes",
+      options: [
+        { text: "Yes", isCorrect: true, emoji: "✅" },
+        { text: "No", isCorrect: false, emoji: "❌" },
+        { text: "Requires permission", isCorrect: false, emoji: "🔒" },
+        { text: "Only on phone", isCorrect: false, emoji: "📱" }
+      ]
+    },
+    {
+      id: 3,
+      question: "Can a voice assistant do this task?",
+      task: { emoji: "📷", text: "Open Camera" },
+      correctAnswer: "No",
+      options: [
+        { text: "Yes", isCorrect: false, emoji: "✅" },
+        { text: "No", isCorrect: true, emoji: "❌" },
+        { text: "With smart device", isCorrect: false, emoji: "📱" },
+        { text: "Only with app", isCorrect: false, emoji: "📲" }
+      ]
+    },
+    {
+      id: 4,
+      question: "Can a voice assistant do this task?",
+      task: { emoji: "📰", text: "Read News" },
+      correctAnswer: "Yes",
+      options: [
+        { text: "Yes", isCorrect: true, emoji: "✅" },
+        { text: "No", isCorrect: false, emoji: "❌" },
+        { text: "Only with subscription", isCorrect: false, emoji: "💳" },
+        { text: "Requires internet", isCorrect: false, emoji: "🌐" }
+      ]
+    },
+    {
+      id: 5,
+      question: "Can a voice assistant do this task?",
+      task: { emoji: "💡", text: "Turn on Lights" },
+      correctAnswer: "No",
+      options: [
+        { text: "Yes", isCorrect: false, emoji: "✅" },
+        { text: "No", isCorrect: true, emoji: "❌" },
+        { text: "With smart lights", isCorrect: false, emoji: "💡" },
+        { text: "Only with hub", isCorrect: false, emoji: "📡" }
+      ]
+    }
   ];
 
   useEffect(() => {
@@ -92,14 +147,14 @@ const VoiceAssistantReflex = () => {
     resetFeedback();
   };
 
-  const handleChoice = (choice) => {
+  const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentItemData = items[currentRound - 1];
-    const isCorrect = choice === currentItemData.type;
+    const currentQuestion = questions[currentRound - 1];
+    const isCorrect = option.isCorrect;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -118,13 +173,13 @@ const VoiceAssistantReflex = () => {
   };
 
   const finalScore = score;
-  const currentItemData = items[currentRound - 1];
+  const currentQuestion = questions[currentRound - 1];
   const accuracy = Math.round((score / TOTAL_ROUNDS) * 100);
 
   return (
     <GameShell
       title="Voice Assistant Reflex"
-      subtitle={gameState === "playing" ? `Task ${currentRound}/${TOTAL_ROUNDS}: Which is Voice AI?` : "Test your knowledge of voice AI capabilities!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your knowledge of voice AI capabilities!` : "Test your knowledge of voice AI capabilities!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -146,8 +201,8 @@ const VoiceAssistantReflex = () => {
             <div className="text-5xl mb-6">🎤</div>
             <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
             <p className="text-white/90 text-lg mb-6">
-              Identify which tasks can be done by Voice AI!<br />
-              You have {ROUND_TIME} seconds for each task.
+              Test your knowledge of voice AI capabilities!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
             <p className="text-white/80 mb-6">
               You have {TOTAL_ROUNDS} tasks with {ROUND_TIME} seconds each!
@@ -161,11 +216,11 @@ const VoiceAssistantReflex = () => {
           </div>
         )}
 
-        {gameState === "playing" && currentItemData && (
+        {gameState === "playing" && currentQuestion && (
           <div className="space-y-8">
             <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <div className="text-white">
-                <span className="font-bold">Task:</span> {currentRound}/{TOTAL_ROUNDS}
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
               <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
                 <span className="text-white">Time:</span> {timeLeft}s
@@ -175,29 +230,27 @@ const VoiceAssistantReflex = () => {
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <h3 className="text-white text-xl font-bold mb-6 text-center">Which is Voice AI?</h3>
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
               
-              <div className="bg-gradient-to-br from-indigo-500/30 to-purple-500/30 rounded-xl p-12 mb-6">
-                <div className="text-7xl mb-3 text-center">{currentItemData.emoji}</div>
-                <p className="text-4xl text-white font-bold text-center">{currentItemData.text}</p>
+              <div className="bg-gradient-to-br from-indigo-500/30 to-purple-500/30 rounded-xl p-8 mb-6">
+                <div className="text-5xl mb-3 text-center">{currentQuestion.task.emoji}</div>
+                <p className="text-2xl text-white font-bold text-center">{currentQuestion.task.text}</p>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => handleChoice("voice")}
-                  disabled={answered}
-                  className="w-full min-h-[80px] bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <div className="text-3xl mr-2">🎤</div> Voice AI
-                </button>
-                <button
-                  onClick={() => handleChoice("other")}
-                  disabled={answered}
-                  className="w-full min-h-[80px] bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <div className="text-3xl mr-2">❌</div> Other
-                </button>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

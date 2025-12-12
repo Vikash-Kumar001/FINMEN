@@ -28,28 +28,68 @@ const AITranslatorReflex = () => {
   const timerRef = useRef(null);
   const currentRoundRef = useRef(0);
 
-  // 👇 Each item is a reflex test — translate foreign word into English
-  const items = [
-    { id: 1, emoji: "🇪🇸", word: "Hola", correct: "Hello" },
-    { id: 2, emoji: "🇫🇷", word: "Merci", correct: "Thank you" },
-    { id: 3, emoji: "🇩🇪", word: "Tschüss", correct: "Goodbye" },
-    { id: 4, emoji: "🇮🇹", word: "Amore", correct: "Love" },
-    { id: 5, emoji: "🇯🇵", word: "Neko", correct: "Cat" }
+  const questions = [
+    {
+      id: 1,
+      question: "What does 'Hola' mean in English?",
+      word: { text: "Hola" },
+      correctAnswer: "Hello",
+      options: [
+        { text: "Hello", isCorrect: true, emoji: "👋" },
+        { text: "Goodbye", isCorrect: false, emoji: "👋" },
+        { text: "Thank you", isCorrect: false, emoji: "🙏" },
+        { text: "Please", isCorrect: false, emoji: "🥺" }
+      ]
+    },
+    {
+      id: 2,
+      question: "What does 'Merci' mean in English?",
+      word: {  text: "Merci" },
+      correctAnswer: "Thank you",
+      options: [
+        { text: "Hello", isCorrect: false, emoji: "👋" },
+        { text: "Thank you", isCorrect: true, emoji: "🙏" },
+        { text: "Sorry", isCorrect: false, emoji: "😔" },
+        { text: "Please", isCorrect: false, emoji: "🥺" }
+      ]
+    },
+    {
+      id: 3,
+      question: "What does 'Tschüss' mean in English?",
+      word: {  text: "Tschüss" },
+      correctAnswer: "Goodbye",
+      options: [
+        { text: "Hello", isCorrect: false, emoji: "👋" },
+        { text: "Goodbye", isCorrect: true, emoji: "👋" },
+        { text: "Thank you", isCorrect: false, emoji: "🙏" },
+        { text: "Welcome", isCorrect: false, emoji: "🎉" }
+      ]
+    },
+    {
+      id: 4,
+      question: "What does 'Amore' mean in English?",
+      word: {  text: "Amore" },
+      correctAnswer: "Love",
+      options: [
+        { text: "Friend", isCorrect: false, emoji: "👥" },
+        { text: "Family", isCorrect: false, emoji: "👨‍👩‍👧‍👦" },
+        { text: "Love", isCorrect: true, emoji: "❤️" },
+        { text: "Hate", isCorrect: false, emoji: "💔" }
+      ]
+    },
+    {
+      id: 5,
+      question: "What does 'Neko' mean in English?",
+      word: { text: "Neko" },
+      correctAnswer: "Cat",
+      options: [
+        { text: "Dog", isCorrect: false, emoji: "🐶" },
+        { text: "Bird", isCorrect: false, emoji: "🐦" },
+        { text: "Cat", isCorrect: true, emoji: "🐱" },
+        { text: "Fish", isCorrect: false, emoji: "🐟" }
+      ]
+    }
   ];
-
-  // For each word, generate 2 random options (1 correct + 1 distractor)
-  const generateChoices = (item) => {
-    const allWords = items.map((i) => i.correct);
-    let distractor;
-    do {
-      distractor = allWords[Math.floor(Math.random() * allWords.length)];
-    } while (distractor === item.correct);
-
-    const options = [item.correct, distractor].sort(() => Math.random() - 0.5);
-    return options;
-  };
-
-  const [options, setOptions] = useState([]);
 
   useEffect(() => {
     currentRoundRef.current = currentRound;
@@ -60,7 +100,6 @@ const AITranslatorReflex = () => {
     if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
       setTimeLeft(ROUND_TIME);
       setAnswered(false);
-      setOptions(generateChoices(items[currentRound - 1]));
     }
   }, [currentRound, gameState]);
 
@@ -105,18 +144,17 @@ const AITranslatorReflex = () => {
     setScore(0);
     setCurrentRound(1);
     setAnswered(false);
-    setOptions(generateChoices(items[0]));
     resetFeedback();
   };
 
-  const handleChoice = (choice) => {
+  const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentItemData = items[currentRound - 1];
-    const isCorrect = choice === currentItemData.correct;
+    const currentQuestion = questions[currentRound - 1];
+    const isCorrect = option.isCorrect;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -135,13 +173,13 @@ const AITranslatorReflex = () => {
   };
 
   const finalScore = score;
-  const currentItemData = items[currentRound - 1];
+  const currentQuestion = questions[currentRound - 1];
   const accuracy = Math.round((score / TOTAL_ROUNDS) * 100);
 
   return (
     <GameShell
       title="AI Translator Reflex"
-      subtitle={gameState === "playing" ? `Word ${currentRound}/${TOTAL_ROUNDS}: Translate this word 👇` : "Test your language translation skills!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your language translation skills!` : "Test your language translation skills!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -163,8 +201,8 @@ const AITranslatorReflex = () => {
             <div className="text-5xl mb-6">🌐</div>
             <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
             <p className="text-white/90 text-lg mb-6">
-              Translate foreign words into English!<br />
-              You have {ROUND_TIME} seconds for each word.
+              Test your language translation skills!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
             <p className="text-white/80 mb-6">
               You have {TOTAL_ROUNDS} words with {ROUND_TIME} seconds each!
@@ -178,11 +216,11 @@ const AITranslatorReflex = () => {
           </div>
         )}
 
-        {gameState === "playing" && currentItemData && (
+        {gameState === "playing" && currentQuestion && (
           <div className="space-y-8">
             <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <div className="text-white">
-                <span className="font-bold">Word:</span> {currentRound}/{TOTAL_ROUNDS}
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
               <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
                 <span className="text-white">Time:</span> {timeLeft}s
@@ -192,27 +230,27 @@ const AITranslatorReflex = () => {
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <h3 className="text-white text-xl font-bold mb-6 text-center">
-                Translate this word 👇
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
               </h3>
-
-              <div className="bg-gradient-to-br from-cyan-500/30 to-blue-500/30 rounded-xl p-12 mb-6">
-                <div className="text-8xl mb-3 text-center">{currentItemData.emoji}</div>
-                <p className="text-white text-3xl font-bold text-center">
-                  “{currentItemData.word}”
+              
+              <div className="bg-gradient-to-br from-cyan-500/30 to-blue-500/30 rounded-xl p-8 mb-6">
+                <div className="text-6xl mb-3 text-center">{currentQuestion.word.emoji}</div>
+                <p className="text-white text-2xl font-bold text-center">
+                  "{currentQuestion.word.text}"
                 </p>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                {options.map((opt, i) => (
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={i}
-                    onClick={() => handleChoice(opt)}
+                    key={index}
+                    onClick={() => handleAnswer(option)}
                     disabled={answered}
-                    className="w-full min-h-[80px] bg-gradient-to-r from-purple-500 to-cyan-600 hover:from-purple-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <div className="text-white font-bold text-xl">{opt}</div>
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
                 ))}
               </div>

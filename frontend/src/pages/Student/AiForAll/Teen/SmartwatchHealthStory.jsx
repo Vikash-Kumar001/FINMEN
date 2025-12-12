@@ -57,19 +57,20 @@ const SmartwatchHealthStory = () => {
       id: 1,
       text: "The watch warns 'Heartbeat too fast.' Who detected it?",
       options: [
-        { 
-          id: "ai", 
-          text: "AI Health Monitor", 
-          emoji: "🤖", 
-          description: "AI algorithms continuously analyze heart rate patterns and can detect abnormalities in real-time",
-          isCorrect: true
-        },
+        
         { 
           id: "friend", 
           text: "Friend", 
           emoji: "👨‍👩‍👧", 
           description: "Friends can't continuously monitor vital signs or detect subtle changes in heart rate patterns",
           isCorrect: false
+        },
+        { 
+          id: "ai", 
+          text: "AI Health Monitor", 
+          emoji: "🤖", 
+          description: "AI algorithms continuously analyze heart rate patterns and can detect abnormalities in real-time",
+          isCorrect: true
         },
         { 
           id: "guess", 
@@ -111,19 +112,20 @@ const SmartwatchHealthStory = () => {
       id: 3,
       text: "The watch tracks steps and gives daily targets. Who tracks it?",
       options: [
-        { 
-          id: "coach", 
-          text: "AI Fitness Coach", 
-          emoji: "🤖", 
-          description: "AI personalizes fitness goals based on user data and adjusts targets for optimal results",
-          isCorrect: true
-        },
+       
         { 
           id: "user", 
           text: "User Counting", 
           emoji: "🧮", 
           description: "Manual counting is prone to errors and doesn't provide personalized fitness recommendations",
           isCorrect: false
+        },
+         { 
+          id: "coach", 
+          text: "AI Fitness Coach", 
+          emoji: "🤖", 
+          description: "AI personalizes fitness goals based on user data and adjusts targets for optimal results",
+          isCorrect: true
         },
         { 
           id: "pedometer", 
@@ -138,13 +140,7 @@ const SmartwatchHealthStory = () => {
       id: 4,
       text: "The watch calculates calories burned. Who does this?",
       options: [
-        { 
-          id: "tracker", 
-          text: "AI Nutrition Tracker", 
-          emoji: "🤖", 
-          description: "AI combines activity data, heart rate, and user profile to accurately estimate calorie expenditure",
-          isCorrect: true
-        },
+        
         { 
           id: "scale", 
           text: "Kitchen Scale", 
@@ -158,7 +154,14 @@ const SmartwatchHealthStory = () => {
           emoji: "📱", 
           description: "Generic apps often use rough estimates rather than personalized AI calculations",
           isCorrect: false
-        }
+        },
+        { 
+          id: "tracker", 
+          text: "AI Nutrition Tracker", 
+          emoji: "🤖", 
+          description: "AI combines activity data, heart rate, and user profile to accurately estimate calorie expenditure",
+          isCorrect: true
+        },
       ]
     },
     {

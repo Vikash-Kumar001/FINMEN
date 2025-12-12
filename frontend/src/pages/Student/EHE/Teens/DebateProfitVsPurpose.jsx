@@ -24,21 +24,18 @@ const DebateProfitVsPurpose = () => {
           id: "a",
           text: "Profit only",
           emoji: "💰",
-          description: "Focusing only on profit can lead to short-term thinking and unethical practices",
           isCorrect: false
         },
         {
           id: "b",
           text: "Purpose with profit",
           emoji: "🎯",
-          description: "Exactly! A clear purpose with sustainable profits creates long-term value",
           isCorrect: true
         },
         {
           id: "c",
           text: "Neither profit nor purpose",
           emoji: "❌",
-          description: "Businesses need both financial sustainability and a meaningful purpose",
           isCorrect: false
         }
       ]
@@ -51,21 +48,18 @@ const DebateProfitVsPurpose = () => {
           id: "a",
           text: "They may harm stakeholders and communities",
           emoji: "💥",
-          description: "Exactly! Short-term profit focus can lead to exploitation and environmental damage",
           isCorrect: true
         },
         {
           id: "b",
           text: "They always succeed long-term",
           emoji: "📈",
-          description: "Short-term profit focus often leads to long-term failure",
           isCorrect: false
         },
         {
           id: "c",
           text: "They solve all social problems",
           emoji: "🌍",
-          description: "Profit-only businesses rarely address social issues effectively",
           isCorrect: false
         }
       ]
@@ -78,21 +72,18 @@ const DebateProfitVsPurpose = () => {
           id: "a",
           text: "Attracts loyal customers and talented employees",
           emoji: "👥",
-          description: "Perfect! People want to support and work for purpose-driven organizations",
           isCorrect: true
         },
         {
           id: "b",
           text: "Eliminates all competition",
           emoji: "🏆",
-          description: "Purpose helps differentiate but doesn't eliminate competition",
           isCorrect: false
         },
         {
           id: "c",
           text: "Requires no financial planning",
           emoji: "💸",
-          description: "Purpose-driven businesses still need solid financial management",
           isCorrect: false
         }
       ]
@@ -105,21 +96,18 @@ const DebateProfitVsPurpose = () => {
           id: "a",
           text: "Fund the mission and ensure sustainability",
           emoji: "🔄",
-          description: "Exactly! Profits enable purpose-driven businesses to continue their work",
           isCorrect: true
         },
         {
           id: "b",
           text: "Are irrelevant to the mission",
           emoji: "❓",
-          description: "Profits are essential for long-term mission fulfillment",
           isCorrect: false
         },
         {
           id: "c",
           text: "Should be maximized at all costs",
           emoji: "⬆️",
-          description: "Purpose-driven businesses balance profits with their mission",
           isCorrect: false
         }
       ]
@@ -132,21 +120,18 @@ const DebateProfitVsPurpose = () => {
           id: "a",
           text: "Integrate purpose into core strategy and operations",
           emoji: "⚙️",
-          description: "Perfect! Purpose should guide decisions, not be an afterthought",
           isCorrect: true
         },
         {
           id: "b",
           text: "Focus on purpose only during marketing",
           emoji: "📢",
-          description: "Authentic purpose integration goes far beyond marketing",
           isCorrect: false
         },
         {
           id: "c",
           text: "Ignore financial performance completely",
           emoji: "📉",
-          description: "Financial sustainability is necessary for long-term purpose fulfillment",
           isCorrect: false
         }
       ]
@@ -191,8 +176,8 @@ const DebateProfitVsPurpose = () => {
       totalXp={totalXp}
       gameId="ehe-teen-86"
       gameType="ehe"
-      totalLevels={90}
-      currentLevel={86}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/ehe/teens"
@@ -214,7 +199,7 @@ const DebateProfitVsPurpose = () => {
             {getCurrentQuestion().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {getCurrentQuestion().options.map(option => (
               <button
                 key={option.id}

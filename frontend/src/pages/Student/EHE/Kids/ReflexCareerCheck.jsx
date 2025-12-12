@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const ReflexCareerCheck = () => {
   const navigate = useNavigate();
@@ -10,161 +13,262 @@ const ReflexCareerCheck = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [gameActive, setGameActive] = useState(false);
-  const [currentStatement, setCurrentStatement] = useState(null);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
-  const careerStatements = [
-    { id: 1, statement: "Engineer builds bridges", emoji: "🏗️", correct: true },
-    { id: 2, statement: "Engineer cooks food", emoji: "🍳", correct: false },
-    { id: 3, statement: "Teacher helps students learn", emoji: "📚", correct: true },
-    { id: 4, statement: "Teacher flies airplanes", emoji: "✈️", correct: false },
-    { id: 5, statement: "Doctor treats patients", emoji: "🏥", correct: true },
-    { id: 6, statement: "Doctor builds cars", emoji: "🚗", correct: false },
-    { id: 7, statement: "Chef prepares meals", emoji: "🍽️", correct: true },
-    { id: 8, statement: "Chef drives buses", emoji: "🚌", correct: false },
-    { id: 9, statement: "Pilot flies planes", emoji: "✈️", correct: true },
-    { id: 10, statement: "Pilot teaches math", emoji: "📐", correct: false }
+  const questions = [
+    {
+      id: 1,
+      statement: "Engineer",
+      emoji: "🏗️",
+      correctAnswer: "Builds bridges",
+      options: [
+        { text: "Builds bridges", isCorrect: true },
+        { text: "Cooks food", isCorrect: false },
+        { text: "Teaches math", isCorrect: false },
+        { text: "Treats patients", isCorrect: false }
+      ]
+    },
+    {
+      id: 2,
+      statement: "Teacher",
+      emoji: "📚",
+      correctAnswer: "Helps students learn",
+      options: [
+        { text: "Flies airplanes", isCorrect: false },
+        { text: "Helps students learn", isCorrect: true },
+        { text: "Builds cars", isCorrect: false },
+        { text: "Prepares meals", isCorrect: false }
+      ]
+    },
+    {
+      id: 3,
+      statement: "Doctor",
+      emoji: "🏥",
+      correctAnswer: "Treats patients",
+      options: [
+        { text: "Treats patients", isCorrect: true },
+        { text: "Drives buses", isCorrect: false },
+        { text: "Builds bridges", isCorrect: false },
+        { text: "Cooks food", isCorrect: false }
+      ]
+    },
+    {
+      id: 4,
+      statement: "Chef",
+      emoji: "🍽️",
+      correctAnswer: "Prepares meals",
+      options: [
+        { text: "Prepares meals", isCorrect: true },
+        { text: "Flies planes", isCorrect: false },
+        { text: "Teaches science", isCorrect: false },
+        { text: "Builds computers", isCorrect: false }
+      ]
+    },
+    {
+      id: 5,
+      statement: "Pilot",
+      emoji: "✈️",
+      correctAnswer: "Flies planes",
+      options: [
+        { text: "Teaches history", isCorrect: false },
+        { text: "Flies planes", isCorrect: true },
+        { text: "Sings songs", isCorrect: false },
+        { text: "Repairs pipes", isCorrect: false }
+      ]
+    }
   ];
 
-  const [statements, setStatements] = useState([]);
-
   useEffect(() => {
-    if (gameActive && timeLeft > 0) {
-      const timer = setTimeout(() => {
-        setTimeLeft(prev => prev - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && gameActive) {
-      setGameActive(false);
-      setGameFinished(true);
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
-  }, [timeLeft, gameActive]);
+  }, [currentRound, gameState]);
+
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
+    }
+  }, []);
+
+  // Timer effect
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, handleTimeUp]);
 
   const startGame = () => {
-    setGameActive(true);
-    setTimeLeft(30);
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
     setScore(0);
-    setCoins(0);
-    setStatements([...careerStatements].sort(() => Math.random() - 0.5));
-    setCurrentStatement(careerStatements[0]);
+    setCurrentRound(1);
+    setAnswered(false);
+    resetFeedback();
   };
 
-  const handleChoice = (isCorrect) => {
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const currentQuestion = questions[currentRound - 1];
+    const isCorrect = option.isCorrect;
+    
     if (isCorrect) {
       setScore(prev => prev + 1);
-      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    // Move to next statement
-    const currentIndex = statements.findIndex(item => item.id === currentStatement.id);
-    if (currentIndex < statements.length - 1) {
-      setCurrentStatement(statements[currentIndex + 1]);
-    } else {
-      // If we've gone through all statements, reshuffle and continue
-      const shuffled = [...careerStatements].sort(() => Math.random() - 0.5);
-      setStatements(shuffled);
-      setCurrentStatement(shuffled[0]);
-    }
+    setTimeout(() => {
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
+      } else {
+        setGameState("finished");
+      }
+    }, 500);
   };
 
   const handleNext = () => {
     navigate("/games/ehe/kids");
   };
 
+  const finalScore = score;
+  const currentQuestion = questions[currentRound - 1];
+
   return (
     <GameShell
       title="Reflex Career Check"
-      subtitle={gameActive ? `Time: ${timeLeft}s | Score: ${score}` : "Quick career decisions!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Quick career decisions!` : "Quick career decisions!"}
       onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
+      nextEnabled={gameState === "finished"}
+      showGameOver={gameState === "finished"}
+      score={finalScore}
       gameId="ehe-kids-9"
       gameType="ehe"
-      totalLevels={10}
-      currentLevel={9}
-      showConfetti={gameFinished}
+      totalLevels={TOTAL_ROUNDS}
+      currentLevel={currentRound}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       backPath="/games/ehe/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      maxScore={TOTAL_ROUNDS} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          {!gameActive && !gameFinished && (
-            <div className="text-center">
-              <h2 className="text-xl font-semibold text-white mb-4">
-                Quick career decisions! Tap ✅ for correct job roles and ❌ for wrong ones.
-              </h2>
-              <p className="text-white/80 mb-6">
-                You have 30 seconds to get as many correct answers as possible!
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">🏗️📚🏥🍽️✈️</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Quick career decisions!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                What does a {currentQuestion.statement} do?
+              </h3>
+              
+              <div className="bg-gray-800/50 rounded-xl p-12 mb-6 flex justify-center items-center">
+                <div className="text-9xl animate-pulse">{currentQuestion.emoji}</div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {option.text}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {gameState === "finished" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <h2 className="text-3xl font-bold text-white mb-4">Game Over!</h2>
+            <p className="text-xl text-white/80 mb-2">Your final score: <span className="text-yellow-400 font-bold">{finalScore}</span>/{TOTAL_ROUNDS}</p>
+            <p className="text-white/80 mb-6">You earned {finalScore} coins!</p>
+            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl p-4 border border-white/10">
+              <h3 className="text-lg font-semibold text-white mb-2">How did you do?</h3>
+              <p className="text-white/80">
+                {finalScore >= 4 ? "Excellent job! You know your careers well!" : 
+                 finalScore >= 3 ? "Good work! Keep learning about different jobs!" : 
+                 "Keep exploring different careers and you'll improve!"}
               </p>
-              <button
-                onClick={startGame}
-                className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg hover:opacity-90 transition-all"
-              >
-                Start Game
-              </button>
             </div>
-          )}
-
-          {gameActive && currentStatement && (
-            <div className="text-center">
-              <div className="flex justify-between items-center mb-6">
-                <div className="text-white/80">Time: {timeLeft}s</div>
-                <div className="text-yellow-400 font-bold">Score: {score}</div>
-              </div>
-              
-              <div className="mb-8">
-                <span className="text-6xl block mb-4">{currentStatement.emoji}</span>
-                <h3 className="text-2xl font-bold text-white mb-2">
-                  {currentStatement.statement}
-                </h3>
-                <p className="text-white/80">Is this correct?</p>
-              </div>
-              
-              <div className="flex justify-center gap-8">
-                <button
-                  onClick={() => handleChoice(true)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white w-20 h-20 rounded-full text-4xl font-bold shadow-lg transition-all transform hover:scale-105"
-                >
-                  ✅
-                </button>
-                <button
-                  onClick={() => handleChoice(false)}
-                  className="bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white w-20 h-20 rounded-full text-4xl font-bold shadow-lg transition-all transform hover:scale-105"
-                >
-                  ❌
-                </button>
-              </div>
-            </div>
-          )}
-
-          {gameFinished && (
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-white mb-4">Game Over!</h2>
-              <p className="text-xl text-white/80 mb-2">Your final score: <span className="text-yellow-400 font-bold">{score}</span></p>
-              <p className="text-white/80 mb-6">You earned {coins} coins!</p>
-              <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl p-4 border border-white/10">
-                <h3 className="text-lg font-semibold text-white mb-2">How did you do?</h3>
-                <p className="text-white/80">
-                  {score >= 8 ? "Excellent job! You know your careers well!" : 
-                   score >= 5 ? "Good work! Keep learning about different jobs!" : 
-                   "Keep exploring different careers and you'll improve!"}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

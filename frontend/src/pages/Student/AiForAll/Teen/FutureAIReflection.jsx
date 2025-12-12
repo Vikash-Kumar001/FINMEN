@@ -60,21 +60,18 @@ const FutureAIReflection = () => {
           id: 1, 
           text: "Assist in complex decision-making", 
           emoji: "🧠", 
-          description: "Correct - AI will enhance human capabilities",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Replace all human jobs", 
-          emoji: "失业", 
-          description: "Incorrect - Complete replacement is unlikely",
+          emoji: "💔", 
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Become completely independent", 
-          emoji: "-alone", 
-          description: "Incorrect - AI will remain human-guided",
+          emoji: "-alone",
           isCorrect: false
         }
       ],
@@ -85,25 +82,23 @@ const FutureAIReflection = () => {
       text: "What's a realistic AI advancement by 2050?",
       emoji: "🚀",
       options: [
+        
         { 
           id: 1, 
-          text: "Personalized education tutors", 
-          emoji: "🎓", 
-          description: "Correct - Adaptive learning is actively developing",
-          isCorrect: true
+          text: "Teleportation devices", 
+          emoji: "🌀", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "Teleportation devices", 
-          emoji: "🌀", 
-          description: "Incorrect - Physics limitations exist",
-          isCorrect: false
+          text: "Personalized education tutors", 
+          emoji: "🎓", 
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Time travel machines", 
           emoji: "⏰", 
-          description: "Incorrect - Theoretical physics barriers",
           isCorrect: false
         }
       ],
@@ -118,21 +113,18 @@ const FutureAIReflection = () => {
           id: 1, 
           text: "Early disease prediction", 
           emoji: "🧬", 
-          description: "Correct - Preventive medicine focus",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Eliminate all diseases", 
           emoji: "🦠", 
-          description: "Too ambitious - Some diseases will persist",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Replace all doctors", 
-          emoji: "👩‍⚕️", 
-          description: "Incorrect - Human touch remains essential",
+          emoji: "👩‍⚕️",
           isCorrect: false
         }
       ],
@@ -145,25 +137,23 @@ const FutureAIReflection = () => {
       options: [
         { 
           id: 1, 
-          text: "Privacy protection", 
-          emoji: "🔒", 
-          description: "Correct - Data rights will remain crucial",
-          isCorrect: true
+          text: "AI developing emotions", 
+          emoji: "❤️", 
+          isCorrect: false
         },
+        
         { 
           id: 2, 
           text: "AI taking over governments", 
-          emoji: "🏰", 
-          description: "Unlikely - Democratic systems resist this",
+          emoji: "🏰",
           isCorrect: false
         },
         { 
           id: 3, 
-          text: "AI developing emotions", 
-          emoji: "❤️", 
-          description: "Speculative - Not a primary concern",
-          isCorrect: false
-        }
+          text: "Privacy protection", 
+          emoji: "🔒",
+          isCorrect: true
+        },
       ],
       explanation: "Privacy protection! As AI systems collect and analyze more personal data, protecting individual privacy will become increasingly critical. Balancing the benefits of AI insights with respect for personal autonomy will be a major societal challenge throughout the coming decades."
     },
@@ -172,25 +162,23 @@ const FutureAIReflection = () => {
       text: "What role will humans play with advanced AI?",
       emoji: "🤝",
       options: [
+        
         { 
           id: 1, 
-          text: "Creative and ethical oversight", 
-          emoji: "🎭", 
-          description: "Correct - Uniquely human skills",
-          isCorrect: true
+          text: "Become obsolete", 
+          emoji: "🔚", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "Become obsolete", 
-          emoji: "🔚", 
-          description: "Incorrect - Humans retain irreplaceable value",
-          isCorrect: false
+          text: "Creative and ethical oversight", 
+          emoji: "🎭", 
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Only consume AI content", 
           emoji: "📺", 
-          description: "Too passive - Humans will remain active",
           isCorrect: false
         }
       ],

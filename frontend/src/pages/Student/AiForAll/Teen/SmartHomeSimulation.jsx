@@ -12,7 +12,7 @@ const SmartHomeSimulation = () => {
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti } = useGameFeedback();
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
@@ -27,7 +27,7 @@ const SmartHomeSimulation = () => {
         { 
           id: "convenience", 
           text: "Enhanced convenience", 
-          emoji: "便捷", 
+          emoji: "🏠", 
           description: "Automated control of home systems",
           isCorrect: true
         },
@@ -58,13 +58,7 @@ const SmartHomeSimulation = () => {
       id: 2,
       text: "Which sensor is commonly used to detect human presence in smart homes?",
       options: [
-        { 
-          id: "camera", 
-          text: "Motion sensors", 
-          emoji: "📹", 
-          description: "Detect movement in rooms",
-          isCorrect: true
-        },
+       
         { 
           id: "microphone", 
           text: "Audio sensors", 
@@ -78,6 +72,13 @@ const SmartHomeSimulation = () => {
           emoji: "🌡️", 
           description: "Measure ambient heat",
           isCorrect: false
+        },
+         { 
+          id: "camera", 
+          text: "Motion sensors", 
+          emoji: "📹", 
+          description: "Detect movement in rooms",
+          isCorrect: true
         },
         { 
           id: "barometer", 
@@ -247,7 +248,7 @@ const SmartHomeSimulation = () => {
       nextEnabled={showResult}
       showGameOver={showResult && finalScore >= 3}
       score={coins}
-      gameId="ai-teen-50"
+      gameId="ai-teen-49"
       gameType="ai"
       totalLevels={questions.length}
       currentLevel={currentQuestion + 1}
@@ -256,7 +257,9 @@ const SmartHomeSimulation = () => {
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}>
       <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
         {!showResult ? (
           <div className="space-y-4 md:space-y-6">

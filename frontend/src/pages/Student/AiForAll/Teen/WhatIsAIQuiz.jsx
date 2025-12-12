@@ -60,21 +60,18 @@ const WhatIsAIQuiz = () => {
           id: 1, 
           text: "Artificial Icecream", 
           emoji: "🍦", 
-          description: "Incorrect - This is just a play on words",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Artificial Intelligence", 
           emoji: "🧠", 
-          description: "Correct - AI stands for Artificial Intelligence",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Alien Idea", 
           emoji: "👽", 
-          description: "Incorrect - This is not what AI stands for",
           isCorrect: false
         },
       ],
@@ -88,21 +85,18 @@ const WhatIsAIQuiz = () => {
           id: 1, 
           text: "Siri or Alexa", 
           emoji: "🎙️", 
-          description: "Correct - Voice assistants use AI to understand and respond to commands",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "A regular calculator", 
-          emoji: "🧮", 
-          description: "Incorrect - Calculators follow fixed rules, not AI",
+          emoji: "🧮",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "A simple lamp", 
-          emoji: "💡", 
-          description: "Incorrect - Lamps just turn on/off, no intelligence involved",
+          emoji: "💡",
           isCorrect: false
         },
       ],
@@ -115,22 +109,19 @@ const WhatIsAIQuiz = () => {
         { 
           id: 1, 
           text: "Magic", 
-          emoji: "✨", 
-          description: "Incorrect - AI doesn't use magic, it uses data and algorithms",
+          emoji: "✨",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Data", 
-          emoji: "💾", 
-          description: "Correct - AI systems learn from data to make predictions and decisions",
+          emoji: "💾",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Luck", 
-          emoji: "🍀", 
-          description: "Incorrect - AI relies on data and algorithms, not luck",
+          emoji: "🍀",
           isCorrect: false
         },
       ],
@@ -144,21 +135,18 @@ const WhatIsAIQuiz = () => {
           id: 1, 
           text: "Learning from experience", 
           emoji: "📘", 
-          description: "Correct - Like humans, AI systems improve by learning from data/experiences",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Sleeping", 
           emoji: "😴", 
-          description: "Incorrect - Sleeping is a biological process, not related to AI",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Cooking", 
           emoji: "🍳", 
-          description: "Incorrect - While AI can help with recipes, cooking itself isn't what AI does",
           isCorrect: false
         },
       ],
@@ -172,21 +160,18 @@ const WhatIsAIQuiz = () => {
           id: 1, 
           text: "Voice assistants like Alexa", 
           emoji: "🎧", 
-          description: "Correct - Voice assistants use AI to understand and respond to spoken commands",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Shoes and socks", 
           emoji: "👟", 
-          description: "Incorrect - Regular shoes/socks don't use AI technology",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Plain notebooks", 
           emoji: "📓", 
-          description: "Incorrect - Regular notebooks are just paper, no AI involved",
           isCorrect: false
         },
       ],

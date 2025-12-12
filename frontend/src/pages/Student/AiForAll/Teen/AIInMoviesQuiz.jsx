@@ -9,7 +9,7 @@ const AIInMoviesQuiz = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-36";
+  const gameId = "ai-teen-45";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -60,21 +60,18 @@ const AIInMoviesQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Correct - Netflix uses AI recommendation algorithms",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Netflix does use AI for recommendations",
+          emoji: "❌",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only for new releases", 
           emoji: "🆕", 
-          description: "Partially correct but not comprehensive",
           isCorrect: false
         }
       ],
@@ -88,22 +85,19 @@ const AIInMoviesQuiz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - AI enhances visual effects in movies",
+          emoji: "✅",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - AI is widely used in VFX",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only in big-budget films", 
           emoji: "💰", 
-          description: "Partially correct but increasingly common",
           isCorrect: false
         }
       ],
@@ -118,21 +112,18 @@ const AIInMoviesQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Incorrect - AI cannot replace human creativity",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Correct - Directing requires human creativity and vision",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only for simple scenes", 
           emoji: "📽️", 
-          description: "Partially correct but still requires human oversight",
           isCorrect: false
         }
       ],
@@ -146,22 +137,19 @@ const AIInMoviesQuiz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - AI assists in post-production",
+          emoji: "✅",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - AI is used in post-production",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only for indie films", 
           emoji: "🎭", 
-          description: "Incorrect - Used across all film types",
           isCorrect: false
         }
       ],
@@ -175,22 +163,19 @@ const AIInMoviesQuiz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Incorrect - AI cannot create compelling narratives alone",
+          emoji: "✅",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Correct - Scriptwriting requires human creativity",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only for simple plots", 
-          emoji: "📚", 
-          description: "Partially correct but lacks emotional depth",
+          emoji: "📚",
           isCorrect: false
         }
       ],

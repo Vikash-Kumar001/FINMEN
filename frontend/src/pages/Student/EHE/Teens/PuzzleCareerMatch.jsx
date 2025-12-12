@@ -10,173 +10,260 @@ const PuzzleCareerMatch = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(null);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedCareer, setSelectedCareer] = useState(null);
+  const [selectedActivity, setSelectedActivity] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      item: "Scientist",
-      emoji: "🔬",
-      matches: [
-        { id: "research", text: "Research", emoji: "📚", correct: true },
-        { id: "cooking", text: "Cooking", emoji: "🍳", correct: false },
-        { id: "teaching", text: "Teaching", emoji: "🏫", correct: false }
-      ]
-    },
-    {
-      id: 2,
-      item: "Chef",
-      emoji: "👨‍🍳",
-      matches: [
-        { id: "flying", text: "Flying", emoji: "✈️", correct: false },
-        { id: "food", text: "Food", emoji: "🍲", correct: true },
-        { id: "law", text: "Law", emoji: "⚖️", correct: false }
-      ]
-    },
-    {
-      id: 3,
-      item: "Pilot",
-      emoji: "✈️",
-      matches: [
-        { id: "medicine", text: "Medicine", emoji: "🏥", correct: false },
-        { id: "airplane", text: "Airplane", emoji: "🛩️", correct: true },
-        { id: "writing", text: "Writing", emoji: "✍️", correct: false }
-      ]
-    },
-    {
-      id: 4,
-      item: "Teacher",
-      emoji: "👩‍🏫",
-      matches: [
-        { id: "students", text: "Students", emoji: "🧒", correct: true },
-        { id: "construction", text: "Construction", emoji: "🏗️", correct: false },
-        { id: "banking", text: "Banking", emoji: "🏦", correct: false }
-      ]
-    },
-    {
-      id: 5,
-      item: "Doctor",
-      emoji: "👨‍⚕️",
-      matches: [
-        { id: "patients", text: "Patients", emoji: "🤒", correct: true },
-        { id: "farming", text: "Farming", emoji: "🚜", correct: false },
-        { id: "marketing", text: "Marketing", emoji: "📊", correct: false }
-      ]
-    }
+  // Careers (left side) - 5 items
+  const careers = [
+    { id: 1, name: "Scientist", emoji: "🔬", description: "Conducts research and experiments to advance knowledge" },
+    { id: 2, name: "Chef", emoji: "👨‍🍳", description: "Prepares and cooks food in restaurants or other establishments" },
+    { id: 3, name: "Pilot", emoji: "✈️", description: "Operates aircraft to transport passengers and cargo" },
+    { id: 4, name: "Teacher", emoji: "👩‍🏫", description: "Educates students and helps them develop knowledge and skills" },
+    { id: 5, name: "Doctor", emoji: "👨‍⚕️", description: "Diagnoses and treats illnesses and injuries" }
   ];
 
-  const handleMatch = (matchId) => {
-    const currentPuzzleData = puzzles[currentPuzzle];
-    const match = currentPuzzleData.matches.find(m => m.id === matchId);
-    setSelectedMatch(matchId);
+  // Activities (right side) - 5 items
+  const activities = [
+    { id: 1, name: "Research", emoji: "📚", description: "Systematic investigation to establish facts and principles" },
+    { id: 3, name: "Flying", emoji: "🛩️", description: "Operating aircraft for transportation or recreation" },
+    { id: 2, name: "Cooking", emoji: "🍲", description: "Preparing food by combining ingredients and applying heat" },
+    { id: 5, name: "Healing", emoji: "💊", description: "Restoring health and treating medical conditions" },
+    { id: 4, name: "Teaching", emoji: "📖", description: "Imparting knowledge and skills to students" },
+  ];
 
-    if (match.correct) {
-      setCoins(prev => prev + 1);
+  // Correct matches
+  const correctMatches = [
+    { careerId: 1, activityId: 1 }, // Scientist → Research
+    { careerId: 2, activityId: 2 }, // Chef → Cooking
+    { careerId: 3, activityId: 3 }, // Pilot → Flying
+    { careerId: 4, activityId: 4 }, // Teacher → Teaching
+    { careerId: 5, activityId: 5 }  // Doctor → Healing
+  ];
+
+  const handleCareerSelect = (career) => {
+    if (gameFinished) return;
+    setSelectedCareer(career);
+  };
+
+  const handleActivitySelect = (activity) => {
+    if (gameFinished) return;
+    setSelectedActivity(activity);
+  };
+
+  const handleMatch = () => {
+    if (!selectedCareer || !selectedActivity || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      careerId: selectedCareer.id,
+      activityId: selectedActivity.id,
+      isCorrect: correctMatches.some(
+        match => match.careerId === selectedCareer.id && match.activityId === selectedActivity.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setShowCoinFeedback(currentPuzzleData.id);
-      setTimeout(() => setShowCoinFeedback(null), 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    setTimeout(() => {
-      if (currentPuzzle < puzzles.length - 1) {
-        setCurrentPuzzle(prev => prev + 1);
-        setSelectedMatch(null);
-      } else {
+    // Check if all items are matched
+    if (newMatches.length === careers.length) {
+      setTimeout(() => {
         setGameFinished(true);
-      }
-    }, 1500);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedCareer(null);
+    setSelectedActivity(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedCareer(null);
+    setSelectedActivity(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/student/ehe/teens/passion-story");
   };
 
+  // Check if a career is already matched
+  const isCareerMatched = (careerId) => {
+    return matches.some(match => match.careerId === careerId);
+  };
+
+  // Check if an activity is already matched
+  const isActivityMatched = (activityId) => {
+    return matches.some(match => match.activityId === activityId);
+  };
+
+  // Get match result for a career
+  const getMatchResult = (careerId) => {
+    const match = matches.find(m => m.careerId === careerId);
+    return match ? match.isCorrect : null;
+  };
+
   return (
     <GameShell
       title="Puzzle: Career Match"
-      subtitle={`Puzzle ${currentPuzzle + 1}/5: ${puzzles[currentPuzzle].item}`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Careers with Activities (${matches.length}/${careers.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="ehe-teen-4"
       gameType="ehe"
-      totalLevels={10}
-      currentLevel={4}
-      showConfetti={gameFinished}
+      totalLevels={careers.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      backPath="/games/ehe/teens"
+      maxScore={careers.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/5: {puzzles[currentPuzzle].item}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6 text-center">
-            Match the career to what they do!
-          </p>
-
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-              {showCoinFeedback === puzzles[currentPuzzle].id && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                    +1
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-4xl mr-3">{puzzles[currentPuzzle].emoji}</div>
-                <div className="text-white text-xl font-bold">{puzzles[currentPuzzle].item}</div>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Careers */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Careers</h3>
+              <div className="space-y-4">
+                {careers.map(career => (
+                  <button
+                    key={career.id}
+                    onClick={() => handleCareerSelect(career)}
+                    disabled={isCareerMatched(career.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isCareerMatched(career.id)
+                        ? getMatchResult(career.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedCareer?.id === career.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{career.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{career.name}</h4>
+                        <p className="text-white/80 text-sm">{career.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
+            </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                {puzzles[currentPuzzle].matches.map((match) => {
-                  const isCorrect = selectedMatch === match.id && match.correct;
-                  const isWrong = selectedMatch === match.id && !match.correct;
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedCareer 
+                    ? `Selected: ${selectedCareer.name}` 
+                    : "Select a Career"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedCareer || !selectedActivity}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedCareer && selectedActivity
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{careers.length}</p>
+                  <p>Matched: {matches.length}/{careers.length}</p>
+                </div>
+              </div>
+            </div>
 
-                  return (
-                    <button
-                      key={match.id}
-                      onClick={() => handleMatch(match.id)}
-                      disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${
-                        !selectedMatch
-                          ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                          : isCorrect
-                          ? 'bg-green-100/20 border-green-500 text-white'
-                          : isWrong
-                          ? 'bg-red-100/20 border-red-500 text-white'
-                          : 'bg-gray-100/20 border-gray-500 text-white'
-                      }`}
-                    >
-                      {isCorrect && (
-                        <div className="absolute -top-2 -right-2 text-2xl">✅</div>
-                      )}
-                      {isWrong && (
-                        <div className="absolute -top-2 -right-2 text-2xl">❌</div>
-                      )}
-                      <div className="text-2xl mb-1">{match.emoji}</div>
-                      <div className="font-medium text-sm">{match.text}</div>
-                    </button>
-                  );
-                })}
+            {/* Right column - Activities */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Activities</h3>
+              <div className="space-y-4">
+                {activities.map(activity => (
+                  <button
+                    key={activity.id}
+                    onClick={() => handleActivitySelect(activity)}
+                    disabled={isActivityMatched(activity.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isActivityMatched(activity.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedActivity?.id === activity.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{activity.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{activity.name}</h4>
+                        <p className="text-white/80 text-sm">{activity.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Career Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {careers.length} careers with their activities!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding career paths helps you make informed decisions about your future!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Exploring!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {careers.length} careers correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each profession primarily focuses on!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

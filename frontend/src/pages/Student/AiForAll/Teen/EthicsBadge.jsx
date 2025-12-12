@@ -60,11 +60,7 @@ const EthicsBadge = () => {
       title: "Privacy Protection",
       question: "Why is informed consent crucial in AI data collection?",
       options: [
-        { 
-          text: "Individuals have the right to know how their data is used", 
-          emoji: "知情", 
-          isCorrect: true
-        },
+        
         { 
           text: "It speeds up the data collection process", 
           emoji: "⚡", 
@@ -79,7 +75,12 @@ const EthicsBadge = () => {
           text: "It eliminates the need for data security", 
           emoji: "🔓", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Individuals have the right to know how their data is used", 
+          emoji: "📊", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Correct! Informed consent respects individual autonomy and transparency in data usage!",
@@ -91,11 +92,7 @@ const EthicsBadge = () => {
       title: "Algorithmic Bias",
       question: "What is a key strategy for reducing bias in AI systems?",
       options: [
-        { 
-          text: "Diverse teams and inclusive dataset development", 
-          emoji: "团队", 
-          isCorrect: true
-        },
+       
         { 
           text: "Using only technical metrics for evaluation", 
           emoji: "📊", 
@@ -105,6 +102,11 @@ const EthicsBadge = () => {
           text: "Focusing solely on algorithmic accuracy", 
           emoji: "🎯", 
           isCorrect: false
+        },
+         { 
+          text: "Diverse teams and inclusive dataset development", 
+          emoji: "👩‍💻", 
+          isCorrect: true
         },
         { 
           text: "Deploying systems without human oversight", 
@@ -153,15 +155,16 @@ const EthicsBadge = () => {
       title: "Digital Responsibility",
       question: "What is a core principle of responsible AI use?",
       options: [
-        { 
-          text: "Considering societal impact and long-term consequences", 
-          emoji: "🌍", 
-          isCorrect: true
-        },
+       
         { 
           text: "Maximizing automation in all processes", 
           emoji: "⚙️", 
           isCorrect: false
+        },
+         { 
+          text: "Considering societal impact and long-term consequences", 
+          emoji: "🌍", 
+          isCorrect: true
         },
         { 
           text: "Prioritizing convenience over security", 

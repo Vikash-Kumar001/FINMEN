@@ -111,13 +111,7 @@ const ECommerceAIStory = () => {
       id: 3,
       text: "How does an e-commerce site know to recommend winter coats to someone who just bought ski equipment?",
       options: [
-        { 
-          id: "pattern", 
-          text: "Pattern recognition", 
-          emoji: "🔍", 
-          description: "AI recognizes patterns between related products and understands that people who buy ski equipment often need winter clothing",
-          isCorrect: true
-        },
+        
         { 
           id: "coincidence", 
           text: "Pure coincidence", 
@@ -131,26 +125,34 @@ const ECommerceAIStory = () => {
           emoji: "✍️", 
           description: "While staff might curate some collections, AI automatically identifies product relationships at scale",
           isCorrect: false
-        }
+        },
+        { 
+          id: "pattern", 
+          text: "Pattern recognition", 
+          emoji: "🔍", 
+          description: "AI recognizes patterns between related products and understands that people who buy ski equipment often need winter clothing",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 4,
       text: "Why might an e-commerce site stop showing you baby products after you haven't purchased anything related for months?",
       options: [
-        { 
-          id: "adaptive", 
-          text: "Adaptive learning", 
-          emoji: "🧠", 
-          description: "AI continuously learns from your behavior and adapts recommendations based on recent interests and purchases",
-          isCorrect: true
-        },
+        
         { 
           id: "forgetful", 
           text: "System malfunction", 
           emoji: "🔧", 
           description: "AI systems are designed to adapt recommendations based on changing interests, not due to malfunctions",
           isCorrect: false
+        },
+        { 
+          id: "adaptive", 
+          text: "Adaptive learning", 
+          emoji: "🧠", 
+          description: "AI continuously learns from your behavior and adapts recommendations based on recent interests and purchases",
+          isCorrect: true
         },
         { 
           id: "policy", 

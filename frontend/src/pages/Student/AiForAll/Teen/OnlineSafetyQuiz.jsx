@@ -59,22 +59,19 @@ const OnlineSafetyQuiz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Incorrect - Sharing passwords is never safe",
+          emoji: "✅",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Correct - Passwords should never be shared",
+          emoji: "❌",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only with trusted AI", 
           emoji: "🤔", 
-          description: "Partially correct but not the best answer",
           isCorrect: false
         }
       ],
@@ -89,21 +86,18 @@ const OnlineSafetyQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Incorrect - Unknown links can be malicious",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Correct - Unknown links pose security risks",
+          emoji: "❌",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only if they look legitimate", 
-          emoji: "🧐", 
-          description: "Risky approach - appearance can be deceiving",
+          emoji: "🧐",
           isCorrect: false
         }
       ],
@@ -116,23 +110,21 @@ const OnlineSafetyQuiz = () => {
       options: [
         { 
           id: 1, 
-          text: "Yes", 
-          emoji: "✅", 
-          description: "Incorrect - Personal IDs should be protected",
-          isCorrect: false
+          text: "No", 
+          emoji: "❌", 
+          isCorrect: true
         },
         { 
           id: 2, 
-          text: "No", 
-          emoji: "❌", 
-          description: "Correct - Personal identification should be safeguarded",
-          isCorrect: true
+          text: "Yes", 
+          emoji: "✅",
+          isCorrect: false
         },
+        
         { 
           id: 3, 
           text: "Only for official services", 
           emoji: "🏛️", 
-          description: "Partially correct but requires extreme caution",
           isCorrect: false
         }
       ],
@@ -147,23 +139,21 @@ const OnlineSafetyQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Incorrect - Financial data requires maximum security",
           isCorrect: false
         },
+        
         { 
           id: 2, 
-          text: "No", 
-          emoji: "❌", 
-          description: "Correct - Unverified apps pose financial risks",
-          isCorrect: true
+          text: "Only temporarily", 
+          emoji: "⏰", 
+          isCorrect: false
         },
         { 
           id: 3, 
-          text: "Only temporarily", 
-          emoji: "⏰", 
-          description: "Still risky - data could be compromised",
-          isCorrect: false
-        }
+          text: "No", 
+          emoji: "❌", 
+          isCorrect: true
+        },
       ],
       explanation: "No! Banking and financial information should only be stored in verified, secure applications with proper encryption and regulatory compliance. Unverified apps may not have adequate security measures to protect your financial data."
     },
@@ -176,21 +166,18 @@ const OnlineSafetyQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Incorrect - Location data is sensitive information",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Correct - Location privacy should be protected",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only when necessary", 
           emoji: "🧭", 
-          description: "More nuanced but still requires caution",
           isCorrect: false
         }
       ],

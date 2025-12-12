@@ -9,7 +9,7 @@ const GoodAIVSBadAIQuiz = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-5";
+  const gameId = "ai-teen-76";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -60,21 +60,18 @@ const GoodAIVSBadAIQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Correct - Healthcare AI improves patient outcomes",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Medical AI is generally beneficial",
+          emoji: "❌",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only with doctor supervision", 
           emoji: "👨‍⚕️", 
-          description: "Partially correct but not always required",
           isCorrect: false
         }
       ],
@@ -89,21 +86,18 @@ const GoodAIVSBadAIQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Incorrect - Fake news harms society",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Correct - Misinformation is harmful",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only for satire", 
           emoji: "😂", 
-          description: "Limited exception but not generally good",
           isCorrect: false
         }
       ],
@@ -118,21 +112,18 @@ const GoodAIVSBadAIQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Correct - Safety features save lives",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - Automotive safety AI is beneficial",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only in luxury cars", 
           emoji: "💎", 
-          description: "Too narrow - Safety should be universal",
           isCorrect: false
         }
       ],
@@ -147,21 +138,18 @@ const GoodAIVSBadAIQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Correct - Spam filters improve user experience",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Email filtering protects users",
+          emoji: "❌",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only for business emails", 
           emoji: "💼", 
-          description: "Too narrow - Everyone benefits from spam protection",
           isCorrect: false
         }
       ],
@@ -176,21 +164,18 @@ const GoodAIVSBadAIQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Incorrect - Data theft violates privacy",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Correct - Privacy violations are unethical",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only with consent", 
           emoji: "📜", 
-          description: "Misleading - Consent doesn't justify data theft",
           isCorrect: false
         }
       ],

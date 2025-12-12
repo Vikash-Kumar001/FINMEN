@@ -111,19 +111,20 @@ const AIInGamesStory = () => {
       id: 3,
       text: "NPCs react realistically to player actions. Who decides their behavior?",
       options: [
-        { 
-          id: "decision", 
-          text: "AI Decision Making", 
-          emoji: "🤖", 
-          description: "AI decision trees and behavior trees create complex, believable NPC reactions to player interactions",
-          isCorrect: true
-        },
+        
         { 
           id: "movement", 
           text: "Random Movement", 
           emoji: "✋", 
           description: "Random movement creates unrealistic and frustrating gameplay experiences for players",
           isCorrect: false
+        },
+        { 
+          id: "decision", 
+          text: "AI Decision Making", 
+          emoji: "🤖", 
+          description: "AI decision trees and behavior trees create complex, believable NPC reactions to player interactions",
+          isCorrect: true
         },
         { 
           id: "preset", 
@@ -165,13 +166,7 @@ const AIInGamesStory = () => {
       id: 5,
       text: "Game levels generate uniquely each time. Who creates them?",
       options: [
-        { 
-          id: "generator", 
-          text: "AI Level Generator", 
-          emoji: "🤖", 
-          description: "AI procedural generation algorithms create unique, balanced levels with varied challenges",
-          isCorrect: true
-        },
+        
         { 
           id: "designer", 
           text: "Designer Randomizer", 
@@ -185,7 +180,14 @@ const AIInGamesStory = () => {
           emoji: "📋", 
           description: "Copied templates become repetitive and don't provide the novelty that keeps players interested",
           isCorrect: false
-        }
+        },
+        { 
+          id: "generator", 
+          text: "AI Level Generator", 
+          emoji: "🤖", 
+          description: "AI procedural generation algorithms create unique, balanced levels with varied challenges",
+          isCorrect: true
+        },
       ]
     }
   ];

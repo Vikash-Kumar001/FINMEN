@@ -13,6 +13,7 @@ const SimulationPrototypeTest = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const scenarios = [
@@ -20,25 +21,29 @@ const SimulationPrototypeTest = () => {
       id: 1,
       text: "A teen designs an app idea to help students organize homework. What should she do next?",
       options: [
-        {
-          id: "a",
-          text: "Test with friends to get feedback",
-          emoji: "👥",
-          description: "Great! User testing reveals strengths and areas for improvement.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Hide it and never show anyone",
           emoji: "🙈",
-          description: "Hiding prevents valuable feedback and improvement opportunities.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Test with friends to get feedback",
+          emoji: "👥",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Give up because it might have flaws",
           emoji: "🏳️",
-          description: "Iteration and improvement are key parts of the design process.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Create a detailed marketing plan before testing",
+          emoji: "📊",
           isCorrect: false
         }
       ]
@@ -51,21 +56,24 @@ const SimulationPrototypeTest = () => {
           id: "a",
           text: "Listen carefully and consider the feedback",
           emoji: "👂",
-          description: "Perfect! Feedback helps create solutions that truly meet user needs.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Ignore all feedback to preserve her vision",
           emoji: "🙉",
-          description: "Ignoring feedback can result in solutions that don't address real needs.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Get defensive and argue with users",
           emoji: "😠",
-          description: "Defensiveness prevents learning and improvement from user insights.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Thank users and document all suggestions for later review",
+          emoji: "📝",
           isCorrect: false
         }
       ]
@@ -78,21 +86,24 @@ const SimulationPrototypeTest = () => {
           id: "a",
           text: "Refine the prototype based on feedback",
           emoji: "🔧",
-          description: "Excellent! Iteration leads to better solutions and user satisfaction.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Launch immediately without changes",
           emoji: "🚀",
-          description: "Unaddressed issues can lead to poor user experience and adoption.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Start over completely from scratch",
           emoji: "🗑️",
-          description: "Complete restarts waste progress - iterative improvement is more efficient.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Prioritize fixes based on impact and feasibility",
+          emoji: "🎯",
           isCorrect: false
         }
       ]
@@ -101,25 +112,29 @@ const SimulationPrototypeTest = () => {
       id: 4,
       text: "How many rounds of testing and refinement are ideal?",
       options: [
-        {
-          id: "a",
-          text: "Multiple rounds to improve the solution",
-          emoji: "🔄",
-          description: "Great! Multiple iterations lead to more robust and user-friendly solutions.",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Just one round then launch",
           emoji: "1️⃣",
-          description: "One round often isn't enough to identify all potential improvements.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Never test - go straight to market",
           emoji: "⏩",
-          description: "Testing prevents costly mistakes and improves user satisfaction.",
+          isCorrect: false
+        },
+         {
+          id: "a",
+          text: "Multiple rounds to improve the solution",
+          emoji: "🔄",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Continue until all users are completely satisfied",
+          emoji: "💯",
           isCorrect: false
         }
       ]
@@ -128,27 +143,31 @@ const SimulationPrototypeTest = () => {
       id: 5,
       text: "What's the benefit of testing with diverse users?",
       options: [
-        {
-          id: "a",
-          text: "Reveals different perspectives and needs",
-          emoji: "🌍",
-          description: "Perfect! Diverse feedback helps create inclusive and effective solutions.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Complicates the development process",
           emoji: "🔄",
-          description: "Diverse feedback enriches solutions rather than complicating them.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Only test with similar people",
           emoji: "👥",
-          description: "Limiting testing misses opportunities to improve for broader audiences.",
           isCorrect: false
-        }
+        },
+        {
+          id: "d",
+          text: "Validates assumptions across different user groups",
+          emoji: "✅",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Reveals different perspectives and needs",
+          emoji: "🌍",
+          isCorrect: true
+        },
       ]
     }
   ];
@@ -159,6 +178,7 @@ const SimulationPrototypeTest = () => {
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { step: currentStep, optionId, isCorrect }]);
@@ -185,14 +205,14 @@ const SimulationPrototypeTest = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       gameId="ehe-teen-38"
       gameType="ehe"
-      totalLevels={40}
-      currentLevel={38}
+      totalLevels={scenarios.length}
+      currentLevel={currentStep + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/ehe/teens"
@@ -214,7 +234,7 @@ const SimulationPrototypeTest = () => {
             {getCurrentScenario().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +245,7 @@ const SimulationPrototypeTest = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+
                   </div>
                 </div>
               </button>

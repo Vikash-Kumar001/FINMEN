@@ -13,140 +13,156 @@ const SimulationTeamProject = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const scenarios = [
     {
       id: 1,
-      text: "Your team disagrees on the project direction. What's your approach?",
+      text: "Teen joins a team project. What should be her first step?",
       options: [
         {
           id: "a",
-          text: "Listen to all perspectives and find common ground",
-          emoji: "👂",
-          description: "Great! Effective leadership involves hearing all viewpoints and building consensus",
+          text: "Understand project goals and role",
+          emoji: "🎯",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Shout over others to assert your opinion",
-          emoji: "📢",
-          description: "Aggressive communication damages team relationships and creativity",
+          text: "Start working immediately",
+          emoji: "🏃",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Quit the project rather than deal with conflict",
-          emoji: "🚪",
-          description: "Avoiding challenges prevents growth and project completion",
+          text: "Wait for others to lead",
+          emoji: "😴",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Avoid all communication",
+          emoji: "🔇",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "A team member isn't contributing equally. How do you handle this?",
+      text: "How should she contribute to team discussions?",
       options: [
         {
           id: "a",
-          text: "Privately discuss expectations and offer support",
-          emoji: "🤝",
-          description: "Perfect! Addressing issues directly but kindly helps resolve problems constructively",
+          text: "Share ideas and listen actively",
+          emoji: "👂",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Publicly criticize their lack of effort",
-          emoji: "😠",
-          description: "Public criticism damages relationships and team morale",
+          text: "Dominating conversations",
+          emoji: "📢",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Take on all the extra work yourself",
-          emoji: "💪",
-          description: "Overburdening yourself leads to burnout and doesn't solve the underlying issue",
+          text: "Stay completely silent",
+          emoji: "🤐",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Dismiss others' ideas",
+          emoji: "👎",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "The team is behind schedule. What's your solution?",
+      text: "What approach should she take to deadlines?",
       options: [
         {
           id: "a",
-          text: "Organize a meeting to reassess priorities and timeline",
+          text: "Meet deadlines and communicate delays",
           emoji: "📅",
-          description: "Excellent! Structured problem-solving helps teams overcome obstacles efficiently",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Blame team members for the delay",
-          emoji: "😠",
-          description: "Blaming others creates defensiveness and doesn't solve scheduling issues",
+          text: "Ignore all timelines",
+          emoji: "⏳",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Work alone to catch up without telling anyone",
-          emoji: "🏃",
-          description: "Working in isolation prevents team coordination and sustainable solutions",
+          text: "Rush at the last minute",
+          emoji: "😰",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Blame teammates for delays",
+          emoji: "😠",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "Team members have different skill levels. How do you utilize this?",
+      text: "How should she handle conflicts in the team?",
       options: [
         {
           id: "a",
-          text: "Assign tasks based on strengths and provide mentoring",
-          emoji: "🎯",
-          description: "Great! Leveraging diverse skills while supporting growth maximizes team potential",
+          text: "Address issues constructively",
+          emoji: "🤝",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Give everyone the same tasks regardless of abilities",
-          emoji: "🔄",
-          description: "Ignoring skill differences wastes talent and creates inefficiencies",
+          text: "Avoid all conflicts",
+          emoji: "🙈",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Let only the most skilled members do all the work",
-          emoji: "👑",
-          description: "Over-relying on top performers prevents others from developing and creates resentment",
+          text: "Escalate every disagreement",
+          emoji: "💢",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Take sides immediately",
+          emoji: "⚔️",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "The project is successful. How do you celebrate?",
+      text: "What should she do after project completion?",
       options: [
         {
           id: "a",
-          text: "Acknowledge everyone's contributions and celebrate together",
+          text: "Reflect on lessons and celebrate success",
           emoji: "🎉",
-          description: "Perfect! Recognition builds team morale and strengthens future collaboration",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Take all the credit yourself",
-          emoji: "🏆",
-          description: "Taking credit alone damages trust and team relationships",
+          text: "Forget everything immediately",
+          emoji: "🗑️",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Move immediately to the next project without acknowledgment",
-          emoji: "⏩",
-          description: "Celebrating successes motivates teams and builds positive momentum",
+          text: "Blame others for failures",
+          emoji: "😤",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Avoid feedback sessions",
+          emoji: "🙉",
           isCorrect: false
         }
       ]
@@ -159,6 +175,7 @@ const SimulationTeamProject = () => {
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { step: currentStep, optionId, isCorrect }]);
@@ -175,7 +192,7 @@ const SimulationTeamProject = () => {
   const getCurrentScenario = () => scenarios[currentStep];
 
   const handleNext = () => {
-    navigate("/student/ehe/teens/reflex-teen-innovator");
+    navigate("/games/ehe/teens");
   };
 
   return (
@@ -185,14 +202,14 @@ const SimulationTeamProject = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       gameId="ehe-teen-18"
       gameType="ehe"
-      totalLevels={20}
-      currentLevel={18}
+      totalLevels={scenarios.length}
+      currentLevel={currentStep + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/ehe/teens"
@@ -214,7 +231,7 @@ const SimulationTeamProject = () => {
             {getCurrentScenario().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +242,6 @@ const SimulationTeamProject = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

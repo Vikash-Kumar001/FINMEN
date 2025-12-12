@@ -56,25 +56,23 @@ const RobotVisionMistake = () => {
       text: "The robot sees a cow but says 'Dog'. How should we correct it?",
       emoji: "🤖",
       options: [
+        
         { 
           id: 1, 
-          text: "Correct: Cow = Cow", 
-          emoji: "🐄", 
-          description: "Right! Proper labeling helps AI learn",
-          isCorrect: true
+          text: "Leave it as Dog", 
+          emoji: "🐕",
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "Leave it as Dog", 
-          emoji: "🐕", 
-          description: "Incorrect - This reinforces the mistake",
-          isCorrect: false
+          text: "Correct: Cow = Cow", 
+          emoji: "🐄", 
+          isCorrect: true
         },
         { 
           id: 3, 
           text: "Ignore the error", 
           emoji: "🙈", 
-          description: "Incorrect - Missed learning opportunity",
           isCorrect: false
         }
       ],
@@ -89,21 +87,18 @@ const RobotVisionMistake = () => {
           id: 1, 
           text: "Show more cat examples", 
           emoji: "🐱", 
-          description: "Correct - More training data improves accuracy",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Scold the robot", 
           emoji: "😠", 
-          description: "Incorrect - Robots don't learn from scolding",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Replace the camera", 
-          emoji: "📸", 
-          description: "Unnecessary - The issue is recognition, not hardware",
+          emoji: "📸",
           isCorrect: false
         }
       ],
@@ -117,22 +112,19 @@ const RobotVisionMistake = () => {
         { 
           id: 1, 
           text: "Similar shape and color", 
-          emoji: "🔍", 
-          description: "Correct - Visual similarities cause confusion",
+          emoji: "🔍",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Robots hate vegetables", 
           emoji: "😤", 
-          description: "Incorrect - Robots don't have preferences",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Poor internet connection", 
-          emoji: "📶", 
-          description: "Incorrect - Connection doesn't affect image recognition",
+          emoji: "📶",
           isCorrect: false
         }
       ],
@@ -145,25 +137,23 @@ const RobotVisionMistake = () => {
       options: [
         { 
           id: 1, 
-          text: "Correct feedback", 
-          emoji: "✅", 
-          description: "Correct - Corrections improve learning",
-          isCorrect: true
+          text: "Faster processors", 
+          emoji: "⚡",
+          isCorrect: false
         },
+       
         { 
           id: 2, 
           text: "Ignoring mistakes", 
           emoji: "😴", 
-          description: "Incorrect - This prevents improvement",
           isCorrect: false
         },
-        { 
+         { 
           id: 3, 
-          text: "Faster processors", 
-          emoji: "⚡", 
-          description: "Helpful but not the key solution",
-          isCorrect: false
-        }
+          text: "Correct feedback", 
+          emoji: "✅", 
+          isCorrect: true
+        },
       ],
       explanation: "Correct feedback! Just like humans learn from corrections, AI systems improve when given accurate feedback about their mistakes. This process, called supervised learning, is fundamental to training reliable computer vision models."
     },
@@ -176,21 +166,18 @@ const RobotVisionMistake = () => {
           id: 1, 
           text: "Catch and correct errors", 
           emoji: "🎯", 
-          description: "Correct - Human judgment ensures accuracy",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Make AI work faster", 
           emoji: "🏃", 
-          description: "Incorrect - Humans slow down automation",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Save money on cameras", 
           emoji: "💰", 
-          description: "Irrelevant to oversight importance",
           isCorrect: false
         }
       ],

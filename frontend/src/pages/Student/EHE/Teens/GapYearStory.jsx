@@ -1,237 +1,194 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const GapYearStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const navigate = useNavigate();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ehe-teen-55";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "A teen takes a gap year to learn coding. What's the most important consideration?",
+      text: "A teen takes a gap year to learn coding. Is this useful?",
       options: [
-        {
-          id: "a",
-          text: "Just traveling without purpose",
-          emoji: "✈️",
-          description: "Travel can be valuable but without purpose, it may not contribute to career goals",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Building genuine skills and experiences",
-          emoji: "🛠️",
-          description: "Perfect! Skill development and meaningful experiences make gap years valuable",
-          isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Avoiding all academic work",
-          emoji: "❌",
-          description: "Gap years can include learning opportunities, not just leisure activities",
-          isCorrect: false
-        }
+        { id: "a", text: "Yes, if skills are built", correct: true },
+        { id: "b", text: "No, always a waste of time", correct: false },
+        { id: "c", text: "Only for rich families", correct: false }
       ]
     },
     {
       id: 2,
-      text: "How can a gap year benefit a teen's future career?",
+      text: "What are potential benefits of a well-planned gap year?",
       options: [
-        {
-          id: "a",
-          text: "Provides real-world experience and clarity",
-          emoji: "🌟",
-          description: "Exactly! Real experiences help teens make informed career decisions",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Delays entry into the workforce unnecessarily",
-          emoji: "⏰",
-          description: "When planned well, gap years enhance rather than delay career preparation",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Eliminates the need for further education",
-          emoji: "🎓",
-          description: "Gap years complement education rather than replace it",
-          isCorrect: false
-        }
+        { id: "a", text: "Skill development and real-world experience", correct: true },
+        { id: "b", text: "Just relaxation without purpose", correct: false },
+        { id: "c", text: "Avoiding responsibilities", correct: false }
       ]
     },
     {
       id: 3,
-      text: "What should a teen focus on during a productive gap year?",
+      text: "What should students focus on during a gap year?",
       options: [
-        {
-          id: "a",
-          text: "Internships, volunteering, or skill development",
-          emoji: "💼",
-          description: "Perfect! Structured learning experiences provide valuable skills and networking",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Only entertainment and leisure",
-          emoji: "🎮",
-          description: "While relaxation is important, skill-building activities provide long-term benefits",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Avoiding all social interaction",
-          emoji: "👻",
-          description: "Social connections and networking are valuable for personal and professional growth",
-          isCorrect: false
-        }
+        { id: "a", text: "Meaningful learning and growth", correct: true },
+        { id: "b", text: "Just traveling for fun", correct: false },
+        { id: "c", text: "Avoiding studies completely", correct: false }
       ]
     },
     {
       id: 4,
-      text: "What's a key factor for a successful gap year?",
+      text: "How can a gap year enhance future career prospects?",
       options: [
-        {
-          id: "a",
-          text: "Clear goals and planning",
-          emoji: "🎯",
-          description: "Exactly! Defined objectives ensure the gap year contributes to personal development",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Spending as much money as possible",
-          emoji: "💸",
-          description: "Financial responsibility is important; spending without purpose isn't beneficial",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Avoiding any challenges",
-          emoji: "🛋️",
-          description: "Challenges and learning experiences are key benefits of well-planned gap years",
-          isCorrect: false
-        }
+        { id: "a", text: "Adds practical skills and experience", correct: true },
+        { id: "b", text: "Creates gaps in resume", correct: false },
+        { id: "c", text: "Delays entry into workforce", correct: false }
       ]
     },
     {
       id: 5,
-      text: "How should a teen prepare for a gap year?",
+      text: "What makes a gap year educationally valuable?",
       options: [
-        {
-          id: "a",
-          text: "Research opportunities and create a structured plan",
-          emoji: "📋",
-          description: "Perfect! Thorough research and planning maximize the value of a gap year",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Make spontaneous decisions without preparation",
-          emoji: "🎲",
-          description: "While flexibility is good, preparation ensures productive use of time",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Only focus on avoiding schoolwork",
-          emoji: "😴",
-          description: "Gap years should enhance development, not just provide an escape from academics",
-          isCorrect: false
-        }
+        { id: "a", text: "Structured learning and clear objectives", correct: true },
+        { id: "b", text: "Complete break from learning", correct: false },
+        { id: "c", text: "Avoiding all responsibilities", correct: false }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
-    if (isCorrect) {
-      showCorrectAnswerFeedback(1, true);
+  const handleAnswerSelect = (option) => {
+    resetFeedback();
+    
+    if (option.correct) {
+      const newCoins = coins + coinsPerLevel;
+      setCoins(newCoins);
+      setFinalScore(finalScore + 1);
+      showCorrectAnswerFeedback(newCoins);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+        setCurrentQuestion(currentQuestion + 1);
       } else {
-        setGameFinished(true);
+        setShowResult(true);
       }
     }, 1500);
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   const handleNext = () => {
-    navigate("/student/ehe/teens/debate-degree-or-skill");
+    navigate("/games/ehe/teens");
   };
 
   return (
     <GameShell
       title="Gap Year Story"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
       gameId="ehe-teen-55"
       gameType="ehe"
-      totalLevels={60}
-      currentLevel={55}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/teens"
       showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/ehe/teens"
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">
+                {questions[currentQuestion].text}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-6">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswerSelect(option)}
+                    className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
+                  >
+                    <div className="flex items-center">
+                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                        {option.id}
+                      </span>
+                      <span className="font-medium">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">📅</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Gap Year Planning</h3>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🌍</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Gap Year Expert!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand how to make gap years educationally valuable!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
                 </div>
-              </button>
-            ))}
+                <p className="text-white/80 text-sm md:text-base">
+                  Great job! You know that gap years are useful when skills are built, well-planned gap years offer skill development and real-world experience, students should focus on meaningful learning during gap years, gap years can enhance career prospects by adding practical skills, and structured learning with clear objectives makes gap years valuable!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, a well-planned gap year can be a valuable learning experience!
+                </p>
+                <button
+                  onClick={() => {
+                    setShowResult(false);
+                    setCurrentQuestion(0);
+                    setCoins(0);
+                    setFinalScore(0);
+                    resetFeedback();
+                  }}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows the best understanding of strategic gap year planning.
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

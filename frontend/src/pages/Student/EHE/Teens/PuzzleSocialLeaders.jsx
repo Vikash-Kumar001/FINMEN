@@ -10,183 +10,260 @@ const PuzzleSocialLeaders = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(null);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedLeader, setSelectedLeader] = useState(null);
+  const [selectedContribution, setSelectedContribution] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Shuffle function to randomize the order of matches
-  const shuffleArray = (array) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
-
-  const puzzles = [
-    {
-      id: 1,
-      item: "Muhammad Yunus",
-      emoji: "🇧🇩",
-      matches: shuffleArray([
-        { id: "microfinance", text: "Microfinance", emoji: "💰", correct: true },
-        { id: "tech", text: "Technology", emoji: "💻", correct: false },
-        { id: "education", text: "Education", emoji: "📚", correct: false }
-      ])
-    },
-    {
-      id: 2,
-      item: "Bunker Roy",
-      emoji: "🇮🇳",
-      matches: shuffleArray([
-        { id: "barefoot", text: "Barefoot College", emoji: "🏫", correct: true },
-        { id: "finance", text: "Finance", emoji: "🏦", correct: false },
-        { id: "health", text: "Healthcare", emoji: "🏥", correct: false }
-      ])
-    },
-    {
-      id: 3,
-      item: "Kiran Mazumdar",
-      emoji: "🇮🇳",
-      matches: shuffleArray([
-        { id: "biotech", text: "Biotech", emoji: "🧬", correct: true },
-        { id: "fashion", text: "Fashion", emoji: "👗", correct: false },
-        { id: "sports", text: "Sports", emoji: "⚽", correct: false }
-      ])
-    },
-    {
-      id: 4,
-      item: "Blake Mycoskie",
-      emoji: "🇺🇸",
-      matches: shuffleArray([
-        { id: "tomsshoes", text: "Toms Shoes", emoji: "👟", correct: true },
-        { id: "cars", text: "Automotive", emoji: "🚗", correct: false },
-        { id: "food", text: "Food Service", emoji: "🍔", correct: false }
-      ])
-    },
-    {
-      id: 5,
-      item: "William Drayton",
-      emoji: "🇺🇸",
-      matches: shuffleArray([
-        { id: "ashoka", text: "Ashoka", emoji: "🏛️", correct: true },
-        { id: "media", text: "Media", emoji: "📺", correct: false },
-        { id: "real estate", text: "Real Estate", emoji: "🏠", correct: false }
-      ])
-    }
+  // Social Leaders (left side) - 5 items
+  const leaders = [
+    { id: 1, name: "Muhammad Yunus", emoji: "🇧🇩", description: "Bangladeshi economist and Nobel Peace Prize winner" },
+    { id: 2, name: "Bunker Roy", emoji: "🇮🇳", description: "Indian educator and social activist" },
+    { id: 3, name: "Kiran Mazumdar", emoji: "🇮🇳", description: "Indian entrepreneur in biotechnology" },
+    { id: 4, name: "Blake Mycoskie", emoji: "🇺🇸", description: "American entrepreneur and philanthropist" },
+    { id: 5, name: "William Drayton", emoji: "🇺🇸", description: "American social entrepreneur" }
   ];
 
-  const handleMatch = (matchId) => {
-    const currentPuzzleData = puzzles[currentPuzzle];
-    const match = currentPuzzleData.matches.find(m => m.id === matchId);
-    setSelectedMatch(matchId);
+  // Contributions (right side) - 5 items
+  const contributions = [
+    { id: 5, name: "Ashoka", emoji: "🏛️", description: "Global organization supporting social entrepreneurs" },
+    { id: 1, name: "Microfinance", emoji: "💰", description: "Providing small loans to impoverished individuals" },
+    { id: 4, name: "Toms Shoes", emoji: "👟", description: "One-for-one business model for shoes and essentials" },
+    { id: 2, name: "Barefoot College", emoji: "🏫", description: "Training rural communities in sustainable technologies" },
+    { id: 3, name: "Biotech", emoji: "🧬", description: "Leading India's biotechnology industry" },
+  ];
 
-    if (match.correct) {
-      setCoins(prev => prev + 1);
+  // Correct matches
+  const correctMatches = [
+    { leaderId: 1, contributionId: 1 }, // Muhammad Yunus → Microfinance
+    { leaderId: 2, contributionId: 2 }, // Bunker Roy → Barefoot College
+    { leaderId: 3, contributionId: 3 }, // Kiran Mazumdar → Biotech
+    { leaderId: 4, contributionId: 4 }, // Blake Mycoskie → Toms Shoes
+    { leaderId: 5, contributionId: 5 }  // William Drayton → Ashoka
+  ];
+
+  const handleLeaderSelect = (leader) => {
+    if (gameFinished) return;
+    setSelectedLeader(leader);
+  };
+
+  const handleContributionSelect = (contribution) => {
+    if (gameFinished) return;
+    setSelectedContribution(contribution);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeader || !selectedContribution || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      leaderId: selectedLeader.id,
+      contributionId: selectedContribution.id,
+      isCorrect: correctMatches.some(
+        match => match.leaderId === selectedLeader.id && match.contributionId === selectedContribution.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setShowCoinFeedback(currentPuzzleData.id);
-      setTimeout(() => setShowCoinFeedback(null), 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    setTimeout(() => {
-      if (currentPuzzle < puzzles.length - 1) {
-        setCurrentPuzzle(prev => prev + 1);
-        setSelectedMatch(null);
-      } else {
+    // Check if all items are matched
+    if (newMatches.length === leaders.length) {
+      setTimeout(() => {
         setGameFinished(true);
-      }
-    }, 1500);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedLeader(null);
+    setSelectedContribution(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedLeader(null);
+    setSelectedContribution(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/student/ehe/teens/clean-water-story");
   };
 
+  // Check if a leader is already matched
+  const isLeaderMatched = (leaderId) => {
+    return matches.some(match => match.leaderId === leaderId);
+  };
+
+  // Check if a contribution is already matched
+  const isContributionMatched = (contributionId) => {
+    return matches.some(match => match.contributionId === contributionId);
+  };
+
+  // Get match result for a leader
+  const getMatchResult = (leaderId) => {
+    const match = matches.find(m => m.leaderId === leaderId);
+    return match ? match.isCorrect : null;
+  };
+
   return (
     <GameShell
       title="Puzzle: Social Leaders"
-      subtitle={`Puzzle ${currentPuzzle + 1}/5: ${puzzles[currentPuzzle].item}`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Leaders with Contributions (${matches.length}/${leaders.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="ehe-teen-84"
       gameType="ehe"
-      totalLevels={90}
-      currentLevel={84}
-      showConfetti={gameFinished}
+      totalLevels={leaders.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={90} // Max score is total number of questions (all correct)
+      backPath="/games/ehe/teens"
+      maxScore={leaders.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/5: {puzzles[currentPuzzle].item}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6 text-center">
-            Match the social leader to their contribution!
-          </p>
-
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-              {showCoinFeedback === puzzles[currentPuzzle].id && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                    +1
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-4xl mr-3">{puzzles[currentPuzzle].emoji}</div>
-                <div className="text-white text-xl font-bold">{puzzles[currentPuzzle].item}</div>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Leaders */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Social Leaders</h3>
+              <div className="space-y-4">
+                {leaders.map(leader => (
+                  <button
+                    key={leader.id}
+                    onClick={() => handleLeaderSelect(leader)}
+                    disabled={isLeaderMatched(leader.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isLeaderMatched(leader.id)
+                        ? getMatchResult(leader.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedLeader?.id === leader.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{leader.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{leader.name}</h4>
+                        <p className="text-white/80 text-sm">{leader.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
+            </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                {puzzles[currentPuzzle].matches.map((match) => {
-                  const isCorrect = selectedMatch === match.id && match.correct;
-                  const isWrong = selectedMatch === match.id && !match.correct;
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedLeader 
+                    ? `Selected: ${selectedLeader.name}` 
+                    : "Select a Leader"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedLeader || !selectedContribution}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedLeader && selectedContribution
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{leaders.length}</p>
+                  <p>Matched: {matches.length}/{leaders.length}</p>
+                </div>
+              </div>
+            </div>
 
-                  return (
-                    <button
-                      key={match.id}
-                      onClick={() => handleMatch(match.id)}
-                      disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${
-                        !selectedMatch
-                          ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                          : isCorrect
-                          ? 'bg-green-100/20 border-green-500 text-white'
-                          : isWrong
-                          ? 'bg-red-100/20 border-red-500 text-white'
-                          : 'bg-gray-100/20 border-gray-500 text-white'
-                      }`}
-                    >
-                      {isCorrect && (
-                        <div className="absolute -top-2 -right-2 text-2xl">✅</div>
-                      )}
-                      {isWrong && (
-                        <div className="absolute -top-2 -right-2 text-2xl">❌</div>
-                      )}
-                      <div className="text-2xl mb-1">{match.emoji}</div>
-                      <div className="font-medium text-sm">{match.text}</div>
-                    </button>
-                  );
-                })}
+            {/* Right column - Contributions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Contributions</h3>
+              <div className="space-y-4">
+                {contributions.map(contribution => (
+                  <button
+                    key={contribution.id}
+                    onClick={() => handleContributionSelect(contribution)}
+                    disabled={isContributionMatched(contribution.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isContributionMatched(contribution.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedContribution?.id === contribution.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{contribution.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{contribution.name}</h4>
+                        <p className="text-white/80 text-sm">{contribution.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Social Impact Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {leaders.length} social leaders with their contributions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Social leaders create innovative solutions to address societal challenges!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {leaders.length} social leaders correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Learn about how these leaders created positive change in their communities!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

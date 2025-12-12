@@ -57,19 +57,20 @@ const TrainingFeedbackStory = () => {
       id: 1,
       text: "The robot made mistakes while stacking blocks. What should the teen do?",
       options: [
-        { 
-          id: "feedback", 
-          text: "Give Feedback", 
-          emoji: "📝", 
-          description: "Providing corrective feedback helps AI learn from mistakes and improve performance",
-          isCorrect: true
-        },
+       
         { 
           id: "ignore", 
           text: "Ignore Errors", 
           emoji: "❌", 
           description: "Ignoring errors prevents AI from learning and correcting its behavior",
           isCorrect: false
+        },
+         { 
+          id: "feedback", 
+          text: "Give Feedback", 
+          emoji: "📝", 
+          description: "Providing corrective feedback helps AI learn from mistakes and improve performance",
+          isCorrect: true
         },
         { 
           id: "restart", 
@@ -138,13 +139,7 @@ const TrainingFeedbackStory = () => {
       id: 4,
       text: "Robot completes task correctly. Teen rewards robot. Lesson?",
       options: [
-        { 
-          id: "reward", 
-          text: "Feedback + Reward = Better Learning", 
-          emoji: "🏆", 
-          description: "Positive reinforcement combined with feedback accelerates AI learning",
-          isCorrect: true
-        },
+        
         { 
           id: "nomatter", 
           text: "Rewards don't matter", 
@@ -158,26 +153,34 @@ const TrainingFeedbackStory = () => {
           emoji: "😞", 
           description: "Both positive and negative feedback are important, but rewards encourage desired behaviors",
           isCorrect: false
-        }
+        },
+        { 
+          id: "reward", 
+          text: "Feedback + Reward = Better Learning", 
+          emoji: "🏆", 
+          description: "Positive reinforcement combined with feedback accelerates AI learning",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 5,
       text: "Teen realizes that feedback helps AI improve. Outcome?",
       options: [
-        { 
-          id: "retrain", 
-          text: "Retraining with guidance is key", 
-          emoji: "✅", 
-          description: "Continuous feedback and retraining are essential for AI improvement",
-          isCorrect: true
-        },
+        
         { 
           id: "alone", 
           text: "Let AI learn alone", 
           emoji: "👤", 
           description: "Unsupervised learning has limitations without human guidance",
           isCorrect: false
+        },
+        { 
+          id: "retrain", 
+          text: "Retraining with guidance is key", 
+          emoji: "✅", 
+          description: "Continuous feedback and retraining are essential for AI improvement",
+          isCorrect: true
         },
         { 
           id: "replace", 

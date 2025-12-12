@@ -60,21 +60,18 @@ const EthicsInAIQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Correct - AI should comply with legal frameworks",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - Legal compliance is essential",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only when convenient", 
           emoji: "⏱️", 
-          description: "Incorrect - Laws apply universally",
           isCorrect: false
         }
       ],
@@ -88,22 +85,19 @@ const EthicsInAIQuiz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "❌", 
-          description: "Incorrect - Human oversight is crucial",
+          emoji: "❌",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "✅", 
-          description: "Correct - Oversight prevents harmful decisions",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only in emergencies", 
           emoji: "🚑", 
-          description: "Too narrow - Oversight is generally needed",
           isCorrect: false
         }
       ],
@@ -118,21 +112,18 @@ const EthicsInAIQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✅", 
-          description: "Correct - Privacy protection is fundamental",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "❌", 
-          description: "Incorrect - Privacy rights must be respected",
+          emoji: "❌",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only for sensitive data", 
           emoji: "📁", 
-          description: "Too limited - All personal data deserves protection",
           isCorrect: false
         }
       ],
@@ -146,22 +137,19 @@ const EthicsInAIQuiz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "❌", 
-          description: "Incorrect - Discrimination violates human rights",
+          emoji: "❌",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "✅", 
-          description: "Correct - Equality is a fundamental principle",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Only unintentionally", 
           emoji: "🤷", 
-          description: "Still problematic - Intent doesn't matter",
           isCorrect: false
         }
       ],
@@ -175,22 +163,19 @@ const EthicsInAIQuiz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Correct - Ethics ensure responsible AI",
+          emoji: "✅",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "❌", 
-          description: "Incorrect - Ethical guidelines prevent harm",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only when profitable", 
           emoji: "💰", 
-          description: "Incorrect - Ethics transcend financial interests",
           isCorrect: false
         }
       ],

@@ -9,7 +9,7 @@ const MusicPlaylistAI = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-20";
+  const gameId = "ai-teen-32";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -59,22 +59,19 @@ const MusicPlaylistAI = () => {
         { 
           id: 1, 
           text: "Analyzes listening habits", 
-          emoji: "📊", 
-          description: "Correct - AI studies your music preferences",
+          emoji: "📊",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Random song selection", 
-          emoji: "🎲", 
-          description: "Incorrect - AI uses data-driven approaches",
+          emoji: "🎲",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only uses popular songs", 
           emoji: "🔥", 
-          description: "Incorrect - Personalization goes beyond popularity",
           isCorrect: false
         }
       ],
@@ -85,25 +82,23 @@ const MusicPlaylistAI = () => {
       text: "What technique helps AI recommend similar artists?",
       emoji: "🎸",
       options: [
-        { 
+         { 
           id: 1, 
-          text: "Collaborative filtering", 
-          emoji: "👥", 
-          description: "Correct - Uses group listening patterns",
-          isCorrect: true
+          text: "Random guessing", 
+          emoji: "🔮", 
+          isCorrect: false
         },
         { 
           id: 2, 
-          text: "Random guessing", 
-          emoji: "🔮", 
-          description: "Incorrect - Not how recommendations work",
-          isCorrect: false
+          text: "Collaborative filtering", 
+          emoji: "👥", 
+          isCorrect: true
         },
+       
         { 
           id: 3, 
           text: "Artist popularity ranking", 
           emoji: "🏆", 
-          description: "Incorrect - Doesn't account for personal taste",
           isCorrect: false
         }
       ],
@@ -116,23 +111,21 @@ const MusicPlaylistAI = () => {
       options: [
         { 
           id: 1, 
-          text: "Audio analysis", 
-          emoji: "🔍", 
-          description: "Correct - AI examines musical elements",
-          isCorrect: true
-        },
-        { 
-          id: 2, 
           text: "Song length only", 
           emoji: "⏱️", 
-          description: "Too limited - Many factors matter",
           isCorrect: false
         },
         { 
+          id: 2, 
+          text: "Audio analysis", 
+          emoji: "🔍", 
+          isCorrect: true
+        },
+        
+        { 
           id: 3, 
           text: "Release date", 
-          emoji: "📅", 
-          description: "Incorrect - Not the primary factor",
+          emoji: "📅",
           isCorrect: false
         }
       ],
@@ -146,22 +139,19 @@ const MusicPlaylistAI = () => {
         { 
           id: 1, 
           text: "Matches songs to feelings", 
-          emoji: "❤️", 
-          description: "Correct - Enhances user experience",
+          emoji: "❤️",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Increases app downloads", 
           emoji: "📱", 
-          description: "Incorrect - Secondary benefit",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Reduces battery usage", 
           emoji: "🔋", 
-          description: "Incorrect - Unrelated to mood detection",
           isCorrect: false
         }
       ],
@@ -172,27 +162,25 @@ const MusicPlaylistAI = () => {
       text: "What data source is most valuable for music AI?",
       emoji: "💾",
       options: [
-        { 
-          id: 1, 
-          text: "User interaction patterns", 
-          emoji: "📈", 
-          description: "Correct - Reveals true preferences",
-          isCorrect: true
-        },
+        
         { 
           id: 2, 
           text: "Radio station playlists", 
           emoji: "📻", 
-          description: "Limited - Doesn't reflect personal taste",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Chart rankings", 
           emoji: "🏅", 
-          description: "Too general - Popularity ≠ personal fit",
           isCorrect: false
-        }
+        },
+        { 
+          id: 1, 
+          text: "User interaction patterns", 
+          emoji: "📈", 
+          isCorrect: true
+        },
       ],
       explanation: "User interaction patterns! How you actually engage with music (playing, skipping, saving) reveals your genuine preferences better than any external chart or playlist. This behavioral data is gold for creating truly personalized music experiences."
     }

@@ -10,183 +10,260 @@ const PuzzleCareerGrowthSteps = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(null);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedStep, setSelectedStep] = useState(null);
+  const [selectedOutcome, setSelectedOutcome] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Shuffle function to randomize the order of matches
-  const shuffleArray = (array) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
-
-  const puzzles = [
-    {
-      id: 1,
-      item: "Courses",
-      emoji: "📖",
-      matches: shuffleArray([
-        { id: "skills", text: "New Skills", emoji: "🔧", correct: true },
-        { id: "money", text: "More Money", emoji: "💰", correct: false },
-        { id: "rest", text: "Less Work", emoji: "🛋️", correct: false }
-      ])
-    },
-    {
-      id: 2,
-      item: "Practice",
-      emoji: "💪",
-      matches: shuffleArray([
-        { id: "expertise", text: "Expertise", emoji: "🎓", correct: true },
-        { id: "boredom", text: "Boredom", emoji: "😴", correct: false },
-        { id: "stress", text: "Stress", emoji: "😰", correct: false }
-      ])
-    },
-    {
-      id: 3,
-      item: "Feedback",
-      emoji: "🔄",
-      matches: shuffleArray([
-        { id: "improvement", text: "Improvement", emoji: "📈", correct: true },
-        { id: "criticism", text: "Criticism", emoji: "💢", correct: false },
-        { id: "complacency", text: "Complacency", emoji: "😴", correct: false }
-      ])
-    },
-    {
-      id: 4,
-      item: "Networking",
-      emoji: "🤝",
-      matches: shuffleArray([
-        { id: "opportunities", text: "Opportunities", emoji: "🚪", correct: true },
-        { id: "isolation", text: "Isolation", emoji: "🏝️", correct: false },
-        { id: "competition", text: "Competition", emoji: "⚔️", correct: false }
-      ])
-    },
-    {
-      id: 5,
-      item: "Mentorship",
-      emoji: "👨‍🏫",
-      matches: shuffleArray([
-        { id: "guidance", text: "Guidance", emoji: "🧭", correct: true },
-        { id: "dependence", text: "Dependence", emoji: "oreferrer", correct: false },
-        { id: "restriction", text: "Restriction", emoji: "⛔", correct: false }
-      ])
-    }
+  // Career Growth Steps (left side) - 5 items
+  const steps = [
+    { id: 1, name: "Courses", emoji: "📖", description: "Enrolling in educational programs and training" },
+    { id: 2, name: "Practice", emoji: "💪", description: "Repeatedly applying skills to improve proficiency" },
+    { id: 3, name: "Feedback", emoji: "🔄", description: "Receiving constructive input on performance" },
+    { id: 4, name: "Networking", emoji: "🤝", description: "Building professional relationships and connections" },
+    { id: 5, name: "Mentorship", emoji: "👨‍🏫", description: "Learning from experienced professionals" }
   ];
 
-  const handleMatch = (matchId) => {
-    const currentPuzzleData = puzzles[currentPuzzle];
-    const match = currentPuzzleData.matches.find(m => m.id === matchId);
-    setSelectedMatch(matchId);
+  // Outcomes (right side) - 5 items
+  const outcomes = [
+    { id: 3, name: "Improvement", emoji: "📈", description: "Enhancing performance through corrections" },
+    { id: 1, name: "New Skills", emoji: "🔧", description: "Acquiring new abilities and competencies" },
+    { id: 2, name: "Expertise", emoji: "🎓", description: "Developing deep knowledge in a field" },
+    { id: 5, name: "Guidance", emoji: "🧭", description: "Direction and advice from experienced mentors" },
+    { id: 4, name: "Opportunities", emoji: "🚪", description: "Access to new roles and possibilities" },
+  ];
 
-    if (match.correct) {
-      setCoins(prev => prev + 1);
+  // Correct matches
+  const correctMatches = [
+    { stepId: 1, outcomeId: 1 }, // Courses → New Skills
+    { stepId: 2, outcomeId: 2 }, // Practice → Expertise
+    { stepId: 3, outcomeId: 3 }, // Feedback → Improvement
+    { stepId: 4, outcomeId: 4 }, // Networking → Opportunities
+    { stepId: 5, outcomeId: 5 }  // Mentorship → Guidance
+  ];
+
+  const handleStepSelect = (step) => {
+    if (gameFinished) return;
+    setSelectedStep(step);
+  };
+
+  const handleOutcomeSelect = (outcome) => {
+    if (gameFinished) return;
+    setSelectedOutcome(outcome);
+  };
+
+  const handleMatch = () => {
+    if (!selectedStep || !selectedOutcome || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      stepId: selectedStep.id,
+      outcomeId: selectedOutcome.id,
+      isCorrect: correctMatches.some(
+        match => match.stepId === selectedStep.id && match.outcomeId === selectedOutcome.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setShowCoinFeedback(currentPuzzleData.id);
-      setTimeout(() => setShowCoinFeedback(null), 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    setTimeout(() => {
-      if (currentPuzzle < puzzles.length - 1) {
-        setCurrentPuzzle(prev => prev + 1);
-        setSelectedMatch(null);
-      } else {
+    // Check if all items are matched
+    if (newMatches.length === steps.length) {
+      setTimeout(() => {
         setGameFinished(true);
-      }
-    }, 1500);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedStep(null);
+    setSelectedOutcome(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedStep(null);
+    setSelectedOutcome(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/student/ehe/teens/mentor-story");
   };
 
+  // Check if a step is already matched
+  const isStepMatched = (stepId) => {
+    return matches.some(match => match.stepId === stepId);
+  };
+
+  // Check if an outcome is already matched
+  const isOutcomeMatched = (outcomeId) => {
+    return matches.some(match => match.outcomeId === outcomeId);
+  };
+
+  // Get match result for a step
+  const getMatchResult = (stepId) => {
+    const match = matches.find(m => m.stepId === stepId);
+    return match ? match.isCorrect : null;
+  };
+
   return (
     <GameShell
       title="Puzzle: Career Growth Steps"
-      subtitle={`Puzzle ${currentPuzzle + 1}/5: ${puzzles[currentPuzzle].item}`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Steps with Outcomes (${matches.length}/${steps.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="ehe-teen-94"
       gameType="ehe"
-      totalLevels={100}
-      currentLevel={94}
-      showConfetti={gameFinished}
+      totalLevels={steps.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      backPath="/games/ehe/teens"
+      maxScore={steps.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/5: {puzzles[currentPuzzle].item}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6 text-center">
-            Match the career growth action to its outcome!
-          </p>
-
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-              {showCoinFeedback === puzzles[currentPuzzle].id && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                    +1
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-4xl mr-3">{puzzles[currentPuzzle].emoji}</div>
-                <div className="text-white text-xl font-bold">{puzzles[currentPuzzle].item}</div>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Steps */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Growth Steps</h3>
+              <div className="space-y-4">
+                {steps.map(step => (
+                  <button
+                    key={step.id}
+                    onClick={() => handleStepSelect(step)}
+                    disabled={isStepMatched(step.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isStepMatched(step.id)
+                        ? getMatchResult(step.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedStep?.id === step.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{step.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{step.name}</h4>
+                        <p className="text-white/80 text-sm">{step.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
+            </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                {puzzles[currentPuzzle].matches.map((match) => {
-                  const isCorrect = selectedMatch === match.id && match.correct;
-                  const isWrong = selectedMatch === match.id && !match.correct;
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedStep 
+                    ? `Selected: ${selectedStep.name}` 
+                    : "Select a Step"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedStep || !selectedOutcome}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedStep && selectedOutcome
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{steps.length}</p>
+                  <p>Matched: {matches.length}/{steps.length}</p>
+                </div>
+              </div>
+            </div>
 
-                  return (
-                    <button
-                      key={match.id}
-                      onClick={() => handleMatch(match.id)}
-                      disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${
-                        !selectedMatch
-                          ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                          : isCorrect
-                          ? 'bg-green-100/20 border-green-500 text-white'
-                          : isWrong
-                          ? 'bg-red-100/20 border-red-500 text-white'
-                          : 'bg-gray-100/20 border-gray-500 text-white'
-                      }`}
-                    >
-                      {isCorrect && (
-                        <div className="absolute -top-2 -right-2 text-2xl">✅</div>
-                      )}
-                      {isWrong && (
-                        <div className="absolute -top-2 -right-2 text-2xl">❌</div>
-                      )}
-                      <div className="text-2xl mb-1">{match.emoji}</div>
-                      <div className="font-medium text-sm">{match.text}</div>
-                    </button>
-                  );
-                })}
+            {/* Right column - Outcomes */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Outcomes</h3>
+              <div className="space-y-4">
+                {outcomes.map(outcome => (
+                  <button
+                    key={outcome.id}
+                    onClick={() => handleOutcomeSelect(outcome)}
+                    disabled={isOutcomeMatched(outcome.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isOutcomeMatched(outcome.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedOutcome?.id === outcome.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{outcome.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{outcome.name}</h4>
+                        <p className="text-white/80 text-sm">{outcome.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Career Growth Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {steps.length} career growth steps with their outcomes!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Strategic career growth requires intentional steps and continuous learning!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {steps.length} career growth steps correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about how each growth step contributes to professional development!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

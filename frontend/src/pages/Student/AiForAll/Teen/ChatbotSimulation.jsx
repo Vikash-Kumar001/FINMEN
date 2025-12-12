@@ -12,7 +12,7 @@ const ChatbotSimulation = () => {
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti } = useGameFeedback();
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
@@ -59,19 +59,20 @@ const ChatbotSimulation = () => {
       text: "Which feature makes a chatbot seem more human-like in conversations?",
       options: [
         { 
-          id: "speed", 
-          text: "Responding instantly", 
-          emoji: "⚡", 
-          description: "Immediate responses to all queries",
-          isCorrect: false
-        },
-        { 
           id: "context", 
           text: "Remembering conversation context", 
           emoji: "💭", 
           description: "Maintain topic continuity",
           isCorrect: true
         },
+        { 
+          id: "speed", 
+          text: "Responding instantly", 
+          emoji: "⚡", 
+          description: "Immediate responses to all queries",
+          isCorrect: false
+        },
+        
         { 
           id: "caps", 
           text: "Using all caps", 
@@ -92,19 +93,20 @@ const ChatbotSimulation = () => {
       id: 3,
       text: "What is a key consideration when designing chatbot responses?",
       options: [
-        { 
-          id: "long", 
-          text: "Make responses as detailed as possible", 
-          emoji: "📚", 
-          description: "Provide extensive information",
-          isCorrect: false
-        },
+        
         { 
           id: "short", 
           text: "Keep responses concise and clear", 
           emoji: "✂️", 
           description: "Be brief and understandable",
           isCorrect: true
+        },
+        { 
+          id: "long", 
+          text: "Make responses as detailed as possible", 
+          emoji: "📚", 
+          description: "Provide extensive information",
+          isCorrect: false
         },
         { 
           id: "repeat", 
@@ -133,13 +135,7 @@ const ChatbotSimulation = () => {
           description: "Provide comedy relief",
           isCorrect: false
         },
-        { 
-          id: "help", 
-          text: "To assist when the bot doesn't understand", 
-          emoji: "🆘", 
-          description: "Handle unrecognized inputs gracefully",
-          isCorrect: true
-        },
+        
         { 
           id: "ads", 
           text: "To show advertisements", 
@@ -153,7 +149,14 @@ const ChatbotSimulation = () => {
           emoji: "📊", 
           description: "Gather analytics",
           isCorrect: false
-        }
+        },
+        { 
+          id: "help", 
+          text: "To assist when the bot doesn't understand", 
+          emoji: "🆘", 
+          description: "Handle unrecognized inputs gracefully",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -252,7 +255,9 @@ const ChatbotSimulation = () => {
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}>
       <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
         {!showResult ? (
           <div className="space-y-4 md:space-y-6">

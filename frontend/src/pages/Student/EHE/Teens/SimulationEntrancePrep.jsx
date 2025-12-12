@@ -13,140 +13,156 @@ const SimulationEntrancePrep = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const scenarios = [
     {
       id: 1,
-      text: "A teen has an important entrance exam in 6 months. What's the best approach to prepare?",
+      text: "Teen has an entrance exam. What approach should she take?",
       options: [
         {
           id: "a",
-          text: "Study regularly with a structured plan",
-          emoji: "📅",
-          description: "Perfect! Consistent, planned study leads to better retention and performance",
+          text: "Study regularly",
+          emoji: "📚",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Skip preparation and hope for the best",
+          text: "Skip preparation",
           emoji: "😴",
-          description: "Lack of preparation significantly reduces chances of success",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Panic and cram at the last minute",
-          emoji: "🤯",
-          description: "Last-minute cramming leads to stress and poor performance",
+          text: "Last-minute panic",
+          emoji: "😰",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Cram everything at once",
+          emoji: "😵",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "How should the teen organize their study schedule?",
+      text: "How should she prepare for the exam?",
       options: [
         {
           id: "a",
-          text: "Balance all subjects with regular review sessions",
-          emoji: "⚖️",
-          description: "Exactly! Balanced study with regular review ensures comprehensive preparation",
+          text: "Create a study schedule and practice tests",
+          emoji: "📅",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Focus only on favorite subjects",
-          emoji: "🎯",
-          description: "Neglecting weak areas can create knowledge gaps that hurt overall performance",
+          text: "Study only favorite subjects",
+          emoji: "❤️",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Study randomly without any plan",
-          emoji: "🎲",
-          description: "Random study lacks focus and efficiency in covering required material",
+          text: "Avoid weak areas",
+          emoji: "🙈",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Memorize without understanding",
+          emoji: "🧠",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "What's important when taking practice exams?",
+      text: "What resources should she use for preparation?",
       options: [
         {
           id: "a",
-          text: "Simulate real exam conditions and review mistakes",
-          emoji: "📝",
-          description: "Perfect! Practice under real conditions and learn from errors improves performance",
+          text: "Books, online courses, and coaching",
+          emoji: "📖",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Only focus on finishing quickly",
-          emoji: "⏱️",
-          description: "Speed without accuracy often leads to poor results",
+          text: "Only social media",
+          emoji: "📱",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Ignore results and move on",
-          emoji: "🙈",
-          description: "Reviewing practice results identifies weak areas for improvement",
+          text: "Copy others' notes",
+          emoji: "📎",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Avoid all study material",
+          emoji: "🗑️",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "How can the teen manage exam stress?",
+      text: "How can she manage exam stress?",
       options: [
         {
           id: "a",
-          text: "Regular exercise, adequate sleep, and relaxation techniques",
-          emoji: "🧘",
-          description: "Exactly! Physical and mental wellness are crucial for optimal performance",
+          text: "Regular exercise and adequate sleep",
+          emoji: "😴",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Study continuously without breaks",
-          emoji: "📚",
-          description: "Burnout from overstudying reduces effectiveness and increases stress",
+          text: "Drink excessive caffeine",
+          emoji: "☕",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Avoid all social interactions",
-          emoji: "👻",
-          description: "Social support helps manage stress and maintain mental health",
+          text: "Stay awake all night",
+          emoji: "🌙",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Avoid all breaks",
+          emoji: "⛔",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "What should the teen do in the final weeks before the exam?",
+      text: "What should she do on exam day?",
       options: [
         {
           id: "a",
-          text: "Review key concepts and maintain healthy routines",
-          emoji: "📋",
-          description: "Perfect! Focused review with good health practices optimizes exam performance",
+          text: "Arrive early and stay calm",
+          emoji: "⏰",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Cram intensively and sacrifice sleep",
-          emoji: "☕",
-          description: "Intensive cramming and sleep deprivation harm cognitive performance",
+          text: "Rush at the last minute",
+          emoji: "🏃",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Stop studying completely",
-          emoji: "🏁",
-          description: "Complete cessation of study leads to knowledge decay before the exam",
+          text: "Panic about difficult questions",
+          emoji: "😱",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Give up halfway",
+          emoji: "🏳️",
           isCorrect: false
         }
       ]
@@ -159,6 +175,7 @@ const SimulationEntrancePrep = () => {
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { step: currentStep, optionId, isCorrect }]);
@@ -175,7 +192,7 @@ const SimulationEntrancePrep = () => {
   const getCurrentScenario = () => scenarios[currentStep];
 
   const handleNext = () => {
-    navigate("/student/ehe/teens/reflex-teen-awareness");
+    navigate("/games/ehe/teens");
   };
 
   return (
@@ -185,14 +202,14 @@ const SimulationEntrancePrep = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       gameId="ehe-teen-68"
       gameType="ehe"
-      totalLevels={70}
-      currentLevel={68}
+      totalLevels={scenarios.length}
+      currentLevel={currentStep + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/ehe/teens"
@@ -206,15 +223,15 @@ const SimulationEntrancePrep = () => {
           </div>
 
           <div className="text-center mb-6">
-            <div className="text-5xl mb-4">📚</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Entrance Exam Preparation Simulator</h3>
+            <div className="text-5xl mb-4">🎓</div>
+            <h3 className="text-2xl font-bold text-white mb-2">Entrance Exam Prep Simulator</h3>
           </div>
 
           <p className="text-white text-lg mb-6">
             {getCurrentScenario().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +242,6 @@ const SimulationEntrancePrep = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

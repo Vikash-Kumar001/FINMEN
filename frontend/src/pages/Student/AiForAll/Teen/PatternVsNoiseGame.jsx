@@ -42,9 +42,9 @@ const PatternVsNoiseGame = () => {
       emoji: "📊",
       question: "Which data helps AI learn better?",
       choices: [
-        { id: 1, text: "Structured data", emoji: "📋", isCorrect: true },
-        { id: 2, text: "Scattered points", emoji: "🌀", isCorrect: false },
-        { id: 3, text: "Missing values", emoji: "🕳️", isCorrect: false },
+        { id: 1, text: "Scattered points", emoji: "🌀", isCorrect: false },
+        { id: 2, text: "Missing values", emoji: "🕳️", isCorrect: false },
+        { id: 3, text: "Structured data", emoji: "📋", isCorrect: true },
       ],
     },
     {
@@ -53,9 +53,9 @@ const PatternVsNoiseGame = () => {
       emoji: "📚",
       question: "What should good training data contain?",
       choices: [
-        { id: 1, text: "Consistent examples", emoji: "整齐", isCorrect: true },
+        { id: 1, text: "Consistent examples", emoji: "✏️", isCorrect: true },
         { id: 2, text: "Random samples", emoji: "🔀", isCorrect: false },
-        { id: 3, text: "Duplicate entries", emoji: "复印", isCorrect: false },
+        { id: 3, text: "Duplicate entries", emoji: "©️", isCorrect: false },
       ],
     },
     {
@@ -64,8 +64,8 @@ const PatternVsNoiseGame = () => {
       emoji: "🔇",
       question: "Why remove noise from training data?",
       choices: [
-        { id: 1, text: "Improve accuracy", emoji: "📈", isCorrect: true },
-        { id: 2, text: "Save storage", emoji: "💾", isCorrect: false },
+        { id: 1, text: "Save storage", emoji: "💾", isCorrect: false },
+        { id: 2, text: "Improve accuracy", emoji: "📈", isCorrect: true },
         { id: 3, text: "Speed up process", emoji: "⚡", isCorrect: false },
       ],
     },
@@ -75,9 +75,9 @@ const PatternVsNoiseGame = () => {
       emoji: "🤖",
       question: "What indicates quality training data?",
       choices: [
-        { id: 1, text: "Predictive power", emoji: "🔮", isCorrect: true },
-        { id: 2, text: "Large size", emoji: "🐘", isCorrect: false },
-        { id: 3, text: "Visual appeal", emoji: "🎨", isCorrect: false },
+        { id: 1, text: "Large size", emoji: "🐘", isCorrect: false },
+        { id: 2, text: "Visual appeal", emoji: "🎨", isCorrect: false },
+        { id: 3, text: "Predictive power", emoji: "🔮", isCorrect: true },
       ],
     },
   ];

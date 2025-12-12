@@ -11,7 +11,7 @@ const FraudDetectorReflex = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-35";
+  const gameId = "ai-teen-44";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -28,13 +28,67 @@ const FraudDetectorReflex = () => {
   const timerRef = useRef(null);
   const currentRoundRef = useRef(0);
 
-  // 👇 Messages to detect — some are fraud, some are safe
-  const messages = [
-    { id: 1, text: "Win 1 lakh now!", isFraud: true },
-    { id: 2, text: "Meeting at 5 PM", isFraud: false },
-    { id: 3, text: "You won a lottery!", isFraud: true },
-    { id: 4, text: "Lunch with team tomorrow", isFraud: false },
-    { id: 5, text: "Claim your prize immediately!", isFraud: true },
+  const questions = [
+    {
+      id: 1,
+      question: "Is this message likely to be fraudulent?",
+      message: "Win 1 lakh now!",
+      correctAnswer: "Fraudulent",
+      options: [
+        { text: "Fraudulent", isCorrect: true, emoji: "🚨" },
+        { text: "Safe", isCorrect: false, emoji: "✅" },
+        { text: "Marketing", isCorrect: false, emoji: "📢" },
+        { text: "Important", isCorrect: false, emoji: "❗" }
+      ]
+    },
+    {
+      id: 2,
+      question: "Is this message likely to be fraudulent?",
+      message: "Meeting at 5 PM",
+      correctAnswer: "Safe",
+      options: [
+        { text: "Fraudulent", isCorrect: false, emoji: "🚨" },
+        { text: "Safe", isCorrect: true, emoji: "✅" },
+        { text: "Spam", isCorrect: false, emoji: "📧" },
+        { text: "Urgent", isCorrect: false, emoji: "⏰" }
+      ]
+    },
+    {
+      id: 3,
+      question: "Is this message likely to be fraudulent?",
+      message: "You won a lottery!",
+      correctAnswer: "Fraudulent",
+      options: [
+        { text: "Fraudulent", isCorrect: true, emoji: "🚨" },
+        { text: "Safe", isCorrect: false, emoji: "✅" },
+        { text: "Advertisement", isCorrect: false, emoji: "📰" },
+        { text: "Official", isCorrect: false, emoji: "🏛️" }
+      ]
+    },
+    {
+      id: 4,
+      question: "Is this message likely to be fraudulent?",
+      message: "Lunch with team tomorrow",
+      correctAnswer: "Safe",
+      options: [
+        { text: "Fraudulent", isCorrect: false, emoji: "🚨" },
+        { text: "Safe", isCorrect: true, emoji: "✅" },
+        { text: "Phishing", isCorrect: false, emoji: "🎣" },
+        { text: "Suspicious", isCorrect: false, emoji: "🔍" }
+      ]
+    },
+    {
+      id: 5,
+      question: "Is this message likely to be fraudulent?",
+      message: "Claim your prize immediately!",
+      correctAnswer: "Fraudulent",
+      options: [
+        { text: "Fraudulent", isCorrect: true, emoji: "🚨" },
+        { text: "Safe", isCorrect: false, emoji: "✅" },
+        { text: "Promotional", isCorrect: false, emoji: "🎉" },
+        { text: "Genuine", isCorrect: false, emoji: "💯" }
+      ]
+    }
   ];
 
   useEffect(() => {
@@ -93,14 +147,14 @@ const FraudDetectorReflex = () => {
     resetFeedback();
   };
 
-  const handleClick = (clickedFraud) => {
+  const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
     
     setAnswered(true);
     resetFeedback();
     
-    const current = messages[currentRound - 1];
-    const isCorrect = clickedFraud === current.isFraud;
+    const currentQuestion = questions[currentRound - 1];
+    const isCorrect = option.isCorrect;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -119,13 +173,13 @@ const FraudDetectorReflex = () => {
   };
 
   const finalScore = score;
-  const currentMessage = messages[currentRound - 1];
+  const currentQuestion = questions[currentRound - 1];
   const accuracy = Math.round((score / TOTAL_ROUNDS) * 100);
 
   return (
     <GameShell
       title="Fraud Detector Reflex"
-      subtitle={gameState === "playing" ? `Message ${currentRound}/${TOTAL_ROUNDS}: Click “Fraud” if message seems suspicious 👇` : "Test your ability to detect fraudulent messages!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your ability to detect fraudulent messages!` : "Test your ability to detect fraudulent messages!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -147,8 +201,8 @@ const FraudDetectorReflex = () => {
             <div className="text-5xl mb-6">🛡️</div>
             <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
             <p className="text-white/90 text-lg mb-6">
-              Identify fraudulent messages!<br />
-              You have {ROUND_TIME} seconds for each message.
+              Test your ability to detect fraudulent messages!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
             <p className="text-white/80 mb-6">
               You have {TOTAL_ROUNDS} messages with {ROUND_TIME} seconds each!
@@ -162,11 +216,11 @@ const FraudDetectorReflex = () => {
           </div>
         )}
 
-        {gameState === "playing" && currentMessage && (
+        {gameState === "playing" && currentQuestion && (
           <div className="space-y-8">
             <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <div className="text-white">
-                <span className="font-bold">Message:</span> {currentRound}/{TOTAL_ROUNDS}
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
               <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
                 <span className="text-white">Time:</span> {timeLeft}s
@@ -176,30 +230,26 @@ const FraudDetectorReflex = () => {
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-              <h3 className="text-white text-xl font-bold mb-6">
-                Click “Fraud” if message seems suspicious 👇
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
               </h3>
-
-              <div className="bg-gradient-to-br from-red-500/30 to-pink-500/30 rounded-xl p-12 mb-6">
-                <p className="text-white text-3xl font-bold">{currentMessage.text}</p>
+              
+              <div className="bg-gradient-to-br from-red-500/30 to-pink-500/30 rounded-xl p-8 mb-6">
+                <p className="text-white text-2xl font-bold">{currentQuestion.message}</p>
               </div>
-
-              <div className="flex justify-center gap-6">
-                <button
-                  onClick={() => handleClick(true)}
-                  disabled={answered}
-                  className="min-h-[80px] bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 px-10 py-5 text-white font-bold text-xl rounded-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  Fraud 🚨
-                </button>
-                <button
-                  onClick={() => handleClick(false)}
-                  disabled={answered}
-                  className="min-h-[80px] bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 px-10 py-5 text-white font-bold text-xl rounded-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  Safe ✅
-                </button>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

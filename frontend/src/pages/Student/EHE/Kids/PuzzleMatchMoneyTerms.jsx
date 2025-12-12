@@ -10,223 +10,260 @@ const PuzzleMatchMoneyTerms = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
   const [selectedTerm, setSelectedTerm] = useState(null);
   const [selectedDefinition, setSelectedDefinition] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      term: "Earning",
-      emoji: "💼",
-      definition: "Work",
-      definitionEmoji: "🔨",
-      description: "Earning money comes from working or providing services."
-    },
-    {
-      id: 2,
-      term: "Spending",
-      emoji: "💸",
-      definition: "Shop",
-      definitionEmoji: "🛒",
-      description: "Spending is using money to buy things you need or want."
-    },
-    {
-      id: 3,
-      term: "Saving",
-      emoji: "💰",
-      definition: "Piggy Bank",
-      definitionEmoji: "🐖",
-      description: "Saving is putting money aside for future use."
-    },
-    {
-      id: 4,
-      term: "Budget",
-      emoji: "📋",
-      definition: "Plan",
-      definitionEmoji: "📝",
-      description: "A budget is a plan for how to use your money."
-    },
-    {
-      id: 5,
-      term: "Interest",
-      emoji: "📈",
-      definition: "Growth",
-      definitionEmoji: "🌱",
-      description: "Interest is the money your savings earn over time."
-    }
+  // Terms (left side) - 5 items
+  const terms = [
+    { id: 1, name: "Earning", emoji: "💼", description: "Getting money from working or providing services" },
+    { id: 2, name: "Spending", emoji: "💸", description: "Using money to buy things you need or want" },
+    { id: 3, name: "Saving", emoji: "💰", description: "Putting money aside for future use" },
+    { id: 4, name: "Budget", emoji: "📋", description: "A plan for how to use your money" },
+    { id: 5, name: "Interest", emoji: "📈", description: "Money your savings earn over time" }
+  ];
+
+  // Definitions (right side) - 5 items
+  const definitions = [
+    { id: 5, name: "Growth", emoji: "🌱", description: "Gradual increase or development" },
+    { id: 3, name: "Piggy Bank", emoji: "🐖", description: "Container for storing money" },
+    { id: 4, name: "Plan", emoji: "📝", description: "Detailed proposal for doing something" },
+    { id: 2, name: "Shop", emoji: "🛒", description: "Buying goods or services" },
+    { id: 1, name: "Work", emoji: "🔨", description: "Performing a job or task for payment" },
+  ];
+
+  // Correct matches
+  const correctMatches = [
+    { termId: 1, definitionId: 1 }, // Earning → Work
+    { termId: 2, definitionId: 2 }, // Spending → Shop
+    { termId: 3, definitionId: 3 }, // Saving → Piggy Bank
+    { termId: 4, definitionId: 4 }, // Budget → Plan
+    { termId: 5, definitionId: 5 }  // Interest → Growth
   ];
 
   const handleTermSelect = (term) => {
-    if (selectedDefinition) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.term === term && p.definition === selectedDefinition);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedTerm(null);
-      setSelectedDefinition(null);
-    } else {
-      setSelectedTerm(term);
-    }
+    if (gameFinished) return;
+    setSelectedTerm(term);
   };
 
   const handleDefinitionSelect = (definition) => {
-    if (selectedTerm) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.term === selectedTerm && p.definition === definition);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedTerm(null);
-      setSelectedDefinition(null);
+    if (gameFinished) return;
+    setSelectedDefinition(definition);
+  };
+
+  const handleMatch = () => {
+    if (!selectedTerm || !selectedDefinition || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      termId: selectedTerm.id,
+      definitionId: selectedDefinition.id,
+      isCorrect: correctMatches.some(
+        match => match.termId === selectedTerm.id && match.definitionId === selectedDefinition.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setSelectedDefinition(definition);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === terms.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedTerm(null);
+    setSelectedDefinition(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedTerm(null);
+    setSelectedDefinition(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/ehe/kids");
   };
 
-  const isMatched = (id) => matchedPairs.includes(id);
-  const isTermSelected = (term) => selectedTerm === term;
-  const isDefinitionSelected = (definition) => selectedDefinition === definition;
+  // Check if a term is already matched
+  const isTermMatched = (termId) => {
+    return matches.some(match => match.termId === termId);
+  };
+
+  // Check if a definition is already matched
+  const isDefinitionMatched = (definitionId) => {
+    return matches.some(match => match.definitionId === definitionId);
+  };
+
+  // Get match result for a term
+  const getMatchResult = (termId) => {
+    const match = matches.find(m => m.termId === termId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Match Money Terms"
-      subtitle={`Match terms to definitions! ${matchedPairs.length}/${puzzles.length} matched`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Terms with Definitions (${matches.length}/${terms.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="ehe-kids-24"
       gameType="ehe"
-      totalLevels={10}
-      currentLevel={24}
-      showConfetti={gameFinished}
+      totalLevels={terms.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      backPath="/games/ehe/kids"
+      maxScore={terms.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Terms column */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Terms</h3>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Terms */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Terms</h3>
               <div className="space-y-4">
-                {puzzles.map((puzzle) => (
+                {terms.map(term => (
                   <button
-                    key={`term-${puzzle.id}`}
-                    onClick={() => handleTermSelect(puzzle.term)}
-                    disabled={isMatched(puzzle.id)}
+                    key={term.id}
+                    onClick={() => handleTermSelect(term)}
+                    disabled={isTermMatched(term.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      isMatched(puzzle.id)
-                        ? 'bg-green-500/20 border-2 border-green-400'
-                        : isTermSelected(puzzle.term)
-                        ? 'bg-blue-500/20 border-2 border-blue-400'
-                        : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                      isTermMatched(term.id)
+                        ? getMatchResult(term.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedTerm?.id === term.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <span className="text-3xl mr-3">{puzzle.emoji}</span>
-                      <span className="text-white/90 text-lg">{puzzle.term}</span>
+                      <div className="text-2xl mr-3">{term.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{term.name}</h4>
+                        <p className="text-white/80 text-sm">{term.description}</p>
+                      </div>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
-            
-            {/* Definitions column */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Definitions</h3>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedTerm 
+                    ? `Selected: ${selectedTerm.name}` 
+                    : "Select a Term"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedTerm || !selectedDefinition}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedTerm && selectedDefinition
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{terms.length}</p>
+                  <p>Matched: {matches.length}/{terms.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Definitions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Definitions</h3>
               <div className="space-y-4">
-                {puzzles.map((puzzle) => (
+                {definitions.map(definition => (
                   <button
-                    key={`definition-${puzzle.id}`}
-                    onClick={() => handleDefinitionSelect(puzzle.definition)}
-                    disabled={isMatched(puzzle.id)}
+                    key={definition.id}
+                    onClick={() => handleDefinitionSelect(definition)}
+                    disabled={isDefinitionMatched(definition.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      isMatched(puzzle.id)
-                        ? 'bg-green-500/20 border-2 border-green-400'
-                        : isDefinitionSelected(puzzle.definition)
-                        ? 'bg-blue-500/20 border-2 border-blue-400'
-                        : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                      isDefinitionMatched(definition.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedDefinition?.id === definition.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <span className="text-3xl mr-3">{puzzle.definitionEmoji}</span>
-                      <span className="text-white/90 text-lg">{puzzle.definition}</span>
+                      <div className="text-2xl mr-3">{definition.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{definition.name}</h4>
+                        <p className="text-white/80 text-sm">{definition.description}</p>
+                      </div>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
           </div>
-          
-          {/* Feedback area */}
-          {selectedTerm && selectedDefinition && (
-            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
-              <p className="text-white/90 text-center">
-                Matching: {selectedTerm} → {selectedDefinition}
-              </p>
-            </div>
-          )}
-          
-          {selectedTerm && !selectedDefinition && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedTerm}. Now select a definition to match!
-              </p>
-            </div>
-          )}
-          
-          {!selectedTerm && selectedDefinition && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedDefinition}. Now select a term to match!
-              </p>
-            </div>
-          )}
-          
-          {/* Completion message */}
-          {gameFinished && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
-              <p className="text-green-300 text-center font-bold">
-                Great job! You matched all money terms to their definitions!
-              </p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {terms.length} money terms with their definitions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding money terms is essential for financial literacy!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {terms.length} terms correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each money term actually means in practice!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

@@ -24,21 +24,24 @@ const SimulationTeenCareerFair = () => {
           id: "a",
           text: "What excites her and matches her skills",
           emoji: "🎯",
-          description: "Perfect! Passion combined with aptitude leads to fulfilling careers",
           isCorrect: true
         },
         {
           id: "b",
           text: "Only highest salary potential",
           emoji: "💰",
-          description: "While financial considerations matter, personal interest is equally important",
           isCorrect: false
         },
         {
           id: "c",
           text: "What her friends are choosing",
           emoji: "👥",
-          description: "Following friends may not align with personal interests or strengths",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Job security and growth prospects",
+          emoji: "📈",
           isCorrect: false
         }
       ]
@@ -47,25 +50,29 @@ const SimulationTeenCareerFair = () => {
       id: 2,
       text: "A representative from a green energy company explains their work. How should the teen engage?",
       options: [
+        
         {
           id: "a",
-          text: "Ask specific questions about the role and growth opportunities",
-          emoji: "❓",
-          description: "Exactly! Thoughtful questions help understand if this career is a good fit",
-          isCorrect: true
+          text: "Pretend to be busy and avoid interaction",
+          emoji: "😴",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Pretend to be busy and avoid interaction",
-          emoji: "😴",
-          description: "Missed opportunities prevent valuable career insights and networking",
+          text: "Only talk about unrelated topics",
+          emoji: "🔀",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Only talk about unrelated topics",
-          emoji: "🔀",
-          description: "Staying on topic helps gather relevant information about career prospects",
+          text: "Ask specific questions about the role and growth opportunities",
+          emoji: "❓",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Exchange contact information for future follow-up",
+          emoji: "📇",
           isCorrect: false
         }
       ]
@@ -74,25 +81,29 @@ const SimulationTeenCareerFair = () => {
       id: 3,
       text: "An AI company representative mentions the field is rapidly evolving. How should the teen respond?",
       options: [
+        
         {
           id: "a",
-          text: "Ask about required skills and how to stay current",
-          emoji: "📚",
-          description: "Perfect! Understanding learning requirements helps with career preparation",
-          isCorrect: true
+          text: "Decide it's too complicated",
+          emoji: "🤯",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Decide it's too complicated",
-          emoji: "🤯",
-          description: "Embracing challenges and continuous learning leads to career growth",
-          isCorrect: false
+          text: "Ask about required skills and how to stay current",
+          emoji: "📚",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Ignore the information",
           emoji: "🙉",
-          description: "Staying informed about industry trends is crucial for career success",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Ask about internship opportunities",
+          emoji: "💼",
           isCorrect: false
         }
       ]
@@ -101,25 +112,29 @@ const SimulationTeenCareerFair = () => {
       id: 4,
       text: "A gaming company representative discusses both creative and technical roles. What's the best approach?",
       options: [
+        
         {
           id: "a",
-          text: "Explore both areas to understand different opportunities",
-          emoji: "🔍",
-          description: "Exactly! Comprehensive exploration helps identify the best fit",
-          isCorrect: true
+          text: "Focus only on one area without learning about others",
+          emoji: "🎯",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Focus only on one area without learning about others",
-          emoji: "🎯",
-          description: "Limited exploration may miss better-fitting opportunities",
+          text: "Dismiss the entire field immediately",
+          emoji: "❌",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Dismiss the entire field immediately",
-          emoji: "❌",
-          description: "Keeping an open mind allows for discovering unexpected opportunities",
+          text: "Explore both areas to understand different opportunities",
+          emoji: "🔍",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Ask about the company culture and work environment",
+          emoji: "🏢",
           isCorrect: false
         }
       ]
@@ -132,21 +147,24 @@ const SimulationTeenCareerFair = () => {
           id: "a",
           text: "Review materials and follow up with interesting contacts",
           emoji: "✅",
-          description: "Perfect! Follow-up converts fair experiences into real opportunities",
           isCorrect: true
         },
         {
           id: "b",
           text: "Forget about it and do nothing",
           emoji: "😴",
-          description: "Inaction wastes the time and effort invested in attending the fair",
           isCorrect: false
         },
         {
           id: "c",
           text: "Immediately choose a career based on one conversation",
           emoji: "🎲",
-          description: "Rushing decisions without reflection often lead to poor outcomes",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Organize notes and research companies further",
+          emoji: "📝",
           isCorrect: false
         }
       ]
@@ -214,7 +232,7 @@ const SimulationTeenCareerFair = () => {
             {getCurrentScenario().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +243,7 @@ const SimulationTeenCareerFair = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+
                   </div>
                 </div>
               </button>

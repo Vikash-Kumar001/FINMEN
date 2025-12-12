@@ -42,8 +42,8 @@ const FakeNewsDetectorGame = () => {
       emoji: "✅",
       question: "What's a reliable fact-checking method?",
       choices: [
-        { id: 1, text: "Cross-referencing", emoji: "🔄", isCorrect: true },
-        { id: 2, text: "Social media", emoji: "💬", isCorrect: false },
+        { id: 1, text: "Social media", emoji: "💬", isCorrect: false },
+        { id: 2, text: "Cross-referencing", emoji: "🔄", isCorrect: true },
         { id: 3, text: "First source", emoji: "🥇", isCorrect: false },
       ],
     },
@@ -53,8 +53,8 @@ const FakeNewsDetectorGame = () => {
       emoji: "🤥",
       question: "How does misinformation spread?",
       choices: [
-        { id: 1, text: "Emotional appeal", emoji: "😢", isCorrect: true },
-        { id: 2, text: "Scientific data", emoji: "🧪", isCorrect: false },
+        { id: 1, text: "Scientific data", emoji: "🧪", isCorrect: false },
+        { id: 2, text: "Emotional appeal", emoji: "😢", isCorrect: true },
         { id: 3, text: "Peer review", emoji: "📚", isCorrect: false },
       ],
     },
@@ -64,9 +64,9 @@ const FakeNewsDetectorGame = () => {
       emoji: "🤖",
       question: "How can AI help detect fake news?",
       choices: [
-        { id: 1, text: "Pattern analysis", emoji: "📊", isCorrect: true },
-        { id: 2, text: "Manual review", emoji: "👩‍💼", isCorrect: false },
-        { id: 3, text: "Human opinion", emoji: "👥", isCorrect: false },
+        { id: 1, text: "Manual review", emoji: "👩‍💼", isCorrect: false },
+        { id: 2, text: "Human opinion", emoji: "👥", isCorrect: false },
+        { id: 3, text: "Pattern analysis", emoji: "📊", isCorrect: true },
       ],
     },
     {

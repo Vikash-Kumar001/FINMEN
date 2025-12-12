@@ -57,19 +57,20 @@ const AISpaceStory = () => {
       id: 1,
       text: "AI helps astronauts on Mars. Who ultimately controls the mission?",
       options: [
-        { 
-          id: "humans", 
-          text: "Humans", 
-          emoji: "👨‍🚀", 
-          description: "Humans make critical decisions and maintain ultimate control over space missions",
-          isCorrect: true
-        },
+        
         { 
           id: "ai", 
           text: "AI alone", 
           emoji: "🤖", 
           description: "AI assists but cannot replace human judgment in complex space missions",
           isCorrect: false
+        },
+        { 
+          id: "humans", 
+          text: "Humans", 
+          emoji: "👨‍🚀", 
+          description: "Humans make critical decisions and maintain ultimate control over space missions",
+          isCorrect: true
         },
         { 
           id: "satellites", 
@@ -111,19 +112,20 @@ const AISpaceStory = () => {
       id: 3,
       text: "AI monitors oxygen and water supply. Who acts on alerts?",
       options: [
-        { 
-          id: "astronauts", 
-          text: "Astronauts", 
-          emoji: "👨‍🚀", 
-          description: "Astronauts respond to alerts and take necessary actions for survival",
-          isCorrect: true
-        },
+        
         { 
           id: "autonomous", 
           text: "AI autonomously", 
           emoji: "🤖", 
           description: "AI can alert but cannot take physical action without human authorization",
           isCorrect: false
+        },
+        { 
+          id: "astronauts", 
+          text: "Astronauts", 
+          emoji: "👨‍🚀", 
+          description: "Astronauts respond to alerts and take necessary actions for survival",
+          isCorrect: true
         },
         { 
           id: "base", 
@@ -138,13 +140,7 @@ const AISpaceStory = () => {
       id: 4,
       text: "AI detects equipment failure. Who decides the response?",
       options: [
-        { 
-          id: "humans", 
-          text: "Humans", 
-          emoji: "👨‍🚀", 
-          description: "Astronauts assess situations and decide on appropriate responses to equipment failures",
-          isCorrect: true
-        },
+        
         { 
           id: "system", 
           text: "AI system", 
@@ -158,7 +154,14 @@ const AISpaceStory = () => {
           emoji: "🌍", 
           description: "Ground teams provide advice but astronauts must act quickly on-site",
           isCorrect: false
-        }
+        },
+        { 
+          id: "humans", 
+          text: "Humans", 
+          emoji: "👨‍🚀", 
+          description: "Astronauts assess situations and decide on appropriate responses to equipment failures",
+          isCorrect: true
+        },
       ]
     },
     {

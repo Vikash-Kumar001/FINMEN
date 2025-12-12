@@ -24,21 +24,18 @@ const DebateLocalVsGlobal = () => {
           id: "a",
           text: "Yes, always better",
           emoji: "✅",
-          description: "International education has benefits but isn't automatically superior in all cases",
           isCorrect: false
         },
         {
           id: "b",
           text: "No, always worse",
           emoji: "❌",
-          description: "Local education has advantages but isn't automatically inferior in all cases",
           isCorrect: false
         },
         {
           id: "c",
           text: "Both have value depending on individual goals",
           emoji: "⚖️",
-          description: "Exactly! The best choice depends on personal circumstances, goals, and opportunities",
           isCorrect: true
         }
       ]
@@ -47,25 +44,23 @@ const DebateLocalVsGlobal = () => {
       id: 2,
       text: "What's an advantage of studying locally?",
       options: [
-        {
-          id: "a",
-          text: "Lower cost and family support",
-          emoji: "💰",
-          description: "Perfect! Financial savings and family connections are significant advantages",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "No quality education available",
           emoji: "🚫",
-          description: "Many local institutions offer excellent education and research opportunities",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Lower cost and family support",
+          emoji: "💰",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Limited career prospects",
           emoji: "📉",
-          description: "Local degrees from reputable institutions have strong career value",
           isCorrect: false
         }
       ]
@@ -74,27 +69,25 @@ const DebateLocalVsGlobal = () => {
       id: 3,
       text: "What's an advantage of studying abroad?",
       options: [
-        {
-          id: "a",
-          text: "Global perspective and cultural exposure",
-          emoji: "🌍",
-          description: "Exactly! International experience broadens horizons and enhances adaptability",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "No language barriers",
           emoji: "🔇",
-          description: "Language learning is often part of the international study experience",
           isCorrect: false
         },
         {
           id: "c",
           text: "Less challenging",
           emoji: "😴",
-          description: "International study often involves significant academic and personal challenges",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Global perspective and cultural exposure",
+          emoji: "🌍",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -105,21 +98,18 @@ const DebateLocalVsGlobal = () => {
           id: "a",
           text: "Personal goals, financial situation, and career plans",
           emoji: "🎯",
-          description: "Perfect! A holistic evaluation of personal factors leads to the best decision",
           isCorrect: true
         },
         {
           id: "b",
           text: "What's trendy among peers",
           emoji: "👥",
-          description: "Following trends may not align with personal circumstances or goals",
           isCorrect: false
         },
         {
           id: "c",
           text: "Only the cost factor",
           emoji: "🏷️",
-          description: "Financial considerations are important but shouldn't be the sole factor",
           isCorrect: false
         }
       ]
@@ -128,27 +118,25 @@ const DebateLocalVsGlobal = () => {
       id: 5,
       text: "How can students maximize value from either local or international education?",
       options: [
-        {
-          id: "a",
-          text: "Engage actively, build networks, and pursue opportunities",
-          emoji: "🤝",
-          description: "Exactly! Active participation and networking create value in any educational setting",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Avoid all extracurricular activities",
           emoji: "📚",
-          description: "Extracurricular engagement enhances learning and career prospects",
           isCorrect: false
         },
         {
           id: "c",
           text: "Focus only on grades",
           emoji: "💯",
-          description: "Holistic development is more valuable than academic performance alone",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Engage actively, build networks, and pursue opportunities",
+          emoji: "🤝",
+          isCorrect: true
+        },
       ]
     }
   ];
@@ -191,8 +179,8 @@ const DebateLocalVsGlobal = () => {
       totalXp={totalXp}
       gameId="ehe-teen-66"
       gameType="ehe"
-      totalLevels={70}
-      currentLevel={66}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/ehe/teens"
@@ -214,7 +202,7 @@ const DebateLocalVsGlobal = () => {
             {getCurrentQuestion().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {getCurrentQuestion().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +213,6 @@ const DebateLocalVsGlobal = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

@@ -1,237 +1,310 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getEheTeenGames } from "../../../../pages/Games/GameCategories/EHE/teenGamesData";
 
 const QuizChangemakers = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const navigate = useNavigate();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "ehe-teen-82";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getEheTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : "/games/ehe/teens",
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: "/games/ehe/teens", nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      text: "Which is a social entrepreneur's primary goal?",
+      text: "Which is a social entrepreneur's goal?",
+      emoji: "🎯",
       options: [
         {
           id: "a",
-          text: "Profit only",
-          emoji: "💰",
-          description: "Traditional businesses focus on profit, but social entrepreneurs have a broader mission",
-          isCorrect: false
-        },
-        {
-          id: "b",
           text: "Social impact + profit",
-          emoji: "🌍",
-          description: "Exactly! Social entrepreneurs balance financial sustainability with social impact",
+          emoji: "✅",
+          description: "Exactly! Social entrepreneurs balance financial sustainability with positive change",
           isCorrect: true
         },
         {
+          id: "b",
+          text: "Profit only",
+          emoji: "💰",
+          description: "Traditional businesses focus on profit, but social entrepreneurs prioritize impact",
+          isCorrect: false
+        },
+        {
           id: "c",
-          text: "Fame and recognition",
-          emoji: "🌟",
-          description: "While recognition helps, it's not the primary goal of social entrepreneurship",
+          text: "Losses only",
+          emoji: "📉",
+          description: "Sustainable ventures need financial viability alongside social goals",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "What makes social entrepreneurs different from traditional business owners?",
+      text: "What defines a changemaker?",
+      emoji: "🌟",
       options: [
         {
           id: "a",
-          text: "Focus on solving social problems",
-          emoji: "🌱",
-          description: "Perfect! Social entrepreneurs prioritize addressing societal challenges",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "They don't make any money",
-          emoji: "❌",
-          description: "Social entrepreneurs need financial sustainability to continue their work",
+          text: "Someone who ignores issues",
+          emoji: "🙈",
+          description: "Ignoring problems doesn't create positive change",
           isCorrect: false
         },
         {
+          id: "b",
+          text: "Someone who solves social problems",
+          emoji: "🔧",
+          description: "Perfect! Changemakers actively identify and address societal challenges",
+          isCorrect: true
+        },
+        {
           id: "c",
-          text: "They only work for free",
-          emoji: "🆓",
-          description: "Social entrepreneurs run businesses that generate revenue",
+          text: "Someone who creates problems",
+          emoji: "💥",
+          description: "Problem creators hinder rather than help social progress",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Which is a key characteristic of successful social entrepreneurs?",
+      text: "Why is empathy important for changemakers?",
+      emoji: "❤️",
       options: [
         {
           id: "a",
-          text: "Innovation in solving social problems",
-          emoji: "💡",
-          description: "Exactly! They find creative, sustainable solutions to societal challenges",
-          isCorrect: true
+          text: "To make assumptions",
+          emoji: "🤔",
+          description: "Assumptions can lead to ineffective or harmful solutions",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Ignoring community feedback",
+          text: "To ignore others",
           emoji: "🔇",
-          description: "Successful social entrepreneurs deeply engage with the communities they serve",
+          description: "Ignoring stakeholders prevents meaningful change",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Copying existing solutions",
-          emoji: "📋",
-          description: "While learning from others helps, innovation is key to addressing unique challenges",
-          isCorrect: false
+          text: "To understand the problems they solve",
+          emoji: "🧠",
+          description: "Exactly! Empathy enables changemakers to truly comprehend community needs",
+          isCorrect: true
         }
       ]
     },
     {
       id: 4,
-      text: "How do social entrepreneurs measure success?",
+      text: "What approach do successful changemakers use?",
+      emoji: "🤝",
       options: [
         {
           id: "a",
-          text: "Social impact metrics + financial sustainability",
-          emoji: "📊",
-          description: "Perfect! They track both social outcomes and business performance",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Only stock prices",
-          emoji: "📈",
-          description: "Social entrepreneurs focus on broader measures of success beyond financial metrics",
+          text: "Working alone",
+          emoji: "👤",
+          description: "Complex challenges require diverse perspectives and collaborative efforts",
           isCorrect: false
         },
         {
+          id: "b",
+          text: "Design thinking and collaboration",
+          emoji: "💡",
+          description: "Correct! Human-centered design and teamwork create sustainable solutions",
+          isCorrect: true
+        },
+        {
           id: "c",
-          text: "Number of employees only",
-          emoji: "👥",
-          description: "While employment matters, it's not the sole measure of success",
+          text: "Ignoring feedback",
+          emoji: "🙉",
+          description: "Feedback is essential for refining and improving initiatives",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "What's a common challenge for social entrepreneurs?",
+      text: "What is the outcome of effective changemaking?",
+      emoji: "🌈",
       options: [
         {
           id: "a",
-          text: "Balancing social mission with financial needs",
-          emoji: "⚖️",
-          description: "Exactly! Maintaining their social mission while ensuring financial sustainability is key",
-          isCorrect: true
+          text: "Increased problems",
+          emoji: "🔥",
+          description: "Effective changemaking reduces rather than amplifies challenges",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Having too much funding",
-          emoji: "💸",
-          description: "Too much funding isn't typically a challenge for social entrepreneurs",
+          text: "No impact",
+          emoji: "⚪",
+          description: "True changemaking produces measurable positive transformation",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Lack of any social problems to solve",
-          emoji: "❓",
-          description: "Unfortunately, there's no shortage of social challenges to address",
-          isCorrect: false
+          text: "Positive social transformation",
+          emoji: "✨",
+          description: "Exactly! Lasting changemaking creates systemic improvements in communities",
+          isCorrect: true
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
       } else {
-        setGameFinished(true);
+        setLevelCompleted(true);
       }
-    }, 1500);
+    }, isCorrect ? 1000 : 800);
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
-  const handleNext = () => {
-    navigate("/student/ehe/teens/reflex-teen-changemaker");
-  };
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Quiz on Changemakers"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="ehe-teen-82"
+      gameId={gameId}
       gameType="ehe"
-      totalLevels={90}
-      currentLevel={82}
-      showConfetti={gameFinished}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/ehe/teens"
       showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
-          </div>
-
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🦸</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Changemakers Quiz</h3>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {answered && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.description}
+                  </p>
                 </div>
-              </button>
-            ))}
+              )}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

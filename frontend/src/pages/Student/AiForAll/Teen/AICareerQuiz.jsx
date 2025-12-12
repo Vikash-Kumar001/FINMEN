@@ -9,7 +9,7 @@ const AICareerQuiz = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "ai-teen-22";
+  const gameId = "ai-teen-98";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -60,21 +60,18 @@ const AICareerQuiz = () => {
           id: 1, 
           text: "Doctors", 
           emoji: "🩺", 
-          description: "Partially correct - Doctors do use AI",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Engineers", 
-          emoji: "⚙️", 
-          description: "Partially correct - Engineers work with AI",
+          emoji: "⚙️",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "All of the above", 
           emoji: "💼", 
-          description: "Correct - AI is used across many professions",
           isCorrect: true
         }
       ],
@@ -89,21 +86,18 @@ const AICareerQuiz = () => {
           id: 1, 
           text: "Doctors", 
           emoji: "👨‍⚕️", 
-          description: "Correct - Medical professionals use AI for diagnostics",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Pilots", 
-          emoji: "✈️", 
-          description: "Incorrect - Pilots use AI for flight systems",
+          emoji: "✈️",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Chefs", 
-          emoji: "👨‍🍳", 
-          description: "Incorrect - Chefs use AI for recipe optimization",
+          emoji: "👨‍🍳",
           isCorrect: false
         }
       ],
@@ -118,21 +112,18 @@ const AICareerQuiz = () => {
           id: 1, 
           text: "Engineers", 
           emoji: "👷", 
-          description: "Correct - Engineers use AI for system optimization",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Artists", 
           emoji: "🎨", 
-          description: "Incorrect - Artists use AI for creative tools",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Teachers", 
           emoji: "👩‍🏫", 
-          description: "Incorrect - Teachers use AI for personalized learning",
           isCorrect: false
         }
       ],
@@ -147,21 +138,18 @@ const AICareerQuiz = () => {
           id: 1, 
           text: "Students", 
           emoji: "🧒", 
-          description: "Partially correct - Students benefit from AI learning",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Teachers", 
           emoji: "👩‍🏫", 
-          description: "Correct - Educators implement AI tools",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Farmers", 
-          emoji: "🌾", 
-          description: "Incorrect - Farmers use AI for crop monitoring",
+          emoji: "🌾",
           isCorrect: false
         }
       ],
@@ -176,21 +164,18 @@ const AICareerQuiz = () => {
           id: 1, 
           text: "Everyone", 
           emoji: "👥", 
-          description: "Correct - AI career tools are universally beneficial",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "Only doctors", 
           emoji: "🩺", 
-          description: "Too narrow - AI helps all professions",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only engineers", 
-          emoji: "🔧", 
-          description: "Too narrow - Career guidance is broad",
+          emoji: "🔧",
           isCorrect: false
         }
       ],

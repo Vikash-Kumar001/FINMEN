@@ -32,9 +32,9 @@ const ImageClassifierGame = () => {
       emoji: "🖼️",
       question: "What technology helps computers recognize objects in photos?",
       choices: [
-        { id: 1, text: "Image Recognition AI", emoji: "🤖", isCorrect: true },
+        { id: 1, text: "Magic Powers", emoji: "✨", isCorrect: false },
         { id: 2, text: "Manual Sorting", emoji: "✋", isCorrect: false },
-        { id: 3, text: "Magic Powers", emoji: "✨", isCorrect: false },
+        { id: 3, text: "Image Recognition AI", emoji: "🤖", isCorrect: true },
       ],
     },
     {
@@ -54,8 +54,8 @@ const ImageClassifierGame = () => {
       emoji: "📱",
       question: "How does Facebook recognize faces in photos?",
       choices: [
-        { id: 1, text: "Facial Recognition", emoji: "👁️", isCorrect: true },
-        { id: 2, text: "Manual tagging", emoji: "✍️", isCorrect: false },
+        { id: 1, text: "Manual tagging", emoji: "✍️", isCorrect: false },
+        { id: 2, text: "Facial Recognition", emoji: "👁️", isCorrect: true },
         { id: 3, text: "Pure luck", emoji: "🍀", isCorrect: false },
       ],
     },
@@ -76,9 +76,9 @@ const ImageClassifierGame = () => {
       emoji: "🔒",
       question: "What technology identifies people at airport security?",
       choices: [
-        { id: 1, text: "Biometric Scanning", emoji: "📸", isCorrect: true },
-        { id: 2, text: "Manual checks", emoji: "📋", isCorrect: false },
-        { id: 3, text: "Psychic powers", emoji: "🔮", isCorrect: false },
+        { id: 1, text: "Manual checks", emoji: "📋", isCorrect: false },
+        { id: 2, text: "Psychic powers", emoji: "🔮", isCorrect: false },
+        { id: 3, text: "Biometric Scanning", emoji: "📸", isCorrect: true },
       ],
     },
   ];

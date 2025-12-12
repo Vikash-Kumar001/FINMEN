@@ -10,173 +10,260 @@ const PuzzleProcessMatch = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(null);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedStage, setSelectedStage] = useState(null);
+  const [selectedDescription, setSelectedDescription] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      item: "Empathize",
-      emoji: "❤️",
-      matches: [
-        { id: "understand", text: "Understand", emoji: "🔍", correct: true },
-        { id: "build", text: "Build", emoji: "🏗️", correct: false },
-        { id: "test", text: "Test", emoji: "🧪", correct: false }
-      ]
-    },
-    {
-      id: 2,
-      item: "Ideate",
-      emoji: "💡",
-      matches: [
-        { id: "brainstorm", text: "Brainstorm", emoji: "💭", correct: true },
-        { id: "prototype", text: "Prototype", emoji: "🛠️", correct: false },
-        { id: "empathize", text: "Empathize", emoji: "❤️", correct: false }
-      ]
-    },
-    {
-      id: 3,
-      item: "Prototype",
-      emoji: "🛠️",
-      matches: [
-        { id: "build", text: "Build", emoji: "🏗️", correct: true },
-        { id: "define", text: "Define", emoji: "📝", correct: false },
-        { id: "ideate", text: "Ideate", emoji: "💡", correct: false }
-      ]
-    },
-    {
-      id: 4,
-      item: "Test",
-      emoji: "🧪",
-      matches: [
-        { id: "experiment", text: "Experiment", emoji: "🔬", correct: true },
-        { id: "empathize", text: "Empathize", emoji: "❤️", correct: false },
-        { id: "ideate", text: "Ideate", emoji: "💡", correct: false }
-      ]
-    },
-    {
-      id: 5,
-      item: "Define",
-      emoji: "📝",
-      matches: [
-        { id: "problem", text: "Problem", emoji: "❓", correct: true },
-        { id: "build", text: "Build", emoji: "🏗️", correct: false },
-        { id: "test", text: "Test", emoji: "🧪", correct: false }
-      ]
-    }
+  // Design Thinking Stages (left side) - 5 items
+  const stages = [
+    { id: 1, name: "Empathize", emoji: "❤️", description: "Understanding users' needs and experiences" },
+    { id: 2, name: "Define", emoji: "📝", description: "Clearly stating the problem to solve" },
+    { id: 3, name: "Ideate", emoji: "💡", description: "Generating creative ideas and solutions" },
+    { id: 4, name: "Prototype", emoji: "🛠️", description: "Building early versions of solutions" },
+    { id: 5, name: "Test", emoji: "🧪", description: "Experimenting with prototypes to learn" }
   ];
 
-  const handleMatch = (matchId) => {
-    const currentPuzzleData = puzzles[currentPuzzle];
-    const match = currentPuzzleData.matches.find(m => m.id === matchId);
-    setSelectedMatch(matchId);
+  // Descriptions (right side) - 5 items
+  const descriptions = [
+    { id: 4, name: "Build", emoji: "🏗️", description: "Making tangible representations of concepts" },
+    { id: 1, name: "Understand", emoji: "🔍", description: "Researching to deeply comprehend user perspectives" },
+    { id: 5, name: "Experiment", emoji: "🔬", description: "Trying out solutions to gain insights" },
+    { id: 2, name: "Problem", emoji: "❓", description: "Articulating the core challenge clearly" },
+    { id: 3, name: "Brainstorm", emoji: "💭", description: "Creating many diverse ideas without judgment" },
+  ];
 
-    if (match.correct) {
-      setCoins(prev => prev + 1);
+  // Correct matches
+  const correctMatches = [
+    { stageId: 1, descriptionId: 1 }, // Empathize → Understand
+    { stageId: 2, descriptionId: 2 }, // Define → Problem
+    { stageId: 3, descriptionId: 3 }, // Ideate → Brainstorm
+    { stageId: 4, descriptionId: 4 }, // Prototype → Build
+    { stageId: 5, descriptionId: 5 }  // Test → Experiment
+  ];
+
+  const handleStageSelect = (stage) => {
+    if (gameFinished) return;
+    setSelectedStage(stage);
+  };
+
+  const handleDescriptionSelect = (description) => {
+    if (gameFinished) return;
+    setSelectedDescription(description);
+  };
+
+  const handleMatch = () => {
+    if (!selectedStage || !selectedDescription || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      stageId: selectedStage.id,
+      descriptionId: selectedDescription.id,
+      isCorrect: correctMatches.some(
+        match => match.stageId === selectedStage.id && match.descriptionId === selectedDescription.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setShowCoinFeedback(currentPuzzleData.id);
-      setTimeout(() => setShowCoinFeedback(null), 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    setTimeout(() => {
-      if (currentPuzzle < puzzles.length - 1) {
-        setCurrentPuzzle(prev => prev + 1);
-        setSelectedMatch(null);
-      } else {
+    // Check if all items are matched
+    if (newMatches.length === stages.length) {
+      setTimeout(() => {
         setGameFinished(true);
-      }
-    }, 1500);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedStage(null);
+    setSelectedDescription(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedStage(null);
+    setSelectedDescription(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/student/ehe/teens/idea-story");
   };
 
+  // Check if a stage is already matched
+  const isStageMatched = (stageId) => {
+    return matches.some(match => match.stageId === stageId);
+  };
+
+  // Check if a description is already matched
+  const isDescriptionMatched = (descriptionId) => {
+    return matches.some(match => match.descriptionId === descriptionId);
+  };
+
+  // Get match result for a stage
+  const getMatchResult = (stageId) => {
+    const match = matches.find(m => m.stageId === stageId);
+    return match ? match.isCorrect : null;
+  };
+
   return (
     <GameShell
       title="Puzzle: Process Match"
-      subtitle={`Puzzle ${currentPuzzle + 1}/5: ${puzzles[currentPuzzle].item}`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Stages with Descriptions (${matches.length}/${stages.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="ehe-teen-34"
       gameType="ehe"
-      totalLevels={40}
-      currentLevel={34}
-      showConfetti={gameFinished}
+      totalLevels={stages.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/ehe/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={40} // Max score is total number of questions (all correct)
+      backPath="/games/ehe/teens"
+      maxScore={stages.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/5: {puzzles[currentPuzzle].item}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6 text-center">
-            Match the design thinking stage to what it involves!
-          </p>
-
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-              {showCoinFeedback === puzzles[currentPuzzle].id && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                    +1
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-4xl mr-3">{puzzles[currentPuzzle].emoji}</div>
-                <div className="text-white text-xl font-bold">{puzzles[currentPuzzle].item}</div>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Stages */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Stages</h3>
+              <div className="space-y-4">
+                {stages.map(stage => (
+                  <button
+                    key={stage.id}
+                    onClick={() => handleStageSelect(stage)}
+                    disabled={isStageMatched(stage.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isStageMatched(stage.id)
+                        ? getMatchResult(stage.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedStage?.id === stage.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{stage.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{stage.name}</h4>
+                        <p className="text-white/80 text-sm">{stage.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
+            </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                {puzzles[currentPuzzle].matches.map((match) => {
-                  const isCorrect = selectedMatch === match.id && match.correct;
-                  const isWrong = selectedMatch === match.id && !match.correct;
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedStage 
+                    ? `Selected: ${selectedStage.name}` 
+                    : "Select a Stage"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedStage || !selectedDescription}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedStage && selectedDescription
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{stages.length}</p>
+                  <p>Matched: {matches.length}/{stages.length}</p>
+                </div>
+              </div>
+            </div>
 
-                  return (
-                    <button
-                      key={match.id}
-                      onClick={() => handleMatch(match.id)}
-                      disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${
-                        !selectedMatch
-                          ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                          : isCorrect
-                          ? 'bg-green-100/20 border-green-500 text-white'
-                          : isWrong
-                          ? 'bg-red-100/20 border-red-500 text-white'
-                          : 'bg-gray-100/20 border-gray-500 text-white'
-                      }`}
-                    >
-                      {isCorrect && (
-                        <div className="absolute -top-2 -right-2 text-2xl">✅</div>
-                      )}
-                      {isWrong && (
-                        <div className="absolute -top-2 -right-2 text-2xl">❌</div>
-                      )}
-                      <div className="text-2xl mb-1">{match.emoji}</div>
-                      <div className="font-medium text-sm">{match.text}</div>
-                    </button>
-                  );
-                })}
+            {/* Right column - Descriptions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Descriptions</h3>
+              <div className="space-y-4">
+                {descriptions.map(description => (
+                  <button
+                    key={description.id}
+                    onClick={() => handleDescriptionSelect(description)}
+                    disabled={isDescriptionMatched(description.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isDescriptionMatched(description.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedDescription?.id === description.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{description.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{description.name}</h4>
+                        <p className="text-white/80 text-sm">{description.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Design Thinking Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {stages.length} design thinking stages with their descriptions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Design thinking helps solve complex problems creatively and empathetically!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {stages.length} design thinking stages correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Remember that design thinking starts with understanding people's needs!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

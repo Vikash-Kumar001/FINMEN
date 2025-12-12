@@ -60,21 +60,18 @@ const HumanVsAIQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "✓", 
-          description: "Correct - Google Translate uses Neural Machine Translation, a form of AI",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
           emoji: "✗", 
-          description: "Incorrect - Google Translate does use AI technology",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only for popular languages", 
           emoji: "🔤", 
-          description: "Partially correct but not the best answer",
           isCorrect: false
         }
       ],
@@ -90,21 +87,18 @@ const HumanVsAIQuiz = () => {
           id: 1, 
           text: "Yes", 
           emoji: "🙂", 
-          description: "Correct - AI uses facial recognition algorithms to identify people",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "🙃", 
-          description: "Incorrect - Facial recognition is a common AI application",
+          emoji: "🙃",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only on social media", 
           emoji: "📱", 
-          description: "Too narrow - AI facial recognition is used in many contexts",
           isCorrect: false
         }
       ],
@@ -119,22 +113,19 @@ const HumanVsAIQuiz = () => {
         { 
           id: 1, 
           text: "A calculator", 
-          emoji: "🧮", 
-          description: "Incorrect - Calculators follow fixed mathematical rules, not AI",
+          emoji: "🧮",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "ChatGPT", 
           emoji: "🤖", 
-          description: "Correct - ChatGPT is an AI that understands and generates human-like text",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "A mechanical clock", 
           emoji: "⏰", 
-          description: "Incorrect - Mechanical clocks are purely mechanical devices",
           isCorrect: false
         }
       ],
@@ -149,22 +140,19 @@ const HumanVsAIQuiz = () => {
         { 
           id: 1, 
           text: "Yes", 
-          emoji: "🟢", 
-          description: "Correct - Self-driving cars use AI to navigate roads",
+          emoji: "🟢",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "No", 
-          emoji: "🔴", 
-          description: "Incorrect - Autonomous vehicles are a major application of AI",
+          emoji: "🔴",
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Only in movies", 
           emoji: "🎬", 
-          description: "Incorrect - Real self-driving cars exist today",
           isCorrect: false
         }
       ],
@@ -180,21 +168,18 @@ const HumanVsAIQuiz = () => {
           id: 1, 
           text: "Siri", 
           emoji: "🎤", 
-          description: "Incorrect - Siri is Apple's voice assistant powered by AI",
           isCorrect: false
         },
         { 
           id: 2, 
           text: "Paper Notebook", 
-          emoji: "📓", 
-          description: "Correct - A physical notebook has no computational capabilities",
+          emoji: "📓",
           isCorrect: true
         },
         { 
           id: 3, 
           text: "Alexa", 
           emoji: "🔊", 
-          description: "Incorrect - Alexa is Amazon's AI-powered voice assistant",
           isCorrect: false
         }
       ],

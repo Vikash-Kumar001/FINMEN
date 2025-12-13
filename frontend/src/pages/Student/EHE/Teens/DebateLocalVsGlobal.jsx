@@ -7,7 +7,7 @@ const DebateLocalVsGlobal = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const coinsPerLevel = 1; // Changed from 5 to 1 for +1 coin per correct answer
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -146,7 +146,7 @@ const DebateLocalVsGlobal = () => {
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
-      showCorrectAnswerFeedback(2, true);
+      showCorrectAnswerFeedback(1, true); // Changed from 2 to 1 for +1 coin feedback
     }
 
     setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
@@ -173,7 +173,7 @@ const DebateLocalVsGlobal = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length * 2}
+      score={choices.filter(c => c.isCorrect).length} // Changed from * 2 to just the count for +1 scoring
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -190,11 +190,11 @@ const DebateLocalVsGlobal = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Debate {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length * 2}</span>
+            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span> // Changed from * 2 to just the count
           </div>
 
           <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🎭</div>
+            <div className="text-5xl mb-4">🌍</div> {/* Changed emoji to be more relevant to local vs global theme */}
             <h3 className="text-2xl font-bold text-white mb-2">Local vs Global Education Debate</h3>
           </div>
 

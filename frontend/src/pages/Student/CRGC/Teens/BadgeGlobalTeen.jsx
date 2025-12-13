@@ -1,184 +1,325 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeGlobalTeen = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "civic-responsibility-teens-90";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const tasks = [
+  const challenges = [
     {
       id: 1,
-      title: "Learn About a Different Culture",
-      description: "Research and explore the traditions, history, and values of a culture different from your own",
-      completed: false,
-      coins: 2
+      title: "Cultural Learning",
+      question: "Why is it valuable to learn about cultures different from your own?",
+      options: [
+        { 
+          text: "To prove your superiority over other cultures", 
+          isCorrect: false
+        },
+        
+        { 
+          text: "To copy other cultures without understanding", 
+          isCorrect: false
+        },
+        { 
+          text: "To find reasons to criticize other cultures", 
+          isCorrect: false
+        },
+        { 
+          text: "To develop understanding and appreciation for diversity", 
+          isCorrect: true
+        },
+      ],
+      feedback: {
+        correct: "Learning about different cultures develops understanding and appreciation for diversity, fostering global citizenship.",
+        wrong: "Learning about different cultures develops understanding and appreciation for diversity, fostering global citizenship."
+      }
     },
     {
       id: 2,
-      title: "Participate in a Global Issue Discussion",
-      description: "Join a conversation about a global challenge like climate change, poverty, or human rights",
-      completed: false,
-      coins: 2
+      title: "Global Issue Engagement",
+      question: "What is the best approach to discussing global challenges like climate change or poverty?",
+      options: [
+        { 
+          text: "Dismiss them as not your problem", 
+          isCorrect: false
+        },
+        { 
+          text: "Engage thoughtfully and consider your role in solutions", 
+          isCorrect: true
+        },
+        { 
+          text: "Blame others without offering solutions", 
+          isCorrect: false
+        },
+        { 
+          text: "Avoid all discussions about serious issues", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Thoughtful engagement with global challenges helps develop informed perspectives and potential solutions.",
+        wrong: "Thoughtful engagement with global challenges helps develop informed perspectives and potential solutions."
+      }
     },
     {
       id: 3,
-      title: "Support an International Cause",
-      description: "Donate to or volunteer with an organization working on global issues",
-      completed: false,
-      coins: 2
+      title: "International Support",
+      question: "How can supporting international causes contribute to global citizenship?",
+      options: [
+        { 
+          text: "By focusing only on local issues", 
+          isCorrect: false
+        },
+        { 
+          text: "By recognizing interconnected global challenges and contributing to solutions", 
+          isCorrect: true
+        },
+        { 
+          text: "By expecting something in return for support", 
+          isCorrect: false
+        },
+        { 
+          text: "By supporting only causes in your own country", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Recognizing interconnected global challenges and contributing to solutions demonstrates global citizenship.",
+        wrong: "Recognizing interconnected global challenges and contributing to solutions demonstrates global citizenship."
+      }
     },
     {
       id: 4,
-      title: "Practice Cultural Respect",
-      description: "Show respect for cultural differences in your daily interactions with people from diverse backgrounds",
-      completed: false,
-      coins: 2
+      title: "Cultural Respect",
+      question: "How should you practice cultural respect in daily interactions?",
+      options: [
+        { 
+          text: "By ignoring cultural differences entirely", 
+          isCorrect: false
+        },
+        
+        { 
+          text: "By imposing your cultural values on others", 
+          isCorrect: false
+        },
+        { 
+          text: "By avoiding interactions with people from different cultures", 
+          isCorrect: false
+        },
+        { 
+          text: "By acknowledging and valuing different perspectives and practices", 
+          isCorrect: true
+        },
+      ],
+      feedback: {
+        correct: "Acknowledging and valuing different perspectives and practices shows genuine cultural respect.",
+        wrong: "Acknowledging and valuing different perspectives and practices shows genuine cultural respect."
+      }
     },
     {
       id: 5,
-      title: "Engage in Global Learning",
-      description: "Read news or books about international events and global citizenship",
-      completed: false,
-      coins: 2
+      title: "Global Learning",
+      question: "Why is staying informed about international events important for global citizenship?",
+      options: [
+        { 
+          text: "To gossip about other countries", 
+          isCorrect: false
+        },
+        { 
+          text: "To understand global connections and your role in the world", 
+          isCorrect: true
+        },
+        { 
+          text: "To feel superior to other nations", 
+          isCorrect: false
+        },
+        { 
+          text: "To avoid local news and issues", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Understanding global connections and your role in the world is fundamental to global citizenship.",
+        wrong: "Understanding global connections and your role in the world is fundamental to global citizenship."
+      }
     }
   ];
 
-  const handleTaskComplete = (taskId) => {
-    if (completedTasks.includes(taskId)) return; // Already completed
+  const handleAnswer = (isCorrect, optionIndex) => {
+    if (answered) return;
     
-    const newCompletedTasks = [...completedTasks, taskId];
-    setCompletedTasks(newCompletedTasks);
+    setAnswered(true);
+    setSelectedAnswer(optionIndex);
+    resetFeedback();
     
-    // Add coins for task completion
-    const task = tasks.find(t => t.id === taskId);
-    if (task) {
-      setCoins(prev => prev + task.coins);
-      showCorrectAnswerFeedback(task.coins, true);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
-    // Check if all tasks are completed
-    if (newCompletedTasks.length === tasks.length) {
-      setTimeout(() => setGameFinished(true), 1500);
-    }
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
   };
 
-  const handleNext = () => {
-    navigate("/games/civic-responsibility/teens");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
   };
 
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Badge: Global Teen"
-        subtitle="Badge Earned!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teens-90"
-        gameType="civic-responsibility"
-        totalLevels={90}
-        currentLevel={90}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
-      
-      maxScore={90} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🏅</div>
-          <h2 className="text-2xl font-bold mb-4">Global Teen Badge Earned!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} coins by completing all global citizenship activities!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You're a model global citizen!
-          </div>
-          <p className="text-white/80">
-            Remember: Your commitment to global citizenship helps create a more connected and compassionate world!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  const currentChallenge = challenges[challenge];
 
   return (
     <GameShell
       title="Badge: Global Teen"
-      subtitle="Complete 5 global citizen acts to earn your badge"
+      subtitle={showResult ? "Game Complete!" : `Challenge ${challenge + 1} of ${challenges.length}`}
+      showGameOver={showResult}
+      score={score}
+      gameId={gameId}
+      gameType="civic-responsibility"
+      totalLevels={challenges.length}
+      coinsPerLevel={coinsPerLevel}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 4}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/teens"
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Global Citizenship Activities</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+        {!showResult && currentChallenge ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallenge.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(option.isCorrect, idx)}
+                    disabled={answered}
+                    className={`bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3 ${
+                      answered && selectedAnswer === idx
+                        ? option.isCorrect
+                          ? "ring-4 ring-green-400"
+                          : "ring-4 ring-red-400"
+                        : ""
+                    }`}
+                  >
+                    <span className="font-bold text-lg">{option.text}</span>
+                  </button>
+                ))}
+              </div>
+              
+              {answered && (
+                <div className={`mt-4 p-4 rounded-xl ${
+                  currentChallenge.options[selectedAnswer]?.isCorrect
+                    ? "bg-green-500/20 border border-green-500/30"
+                    : "bg-red-500/20 border border-red-500/30"
+                }`}>
+                  <p className="text-white font-semibold">
+                    {currentChallenge.options[selectedAnswer]?.isCorrect
+                      ? currentChallenge.feedback.correct
+                      : currentChallenge.feedback.wrong}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-          
-          <div className="space-y-4">
-            {tasks.map(task => (
-              <div 
-                key={task.id}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  completedTasks.includes(task.id)
-                    ? 'bg-green-500/20 border-green-500'
-                    : 'bg-white/10 border-white/20'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">{task.title}</h3>
-                    <p className="text-white/80 mt-1">{task.description}</p>
-                  </div>
-                  
-                  {completedTasks.includes(task.id) ? (
-                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                      <span className="text-white">✓</span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleTaskComplete(task.id)}
-                      className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg font-medium transition-all"
-                    >
-                      Mark Done
-                    </button>
-                  )}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 4 ? (
+              <div>
+                <div className="text-6xl mb-4">🏅</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Global Teen Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-6">
+                  You demonstrated strong global citizenship with {score} correct answers out of {challenges.length}!
+                </p>
+                
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-2xl mb-6">
+                  <h4 className="text-2xl font-bold mb-2">🎉 Achievement Unlocked!</h4>
+                  <p className="text-xl">Badge: Global Teen</p>
                 </div>
                 
-                {!completedTasks.includes(task.id) && (
-                  <div className="mt-3 text-sm text-yellow-400">
-                    Reward: {task.coins} coins
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-green-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-green-300 mb-2">Cultural Awareness</h4>
+                    <p className="text-white/90 text-sm">
+                      You understand the value of learning about and respecting different cultures.
+                    </p>
                   </div>
-                )}
+                  <div className="bg-blue-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-blue-300 mb-2">Global Engagement</h4>
+                    <p className="text-white/90 text-sm">
+                      You recognize your role in addressing global challenges and staying informed.
+                    </p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    window.location.href = "/games/civic-responsibility/teens";
+                  }}
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white py-3 px-8 rounded-full font-bold text-lg transition-all mb-4"
+                >
+                  Continue Learning
+                </button>
               </div>
-            ))}
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Expanding Your Global Perspective!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {score} questions correctly out of {challenges.length}.
+                </p>
+                <p className="text-white/90 mb-6">
+                  Review global citizenship concepts to strengthen your understanding.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
           </div>
-          
-          <div className="mt-8 pt-6 border-t border-white/20">
-            <div className="flex justify-between items-center">
-              <span className="text-white">Progress:</span>
-              <span className="text-white font-bold">{completedTasks.length}/{tasks.length} completed</span>
-            </div>
-            <div className="mt-2 bg-white/10 rounded-full h-3 overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500"
-                style={{ width: `${(completedTasks.length / tasks.length) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

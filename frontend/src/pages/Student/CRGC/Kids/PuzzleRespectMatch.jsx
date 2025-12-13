@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -10,246 +10,260 @@ const PuzzleRespectMatch = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [selectedAction, setSelectedAction] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const [shuffledPeople, setShuffledPeople] = useState([]);
-  const [shuffledActions, setShuffledActions] = useState([]);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      person: "Teacher",
-      emoji: "👩‍🏫",
-      action: "Listen",
-      actionEmoji: "👂",
-      description: "We show respect to teachers by listening carefully during class."
-    },
-    {
-      id: 2,
-      person: "Elder",
-      emoji: "🧓",
-      action: "Help",
-      actionEmoji: "🤝",
-      description: "We show respect to elders by offering help when they need it."
-    },
-    {
-      id: 3,
-      person: "Friend",
-      emoji: "👫",
-      action: "Share",
-      actionEmoji: "📦",
-      description: "We show respect to friends by sharing and including them in activities."
-    },
-    {
-      id: 4,
-      person: "Classmate",
-      emoji: "🧑‍🎓",
-      action: "Include",
-      actionEmoji: "🙌",
-      description: "We show respect to classmates by including them in group activities."
-    },
-    {
-      id: 5,
-      person: "Stranger",
-      emoji: "👤",
-      action: "Be Polite",
-      actionEmoji: "🙏",
-      description: "We show respect to strangers by being polite and courteous."
-    }
+  // People (left side) - 5 items
+  const people = [
+    { id: 1, name: "Teacher", emoji: "👩‍🏫", description: "Educates students in school" },
+    { id: 2, name: "Elder", emoji: "🧓", description: "Older person in community" },
+    { id: 3, name: "Friend", emoji: "👫", description: "Close companion or buddy" },
+    { id: 4, name: "Classmate", emoji: "🧑‍🎓", description: "Fellow student in class" },
+    { id: 5, name: "Stranger", emoji: "👤", description: "Unknown person you meet" }
   ];
 
-  // Shuffle arrays when component mounts
-  useEffect(() => {
-    const shuffleArray = (array) => {
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    };
+  // Actions (right side) - 5 items
+  const actions = [
+    { id: 2, name: "Help", emoji: "🤝", description: "Provide assistance to someone" },
+    { id: 1, name: "Listen", emoji: "👂", description: "Pay attention to someone speaking" },
+    { id: 5, name: "Be Polite", emoji: "🙏", description: "Show good manners and courtesy" },
+    { id: 3, name: "Share", emoji: "📦", description: "Divide things with others" },
+    { id: 4, name: "Include", emoji: "🙌", description: "Make someone feel welcome" },
+  ];
 
-    setShuffledPeople(shuffleArray(puzzles.map(p => p.person)));
-    setShuffledActions(shuffleArray(puzzles.map(p => p.action)));
-  }, []);
+  // Correct matches
+  const correctMatches = [
+    { personId: 1, actionId: 1 }, // Teacher → Listen
+    { personId: 2, actionId: 2 }, // Elder → Help
+    { personId: 3, actionId: 3 }, // Friend → Share
+    { personId: 4, actionId: 4 }, // Classmate → Include
+    { personId: 5, actionId: 5 }  // Stranger → Be Polite
+  ];
 
   const handlePersonSelect = (person) => {
-    if (selectedAction) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.person === person && p.action === selectedAction);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedPerson(null);
-      setSelectedAction(null);
-    } else {
-      setSelectedPerson(person);
-    }
+    if (gameFinished) return;
+    setSelectedPerson(person);
   };
 
   const handleActionSelect = (action) => {
-    if (selectedPerson) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.person === selectedPerson && p.action === action);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedPerson(null);
-      setSelectedAction(null);
+    if (gameFinished) return;
+    setSelectedAction(action);
+  };
+
+  const handleMatch = () => {
+    if (!selectedPerson || !selectedAction || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      personId: selectedPerson.id,
+      actionId: selectedAction.id,
+      isCorrect: correctMatches.some(
+        match => match.personId === selectedPerson.id && match.actionId === selectedAction.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setSelectedAction(action);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === people.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedPerson(null);
+    setSelectedAction(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedPerson(null);
+    setSelectedAction(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/kids");
   };
 
-  const isMatched = (id) => matchedPairs.includes(id);
-  const isPersonSelected = (person) => selectedPerson === person;
-  const isActionSelected = (action) => selectedAction === action;
+  // Check if a person is already matched
+  const isPersonMatched = (personId) => {
+    return matches.some(match => match.personId === personId);
+  };
+
+  // Check if an action is already matched
+  const isActionMatched = (actionId) => {
+    return matches.some(match => match.actionId === actionId);
+  };
+
+  // Get match result for a person
+  const getMatchResult = (personId) => {
+    const match = matches.find(m => m.personId === personId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Respect Match"
-      subtitle={`Match people to respectful actions! ${matchedPairs.length}/${puzzles.length} matched`}
+      subtitle={gameFinished ? "Game Complete!" : `Match People with Respectful Actions (${matches.length}/${people.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="civic-responsibility-kids-14"
       gameType="civic-responsibility"
-      totalLevels={20}
-      currentLevel={14}
-      showConfetti={gameFinished}
+      totalLevels={people.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/civic-responsibility/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={20} // Max score is total number of questions (all correct)
+      backPath="/games/civic-responsibility/kids"
+      maxScore={people.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* People column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">People</h3>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - People */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">People</h3>
               <div className="space-y-4">
-                {shuffledPeople.map((person, index) => {
-                  const puzzle = puzzles.find(p => p.person === person);
-                  return (
-                    <button
-                      key={`person-${index}`}
-                      onClick={() => handlePersonSelect(person)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isPersonSelected(person)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.emoji}</span>
-                        <span className="text-white/90 text-lg">{person}</span>
+                {people.map(person => (
+                  <button
+                    key={person.id}
+                    onClick={() => handlePersonSelect(person)}
+                    disabled={isPersonMatched(person.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isPersonMatched(person.id)
+                        ? getMatchResult(person.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedPerson?.id === person.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{person.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{person.name}</h4>
+                        <p className="text-white/80 text-sm">{person.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
-            
-            {/* Actions column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Respectful Actions</h3>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedPerson 
+                    ? `Selected: ${selectedPerson.name}` 
+                    : "Select a Person"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedPerson || !selectedAction}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedPerson && selectedAction
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{people.length}</p>
+                  <p>Matched: {matches.length}/{people.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Actions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Respectful Actions</h3>
               <div className="space-y-4">
-                {shuffledActions.map((action, index) => {
-                  const puzzle = puzzles.find(p => p.action === action);
-                  return (
-                    <button
-                      key={`action-${index}`}
-                      onClick={() => handleActionSelect(action)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isActionSelected(action)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.actionEmoji}</span>
-                        <span className="text-white/90 text-lg">{action}</span>
+                {actions.map(action => (
+                  <button
+                    key={action.id}
+                    onClick={() => handleActionSelect(action)}
+                    disabled={isActionMatched(action.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isActionMatched(action.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedAction?.id === action.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{action.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{action.name}</h4>
+                        <p className="text-white/80 text-sm">{action.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-          
-          {/* Feedback area */}
-          {selectedPerson && selectedAction && (
-            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
-              <p className="text-white/90 text-center">
-                Matching: {selectedPerson} → {selectedAction}
-              </p>
-            </div>
-          )}
-          
-          {selectedPerson && !selectedAction && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedPerson}. Now select an action to match!
-              </p>
-            </div>
-          )}
-          
-          {!selectedPerson && selectedAction && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedAction}. Now select a person to match!
-              </p>
-            </div>
-          )}
-          
-          {/* Completion message */}
-          {gameFinished && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
-              <p className="text-green-300 text-center font-bold">
-                Great job! You matched all people to their respectful actions!
-              </p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {people.length} people with their respectful actions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Showing respect to different people helps build stronger communities!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {people.length} people correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what respectful actions are appropriate for each type of person!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

@@ -10,206 +10,260 @@ const PuzzleMatchCivicRoles = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matches, setMatches] = useState({});
-  const [completed, setCompleted] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [selectedResponsibility, setSelectedResponsibility] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const pairs = [
-    { 
-      id: 1, 
-      left: "Judge", 
-      emoji: "⚖️", 
-      right: "Court", 
-      description: "Judges preside over court proceedings, interpret laws, and ensure justice is served fairly and impartially." 
-    },
-    { 
-      id: 2, 
-      left: "Police", 
-      emoji: "🚓", 
-      right: "Safety", 
-      description: "Police officers protect citizens, maintain law and order, and ensure community safety through enforcement and prevention." 
-    },
-    { 
-      id: 3, 
-      left: "Voter", 
-      emoji: "🗳️", 
-      right: "Democracy", 
-      description: "Voters participate in democracy by electing representatives and making decisions on public issues through their votes." 
-    },
-    { 
-      id: 4, 
-      left: "Teacher", 
-      emoji: "📚", 
-      right: "Education", 
-      description: "Teachers educate citizens, develop critical thinking skills, and prepare future generations to contribute to society." 
-    },
-    { 
-      id: 5, 
-      left: "Citizen", 
-      emoji: "👨‍👩‍👧‍👦", 
-      right: "Responsibility", 
-      description: "Citizens have both rights and responsibilities, including following laws, paying taxes, and participating in civic life." 
-    }
+  // Civic Roles (left side) - 5 items
+  const roles = [
+    { id: 1, name: "Judge", emoji: "⚖️", description: "Legal official who makes court decisions" },
+    { id: 2, name: "Police", emoji: "👮", description: "Law enforcement officers" },
+    { id: 3, name: "Voter", emoji: "🗳️", description: "Citizen who participates in elections" },
+    { id: 4, name: "Teacher", emoji: "🏫", description: "Educator in schools and institutions" },
+    { id: 5, name: "Citizen", emoji: "👥", description: "Member of a community or nation" }
   ];
 
-  const handleMatch = (leftId, rightId) => {
-    // Check if this is a correct match
-    const pair = pairs.find(p => p.left === leftId);
-    const isCorrect = pair && pair.right === rightId;
-    
-    // Update matches state
-    const newMatches = { ...matches, [leftId]: rightId };
+  // Responsibilities (right side) - 5 items
+  const responsibilities = [
+    { id: 3, name: "Democracy", emoji: "선거", description: "Participate in government decisions" },
+    { id: 2, name: "Safety", emoji: "🛡️", description: "Protect people and property" },
+    { id: 4, name: "Education", emoji: "🎓", description: "Provide knowledge and skills" },
+    { id: 5, name: "Responsibility", emoji: "📋", description: "Duties and obligations to society" },
+    { id: 1, name: "Court", emoji: "🏛️", description: "Administer justice in legal proceedings" },
+  ];
+
+  // Correct matches
+  const correctMatches = [
+    { roleId: 1, responsibilityId: 1 }, // Judge → Court
+    { roleId: 2, responsibilityId: 2 }, // Police → Safety
+    { roleId: 3, responsibilityId: 3 }, // Voter → Democracy
+    { roleId: 4, responsibilityId: 4 }, // Teacher → Education
+    { roleId: 5, responsibilityId: 5 }  // Citizen → Responsibility
+  ];
+
+  const handleRoleSelect = (role) => {
+    if (gameFinished) return;
+    setSelectedRole(role);
+  };
+
+  const handleResponsibilitySelect = (responsibility) => {
+    if (gameFinished) return;
+    setSelectedResponsibility(responsibility);
+  };
+
+  const handleMatch = () => {
+    if (!selectedRole || !selectedResponsibility || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      roleId: selectedRole.id,
+      responsibilityId: selectedResponsibility.id,
+      isCorrect: correctMatches.some(
+        match => match.roleId === selectedRole.id && match.responsibilityId === selectedResponsibility.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
     setMatches(newMatches);
-    
-    // Check if all pairs are matched
-    const allMatched = pairs.every(p => newMatches[p.left] === p.right);
-    
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      
-      if (allMatched) {
-        setTimeout(() => setCompleted(true), 1000);
-      }
-    } else if (allMatched) {
-      // If all matched but some are incorrect, still complete the game
-      setTimeout(() => setCompleted(true), 1000);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === roles.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedRole(null);
+    setSelectedResponsibility(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedRole(null);
+    setSelectedResponsibility(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/teens");
   };
 
-  if (completed) {
-    return (
-      <GameShell
-        title="Puzzle: Match Civic Roles"
-        subtitle="Puzzle Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teens-74"
-        gameType="civic-responsibility"
-        totalLevels={80}
-        currentLevel={74}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
-      
-      maxScore={80} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">✨</div>
-          <h2 className="text-2xl font-bold mb-4">Well Done!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} coins by matching civic roles!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You know your civic roles!
-          </div>
-          <p className="text-white/80">
-            Remember: Each civic role plays an important part in maintaining a functioning society and democracy!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  // Check if a role is already matched
+  const isRoleMatched = (roleId) => {
+    return matches.some(match => match.roleId === roleId);
+  };
 
-  // Shuffle the right side options
-  const shuffledRights = [...pairs].sort(() => Math.random() - 0.5);
+  // Check if a responsibility is already matched
+  const isResponsibilityMatched = (responsibilityId) => {
+    return matches.some(match => match.responsibilityId === responsibilityId);
+  };
+
+  // Get match result for a role
+  const getMatchResult = (roleId) => {
+    const match = matches.find(m => m.roleId === roleId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Match Civic Roles"
-      subtitle="Match civic roles with their responsibilities"
+      subtitle={gameFinished ? "Game Complete!" : `Match Civic Roles with Responsibilities (${matches.length}/${roles.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="civic-responsibility-teens-74"
+      gameType="civic-responsibility"
+      totalLevels={roles.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/teens"
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Civic Roles Puzzle</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Left column - Roles */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Roles</h3>
-              {pairs.map((pair) => (
-                <div 
-                  key={pair.id}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                    matches[pair.left]
-                      ? 'bg-green-500/20 border-green-500'
-                      : 'bg-white/10 border-white/20 hover:bg-white/20'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-2xl mr-3">{pair.emoji}</div>
-                    <span className="text-white font-medium">{pair.left}</span>
-                  </div>
-                  {matches[pair.left] && (
-                    <div className="mt-2 text-sm text-white/80">
-                      Matched with: {matches[pair.left]}
+      maxScore={roles.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Civic Roles */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Civic Roles</h3>
+              <div className="space-y-4">
+                {roles.map(role => (
+                  <button
+                    key={role.id}
+                    onClick={() => handleRoleSelect(role)}
+                    disabled={isRoleMatched(role.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isRoleMatched(role.id)
+                        ? getMatchResult(role.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedRole?.id === role.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{role.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{role.name}</h4>
+                        <p className="text-white/80 text-sm">{role.description}</p>
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
-            
-            {/* Right column - Responsibilities */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Responsibilities</h3>
-              {shuffledRights.map((pair) => (
-                <div 
-                  key={pair.id}
-                  onClick={() => {
-                    // Find the first unmatched left item
-                    const unmatchedLeft = pairs.find(p => !matches[p.left]);
-                    if (unmatchedLeft) {
-                      handleMatch(unmatchedLeft.left, pair.right);
-                    }
-                  }}
-                  className="p-4 rounded-xl border-2 bg-white/10 border-white/20 hover:bg-white/20 cursor-pointer transition-all"
-                >
-                  <span className="text-white font-medium">{pair.right}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Feedback for matches */}
-          <div className="mt-8 space-y-3">
-            {Object.entries(matches).map(([left, right]) => {
-              const pair = pairs.find(p => p.left === left);
-              const isCorrect = pair && pair.right === right;
-              
-              return (
-                <div 
-                  key={left}
-                  className={`p-3 rounded-lg ${
-                    isCorrect 
-                      ? 'bg-green-500/20 border border-green-500' 
-                      : 'bg-red-500/20 border border-red-500'
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedRole 
+                    ? `Selected: ${selectedRole.name}` 
+                    : "Select a Civic Role"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedRole || !selectedResponsibility}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedRole && selectedResponsibility
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  <div className="flex items-center">
-                    <div className="text-xl mr-2">{pair?.emoji}</div>
-                    <span className="text-white">
-                      {left} → {right} {isCorrect ? '✓' : '✗'}
-                    </span>
-                  </div>
-                  <p className="text-sm text-white/80 mt-1">{pair?.description}</p>
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{roles.length}</p>
+                  <p>Matched: {matches.length}/{roles.length}</p>
                 </div>
-              );
-            })}
+              </div>
+            </div>
+
+            {/* Right column - Responsibilities */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Responsibilities</h3>
+              <div className="space-y-4">
+                {responsibilities.map(responsibility => (
+                  <button
+                    key={responsibility.id}
+                    onClick={() => handleResponsibilitySelect(responsibility)}
+                    disabled={isResponsibilityMatched(responsibility.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isResponsibilityMatched(responsibility.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedResponsibility?.id === responsibility.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{responsibility.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{responsibility.name}</h4>
+                        <p className="text-white/80 text-sm">{responsibility.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">✨</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Excellent Work!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {roles.length} civic roles with their responsibilities!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding civic roles helps you appreciate how society functions and your place in it!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {roles.length} civic roles correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each civic role contributes to society and how they fulfill their duties!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

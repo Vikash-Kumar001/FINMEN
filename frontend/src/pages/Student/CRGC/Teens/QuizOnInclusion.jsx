@@ -15,75 +15,153 @@ const QuizOnInclusion = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "What does inclusion mean?",
+      emoji: "🤝",
       options: [
-        { id: "a", text: "Leaving out people who are different" },
-        { id: "b", text: "Including all people fairly and respectfully" },
-        { id: "c", text: "Only including people who are similar to you" }
-      ],
-      correctAnswer: "b",
-      explanation: "Inclusion means ensuring that all people, regardless of their differences, feel welcomed, valued, and respected in a group or community."
+        {
+          id: "a",
+          text: "Leaving out people who are different",
+          emoji: "🚫",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Including all people fairly and respectfully",
+          emoji: "👥",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Only including people who are similar to you",
+          emoji: "👤",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "Which action demonstrates inclusion?",
+      emoji: "🌟",
       options: [
-        { id: "a", text: "Making fun of someone's accent" },
-        { id: "b", text: "Inviting a new student to join your group project" },
-        { id: "c", text: "Talking about others behind their backs" }
-      ],
-      correctAnswer: "b",
-      explanation: "Inviting a new student to join your group shows inclusion by making them feel welcomed and valued as part of the team."
+        {
+          id: "a",
+          text: "Making fun of someone's accent",
+          emoji: "😔",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "Talking about others behind their backs",
+          emoji: "🗣️",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Inviting a new student to join your group project",
+          emoji: "📚",
+          isCorrect: true
+        },
+      ]
     },
     {
       id: 3,
       text: "Why is inclusion important in schools?",
+      emoji: "🏫",
       options: [
-        { id: "a", text: "It creates a hostile environment for everyone" },
-        { id: "b", text: "It helps all students feel valued and able to learn" },
-        { id: "c", text: "It only benefits popular students" }
-      ],
-      correctAnswer: "b",
-      explanation: "Inclusion in schools helps create a positive learning environment where all students feel safe, valued, and able to focus on their education."
+        {
+          id: "a",
+          text: "It creates a hostile environment for everyone",
+          emoji: "😡",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "It helps all students feel valued and able to learn",
+          emoji: "😊",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "It only benefits popular students",
+          emoji: "👑",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
       text: "What should you do if you notice someone being excluded?",
+      emoji: "👁️",
       options: [
-        { id: "a", text: "Join in the exclusion to fit in" },
-        { id: "b", text: "Ignore it completely" },
-        { id: "c", text: "Invite the person to join your group" }
-      ],
-      correctAnswer: "c",
-      explanation: "When you see someone being excluded, taking action to include them helps create a more welcoming and inclusive environment for everyone."
+        {
+          id: "a",
+          text: "Join in the exclusion to fit in",
+          emoji: "🙅",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Ignore it completely",
+          emoji: "🙈",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Invite the person to join your group",
+          emoji: "👋",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 5,
       text: "Which of these situations shows a lack of inclusion?",
+      emoji: "🤔",
       options: [
-        { id: "a", text: "A school club that welcomes students from all grades" },
-        { id: "b", text: "A group project that assigns roles based on stereotypes" },
-        { id: "c", text: "A classroom where everyone's ideas are heard and respected" }
-      ],
-      correctAnswer: "b",
-      explanation: "Assigning roles based on stereotypes rather than individual abilities or interests shows a lack of inclusion and can make some students feel undervalued."
+        {
+          id: "b",
+          text: "A group project that assigns roles based on stereotypes",
+          emoji: "🎭",
+          isCorrect: true
+        },
+        {
+          id: "a",
+          text: "A school club that welcomes students from all grades",
+          emoji: "🎈",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "A classroom where everyone's ideas are heard and respected",
+          emoji: "👂",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || showFeedback) return;
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
     
     setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correctAnswer;
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
     
     setShowFeedback(true);
@@ -93,102 +171,97 @@ const QuizOnInclusion = () => {
         setCurrentQuestion(prev => prev + 1);
         setSelectedOption(null);
         setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 2000);
+    }, isCorrect ? 1000 : 800);
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/teens");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = coins;
 
   return (
     <GameShell
       title="Quiz on Inclusion"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={finalScore}
       gameId="civic-responsibility-teens-12"
       gameType="civic-responsibility"
       totalLevels={20}
       currentLevel={12}
       showConfetti={gameFinished}
       backPath="/games/civic-responsibility/teens"
-    
       maxScore={questions.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="space-y-3">
-            {getCurrentQuestion().options.map(option => {
-              const isSelected = selectedOption === option.id;
-              const isCorrect = option.id === getCurrentQuestion().correctAnswer;
-              const showCorrect = showFeedback && isCorrect;
-              const showIncorrect = showFeedback && isSelected && !isCorrect;
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
               
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleOptionSelect(option.id)}
-                  disabled={showFeedback}
-                  className={`w-full p-4 rounded-xl text-left transition-all text-white ${
-                    showCorrect
-                      ? 'bg-green-500/20 border-2 border-green-500'
-                      : showIncorrect
-                      ? 'bg-red-500/20 border-2 border-red-500'
-                      : isSelected
-                      ? 'bg-blue-500/20 border-2 border-blue-500'
-                      : 'bg-white/10 border border-white/20 hover:bg-white/20'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-lg mr-3 font-bold">
-                      {option.id.toUpperCase()}.
-                    </div>
-                    <div>{option.text}</div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {showFeedback && (
-            <div className={`mt-6 p-4 rounded-xl ${
-              selectedOption === getCurrentQuestion().correctAnswer
-                ? 'bg-green-500/20 border border-green-500/30'
-                : 'bg-red-500/20 border border-red-500/30'
-            }`}>
-              <p className={`font-semibold ${
-                selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'text-green-300'
-                  : 'text-red-300'
-              }`}>
-                {selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'Correct! 🎉'
-                  : 'Not quite right!'}
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
-              <p className="text-white/90 mt-2">
-                {getCurrentQuestion().explanation}
-              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        ) : null}
       </div>
     </GameShell>
   );

@@ -7,14 +7,15 @@ const TeenExchangeStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // 1 coin per question
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -25,21 +26,18 @@ const TeenExchangeStory = () => {
           id: "a",
           text: "Yes, cultural exchange enriches both",
           emoji: "🌐",
-          description: "That's right! Sharing cultures helps build understanding and appreciation for diversity, enriching both individuals.",
           isCorrect: true
         },
         {
           id: "b",
           text: "No, keep cultures separate",
           emoji: "🔒",
-          description: "That's not ideal. While respecting cultural boundaries is important, sharing cultures can promote harmony and understanding.",
           isCorrect: false
         },
         {
           id: "c",
           text: "Only if it benefits me",
           emoji: "💼",
-          description: "That's not the spirit of cultural exchange. Sharing cultures should be about mutual learning and respect, not personal gain.",
           isCorrect: false
         }
       ]
@@ -48,25 +46,23 @@ const TeenExchangeStory = () => {
       id: 2,
       text: "What is the benefit of learning about other cultures?",
       options: [
-        {
-          id: "a",
-          text: "Develops empathy and global perspective",
-          emoji: "🤝",
-          description: "That's right! Learning about other cultures develops empathy, broadens perspectives, and helps build a more inclusive worldview.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Creates confusion about identity",
           emoji: "😵",
-          description: "That's not accurate. Learning about other cultures actually strengthens one's own identity while fostering appreciation for diversity.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Develops empathy and global perspective",
+          emoji: "🤝",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Makes you forget your own culture",
           emoji: "❓",
-          description: "That's not true. Learning about other cultures enhances rather than replaces your own cultural understanding and appreciation.",
           isCorrect: false
         }
       ]
@@ -75,25 +71,23 @@ const TeenExchangeStory = () => {
       id: 3,
       text: "How should you approach cultural differences?",
       options: [
-        {
-          id: "a",
-          text: "With curiosity and respect",
-          emoji: "🔍",
-          description: "That's right! Approaching cultural differences with curiosity and respect helps build bridges and promotes understanding.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "With judgment and criticism",
           emoji: "😠",
-          description: "That's not appropriate. Judging cultural differences creates division and prevents meaningful cross-cultural connections.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "With curiosity and respect",
+          emoji: "🔍",
+          isCorrect: true
         },
         {
           id: "c",
           text: "By ignoring them completely",
           emoji: "🙈",
-          description: "That's not helpful. Ignoring cultural differences misses opportunities for learning and building meaningful relationships.",
           isCorrect: false
         }
       ]
@@ -106,21 +100,18 @@ const TeenExchangeStory = () => {
           id: "a",
           text: "That there are multiple ways to live and think",
           emoji: "🧠",
-          description: "That's right! Cultural exchange teaches us that there are multiple valid ways to live, think, and approach problems.",
           isCorrect: true
         },
         {
           id: "b",
           text: "That other cultures are inferior",
           emoji: "👇",
-          description: "That's not right. Cultural exchange should promote appreciation for diversity, not superiority of one culture over another.",
           isCorrect: false
         },
         {
           id: "c",
           text: "That all cultures are exactly the same",
           emoji: "🔄",
-          description: "That's not accurate. Cultural exchange highlights both similarities and differences, showing that cultures are diverse yet connected.",
           isCorrect: false
         }
       ]
@@ -129,49 +120,69 @@ const TeenExchangeStory = () => {
       id: 5,
       text: "Why is cultural awareness important in a globalized world?",
       options: [
-        {
-          id: "a",
-          text: "It helps navigate interconnected global relationships",
-          emoji: "🤝",
-          description: "That's right! Cultural awareness is essential for navigating our interconnected world and building positive international relationships.",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "It's only important for travel",
           emoji: "✈️",
-          description: "That's too limited. Cultural awareness is important not just for travel but for all aspects of our interconnected global society.",
           isCorrect: false
         },
         {
           id: "c",
           text: "It's not really necessary",
           emoji: "😴",
-          description: "That's not true. In our globalized world, cultural awareness is essential for effective communication and cooperation.",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "It helps navigate interconnected global relationships",
+          emoji: "🤝",
+          isCorrect: true
+        },
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: optionId,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect;
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
+  };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
@@ -183,56 +194,88 @@ const TeenExchangeStory = () => {
   return (
     <GameShell
       title="Teen Exchange Story"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
       score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      showGameOver={showResult}
       gameId="civic-responsibility-teens-85"
       gameType="civic-responsibility"
-      totalLevels={90}
-      currentLevel={85}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/civic-responsibility/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/civic-responsibility/teens"
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <h2 className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-4">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
-                    )}
-                  </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🌏</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Cultural Ambassador!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand the value of cultural exchange and global awareness!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
                 </div>
-              </button>
-            ))}
+                <p className="text-white/80 text-sm md:text-base">
+                  Great job! You know that cultural exchange enriches our understanding of the world!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, cultural awareness helps us build bridges across different communities!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows respect for cultural diversity.
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

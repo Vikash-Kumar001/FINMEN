@@ -15,7 +15,7 @@ const DebateServiceWaste = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -76,7 +76,9 @@ const DebateServiceWaste = () => {
   ];
 
   const handleOptionSelect = (optionId) => {
-    if (selectedOption) return; // Prevent changing answer after selection
+    if (selectedOption || showFeedback) return;
+    
+    resetFeedback(); // Reset any existing feedback
     
     const currentQ = questions[currentQuestion];
     const isCorrect = optionId === currentQ.correctAnswer;
@@ -84,8 +86,8 @@ const DebateServiceWaste = () => {
     setSelectedOption(optionId);
     
     if (isCorrect) {
-      setCoins(prev => prev + 2);
-      showCorrectAnswerFeedback(2, true);
+      setCoins(prev => prev + 1); // 1 coin per correct answer
+      showCorrectAnswerFeedback(1, true);
     }
     
     setShowFeedback(true);
@@ -120,20 +122,21 @@ const DebateServiceWaste = () => {
         score={coins}
         gameId="civic-responsibility-teens-56"
         gameType="civic-responsibility"
-        totalLevels={60}
-        currentLevel={56}
+        totalLevels={5}
+        currentLevel={currentQuestion + 1}
         showConfetti={true}
         backPath="/games/civic-responsibility/teens"
-      
-      maxScore={questions.length} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
+        maxScore={questions.length} // Max score is total number of questions (all correct)
+        coinsPerLevel={coinsPerLevel}
+        totalCoins={totalCoins}
+        totalXp={totalXp}
+        flashPoints={flashPoints}
+        showAnswerConfetti={showAnswerConfetti}>
         <div className="text-center p-8">
           <div className="text-6xl mb-6">🏆</div>
           <h2 className="text-2xl font-bold mb-4">Excellent Debate!</h2>
           <p className="text-white mb-6">
-            You scored {coins} out of {questions.length * 2} points!
+            You scored {coins} out of {questions.length} points!
           </p>
           <div className="text-yellow-400 font-bold text-lg mb-4">
             You understand the value of community service!
@@ -149,56 +152,89 @@ const DebateServiceWaste = () => {
   return (
     <GameShell
       title="Debate: Service = Waste?"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={`Debate ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={coins}
+      gameId="civic-responsibility-teens-56"
+      gameType="civic-responsibility"
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={gameFinished}
       backPath="/games/civic-responsibility/teens"
-    >
+      maxScore={questions.length} // Max score is total number of questions (all correct)
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}>
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Debate {currentQuestion + 1}/{questions.length}</span>
             <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
           
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
-          </h2>
+          <div className="text-center mb-6">
+            <div className="text-5xl mb-4">🤝</div>
+            <h3 className="text-2xl font-bold text-white mb-2">Community Service Debate</h3>
+          </div>
 
-          <div className="space-y-4">
-            {getCurrentQuestion().options.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => handleOptionSelect(option.id)}
-                disabled={selectedOption}
-                className={`w-full text-left p-4 rounded-xl transition-all ${
-                  selectedOption
-                    ? option.id === getCurrentQuestion().correctAnswer
-                      ? 'bg-green-500/20 border-2 border-green-500'
-                      : selectedOption === option.id
-                      ? 'bg-red-500/20 border-2 border-red-500'
-                      : 'bg-white/10 border border-white/20'
-                    : 'bg-white/10 hover:bg-white/20 border border-white/20'
-                }`}
-              >
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mr-4">
-                    <span className="font-bold text-white">{option.id.toUpperCase()}</span>
+          <p className="text-white text-lg mb-6">
+            {getCurrentQuestion().text}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {getCurrentQuestion().options.map((option) => {
+              const isSelected = selectedOption === option.id;
+              const isCorrect = option.id === getCurrentQuestion().correctAnswer;
+              const showCorrect = showFeedback && isCorrect;
+              const showIncorrect = showFeedback && isSelected && !isCorrect;
+              
+              // Add emojis for each option like in the reference game
+              const optionEmojis = {
+                a: "✅",
+                b: "❌",
+                c: "⚠️"
+              };
+              
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleOptionSelect(option.id)}
+                  disabled={showFeedback}
+                  className={`bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${
+                    showFeedback ? (isCorrect ? 'ring-4 ring-green-500' : isSelected ? 'ring-4 ring-red-500' : '') : ''
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-2xl mr-4">{optionEmojis[option.id] || '❓'}</div>
+                    <div>
+                      <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                    </div>
                   </div>
-                  <span className="text-white">{option.text}</span>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
 
           {showFeedback && (
             <div className={`mt-6 p-4 rounded-xl ${
               selectedOption === getCurrentQuestion().correctAnswer
-                ? 'bg-green-500/20 border border-green-500'
-                : 'bg-red-500/20 border border-red-500'
+                ? 'bg-green-500/20 border border-green-500/30'
+                : 'bg-red-500/20 border border-red-500/30'
             }`}>
-              <p className={selectedOption === getCurrentQuestion().correctAnswer ? 'text-green-300' : 'text-red-300'}>
+              <p className={`font-semibold ${
+                selectedOption === getCurrentQuestion().correctAnswer
+                  ? 'text-green-300'
+                  : 'text-red-300'
+              }`}>
                 {selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'Correct! '
-                  : 'Incorrect. '}
+                  ? 'Correct! 🎉'
+                  : 'Not quite right!'}
+              </p>
+              <p className="text-white/90 mt-2">
                 {getCurrentQuestion().explanation}
               </p>
             </div>

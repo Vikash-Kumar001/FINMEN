@@ -1,185 +1,161 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { PenSquare } from 'lucide-react';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const JournalOfInclusion = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentPrompt, setCurrentPrompt] = useState(0);
-  const [entries, setEntries] = useState({});
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
-
-  const prompts = [
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "civic-responsibility-teens-17";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [entry, setEntry] = useState("");
+  const [showResult, setShowResult] = useState(false);
+  
+  const stages = [
     {
-      id: 1,
-      text: "One time I included someone new was ___",
-      example: "Example: I invited the new student to sit with my friends at lunch when I noticed they were eating alone.",
-      reflection: "Including others helps create a welcoming environment and builds meaningful connections."
+      question: 'Write: "One time I included someone new was ___"',
+      minLength: 10,
     },
     {
-      id: 2,
-      text: "A situation where I stood up for inclusion was ___",
-      example: "Example: I spoke up when my teammates were excluding someone from our group project based on their accent.",
-      reflection: "Standing up for inclusion takes courage but makes a significant positive impact on others."
+      question: 'Write: "A situation where I stood up for inclusion was ___"',
+      minLength: 10,
     },
     {
-      id: 3,
-      text: "I learned about a different culture by ___",
-      example: "Example: I attended my classmate's cultural celebration and tried traditional foods from their country.",
-      reflection: "Learning about different cultures broadens our perspectives and promotes understanding."
+      question: 'Write: "I learned about a different culture by ___"',
+      minLength: 10,
     },
     {
-      id: 4,
-      text: "A time I realized I was being exclusive was ___",
-      example: "Example: I noticed I only invited certain friends to my birthday party and realized I should be more inclusive.",
-      reflection: "Recognizing our own exclusive behaviors helps us grow and become more inclusive."
+      question: 'Write: "A time I realized I was being exclusive was ___"',
+      minLength: 10,
     },
     {
-      id: 5,
-      text: "One way I can promote inclusion this week is ___",
-      example: "Example: I will make an effort to learn my new classmate's name and include them in group conversations.",
-      reflection: "Setting intentions for inclusive actions helps make inclusion a natural part of our daily lives."
-    }
+      question: 'Write: "One way I can promote inclusion this week is ___"',
+      minLength: 10,
+    },
   ];
 
-  const [entryText, setEntryText] = useState("");
-
-  const handleEntrySubmit = () => {
-    if (entryText.trim().length < 10) return; // Minimum length check
+  const handleSubmit = () => {
+    if (showResult) return; // Prevent multiple submissions
     
-    const newEntries = { ...entries, [currentPrompt]: entryText };
-    setEntries(newEntries);
-    setEntryText("");
+    resetFeedback();
+    const entryText = entry.trim();
     
-    // Award coins for each entry
-    setCoins(prev => prev + 1);
-    showCorrectAnswerFeedback(1, true);
-    
-    setShowFeedback(true);
-    
-    setTimeout(() => {
-      setShowFeedback(false);
-      if (currentPrompt < prompts.length - 1) {
-        setCurrentPrompt(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 2000);
-  };
-
-  const handleNext = () => {
-    navigate("/games/civic-responsibility/teens");
-  };
-
-  const getCurrentPrompt = () => prompts[currentPrompt];
-
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Journal of Inclusion"
-        subtitle="Journal Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teens-17"
-        gameType="civic-responsibility"
-        totalLevels={20}
-        currentLevel={17}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
       
-      maxScore={20} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">✍️</div>
-          <h2 className="text-2xl font-bold mb-4">Journal Complete!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} out of {prompts.length} points!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You're developing inclusion skills!
-          </div>
-          <p className="text-white/80">
-            Remember: Reflecting on inclusion helps make it a natural part of your life!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setShowResult(true);
+        } else {
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
+        }
+      }, 1500);
+    }
+  };
+
+  const finalScore = score;
+
+  // Log when game completes
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Journal of Inclusion game completed! Score: ${finalScore}/${stages.length}, gameId: ${gameId}`);
+    }
+  }, [showResult, finalScore, gameId, stages.length]);
 
   return (
     <GameShell
       title="Journal of Inclusion"
-      subtitle={`Prompt ${currentPrompt + 1} of ${prompts.length}`}
-      backPath="/games/civic-responsibility/teens"
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Inclusion Journal</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              {getCurrentPrompt().text}
-            </h2>
-            
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-4">
-              <p className="text-blue-300 font-medium">💡 {getCurrentPrompt().example}</p>
-            </div>
-            
-            <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
-              <p className="text-purple-300">{getCurrentPrompt().reflection}</p>
-            </div>
-          </div>
-
-          <div className="mb-6">
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on Inclusion!` : "Journal Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={stages.length}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="civic-responsibility"
+      maxScore={stages.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === stages.length}
+      backPath="/games/civic-responsibility/teens">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center text-center text-white space-y-6 md:space-y-8 max-w-4xl mx-auto px-4 py-4">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-6 md:p-8 rounded-xl md:rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-8 h-8 md:w-10 md:h-10 text-yellow-300" />
+            <h3 className="text-xl md:text-2xl font-bold mb-4 text-white">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4 text-sm md:text-base">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-xs md:text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
+            </p>
             <textarea
-              value={entryText}
-              onChange={(e) => setEntryText(e.target.value)}
-              placeholder="Write your response here..."
-              className="w-full h-32 p-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-base md:text-lg bg-white/90 min-h-[120px] md:min-h-[150px]"
+              disabled={showResult}
             />
+            <div className="mt-2 text-white/50 text-xs md:text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
+            </div>
+            <button
+              onClick={handleSubmit}
+              className={`mt-4 px-6 md:px-8 py-3 md:py-4 rounded-full text-base md:text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
+            >
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
+            </button>
           </div>
-
-          <button
-            onClick={handleEntrySubmit}
-            disabled={entryText.trim().length < 10 || showFeedback}
-            className={`w-full py-3 rounded-xl font-semibold transition-all ${
-              entryText.trim().length >= 10 && !showFeedback
-                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white'
-                : 'bg-gray-500 text-gray-300 cursor-not-allowed'
-            }`}
-          >
-            Submit Entry
-          </button>
-
-          {showFeedback && (
-            <div className="mt-4 p-4 rounded-xl bg-green-500/20 border border-green-500/30">
-              <p className="text-green-300 font-semibold">Great reflection! 👏</p>
+        )}
+        
+        {showResult && (
+          <div className="bg-white/10 backdrop-blur-md p-6 md:p-8 rounded-xl md:rounded-2xl border border-white/20 text-center">
+            <div className="text-4xl mb-4">🤗</div>
+            <h2 className="text-2xl font-bold text-white mb-6">Inclusion Complete!</h2>
+            
+            <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl p-4 border border-green-400/30 mb-6">
+              <p className="text-green-300 font-bold">
+                🎉 Excellent! You've completed your inclusion journal!
+              </p>
+              <p className="text-green-300 mt-2">
+                Recording your inclusive actions helps develop your social awareness!
+              </p>
             </div>
-          )}
-
-          {entries[currentPrompt] && (
-            <div className="mt-6 p-4 rounded-xl bg-white/10 border border-white/20">
-              <p className="text-white/80">Your entry:</p>
-              <p className="text-white mt-2">{entries[currentPrompt]}</p>
+            
+            <div className="bg-white/5 rounded-xl p-6 border border-white/10 mb-6 text-left">
+              <h3 className="text-lg font-semibold text-white mb-3">Your Entries:</h3>
+              <div className="space-y-3">
+                {stages.map((stage, index) => (
+                  <div key={index} className="text-white/90 text-sm">
+                    <span className="font-medium">Q{index + 1}:</span> {stage.question}
+                  </div>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

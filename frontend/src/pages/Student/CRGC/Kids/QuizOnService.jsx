@@ -15,75 +15,151 @@ const QuizOnService = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "What does volunteering mean?",
+      emoji: " volunteerman",
       options: [
-        { id: "a", text: "Getting paid for work" },
-        { id: "b", text: "Helping others without expecting payment" },
-        { id: "c", text: "Playing video games" }
-      ],
-      correctAnswer: "b",
-      explanation: "Volunteering means giving your time and effort to help others or causes without receiving money in return."
+        {
+          id: "a",
+          text: "Getting paid for work",
+          emoji: "💰",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Helping others without expecting payment",
+          emoji: "🤝",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Playing video games",
+          emoji: "🎮",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "Which is a benefit of volunteering?",
+      emoji: "🎁",
       options: [
-        { id: "a", text: "Losing friends" },
-        { id: "b", text: "Learning new skills" },
-        { id: "c", text: "Getting bored" }
-      ],
-      correctAnswer: "b",
-      explanation: "Volunteering helps you develop new skills, gain experience, and meet new people while making a positive impact."
+        {
+          id: "a",
+          text: "Losing friends",
+          emoji: "😞",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Learning new skills",
+          emoji: "🧠",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Getting bored",
+          emoji: "🥱",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "Where can you volunteer?",
+      emoji: "📍",
       options: [
-        { id: "a", text: "Only at school" },
-        { id: "b", text: "Only at home" },
-        { id: "c", text: "At various places like hospitals, parks, and community centers" }
-      ],
-      correctAnswer: "c",
-      explanation: "There are many places where you can volunteer, including hospitals, parks, community centers, animal shelters, and more."
+        {
+          id: "a",
+          text: "Only at school",
+          emoji: "🏫",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Only at home",
+          emoji: "🏠",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "At various places like hospitals, parks, and community centers",
+          emoji: "🏥",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
       text: "Why is volunteering important?",
+      emoji: "⭐",
       options: [
-        { id: "a", text: "It helps only you" },
-        { id: "b", text: "It strengthens communities and helps those in need" },
-        { id: "c", text: "It's required by law" }
-      ],
-      correctAnswer: "b",
-      explanation: "Volunteering is important because it helps those in need, strengthens communities, and creates positive change in society."
+        {
+          id: "a",
+          text: "It helps only you",
+          emoji: "👤",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "It strengthens communities and helps those in need",
+          emoji: "🏘️",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "It's required by law",
+          emoji: "⚖️",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       text: "What should you do before volunteering?",
+      emoji: "📋",
       options: [
-        { id: "a", text: "Expect payment" },
-        { id: "b", text: "Research the organization and understand your role" },
-        { id: "c", text: "Show up without telling anyone" }
-      ],
-      correctAnswer: "b",
-      explanation: "Before volunteering, it's important to research the organization and understand your role to ensure a positive experience for everyone involved."
+        {
+          id: "a",
+          text: "Expect payment",
+          emoji: "💵",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Research the organization and understand your role",
+          emoji: "🔍",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Show up without telling anyone",
+          emoji: "🏃",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || showFeedback) return;
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
     
     setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correctAnswer;
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
     
     setShowFeedback(true);
@@ -93,102 +169,97 @@ const QuizOnService = () => {
         setCurrentQuestion(prev => prev + 1);
         setSelectedOption(null);
         setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 2000);
+    }, isCorrect ? 1000 : 800);
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/kids");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = coins;
 
   return (
     <GameShell
       title="Quiz on Service"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={finalScore}
       gameId="civic-responsibility-kids-52"
       gameType="civic-responsibility"
       totalLevels={60}
       currentLevel={52}
       showConfetti={gameFinished}
       backPath="/games/civic-responsibility/kids"
-    
       maxScore={questions.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="space-y-3">
-            {getCurrentQuestion().options.map(option => {
-              const isSelected = selectedOption === option.id;
-              const isCorrect = option.id === getCurrentQuestion().correctAnswer;
-              const showCorrect = showFeedback && isCorrect;
-              const showIncorrect = showFeedback && isSelected && !isCorrect;
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
               
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleOptionSelect(option.id)}
-                  disabled={showFeedback}
-                  className={`w-full p-4 rounded-xl text-left transition-all ${
-                    showCorrect
-                      ? 'bg-green-500/20 border-2 border-green-500 text-white'
-                      : showIncorrect
-                      ? 'bg-red-500/20 border-2 border-red-500 text-white'
-                      : isSelected
-                      ? 'bg-blue-500/20 border-2 border-blue-500 text-white'
-                      : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-lg mr-3 font-bold">
-                      {option.id.toUpperCase()}.
-                    </div>
-                    <div>{option.text}</div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {showFeedback && (
-            <div className={`mt-6 p-4 rounded-xl ${
-              selectedOption === getCurrentQuestion().correctAnswer
-                ? 'bg-green-500/20 border border-green-500/30'
-                : 'bg-red-500/20 border border-red-500/30'
-            }`}>
-              <p className={`font-semibold ${
-                selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'text-green-300'
-                  : 'text-red-300'
-              }`}>
-                {selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'Correct! 🎉'
-                  : 'Not quite right!'}
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
-              <p className="text-white/90 mt-2">
-                {getCurrentQuestion().explanation}
-              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        ) : null}
       </div>
     </GameShell>
   );

@@ -10,206 +10,260 @@ const PuzzleConflictSolutions = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matches, setMatches] = useState({});
-  const [completed, setCompleted] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [selectedOutcome, setSelectedOutcome] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const pairs = [
-    { 
-      id: 1, 
-      left: "Listen", 
-      emoji: "👂", 
-      right: "Respect", 
-      description: "Listening to others shows respect for their feelings and perspectives." 
-    },
-    { 
-      id: 2, 
-      left: "Apologize", 
-      emoji: "🫂", 
-      right: "Heal", 
-      description: "Sincere apologies help heal hurt feelings and repair damaged relationships." 
-    },
-    { 
-      id: 3, 
-      left: "Shout", 
-      emoji: "😠", 
-      right: "Wrong", 
-      description: "Shouting escalates conflicts and prevents constructive communication." 
-    },
-    { 
-      id: 4, 
-      left: "Compromise", 
-      emoji: "🤝", 
-      right: "Solution", 
-      description: "Finding a middle ground helps both parties feel heard and satisfied." 
-    },
-    { 
-      id: 5, 
-      left: "Empathize", 
-      emoji: "❤️", 
-      right: "Connect", 
-      description: "Understanding others' feelings creates emotional connections and trust." 
-    }
+  // Actions (left side) - 5 items
+  const actions = [
+    { id: 1, name: "Listen", emoji: "👂", description: "Pay attention to others' perspectives" },
+    { id: 2, name: "Apologize", emoji: "🫂", description: "Express regret for wrongdoing" },
+    { id: 3, name: "Shout", emoji: "😠", description: "Raise voice in anger" },
+    { id: 4, name: "Compromise", emoji: "🤝", description: "Find middle ground solution" },
+    { id: 5, name: "Empathize", emoji: "❤️", description: "Understand others' feelings" }
   ];
 
-  const handleMatch = (leftId, rightId) => {
-    // Check if this is a correct match
-    const pair = pairs.find(p => p.left === leftId);
-    const isCorrect = pair && pair.right === rightId;
-    
-    // Update matches state
-    const newMatches = { ...matches, [leftId]: rightId };
+  // Outcomes (right side) - 5 items
+  const outcomes = [
+    { id: 2, name: "Heal", emoji: "🩹", description: "Repair damaged relationships" },
+    { id: 1, name: "Respect", emoji: "🙏", description: "Showing consideration for others" },
+    { id: 4, name: "Solution", emoji: "✅", description: "Effective resolution to problems" },
+    { id: 3, name: "Wrong", emoji: "❌", description: "Incorrect approach to conflict" },
+    { id: 5, name: "Connect", emoji: "🔗", description: "Build emotional bonds with others" }
+  ];
+
+  // Correct matches
+  const correctMatches = [
+    { actionId: 1, outcomeId: 1 }, // Listen → Respect
+    { actionId: 2, outcomeId: 2 }, // Apologize → Heal
+    { actionId: 3, outcomeId: 3 }, // Shout → Wrong
+    { actionId: 4, outcomeId: 4 }, // Compromise → Solution
+    { actionId: 5, outcomeId: 5 }  // Empathize → Connect
+  ];
+
+  const handleActionSelect = (action) => {
+    if (gameFinished) return;
+    setSelectedAction(action);
+  };
+
+  const handleOutcomeSelect = (outcome) => {
+    if (gameFinished) return;
+    setSelectedOutcome(outcome);
+  };
+
+  const handleMatch = () => {
+    if (!selectedAction || !selectedOutcome || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      actionId: selectedAction.id,
+      outcomeId: selectedOutcome.id,
+      isCorrect: correctMatches.some(
+        match => match.actionId === selectedAction.id && match.outcomeId === selectedOutcome.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
     setMatches(newMatches);
-    
-    // Check if all pairs are matched
-    const allMatched = pairs.every(p => newMatches[p.left] === p.right);
-    
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      
-      if (allMatched) {
-        setTimeout(() => setCompleted(true), 1000);
-      }
-    } else if (allMatched) {
-      // If all matched but some are incorrect, still complete the game
-      setTimeout(() => setCompleted(true), 1000);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === actions.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedAction(null);
+    setSelectedOutcome(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedAction(null);
+    setSelectedOutcome(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/teens");
   };
 
-  if (completed) {
-    return (
-      <GameShell
-        title="Puzzle: Conflict Solutions"
-        subtitle="Puzzle Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teens-44"
-        gameType="civic-responsibility"
-        totalLevels={50}
-        currentLevel={44}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
-      
-      maxScore={50} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🧩</div>
-          <h2 className="text-2xl font-bold mb-4">Well Done!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} coins by matching conflict resolution strategies!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You understand effective conflict resolution!
-          </div>
-          <p className="text-white/80">
-            Remember: Good communication and empathy are key to resolving conflicts!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  // Check if an action is already matched
+  const isActionMatched = (actionId) => {
+    return matches.some(match => match.actionId === actionId);
+  };
 
-  // Shuffle the right side options
-  const shuffledRights = [...pairs].sort(() => Math.random() - 0.5);
+  // Check if an outcome is already matched
+  const isOutcomeMatched = (outcomeId) => {
+    return matches.some(match => match.outcomeId === outcomeId);
+  };
+
+  // Get match result for an action
+  const getMatchResult = (actionId) => {
+    const match = matches.find(m => m.actionId === actionId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Conflict Solutions"
-      subtitle="Match conflict resolution strategies with their outcomes"
+      subtitle={gameFinished ? "Game Complete!" : `Match Conflict Actions with Outcomes (${matches.length}/${actions.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="civic-responsibility-teens-44"
+      gameType="civic-responsibility"
+      totalLevels={actions.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/teens"
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Conflict Resolution Puzzle</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      maxScore={actions.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Left column - Actions */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Actions</h3>
-              {pairs.map((pair) => (
-                <div 
-                  key={pair.id}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                    matches[pair.left]
-                      ? 'bg-green-500/20 border-green-500'
-                      : 'bg-white/10 border-white/20 hover:bg-white/20'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-2xl mr-3">{pair.emoji}</div>
-                    <span className="text-white font-medium">{pair.left}</span>
-                  </div>
-                  {matches[pair.left] && (
-                    <div className="mt-2 text-sm text-white/80">
-                      Matched with: {matches[pair.left]}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Conflict Actions</h3>
+              <div className="space-y-4">
+                {actions.map(action => (
+                  <button
+                    key={action.id}
+                    onClick={() => handleActionSelect(action)}
+                    disabled={isActionMatched(action.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isActionMatched(action.id)
+                        ? getMatchResult(action.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedAction?.id === action.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{action.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{action.name}</h4>
+                        <p className="text-white/80 text-sm">{action.description}</p>
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
-            
-            {/* Right column - Outcomes */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Outcomes</h3>
-              {shuffledRights.map((pair) => (
-                <div 
-                  key={pair.id}
-                  onClick={() => {
-                    // Find the first unmatched left item
-                    const unmatchedLeft = pairs.find(p => !matches[p.left]);
-                    if (unmatchedLeft) {
-                      handleMatch(unmatchedLeft.left, pair.right);
-                    }
-                  }}
-                  className="p-4 rounded-xl border-2 bg-white/10 border-white/20 hover:bg-white/20 cursor-pointer transition-all"
-                >
-                  <span className="text-white font-medium">{pair.right}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Feedback for matches */}
-          <div className="mt-8 space-y-3">
-            {Object.entries(matches).map(([left, right]) => {
-              const pair = pairs.find(p => p.left === left);
-              const isCorrect = pair && pair.right === right;
-              
-              return (
-                <div 
-                  key={left}
-                  className={`p-3 rounded-lg ${
-                    isCorrect 
-                      ? 'bg-green-500/20 border border-green-500' 
-                      : 'bg-red-500/20 border border-red-500'
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedAction 
+                    ? `Selected: ${selectedAction.name}` 
+                    : "Select a Conflict Action"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedAction || !selectedOutcome}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedAction && selectedOutcome
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  <div className="flex items-center">
-                    <div className="text-xl mr-2">{pair?.emoji}</div>
-                    <span className="text-white">
-                      {left} → {right} {isCorrect ? '✓' : '✗'}
-                    </span>
-                  </div>
-                  <p className="text-sm text-white/80 mt-1">{pair?.description}</p>
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{actions.length}</p>
+                  <p>Matched: {matches.length}/{actions.length}</p>
                 </div>
-              );
-            })}
+              </div>
+            </div>
+
+            {/* Right column - Outcomes */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Conflict Outcomes</h3>
+              <div className="space-y-4">
+                {outcomes.map(outcome => (
+                  <button
+                    key={outcome.id}
+                    onClick={() => handleOutcomeSelect(outcome)}
+                    disabled={isOutcomeMatched(outcome.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isOutcomeMatched(outcome.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedOutcome?.id === outcome.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{outcome.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{outcome.name}</h4>
+                        <p className="text-white/80 text-sm">{outcome.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🧩</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Excellent Work!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {actions.length} conflict actions with their outcomes!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding conflict resolution strategies helps build healthier relationships and communities!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {actions.length} conflict actions correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about whether each conflict action leads to a positive or negative outcome!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -10,246 +10,260 @@ const PuzzleMatchFeelings = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
   const [selectedFeeling, setSelectedFeeling] = useState(null);
   const [selectedExpression, setSelectedExpression] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const [shuffledFeelings, setShuffledFeelings] = useState([]);
-  const [shuffledExpressions, setShuffledExpressions] = useState([]);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      feeling: "Happy",
-      emoji: "😊",
-      expression: "Smile",
-      expressionEmoji: "😄",
-      description: "When we're happy, we naturally smile and our face lights up!"
-    },
-    {
-      id: 2,
-      feeling: "Sad",
-      emoji: "😢",
-      expression: "Cry",
-      expressionEmoji: "💧",
-      description: "When we're sad, we might cry or have tears in our eyes."
-    },
-    {
-      id: 3,
-      feeling: "Angry",
-      emoji: "😠",
-      expression: "Frown",
-      expressionEmoji: "😡",
-      description: "When we're angry, we often frown or have a stern expression."
-    },
-    {
-      id: 4,
-      feeling: "Surprised",
-      emoji: "😲",
-      expression: "Wide Eyes",
-      expressionEmoji: "😱",
-      description: "When we're surprised, our eyes open wide and our mouth might open."
-    },
-    {
-      id: 5,
-      feeling: "Scared",
-      emoji: "😨",
-      expression: "Tremble",
-      expressionEmoji: "😰",
-      description: "When we're scared, we might tremble or shake slightly."
-    }
+  // Feelings (left side) - 5 items
+  const feelings = [
+    { id: 1, name: "Happy", emoji: "😊", description: "Feeling joyful and pleased" },
+    { id: 2, name: "Sad", emoji: "😢", description: "Feeling unhappy or sorrowful" },
+    { id: 3, name: "Angry", emoji: "😠", description: "Feeling mad or irritated" },
+    { id: 4, name: "Surprised", emoji: "😲", description: "Feeling astonished or amazed" },
+    { id: 5, name: "Scared", emoji: "😨", description: "Feeling afraid or frightened" }
   ];
 
-  // Shuffle arrays when component mounts
-  useEffect(() => {
-    const shuffleArray = (array) => {
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    };
+  // Expressions (right side) - 5 items
+  const expressions = [
+    { id: 2, name: "Cry", emoji: "💧", description: "Shedding tears when sad" },
+    { id: 1, name: "Smile", emoji: "😄", description: "Facial expression showing happiness" },
+    { id: 3, name: "Frown", emoji: "😡", description: "Facial expression showing anger" },
+    { id: 5, name: "Tremble", emoji: "😰", description: "Body shaking when scared" },
+    { id: 4, name: "Wide Eyes", emoji: "😱", description: "Eyes opened wide in surprise" },
+  ];
 
-    setShuffledFeelings(shuffleArray(puzzles.map(p => p.feeling)));
-    setShuffledExpressions(shuffleArray(puzzles.map(p => p.expression)));
-  }, []);
+  // Correct matches
+  const correctMatches = [
+    { feelingId: 1, expressionId: 1 }, // Happy → Smile
+    { feelingId: 2, expressionId: 2 }, // Sad → Cry
+    { feelingId: 3, expressionId: 3 }, // Angry → Frown
+    { feelingId: 4, expressionId: 4 }, // Surprised → Wide Eyes
+    { feelingId: 5, expressionId: 5 }  // Scared → Tremble
+  ];
 
   const handleFeelingSelect = (feeling) => {
-    if (selectedExpression) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.feeling === feeling && p.expression === selectedExpression);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedFeeling(null);
-      setSelectedExpression(null);
-    } else {
-      setSelectedFeeling(feeling);
-    }
+    if (gameFinished) return;
+    setSelectedFeeling(feeling);
   };
 
   const handleExpressionSelect = (expression) => {
-    if (selectedFeeling) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.feeling === selectedFeeling && p.expression === expression);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedFeeling(null);
-      setSelectedExpression(null);
+    if (gameFinished) return;
+    setSelectedExpression(expression);
+  };
+
+  const handleMatch = () => {
+    if (!selectedFeeling || !selectedExpression || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      feelingId: selectedFeeling.id,
+      expressionId: selectedExpression.id,
+      isCorrect: correctMatches.some(
+        match => match.feelingId === selectedFeeling.id && match.expressionId === selectedExpression.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setSelectedExpression(expression);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === feelings.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedFeeling(null);
+    setSelectedExpression(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedFeeling(null);
+    setSelectedExpression(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/kids");
   };
 
-  const isMatched = (id) => matchedPairs.includes(id);
-  const isFeelingSelected = (feeling) => selectedFeeling === feeling;
-  const isExpressionSelected = (expression) => selectedExpression === expression;
+  // Check if a feeling is already matched
+  const isFeelingMatched = (feelingId) => {
+    return matches.some(match => match.feelingId === feelingId);
+  };
+
+  // Check if an expression is already matched
+  const isExpressionMatched = (expressionId) => {
+    return matches.some(match => match.expressionId === expressionId);
+  };
+
+  // Get match result for a feeling
+  const getMatchResult = (feelingId) => {
+    const match = matches.find(m => m.feelingId === feelingId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Match Feelings"
-      subtitle={`Match feelings to expressions! ${matchedPairs.length}/${puzzles.length} matched`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Feelings with Expressions (${matches.length}/${feelings.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="civic-responsibility-kids-4"
       gameType="civic-responsibility"
-      totalLevels={10}
-      currentLevel={4}
-      showConfetti={gameFinished}
+      totalLevels={feelings.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/civic-responsibility/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      backPath="/games/civic-responsibility/kids"
+      maxScore={feelings.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Feelings column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Feelings</h3>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Feelings */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Feelings</h3>
               <div className="space-y-4">
-                {shuffledFeelings.map((feeling, index) => {
-                  const puzzle = puzzles.find(p => p.feeling === feeling);
-                  return (
-                    <button
-                      key={`feeling-${index}`}
-                      onClick={() => handleFeelingSelect(feeling)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isFeelingSelected(feeling)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.emoji}</span>
-                        <span className="text-white/90 text-lg">{feeling}</span>
+                {feelings.map(feeling => (
+                  <button
+                    key={feeling.id}
+                    onClick={() => handleFeelingSelect(feeling)}
+                    disabled={isFeelingMatched(feeling.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isFeelingMatched(feeling.id)
+                        ? getMatchResult(feeling.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedFeeling?.id === feeling.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{feeling.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{feeling.name}</h4>
+                        <p className="text-white/80 text-sm">{feeling.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
-            
-            {/* Expressions column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Expressions</h3>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedFeeling 
+                    ? `Selected: ${selectedFeeling.name}` 
+                    : "Select a Feeling"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedFeeling || !selectedExpression}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedFeeling && selectedExpression
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{feelings.length}</p>
+                  <p>Matched: {matches.length}/{feelings.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Expressions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Expressions</h3>
               <div className="space-y-4">
-                {shuffledExpressions.map((expression, index) => {
-                  const puzzle = puzzles.find(p => p.expression === expression);
-                  return (
-                    <button
-                      key={`expression-${index}`}
-                      onClick={() => handleExpressionSelect(expression)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isExpressionSelected(expression)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.expressionEmoji}</span>
-                        <span className="text-white/90 text-lg">{expression}</span>
+                {expressions.map(expression => (
+                  <button
+                    key={expression.id}
+                    onClick={() => handleExpressionSelect(expression)}
+                    disabled={isExpressionMatched(expression.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isExpressionMatched(expression.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedExpression?.id === expression.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{expression.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{expression.name}</h4>
+                        <p className="text-white/80 text-sm">{expression.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-          
-          {/* Feedback area */}
-          {selectedFeeling && selectedExpression && (
-            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
-              <p className="text-white/90 text-center">
-                Matching: {selectedFeeling} → {selectedExpression}
-              </p>
-            </div>
-          )}
-          
-          {selectedFeeling && !selectedExpression && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedFeeling}. Now select an expression to match!
-              </p>
-            </div>
-          )}
-          
-          {!selectedFeeling && selectedExpression && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedExpression}. Now select a feeling to match!
-              </p>
-            </div>
-          )}
-          
-          {/* Completion message */}
-          {gameFinished && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
-              <p className="text-green-300 text-center font-bold">
-                Great job! You matched all feelings to their expressions!
-              </p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {feelings.length} feelings with their expressions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Different feelings have different expressions that help us understand emotions!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {feelings.length} feelings correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what facial expressions show each emotion!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

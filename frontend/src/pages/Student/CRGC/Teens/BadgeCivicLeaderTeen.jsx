@@ -1,184 +1,327 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeCivicLeaderTeen = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "civic-responsibility-teens-100";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const tasks = [
+  const challenges = [
     {
       id: 1,
-      title: "Organize a Community Service Project",
-      description: "Plan and execute a service project that addresses a local need in your community",
-      completed: false,
-      coins: 3
+      title: "Community Service Organization",
+      question: "What is the most important factor when organizing a community service project?",
+      options: [
+        { 
+          text: "Getting media attention for yourself", 
+          isCorrect: false
+        },
+        { 
+          text: "Addressing a genuine community need effectively", 
+          isCorrect: true
+        },
+        { 
+          text: "Making it as elaborate as possible", 
+          isCorrect: false
+        },
+        { 
+          text: "Completing it as quickly as possible", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Addressing a genuine community need effectively ensures your service project creates meaningful impact.",
+        wrong: "Addressing a genuine community need effectively ensures your service project creates meaningful impact."
+      }
     },
     {
       id: 2,
-      title: "Participate in Local Government",
-      description: "Attend a city council meeting or engage with local officials about an issue you care about",
-      completed: false,
-      coins: 3
+      title: "Local Government Participation",
+      question: "How can you most effectively engage with local government officials?",
+      options: [
+        { 
+          text: "Complain without offering solutions", 
+          isCorrect: false
+        },
+       
+        { 
+          text: "Avoid them entirely", 
+          isCorrect: false
+        },
+         { 
+          text: "Come prepared with research and constructive suggestions", 
+          isCorrect: true
+        },
+        { 
+          text: "Only contact them when you need something", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Coming prepared with research and constructive suggestions enables productive dialogue with officials.",
+        wrong: "Coming prepared with research and constructive suggestions enables productive dialogue with officials."
+      }
     },
     {
       id: 3,
-      title: "Lead a School Initiative",
-      description: "Take leadership of a school club, event, or improvement project",
-      completed: false,
-      coins: 3
+      title: "School Initiative Leadership",
+      question: "What is crucial for successfully leading a school initiative?",
+      options: [
+        { 
+          text: "Making all decisions yourself", 
+          isCorrect: false
+        },
+        
+        { 
+          text: "Focusing only on popularity", 
+          isCorrect: false
+        },
+        { 
+          text: "Copying what other schools have done", 
+          isCorrect: false
+        },
+        { 
+          text: "Building a team and delegating responsibilities effectively", 
+          isCorrect: true
+        },
+      ],
+      feedback: {
+        correct: "Building a team and delegating responsibilities effectively maximizes the impact of school initiatives.",
+        wrong: "Building a team and delegating responsibilities effectively maximizes the impact of school initiatives."
+      }
     },
     {
       id: 4,
-      title: "Practice Responsible Citizenship",
-      description: "Demonstrate consistent civic engagement through voting (when eligible) and staying informed",
-      completed: false,
-      coins: 3
+      title: "Responsible Citizenship",
+      question: "What does practicing responsible citizenship involve?",
+      options: [
+         { 
+          text: "Staying informed and participating consistently in civic processes", 
+          isCorrect: true
+        },
+        { 
+          text: "Only participating when it's convenient", 
+          isCorrect: false
+        },
+       
+        { 
+          text: "Following others without thinking critically", 
+          isCorrect: false
+        },
+        { 
+          text: "Focusing only on personal benefits", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Staying informed and participating consistently in civic processes strengthens democratic institutions.",
+        wrong: "Staying informed and participating consistently in civic processes strengthens democratic institutions."
+      }
     },
     {
       id: 5,
-      title: "Mentor Younger Students",
-      description: "Provide guidance and support to younger students in academic or extracurricular activities",
-      completed: false,
-      coins: 3
+      title: "Mentoring Younger Students",
+      question: "What is the most effective approach to mentoring younger students?",
+      options: [
+        { 
+          text: "Doing everything for them", 
+          isCorrect: false
+        },
+        
+        { 
+          text: "Comparing them to other students", 
+          isCorrect: false
+        },
+        { 
+          text: "Providing guidance while encouraging independence and growth", 
+          isCorrect: true
+        },
+        { 
+          text: "Focusing only on academic performance", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Providing guidance while encouraging independence and growth helps mentees develop confidence and skills.",
+        wrong: "Providing guidance while encouraging independence and growth helps mentees develop confidence and skills."
+      }
     }
   ];
 
-  const handleTaskComplete = (taskId) => {
-    if (completedTasks.includes(taskId)) return; // Already completed
+  const handleAnswer = (isCorrect, optionIndex) => {
+    if (answered) return;
     
-    const newCompletedTasks = [...completedTasks, taskId];
-    setCompletedTasks(newCompletedTasks);
+    setAnswered(true);
+    setSelectedAnswer(optionIndex);
+    resetFeedback();
     
-    // Add coins for task completion
-    const task = tasks.find(t => t.id === taskId);
-    if (task) {
-      setCoins(prev => prev + task.coins);
-      showCorrectAnswerFeedback(task.coins, true);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
-    // Check if all tasks are completed
-    if (newCompletedTasks.length === tasks.length) {
-      setTimeout(() => setGameFinished(true), 1500);
-    }
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
   };
 
-  const handleNext = () => {
-    navigate("/games/civic-responsibility/teens");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
   };
 
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Badge: Civic Leader Teen"
-        subtitle="Badge Earned!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teens-100"
-        gameType="civic-responsibility"
-        totalLevels={100}
-        currentLevel={100}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
-      
-      maxScore={100} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🏅</div>
-          <h2 className="text-2xl font-bold mb-4">Civic Leader Teen Badge Earned!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} coins by completing all civic leadership activities!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You're a model civic leader!
-          </div>
-          <p className="text-white/80">
-            Remember: Your commitment to civic leadership helps strengthen democracy and creates positive change in your community!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  const currentChallenge = challenges[challenge];
 
   return (
     <GameShell
       title="Badge: Civic Leader Teen"
-      subtitle="Complete 5 civic leadership activities to earn your badge"
+      subtitle={showResult ? "Game Complete!" : `Challenge ${challenge + 1} of ${challenges.length}`}
+      showGameOver={showResult}
+      score={score}
+      gameId={gameId}
+      gameType="civic-responsibility"
+      totalLevels={challenges.length}
+      coinsPerLevel={coinsPerLevel}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 4}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/teens"
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Civic Leadership Activities</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+        {!showResult && currentChallenge ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallenge.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(option.isCorrect, idx)}
+                    disabled={answered}
+                    className={`bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3 ${
+                      answered && selectedAnswer === idx
+                        ? option.isCorrect
+                          ? "ring-4 ring-green-400"
+                          : "ring-4 ring-red-400"
+                        : ""
+                    }`}
+                  >
+                    <span className="font-bold text-lg">{option.text}</span>
+                  </button>
+                ))}
+              </div>
+              
+              {answered && (
+                <div className={`mt-4 p-4 rounded-xl ${
+                  currentChallenge.options[selectedAnswer]?.isCorrect
+                    ? "bg-green-500/20 border border-green-500/30"
+                    : "bg-red-500/20 border border-red-500/30"
+                }`}>
+                  <p className="text-white font-semibold">
+                    {currentChallenge.options[selectedAnswer]?.isCorrect
+                      ? currentChallenge.feedback.correct
+                      : currentChallenge.feedback.wrong}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-          
-          <div className="space-y-4">
-            {tasks.map(task => (
-              <div 
-                key={task.id}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  completedTasks.includes(task.id)
-                    ? 'bg-green-500/20 border-green-500'
-                    : 'bg-white/10 border-white/20'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">{task.title}</h3>
-                    <p className="text-white/80 mt-1">{task.description}</p>
-                  </div>
-                  
-                  {completedTasks.includes(task.id) ? (
-                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                      <span className="text-white">✓</span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleTaskComplete(task.id)}
-                      className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg font-medium transition-all"
-                    >
-                      Mark Done
-                    </button>
-                  )}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 4 ? (
+              <div>
+                <div className="text-6xl mb-4">🏅</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Civic Leader Teen Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-6">
+                  You demonstrated exceptional civic leadership with {score} correct answers out of {challenges.length}!
+                </p>
+                
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-2xl mb-6">
+                  <h4 className="text-2xl font-bold mb-2">🎉 Achievement Unlocked!</h4>
+                  <p className="text-xl">Badge: Civic Leader Teen</p>
                 </div>
                 
-                {!completedTasks.includes(task.id) && (
-                  <div className="mt-3 text-sm text-yellow-400">
-                    Reward: {task.coins} coins
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-green-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-green-300 mb-2">Community Impact</h4>
+                    <p className="text-white/90 text-sm">
+                      You understand how to organize effective community service projects that address real needs.
+                    </p>
                   </div>
-                )}
+                  <div className="bg-blue-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-blue-300 mb-2">Leadership Skills</h4>
+                    <p className="text-white/90 text-sm">
+                      You know how to engage with government officials and lead initiatives effectively.
+                    </p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    window.location.href = "/games/civic-responsibility/teens";
+                  }}
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white py-3 px-8 rounded-full font-bold text-lg transition-all mb-4"
+                >
+                  Continue Learning
+                </button>
               </div>
-            ))}
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Leading Through Civic Action!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {score} questions correctly out of {challenges.length}.
+                </p>
+                <p className="text-white/90 mb-6">
+                  Review civic leadership concepts to strengthen your skills.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
           </div>
-          
-          <div className="mt-8 pt-6 border-t border-white/20">
-            <div className="flex justify-between items-center">
-              <span className="text-white">Progress:</span>
-              <span className="text-white font-bold">{completedTasks.length}/{tasks.length} completed</span>
-            </div>
-            <div className="mt-2 bg-white/10 rounded-full h-3 overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500"
-                style={{ width: `${(completedTasks.length / tasks.length) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -10,246 +10,260 @@ const PuzzleMatchFeelings2 = () => {
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
   const [selectedEmotion, setSelectedEmotion] = useState(null);
   const [selectedResponse, setSelectedResponse] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const [shuffledEmotions, setShuffledEmotions] = useState([]);
-  const [shuffledResponses, setShuffledResponses] = useState([]);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      emotion: "Sadness",
-      emoji: "😢",
-      response: "Talk to a friend",
-      responseEmoji: "💬",
-      description: "Talking to someone you trust can help you process your feelings and feel supported."
-    },
-    {
-      id: 2,
-      emotion: "Anger",
-      emoji: "😠",
-      response: "Take deep breaths",
-      responseEmoji: "🌬️",
-      description: "Deep breathing activates your body's relaxation response and helps calm intense emotions."
-    },
-    {
-      id: 3,
-      emotion: "Anxiety",
-      emoji: "😰",
-      response: "Practice mindfulness",
-      responseEmoji: "🧘",
-      description: "Mindfulness techniques help you stay present and manage overwhelming thoughts or feelings."
-    },
-    {
-      id: 4,
-      emotion: "Joy",
-      emoji: "😄",
-      response: "Share with others",
-      responseEmoji: "🤗",
-      description: "Sharing positive experiences with others can multiply your happiness and strengthen relationships."
-    },
-    {
-      id: 5,
-      emotion: "Frustration",
-      emoji: "😤",
-      response: "Take a break",
-      responseEmoji: "⏸️",
-      description: "Taking a break gives you time to cool down and approach challenges with a fresh perspective."
-    }
+  // Emotions (left side) - 5 items
+  const emotions = [
+    { id: 1, name: "Sadness", emoji: "😢", description: "Feeling unhappy or sorrowful" },
+    { id: 2, name: "Anger", emoji: "😠", description: "Feeling mad or irritated" },
+    { id: 3, name: "Anxiety", emoji: "😰", description: "Feeling worried or nervous" },
+    { id: 4, name: "Joy", emoji: "😄", description: "Feeling happy and delighted" },
+    { id: 5, name: "Frustration", emoji: "😤", description: "Feeling annoyed or disappointed" }
   ];
 
-  // Shuffle arrays when component mounts
-  useEffect(() => {
-    const shuffleArray = (array) => {
-      const shuffled = [...array];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    };
+  // Responses (right side) - 5 items
+  const responses = [
+    { id: 1, name: "Talk to a friend", emoji: "💬", description: "Share your feelings with someone you trust" },
+    { id: 3, name: "Practice mindfulness", emoji: "🧘", description: "Stay present and aware of your thoughts" },
+    { id: 2, name: "Take deep breaths", emoji: "🌬️", description: "Use breathing exercises to calm down" },
+    { id: 5, name: "Take a break", emoji: "⏸️", description: "Pause and give yourself time to relax" },
+    { id: 4, name: "Share with others", emoji: "🤗", description: "Express positive feelings with people around you" },
+  ];
 
-    setShuffledEmotions(shuffleArray(puzzles.map(p => p.emotion)));
-    setShuffledResponses(shuffleArray(puzzles.map(p => p.response)));
-  }, []);
+  // Correct matches
+  const correctMatches = [
+    { emotionId: 1, responseId: 1 }, // Sadness → Talk to a friend
+    { emotionId: 2, responseId: 2 }, // Anger → Take deep breaths
+    { emotionId: 3, responseId: 3 }, // Anxiety → Practice mindfulness
+    { emotionId: 4, responseId: 4 }, // Joy → Share with others
+    { emotionId: 5, responseId: 5 }  // Frustration → Take a break
+  ];
 
   const handleEmotionSelect = (emotion) => {
-    if (selectedResponse) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.emotion === emotion && p.response === selectedResponse);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedEmotion(null);
-      setSelectedResponse(null);
-    } else {
-      setSelectedEmotion(emotion);
-    }
+    if (gameFinished) return;
+    setSelectedEmotion(emotion);
   };
 
   const handleResponseSelect = (response) => {
-    if (selectedEmotion) {
-      // Check if this is a correct match
-      const puzzle = puzzles.find(p => p.emotion === selectedEmotion && p.response === response);
-      if (puzzle) {
-        // Correct match
-        setMatchedPairs([...matchedPairs, puzzle.id]);
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-        
-        // Check if all puzzles are matched
-        if (matchedPairs.length + 1 === puzzles.length) {
-          setTimeout(() => setGameFinished(true), 1500);
-        }
-      }
-      
-      // Reset selection
-      setSelectedEmotion(null);
-      setSelectedResponse(null);
+    if (gameFinished) return;
+    setSelectedResponse(response);
+  };
+
+  const handleMatch = () => {
+    if (!selectedEmotion || !selectedResponse || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      emotionId: selectedEmotion.id,
+      responseId: selectedResponse.id,
+      isCorrect: correctMatches.some(
+        match => match.emotionId === selectedEmotion.id && match.responseId === selectedResponse.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setSelectedResponse(response);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === emotions.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedEmotion(null);
+    setSelectedResponse(null);
+  };
+
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedEmotion(null);
+    setSelectedResponse(null);
+    setScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/kids");
   };
 
-  const isMatched = (id) => matchedPairs.includes(id);
-  const isEmotionSelected = (emotion) => selectedEmotion === emotion;
-  const isResponseSelected = (response) => selectedResponse === response;
+  // Check if an emotion is already matched
+  const isEmotionMatched = (emotionId) => {
+    return matches.some(match => match.emotionId === emotionId);
+  };
+
+  // Check if a response is already matched
+  const isResponseMatched = (responseId) => {
+    return matches.some(match => match.responseId === responseId);
+  };
+
+  // Get match result for an emotion
+  const getMatchResult = (emotionId) => {
+    const match = matches.find(m => m.emotionId === emotionId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Puzzle: Match Feelings"
-      subtitle={`Match emotions to responses! ${matchedPairs.length}/${puzzles.length} matched`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Emotions with Healthy Responses (${matches.length}/${emotions.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="civic-responsibility-kids-44"
       gameType="civic-responsibility"
-      totalLevels={50}
-      currentLevel={44}
-      showConfetti={gameFinished}
+      totalLevels={emotions.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
-      backPath="/games/civic-responsibility/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={50} // Max score is total number of questions (all correct)
+      backPath="/games/civic-responsibility/kids"
+      maxScore={emotions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Emotions column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Emotions</h3>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Emotions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Emotions</h3>
               <div className="space-y-4">
-                {shuffledEmotions.map((emotion, index) => {
-                  const puzzle = puzzles.find(p => p.emotion === emotion);
-                  return (
-                    <button
-                      key={`emotion-${index}`}
-                      onClick={() => handleEmotionSelect(emotion)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isEmotionSelected(emotion)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.emoji}</span>
-                        <span className="text-white/90 text-lg">{emotion}</span>
+                {emotions.map(emotion => (
+                  <button
+                    key={emotion.id}
+                    onClick={() => handleEmotionSelect(emotion)}
+                    disabled={isEmotionMatched(emotion.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isEmotionMatched(emotion.id)
+                        ? getMatchResult(emotion.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedEmotion?.id === emotion.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{emotion.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{emotion.name}</h4>
+                        <p className="text-white/80 text-sm">{emotion.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
-            
-            {/* Responses column - shuffled */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4 text-center">Healthy Responses</h3>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedEmotion 
+                    ? `Selected: ${selectedEmotion.name}` 
+                    : "Select an Emotion"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedEmotion || !selectedResponse}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedEmotion && selectedResponse
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{emotions.length}</p>
+                  <p>Matched: {matches.length}/{emotions.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Responses */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Healthy Responses</h3>
               <div className="space-y-4">
-                {shuffledResponses.map((response, index) => {
-                  const puzzle = puzzles.find(p => p.response === response);
-                  return (
-                    <button
-                      key={`response-${index}`}
-                      onClick={() => handleResponseSelect(response)}
-                      disabled={isMatched(puzzle.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        isMatched(puzzle.id)
-                          ? 'bg-green-500/20 border-2 border-green-400'
-                          : isResponseSelected(response)
-                          ? 'bg-blue-500/20 border-2 border-blue-400'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-3xl mr-3">{puzzle.responseEmoji}</span>
-                        <span className="text-white/90 text-lg">{response}</span>
+                {responses.map(response => (
+                  <button
+                    key={response.id}
+                    onClick={() => handleResponseSelect(response)}
+                    disabled={isResponseMatched(response.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isResponseMatched(response.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedResponse?.id === response.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{response.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{response.name}</h4>
+                        <p className="text-white/80 text-sm">{response.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-          
-          {/* Feedback area */}
-          {selectedEmotion && selectedResponse && (
-            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
-              <p className="text-white/90 text-center">
-                Matching: {selectedEmotion} → {selectedResponse}
-              </p>
-            </div>
-          )}
-          
-          {selectedEmotion && !selectedResponse && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedEmotion}. Now select a healthy response!
-              </p>
-            </div>
-          )}
-          
-          {!selectedEmotion && selectedResponse && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
-              <p className="text-blue-300 text-center">
-                Selected: {selectedResponse}. Now select an emotion to match!
-              </p>
-            </div>
-          )}
-          
-          {/* Completion message */}
-          {gameFinished && (
-            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
-              <p className="text-green-300 text-center font-bold">
-                Great job! You matched all emotions to healthy responses!
-              </p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {emotions.length} emotions with healthy responses!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Recognizing emotions and knowing healthy ways to respond helps with emotional well-being!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {emotions.length} emotions correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what healthy responses work best for each type of emotion!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

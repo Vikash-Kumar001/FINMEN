@@ -1424,7 +1424,9 @@ const GameCategoryPage = () => {
     }
 
     // Special handling for all special games (finance, brain-health, UVLS, DCOS, etc.) with isSpecial=true
-    if (game.isSpecial && game.path) {
+    // Also handle civic responsibility games which should always navigate to their paths
+    if ((game.isSpecial && game.path) || 
+        (category === "civic-responsibility" && (ageGroup === "kids" || ageGroup === "teens" || ageGroup === "teen") && game.path)) {
       // Check if this is a replay
       const progress = gameProgressData[game.id];
       const isReplay = progress && progress.replayUnlocked === true && progress.fullyCompleted;

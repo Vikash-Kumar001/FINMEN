@@ -15,195 +15,254 @@ const QuizOnRightsDuties = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Which is a civic duty?",
+      emoji: "🗳️",
       options: [
-        { id: "a", text: "Pay taxes" },
-        { id: "b", text: "Waste resources" },
-        { id: "c", text: "Ignore laws" }
-      ],
-      correctAnswer: "a",
-      explanation: "Paying taxes is a civic duty that helps fund public services like schools, hospitals, and infrastructure that benefit society."
+        {
+          id: "a",
+          text: "Pay taxes",
+          emoji: "💰",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Waste resources",
+          emoji: "🗑️",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ignore laws",
+          emoji: "🚫",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "Which is a fundamental right?",
+      emoji: "📜",
       options: [
-        { id: "a", text: "Freedom of speech" },
-        { id: "b", text: "Breaking traffic rules" },
-        { id: "c", text: "Not attending school" }
-      ],
-      correctAnswer: "a",
-      explanation: "Freedom of speech is a fundamental right that allows citizens to express their opinions and ideas without fear of government retaliation."
+        
+        {
+          id: "b",
+          text: "Breaking traffic rules",
+          emoji: "🚗",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Not attending school",
+          emoji: "🏫",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Freedom of speech",
+          emoji: "🎤",
+          isCorrect: true
+        },
+      ]
     },
     {
       id: 3,
       text: "What is the relationship between rights and duties?",
+      emoji: "⚖️",
       options: [
-        { id: "a", text: "They balance each other" },
-        { id: "b", text: "Duties are more important" },
-        { id: "c", text: "Rights are more important" }
-      ],
-      correctAnswer: "a",
-      explanation: "Rights and duties balance each other - we enjoy rights but also have responsibilities to respect others' rights and contribute to society."
+        
+        {
+          id: "b",
+          text: "Duties are more important",
+          emoji: "👆",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "They balance each other",
+          emoji: "☯️",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Rights are more important",
+          emoji: "👇",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
       text: "Which is an example of exercising a right responsibly?",
+      emoji: "✅",
       options: [
-        { id: "a", text: "Voting in elections" },
-        { id: "b", text: "Polluting the environment" },
-        { id: "c", text: "Disrespecting others" }
-      ],
-      correctAnswer: "a",
-      explanation: "Voting in elections is an example of exercising the right to participate in democracy while fulfilling the duty to contribute to governance."
+        {
+          id: "a",
+          text: "Voting in elections",
+          emoji: "✅",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Polluting the environment",
+          emoji: "🏭",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Disrespecting others",
+          emoji: "🤬",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       text: "Why are civic duties important for society?",
+      emoji: "🌐",
       options: [
-        { id: "a", text: "They help maintain order and collective welfare" },
-        { id: "b", text: "They restrict personal freedom" },
-        { id: "c", text: "They benefit only the government" }
-      ],
-      correctAnswer: "a",
-      explanation: "Civic duties help maintain social order and collective welfare by ensuring citizens contribute to the functioning and improvement of society."
+        
+        {
+          id: "b",
+          text: "They restrict personal freedom",
+          emoji: "⛓️",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "They benefit only the government",
+          emoji: "🏢",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "They help maintain order and collective welfare",
+          emoji: "🏛️",
+          isCorrect: true
+        },
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption) return; // Prevent changing answer after selection
-    
-    const currentQ = questions[currentQuestion];
-    const isCorrect = optionId === currentQ.correctAnswer;
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
     
     setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
     
     setShowFeedback(true);
     
     setTimeout(() => {
-      setShowFeedback(false);
-      setSelectedOption(null);
-      
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 2000);
+    }, isCorrect ? 1000 : 800);
   };
 
   const handleNext = () => {
     navigate("/games/civic-responsibility/teens");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Quiz on Rights & Duties"
-        subtitle="Quiz Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={coins}
-        gameId="civic-responsibility-teens-72"
-        gameType="civic-responsibility"
-        totalLevels={80}
-        currentLevel={72}
-        showConfetti={true}
-        backPath="/games/civic-responsibility/teens"
-      
-      maxScore={questions.length} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🎯</div>
-          <h2 className="text-2xl font-bold mb-4">Great Job!</h2>
-          <p className="text-white mb-6">
-            You scored {coins} out of {questions.length} points!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-4">
-            You understand rights and duties!
-          </div>
-          <p className="text-white/80">
-            Remember: Rights and duties go hand in hand - we enjoy rights but also have responsibilities to our society!
-          </p>
-        </div>
-      </GameShell>
-    );
-  }
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = coins;
 
   return (
     <GameShell
       title="Quiz on Rights & Duties"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={finalScore}
+      gameId="civic-responsibility-teens-72"
+      gameType="civic-responsibility"
+      totalLevels={80}
+      currentLevel={72}
+      showConfetti={gameFinished}
       backPath="/games/civic-responsibility/teens"
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
-          </h2>
-
-          <div className="space-y-4">
-            {getCurrentQuestion().options.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => handleOptionSelect(option.id)}
-                disabled={selectedOption}
-                className={`w-full text-left p-4 rounded-xl transition-all ${
-                  selectedOption
-                    ? option.id === getCurrentQuestion().correctAnswer
-                      ? 'bg-green-500/20 border-2 border-green-500'
-                      : selectedOption === option.id
-                      ? 'bg-red-500/20 border-2 border-red-500'
-                      : 'bg-white/10 border border-white/20'
-                    : 'bg-white/10 hover:bg-white/20 border border-white/20'
-                }`}
-              >
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mr-4">
-                    <span className="font-bold text-white">{option.id.toUpperCase()}</span>
-                  </div>
-                  <span className="text-white">{option.text}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {showFeedback && (
-            <div className={`mt-6 p-4 rounded-xl ${
-              selectedOption === getCurrentQuestion().correctAnswer
-                ? 'bg-green-500/20 border border-green-500'
-                : 'bg-red-500/20 border border-red-500'
-            }`}>
-              <p className={selectedOption === getCurrentQuestion().correctAnswer ? 'text-green-300' : 'text-red-300'}>
-                {selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'Correct! '
-                  : 'Incorrect. '}
-                {getCurrentQuestion().explanation}
+      maxScore={questions.length} // Max score is total number of questions (all correct)
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        ) : null}
       </div>
     </GameShell>
   );

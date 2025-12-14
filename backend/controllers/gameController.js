@@ -350,17 +350,27 @@ export const completeGame = async (req, res) => {
     // After saving game progress and wallet
     // Emit socket event for real-time updates
     const io = req.app.get('io');
-    io.to(userId.toString()).emit('game-completed', {
-      gameId,
-      coinsEarned,
-      xpEarned,
-      newBalance: wallet.balance,
-      streak: userProgress.streak,
-      level: userProgress.level,
-      totalXP: userProgress.xp,
-      achievements: gameProgress.achievements,
-      message: 'Game completed and rewards granted!'
-    });
+    if (io) {
+      io.to(userId.toString()).emit('game-completed', {
+        gameId,
+        coinsEarned,
+        xpEarned,
+        newBalance: wallet.balance,
+        streak: userProgress.streak,
+        level: userProgress.level,
+        totalXP: userProgress.xp,
+        achievements: gameProgress.achievements,
+        message: 'Game completed and rewards granted!'
+      });
+
+      // Broadcast leaderboard update for all periods if XP was earned
+      if (xpEarned > 0) {
+        const { broadcastLeaderboardUpdate } = await import('../utils/leaderboardBroadcast.js');
+        broadcastLeaderboardUpdate(io).catch(err => {
+          console.error('Error broadcasting leaderboard update:', err);
+        });
+      }
+    }
     
     res.status(200).json({
       message: '🎉 Game completed successfully!',
@@ -1180,6 +1190,14 @@ export const completeUnifiedGame = async (req, res) => {
         io.to(userId.toString()).emit('wallet:updated', {
           balance: newBalance,
           coinsEarned: coinsToAward
+        });
+      }
+
+      // Broadcast leaderboard update for all periods if XP was earned
+      if (xpEarned > 0) {
+        const { broadcastLeaderboardUpdate } = await import('../utils/leaderboardBroadcast.js');
+        broadcastLeaderboardUpdate(io).catch(err => {
+          console.error('Error broadcasting leaderboard update:', err);
         });
       }
     }

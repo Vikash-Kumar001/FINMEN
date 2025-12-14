@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Zap } from "lucide-react";
 
 const IndividualAccountSelection = () => {
     const navigate = useNavigate();
@@ -19,12 +20,27 @@ const IndividualAccountSelection = () => {
             <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-pink-200 to-rose-200 rounded-full opacity-15 blur-3xl animate-pulse delay-1000" />
             <div className="max-w-4xl mx-auto px-4 py-8 relative z-10">
                 <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center">
-              <span className="text-white font-bold">FM</span>
-            </div>
-            <h1 className="ml-3 text-2xl font-semibold text-gray-800">Wise Student</h1>
-          </div>
+          <motion.div 
+            className="flex items-center cursor-pointer"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate("/")}
+          >
+            <motion.div
+              className="w-10 h-10 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg"
+              animate={{
+                boxShadow: [
+                  '0 4px 20px rgba(139, 92, 246, 0.3)',
+                  '0 4px 40px rgba(139, 92, 246, 0.5)',
+                  '0 4px 20px rgba(139, 92, 246, 0.3)'
+                ]
+              }}
+              transition={{ duration: 3, repeat: Infinity }}
+            >
+              <Zap className="w-5 h-5" />
+            </motion.div>
+            <h1 className="ml-3 text-2xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent tracking-tight">WiseStudent</h1>
+          </motion.div>
                     <button
                         className="text-gray-600 hover:text-gray-800 z-50"
                         onClick={() => navigate(-1)}

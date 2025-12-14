@@ -78,6 +78,12 @@ export const addXP = async (userId, amount, source = 'System') => {
             coinsEarned: levelUpCoins,
             totalXP: progress.xp
           });
+
+          // Broadcast leaderboard update for all periods
+          const { broadcastLeaderboardUpdate } = await import('../utils/leaderboardBroadcast.js');
+          broadcastLeaderboardUpdate(io).catch(err => {
+            console.error('Error broadcasting leaderboard update:', err);
+          });
         }
       }
       

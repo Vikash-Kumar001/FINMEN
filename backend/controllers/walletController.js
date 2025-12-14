@@ -1,6 +1,9 @@
 import Wallet from "../models/Wallet.js";
 import Transaction from "../models/Transaction.js";
 import Game from "../models/Game.js";
+import UnifiedGameProgress from "../models/UnifiedGameProgress.js";
+import GameProgress from "../models/GameProgress.js";
+import UserProgress from "../models/UserProgress.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 import { getGameTitle, getGameType, getPillarLabel } from "../utils/gameIdToTitleMap.js";
 
@@ -16,10 +19,96 @@ export const getWallet = async (req, res, next) => {
       });
     }
 
-    res.status(200).json(wallet);
+    // Fetch user XP from UserProgress
+    let userProgress = await UserProgress.findOne({ userId: req.user._id });
+    if (!userProgress) {
+      userProgress = await UserProgress.create({
+        userId: req.user._id,
+        xp: 0,
+        level: 1,
+        healCoins: 0,
+        streak: 0
+      });
+    }
+    const totalXP = userProgress.xp || 0;
+
+    // Calculate rank (users with higher balance rank higher)
+    const walletsWithHigherBalance = await Wallet.countDocuments({
+      balance: { $gt: wallet.balance }
+    });
+    const rank = walletsWithHigherBalance + 1;
+
+    // Calculate next milestone (next 100, 500, 1000, 5000, etc.)
+    const milestones = [100, 500, 1000, 5000, 10000, 25000, 50000, 100000];
+    const nextMilestone = milestones.find(m => m > wallet.balance) || milestones[milestones.length - 1];
+
+    // Fetch achievements from game progress
+    const unifiedProgress = await UnifiedGameProgress.find({ userId: req.user._id });
+    const gameProgress = await GameProgress.find({ userId: req.user._id });
+    
+    // Collect all achievements
+    const allAchievements = [];
+    
+    // From UnifiedGameProgress
+    unifiedProgress.forEach(progress => {
+      if (progress.achievements && progress.achievements.length > 0) {
+        progress.achievements.forEach(achievement => {
+          allAchievements.push({
+            icon: getAchievementIcon(achievement.badge),
+            title: achievement.name || "Achievement",
+            description: achievement.description || "Great job!"
+          });
+        });
+      }
+    });
+    
+    // From GameProgress
+    gameProgress.forEach(progress => {
+      if (progress.achievements && progress.achievements.length > 0) {
+        progress.achievements.forEach(achievement => {
+          allAchievements.push({
+            icon: getAchievementIcon(achievement.badge),
+            title: achievement.name || "Achievement",
+            description: achievement.description || "Great job!"
+          });
+        });
+      }
+    });
+
+    // Remove duplicates based on title
+    const uniqueAchievements = Array.from(
+      new Map(allAchievements.map(ach => [ach.title, ach])).values()
+    ).slice(0, 8); // Limit to 8 most recent
+
+    // Return enhanced wallet data
+    res.status(200).json({
+      ...wallet.toObject(),
+      totalXP,
+      rank,
+      nextMilestone,
+      achievements: uniqueAchievements.length > 0 ? uniqueAchievements : [
+        {
+          icon: "🎯",
+          title: "Get Started",
+          description: "Complete your first game to earn an achievement!"
+        }
+      ]
+    });
   } catch (err) {
     next(err);
   }
+};
+
+// Helper function to get achievement icon based on badge
+const getAchievementIcon = (badge) => {
+  const iconMap = {
+    bronze: "🥉",
+    silver: "🥈",
+    gold: "🥇",
+    platinum: "💎",
+    diamond: "💠"
+  };
+  return iconMap[badge] || "🏆";
 };
 
 // ➕ POST /api/wallet/add → Add coins to wallet
@@ -86,10 +175,32 @@ export const spendCoins = async (req, res, next) => {
   }
 };
 
-// 📜 GET /api/wallet/transactions → List all user transactions
+// 📜 GET /api/wallet/transactions → List all user transactions (last 7 days) with pagination
 export const getTransactions = async (req, res, next) => {
   try {
-    const transactions = await Transaction.find({ userId: req.user._id }).sort({ createdAt: -1 });
+    // Get pagination parameters from query string
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    
+    // Calculate date 7 days ago
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    // Build query for transactions from the last 7 days
+    const query = { 
+      userId: req.user._id,
+      createdAt: { $gte: oneWeekAgo }
+    };
+    
+    // Get total count for pagination
+    const totalCount = await Transaction.countDocuments(query);
+    
+    // Fetch paginated transactions
+    const transactions = await Transaction.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
     
     // Fetch all games and create a map of category -> title for efficient lookup
     const games = await Game.find({}, 'category title');
@@ -137,7 +248,22 @@ export const getTransactions = async (req, res, next) => {
       return txn.toObject();
     });
     
-    res.status(200).json(enhancedTransactions);
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+    
+    res.status(200).json({
+      transactions: enhancedTransactions,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        limit,
+        hasNextPage,
+        hasPrevPage
+      }
+    });
   } catch (err) {
     next(err);
   }

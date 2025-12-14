@@ -1,11 +1,12 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-// Remove unused motion import
+import { motion } from "framer-motion";
 import {
   Mail,
   Phone,
   MapPin,
   ArrowUp,
+  Zap,
 } from "lucide-react";
 import { globalStatsService } from "../services/globalStatsService";
 
@@ -190,11 +191,22 @@ const MainFooter = () => {
             {/* Company Info & Newsletter */}
             <div className="space-y-6 lg:col-span-1">
               <div className="group">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
-                  <span className="text-white font-bold text-2xl">WS</span>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Wise Student
+                <motion.div
+                  className="w-16 h-16 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl flex items-center justify-center mb-4 shadow-lg"
+                  animate={{
+                    boxShadow: [
+                      '0 4px 20px rgba(139, 92, 246, 0.3)',
+                      '0 4px 40px rgba(139, 92, 246, 0.5)',
+                      '0 4px 20px rgba(139, 92, 246, 0.3)'
+                    ]
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  whileHover={{ scale: 1.1 }}
+                >
+                  <Zap className="w-8 h-8 text-white" />
+                </motion.div>
+                <h3 className="text-2xl font-black mb-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent tracking-tight">
+                  WiseStudent
                 </h3>
                 <p className="text-gray-600 leading-relaxed text-sm mb-8">
                   Empowering education with innovative management and wellness

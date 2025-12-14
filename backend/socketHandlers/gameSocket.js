@@ -4,6 +4,7 @@ import ActivityLog from '../models/ActivityLog.js';
 import Wallet from '../models/Wallet.js';
 import Transaction from '../models/Transaction.js';
 import UserProgress from '../models/UserProgress.js';
+import XPLog from '../models/XPLog.js';
 
 /**
  * Socket handler for game-related real-time interactions
@@ -187,54 +188,130 @@ export const setupGameSocket = (io, socket, user) => {
         return;
       }
 
+      // Leave all other leaderboard rooms to avoid receiving wrong period data
+      ['daily', 'weekly', 'monthly', 'allTime'].forEach(p => {
+        if (p !== period) {
+          socket.leave(`leaderboard-${p}`);
+        }
+      });
+
       console.log(`🏆 User ${user._id} subscribed to ${period} leaderboard`);
       socket.join(`leaderboard-${period}`);
 
-      // Fetch leaderboard data from UserProgress
-      const top = await UserProgress.find()
-        .sort({ xp: -1 })
-        .limit(20)
-        .populate('userId', 'name username email fullName avatar');
+      // Import leaderboard cache for position change tracking
+      const leaderboardCache = (await import('../utils/leaderboardCache.js')).default;
 
-      // Filter out entries with null/invalid userId
-      const validTop = top.filter(entry => entry.userId && entry.userId._id);
+      let leaderboard = [];
 
-      const leaderboard = validTop.map((entry, index) => {
-        const userData = entry.userId;
-        
-        // Better fallback strategy for name
-        let displayName = userData.name;
-        if (!displayName || displayName.trim() === '') {
-          displayName = userData.fullName;
-        }
-        if (!displayName || displayName.trim() === '') {
-          displayName = userData.username;
-        }
-        if (!displayName || displayName.trim() === '') {
-          displayName = userData.email ? userData.email.split('@')[0] : 'User';
+      if (period === 'allTime') {
+        // For allTime, use UserProgress total XP - optimized with .lean()
+        const top = await UserProgress.find()
+          .sort({ xp: -1 })
+          .limit(50)
+          .populate('userId', 'name username email fullName avatar')
+          .lean();
+
+        const validTop = top.filter(entry => entry.userId && entry.userId._id);
+
+        leaderboard = validTop.map((entry, index) => {
+          const userData = entry.userId;
+          
+          let displayName = userData.name || userData.fullName || userData.username || (userData.email ? userData.email.split('@')[0] : 'User');
+          let displayUsername = userData.username || (userData.email ? userData.email.split('@')[0] : 'user');
+
+          return {
+            rank: index + 1,
+            _id: userData._id,
+            name: displayName,
+            username: displayUsername,
+            avatar: userData.avatar,
+            xp: entry.xp || 0,
+            level: entry.level || Math.floor((entry.xp || 0) / 100) + 1,
+            isCurrentUser: userData._id && user._id && userData._id.toString() === user._id.toString()
+          };
+        });
+      } else {
+        // For daily, weekly, monthly - aggregate XP from XPLog
+        const now = new Date();
+        let startDate;
+
+        switch(period) {
+          case 'daily':
+            startDate = new Date(now);
+            startDate.setHours(0, 0, 0, 0);
+            startDate.setMinutes(0, 0, 0);
+            break;
+          case 'weekly':
+            startDate = new Date(now);
+            startDate.setDate(now.getDate() - now.getDay());
+            startDate.setHours(0, 0, 0, 0);
+            startDate.setMinutes(0, 0, 0);
+            break;
+          case 'monthly':
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            startDate.setHours(0, 0, 0, 0);
+            startDate.setMinutes(0, 0, 0);
+            break;
         }
 
-        // Better fallback for username
-        let displayUsername = userData.username;
-        if (!displayUsername || displayUsername.trim() === '') {
-          displayUsername = userData.email ? userData.email.split('@')[0] : 'user';
-        }
+        // Aggregate XP from XPLog for the period
+        const xpAggregation = await XPLog.aggregate([
+          {
+            $match: {
+              date: { $gte: startDate }
+            }
+          },
+          {
+            $group: {
+              _id: '$userId',
+              totalXP: { $sum: '$xp' }
+            }
+          },
+          {
+            $sort: { totalXP: -1 }
+          },
+          {
+            $limit: 50
+          }
+        ]);
 
-        return {
-          rank: index + 1,
-          _id: userData._id,
-          name: displayName,
-          username: displayUsername,
-          avatar: userData.avatar,
-          xp: entry.xp || 0,
-          level: Math.floor((entry.xp || 0) / 100) + 1,
-          isCurrentUser: userData._id?.toString() === user._id.toString()
-        };
-      });
+        // Get user details for top XP earners - optimized with .lean()
+        const userIds = xpAggregation.map(item => item._id);
+        const users = await User.find({ _id: { $in: userIds } })
+          .select('name username email fullName avatar')
+          .lean();
+
+        const userMap = new Map(users.map(u => [u._id.toString(), u]));
+
+        leaderboard = xpAggregation.map((item, index) => {
+          const userData = userMap.get(item._id.toString());
+          if (!userData) return null;
+
+          let displayName = userData.name || userData.fullName || userData.username || (userData.email ? userData.email.split('@')[0] : 'User');
+          let displayUsername = userData.username || (userData.email ? userData.email.split('@')[0] : 'user');
+
+          return {
+            rank: index + 1,
+            _id: userData._id,
+            name: displayName,
+            username: displayUsername,
+            avatar: userData.avatar,
+            xp: item.totalXP || 0,
+            level: Math.floor((item.totalXP || 0) / 100) + 1,
+            isCurrentUser: userData._id && user._id && userData._id.toString() === user._id.toString()
+          };
+        }).filter(Boolean);
+      }
+
+      // Calculate position changes using cache
+      const leaderboardWithChanges = leaderboardCache.calculatePositionChanges(period, leaderboard);
+      
+      // Update cache with current positions for next comparison
+      leaderboardCache.updatePositions(period, leaderboard);
 
       socket.emit('student:leaderboard:data', {
         period,
-        leaderboard
+        leaderboard: leaderboardWithChanges
       });
 
     } catch (err) {
@@ -243,56 +320,8 @@ export const setupGameSocket = (io, socket, user) => {
     }
   });
 
-  // Broadcast leaderboard updates when XP changes
-  const broadcastLeaderboardUpdate = async () => {
-    try {
-      const top = await UserProgress.find()
-        .sort({ xp: -1 })
-        .limit(20)
-        .populate('userId', 'name username email fullName avatar');
-
-      // Filter out entries with null/invalid userId
-      const validTop = top.filter(entry => entry.userId && entry.userId._id);
-
-      const leaderboard = validTop.map((entry, index) => {
-        const userData = entry.userId;
-        
-        // Better fallback strategy for name
-        let displayName = userData.name;
-        if (!displayName || displayName.trim() === '') {
-          displayName = userData.fullName;
-        }
-        if (!displayName || displayName.trim() === '') {
-          displayName = userData.username;
-        }
-        if (!displayName || displayName.trim() === '') {
-          displayName = userData.email ? userData.email.split('@')[0] : 'User';
-        }
-
-        return {
-          rank: index + 1,
-          _id: userData._id,
-          name: displayName,
-          avatar: userData.avatar,
-          xp: entry.xp || 0,
-          level: Math.floor((entry.xp || 0) / 100) + 1
-        };
-      });
-
-      // Broadcast to all leaderboard subscribers
-      ['daily', 'weekly', 'monthly', 'allTime'].forEach(period => {
-        io.to(`leaderboard-${period}`).emit('student:leaderboard:data', {
-          period,
-          leaderboard
-        });
-      });
-    } catch (err) {
-      console.error('Error broadcasting leaderboard update:', err);
-    }
-  };
-
-  // Listen for XP updates to refresh leaderboard
-  socket.on('xp-updated', broadcastLeaderboardUpdate);
+  // Note: Leaderboard broadcasts are now handled by the global utility function
+  // in backend/utils/leaderboardBroadcast.js, which is called from game controllers
 
   // Cleanup when socket disconnects
   socket.on('disconnect', () => {

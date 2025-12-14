@@ -1,6 +1,7 @@
 import MoodLog from "../models/MoodLog.js";
 import XPLog from "../models/XPLog.js";
 import UserProgress from "../models/UserProgress.js";
+import User from "../models/User.js";
 import Wallet from "../models/Wallet.js";
 import UnifiedGameProgress from "../models/UnifiedGameProgress.js";
 import ActivityLog from "../models/ActivityLog.js";
@@ -802,64 +803,264 @@ export const getRecommendations = async (req, res) => {
   }
 };
 
-// Leaderboard Snippet - Top users
+// Leaderboard Snippet - Top users (supports period filtering)
 export const getLeaderboardSnippet = async (req, res) => {
   try {
     const userId = req.user._id;
+    const period = req.query.period || 'allTime';
 
-    // Get top 5 users by XP with populated user data
-    const topUsers = await UserProgress.find()
-      .sort({ xp: -1 })
-      .limit(10) // Get more to filter out invalid users
-      .populate('userId', 'name username email fullName');
+    // Validate period
+    if (!['daily', 'weekly', 'monthly', 'allTime'].includes(period)) {
+      return res.status(400).json({ error: 'Invalid period' });
+    }
 
-    // Filter out entries with null/invalid userId and get top 5 valid ones
-    const validTopUsers = topUsers
-      .filter(progress => progress.userId && progress.userId._id)
-      .slice(0, 5);
+    // Import leaderboard cache for position change tracking
+    const leaderboardCache = (await import('../utils/leaderboardCache.js')).default;
 
-    // Get current user's rank
+    let leaderboard = [];
+
+    if (period === 'allTime') {
+      // Get top users by XP with populated user data - optimized with .lean()
+      const topUsers = await UserProgress.find()
+        .sort({ xp: -1 })
+        .limit(50)
+        .populate('userId', 'name username email fullName avatar')
+        .lean();
+
+      // Filter out entries with null/invalid userId
+      const validTopUsers = topUsers.filter(progress => progress.userId && progress.userId._id);
+
+      leaderboard = validTopUsers.map((progress, index) => {
+        const user = progress.userId;
+        
+        let displayName = user.name || user.fullName || user.username || (user.email ? user.email.split('@')[0] : 'User');
+        let displayUsername = user.username || (user.email ? user.email.split('@')[0] : 'user');
+
+          return {
+            rank: index + 1,
+            _id: user._id,
+            name: displayName,
+            username: displayUsername,
+            avatar: user.avatar,
+            xp: progress.xp || 0,
+            level: progress.level || Math.floor((progress.xp || 0) / 100) + 1,
+            isCurrentUser: user._id && userId && user._id.toString() === userId.toString()
+          };
+      });
+    } else {
+      // For daily, weekly, monthly - aggregate XP from XPLog
+      const now = new Date();
+      let startDate;
+
+      switch(period) {
+        case 'daily':
+          startDate = new Date(now);
+          startDate.setHours(0, 0, 0, 0);
+          startDate.setMinutes(0, 0, 0);
+          break;
+        case 'weekly':
+          startDate = new Date(now);
+          startDate.setDate(now.getDate() - now.getDay());
+          startDate.setHours(0, 0, 0, 0);
+          startDate.setMinutes(0, 0, 0);
+          break;
+        case 'monthly':
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          startDate.setHours(0, 0, 0, 0);
+          startDate.setMinutes(0, 0, 0);
+          break;
+      }
+
+      // Aggregate XP from XPLog for the period
+      const xpAggregation = await XPLog.aggregate([
+        {
+          $match: {
+            date: { $gte: startDate }
+          }
+        },
+        {
+          $group: {
+            _id: '$userId',
+            totalXP: { $sum: '$xp' }
+          }
+        },
+        {
+          $sort: { totalXP: -1 }
+        },
+        {
+          $limit: 50
+        }
+      ]);
+
+      // Get user details for top XP earners - optimized with .lean()
+      const userIds = xpAggregation.map(item => item._id);
+      const users = await User.find({ _id: { $in: userIds } })
+        .select('name username email fullName avatar')
+        .lean();
+
+      const userMap = new Map(users.map(u => [u._id.toString(), u]));
+
+      leaderboard = xpAggregation.map((item, index) => {
+        const userData = userMap.get(item._id.toString());
+        if (!userData) return null;
+
+        let displayName = userData.name || userData.fullName || userData.username || (userData.email ? userData.email.split('@')[0] : 'User');
+        let displayUsername = userData.username || (userData.email ? userData.email.split('@')[0] : 'user');
+
+        return {
+          rank: index + 1,
+          _id: userData._id,
+          name: displayName,
+          username: displayUsername,
+          avatar: userData.avatar,
+          xp: item.totalXP || 0,
+          level: Math.floor((item.totalXP || 0) / 100) + 1,
+          isCurrentUser: userData._id && userId && userData._id.toString() === userId.toString()
+        };
+      }).filter(Boolean);
+    }
+
+    // Calculate position changes using cache
+    const leaderboardWithChanges = leaderboardCache.calculatePositionChanges(period, leaderboard);
+    
+    // Update cache with current positions for next comparison
+    leaderboardCache.updatePositions(period, leaderboard);
+
+    // Get current user's XP and calculate actual rank
     const userProgress = await UserProgress.findOne({ userId });
-    const rank = await UserProgress.countDocuments({
-      xp: { $gt: userProgress?.xp || 0 }
-    }) + 1;
+    let currentUserXP;
+    let currentUserRank;
+    let currentUserInfo = null;
 
-    const leaderboard = validTopUsers.map((progress, index) => {
-      const user = progress.userId;
+    if (period === 'allTime') {
+      currentUserXP = userProgress?.xp || 0;
       
-      // Better fallback strategy for name
-      let displayName = user.name;
-      if (!displayName || displayName.trim() === '') {
-        displayName = user.fullName;
+      // Calculate actual rank: count how many users have more XP
+      const usersAbove = await UserProgress.countDocuments({ 
+        xp: { $gt: currentUserXP },
+        userId: { $exists: true, $ne: null }
+      });
+      currentUserRank = usersAbove + 1;
+
+      // Get user info if not in top 50
+      if (!leaderboardWithChanges.find(u => u.isCurrentUser)) {
+        const user = await User.findById(userId).select('name username email fullName avatar').lean();
+        if (user) {
+          let displayName = user.name || user.fullName || user.username || (user.email ? user.email.split('@')[0] : 'User');
+          let displayUsername = user.username || (user.email ? user.email.split('@')[0] : 'user');
+          
+          currentUserInfo = {
+            rank: currentUserRank,
+            _id: user._id,
+            name: displayName,
+            username: displayUsername,
+            avatar: user.avatar,
+            xp: currentUserXP,
+            level: userProgress?.level || Math.floor(currentUserXP / 100) + 1,
+            isCurrentUser: true
+          };
+        }
       }
-      if (!displayName || displayName.trim() === '') {
-        displayName = user.username;
-      }
-      if (!displayName || displayName.trim() === '') {
-        // Extract name from email if available
-        displayName = user.email ? user.email.split('@')[0] : 'User';
-      }
-      
-      // Better fallback for username
-      let displayUsername = user.username;
-      if (!displayUsername || displayUsername.trim() === '') {
-        displayUsername = user.email ? user.email.split('@')[0] : 'user';
+    } else {
+      // For time-based periods, calculate XP from XPLog
+      const now = new Date();
+      let startDate;
+
+      switch(period) {
+        case 'daily':
+          startDate = new Date(now);
+          startDate.setHours(0, 0, 0, 0);
+          startDate.setMinutes(0, 0, 0);
+          break;
+        case 'weekly':
+          startDate = new Date(now);
+          startDate.setDate(now.getDate() - now.getDay());
+          startDate.setHours(0, 0, 0, 0);
+          startDate.setMinutes(0, 0, 0);
+          break;
+        case 'monthly':
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          startDate.setHours(0, 0, 0, 0);
+          startDate.setMinutes(0, 0, 0);
+          break;
       }
 
-      return {
-        rank: index + 1,
-        name: displayName,
-        username: displayUsername,
-        xp: progress.xp,
-        level: progress.level,
-        isCurrentUser: user._id.toString() === userId.toString()
-      };
-    });
+      const userXPResult = await XPLog.aggregate([
+        {
+          $match: {
+            userId: userId,
+            date: { $gte: startDate }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalXP: { $sum: '$xp' }
+          }
+        }
+      ]);
+
+      currentUserXP = userXPResult[0]?.totalXP || 0;
+
+      // Calculate actual rank for time-based periods
+      const usersAbove = await XPLog.aggregate([
+        {
+          $match: {
+            date: { $gte: startDate },
+            userId: { $ne: userId }
+          }
+        },
+        {
+          $group: {
+            _id: '$userId',
+            totalXP: { $sum: '$xp' }
+          }
+        },
+        {
+          $match: {
+            totalXP: { $gt: currentUserXP }
+          }
+        },
+        {
+          $count: 'count'
+        }
+      ]);
+
+      currentUserRank = (usersAbove[0]?.count || 0) + 1;
+
+      // Get user info if not in top 50
+      if (!leaderboardWithChanges.find(u => u.isCurrentUser) && currentUserXP > 0) {
+        const user = await User.findById(userId).select('name username email fullName avatar').lean();
+        if (user) {
+          let displayName = user.name || user.fullName || user.username || (user.email ? user.email.split('@')[0] : 'User');
+          let displayUsername = user.username || (user.email ? user.email.split('@')[0] : 'user');
+          
+          currentUserInfo = {
+            rank: currentUserRank,
+            _id: user._id,
+            name: displayName,
+            username: displayUsername,
+            avatar: user.avatar,
+            xp: currentUserXP,
+            level: Math.floor(currentUserXP / 100) + 1,
+            isCurrentUser: true
+          };
+        }
+      }
+    }
+
+    // If user is in top 50, use their position from leaderboard
+    const userInLeaderboard = leaderboardWithChanges.find(u => u.isCurrentUser);
+    if (userInLeaderboard) {
+      currentUserRank = userInLeaderboard.rank;
+    }
 
     res.status(200).json({
-      leaderboard,
-      currentUserRank: rank,
-      currentUserXP: userProgress?.xp || 0,
+      period,
+      leaderboard: leaderboardWithChanges,
+      currentUserRank: currentUserRank || null,
+      currentUserXP: currentUserXP || 0,
+      currentUserInfo: currentUserInfo, // User info if not in top 50
       totalUsers: await UserProgress.countDocuments()
     });
   } catch (err) {

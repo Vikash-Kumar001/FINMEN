@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { X, Menu } from "lucide-react";
+import { X, Menu, Zap } from "lucide-react";
 import InstallPWA from "./InstallPWA";
 
 const MainNavbar = ({
@@ -43,16 +43,31 @@ const MainNavbar = ({
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center cursor-pointer relative">
                     {/* Left: Logo and Title */}
-                    <div onClick={() => navigate("/")} className="flex items-center hover:scale-102 duration-200 ease-in-out">
-                        <img 
-                            src="/icons/icon2.png" 
-                            alt="Wise Student Logo" 
-                            className="size-14 rounded-md object-contain"
-                        />
-                        <h1 className="ml-3 text-xl font-semibold text-gray-900">
-                            Wise Student
-                        </h1>
-                    </div>
+                    <motion.div 
+                        onClick={() => navigate("/")} 
+                        className="flex items-center cursor-pointer"
+                        whileHover={{ scale: 1.05, rotate: 2 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        <motion.div
+                            className="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg"
+                            animate={{
+                                boxShadow: [
+                                    '0 4px 20px rgba(139, 92, 246, 0.3)',
+                                    '0 4px 40px rgba(139, 92, 246, 0.5)',
+                                    '0 4px 20px rgba(139, 92, 246, 0.3)'
+                                ]
+                            }}
+                            transition={{ duration: 3, repeat: Infinity }}
+                        >
+                            <Zap className="w-4 h-4 sm:w-6 sm:h-6" />
+                        </motion.div>
+                        <div className="ml-0 sm:ml-3">
+                            <h1 className="text-lg sm:text-xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent tracking-tight">
+                                WiseStudent
+                            </h1>
+                        </div>
+                    </motion.div>
 
                     {/* Right: Desktop Navigation - hidden on mobile */}
                     <div className="hidden md:flex items-center space-x-4 ml-auto">
@@ -141,12 +156,12 @@ const MainNavbar = ({
                                     {/* Menu header */}
                                     <div className="flex items-center justify-between p-4 border-b border-gray-200">
                                         <div className="flex items-center">
-                                            <img 
-                                                src="/icons/icon.png" 
-                                                alt="Wise Student Logo" 
-                                                className="w-8 h-8 rounded object-contain"
-                                            />
-                                            <h2 className="ml-2 text-lg font-semibold text-gray-900">Wise Student</h2>
+                                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
+                                                <Zap className="w-5 h-5" />
+                                            </div>
+                                            <div className="ml-3">
+                                                <h2 className="text-lg font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent tracking-tight">WiseStudent</h2>
+                                            </div>
                                         </div>
                                         <button
                                             className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"

@@ -117,7 +117,7 @@ self.addEventListener('fetch', (event) => {
             // Try to serve from cache if network fails
             return caches.match(request).then((cachedResponse) => {
               if (cachedResponse) {
-                console.log('[Service Worker] Serving batch API from cache:', url.href);
+                console.debug('[Service Worker] Serving batch API from cache:', url.href);
                 return cachedResponse;
               }
               // Return offline response if no cache
@@ -136,26 +136,28 @@ self.addEventListener('fetch', (event) => {
           })
       );
     } else {
-      // Other API requests - always fetch from network (no cache)
-      console.log('[Service Worker] API request - fetching from network (no cache):', url.href);
-      event.respondWith(
-        fetch(request)
-          .catch((error) => {
-            console.error('[Service Worker] API request failed (offline):', error);
-            // Return offline response for API calls
-            return new Response(
-              JSON.stringify({ 
-                error: 'Offline', 
-                message: 'You are currently offline. Please check your connection.' 
-              }),
-              {
-                status: 503,
-                statusText: 'Service Unavailable',
-                headers: { 'Content-Type': 'application/json' }
-              }
-            );
-          })
-      );
+      // Other API requests - pass through to network without interception
+      // This allows the client to handle errors naturally
+      // We don't want to interfere with API requests that might fail for various reasons
+      // (CORS, network timeouts, server errors, etc.)
+      // Only provide offline response if navigator indicates we're offline
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        event.respondWith(
+          Promise.resolve(new Response(
+            JSON.stringify({ 
+              error: 'Offline', 
+              message: 'You are currently offline. Please check your connection.' 
+            }),
+            {
+              status: 503,
+              statusText: 'Service Unavailable',
+              headers: { 'Content-Type': 'application/json' }
+            }
+          ))
+        );
+      }
+      // Otherwise, don't intercept - let the request go through normally
+      return;
     }
     return;
   }
@@ -199,7 +201,9 @@ self.addEventListener('fetch', (event) => {
       .then((cachedResponse) => {
         // Return cached version if available
         if (cachedResponse) {
-          console.log('[Service Worker] Serving from cache:', url.href);
+          // Use console.debug instead of console.log to reduce console noise
+          // Users can filter these in browser dev tools if needed
+          console.debug('[Service Worker] Serving from cache:', url.href);
           return cachedResponse;
         }
 

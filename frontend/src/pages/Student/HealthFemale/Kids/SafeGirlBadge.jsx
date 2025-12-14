@@ -1,260 +1,348 @@
 import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SafeGirlBadge = () => {
   const navigate = useNavigate();
-
-  // Hardcoded Game Rewards & Configuration
-  const coinsPerLevel = 1;
-  const totalCoins = 5;
-  const totalXp = 10;
-  const maxScore = 5;
+  const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "health-female-kids-90";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [selectedOptionId, setSelectedOptionId] = useState(null);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
-
-  const questions = [
+  const challenges = [
     {
       id: 1,
-      text: "How do you earn the 'Safe Choice' badge?",
+      title: "Safe Choice",
+      question: "How do you earn the 'Safe Choice' badge?",
       options: [
-        {
-          id: "a",
-          text: "Try alcohol once",
-          emoji: "🍺",
-          description: "Even once is unsafe.",
+        { 
+          text: "Try alcohol once", 
+          emoji: "🍺", 
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Say NO to all harmful things",
-          emoji: "🛡️",
-          description: "Correct! That is a safe choice.",
+        { 
+          text: "Say NO to all harmful things", 
+          emoji: "🛡️", 
           isCorrect: true
         },
-        {
-          id: "c",
-          text: "Hide in your room",
-          emoji: "🚪",
-          description: "Be confident, not hiding.",
+        { 
+          text: "Hide in your room", 
+          emoji: "🚪", 
+          isCorrect: false
+        },
+        { 
+          text: "Follow strangers", 
+          emoji: "🚶", 
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Correct! That is a safe choice.",
+        wrong: "Always say NO to harmful things to stay safe."
+      }
     },
     {
       id: 2,
-      text: "To get the 'Strong Voice' badge...",
+      title: "Strong Voice",
+      question: "To get the 'Strong Voice' badge...",
       options: [
-        {
-          id: "a",
-          text: "Speak up if something feels wrong",
-          emoji: "🗣️",
-          description: "Yes! Use your strong voice.",
+        { 
+          text: "Whisper your secrets", 
+          emoji: "🤫", 
+          isCorrect: false
+        },
+        { 
+          text: "Never talk to adults", 
+          emoji: "🤐", 
+          isCorrect: false
+        },
+        { 
+          text: "Speak up if something feels wrong", 
+          emoji: "🗣️", 
           isCorrect: true
         },
-        {
-          id: "b",
-          text: "Whisper your secrets",
-          emoji: "🤫",
-          description: "Speak up for safety.",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Never talk to adults",
-          emoji: "🤐",
-          description: "Trusted adults help you.",
+        { 
+          text: "Stay quiet always", 
+          emoji: "🔇", 
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Yes! Use your strong voice.",
+        wrong: "Speak up when something feels wrong to stay safe."
+      }
     },
     {
       id: 3,
-      text: "The 'Healthy Body' badge requires...",
+      title: "Healthy Body",
+      question: "The 'Healthy Body' badge requires...",
       options: [
-        {
-          id: "a",
-          text: "Eating only candy",
-          emoji: "🍭",
-          description: "Candy isn't healthy food.",
+        { 
+          text: "Eating only candy", 
+          emoji: "🍭", 
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Protecting your body from smoke and drugs",
-          emoji: "🫁",
-          description: "Correct! Keep your body clean.",
+        { 
+          text: "Never bathing", 
+          emoji: "🚿", 
+          isCorrect: false
+        },
+        { 
+          text: "Protecting your body from smoke and drugs", 
+          emoji: "🫁", 
+          isCorrect: false
+        },
+        { 
+          text: "Keeping your body clean and safe", 
+          emoji: "🧼", 
           isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Never bathing",
-          emoji: "🚿",
-          description: "Hygiene is important too.",
-          isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Correct! Keep your body clean and safe.",
+        wrong: "Protect your body by keeping it clean and avoiding harmful substances."
+      }
     },
     {
       id: 4,
-      text: "What unlocks the 'Smart Friend' badge?",
+      title: "Smart Friend",
+      question: "What unlocks the 'Smart Friend' badge?",
       options: [
-        {
-          id: "a",
-          text: "Influencing friends to be safe",
-          emoji: "🤝",
-          description: "Yes! Help friends be safe too.",
+        { 
+          text: "Daring friends to be bad", 
+          emoji: "😈", 
+          isCorrect: false
+        },
+        { 
+          text: "Ignoring your friends", 
+          emoji: "🤷‍♀️", 
+          isCorrect: false
+        },
+        { 
+          text: "Influencing friends to be safe", 
+          emoji: "🤝", 
+          isCorrect: false
+        },
+        { 
+          text: "Helping friends make good choices", 
+          emoji: "👥", 
           isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Daring friends to be bad",
-          emoji: "😈",
-          description: "That is not being a smart friend.",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Ignoring your friends",
-          emoji: "🤷‍♀️",
-          description: "Friends care about each other.",
-          isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Yes! Help friends be safe too.",
+        wrong: "Being a smart friend means helping others make good choices."
+      }
     },
     {
       id: 5,
-      text: "You are a 'Permission Pro' if you...",
+      title: "Permission Pro",
+      question: "You are a 'Permission Pro' if you...",
       options: [
-        {
-          id: "a",
-          text: "Take things without asking",
-          emoji: "👐",
-          description: "Always ask first.",
+        { 
+          text: "Take things without asking", 
+          emoji: "👐", 
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Ask a parent before taking medicine or going somewhere",
-          emoji: "🙋‍♀️",
-          description: "Correct! Always ask for permission.",
+        { 
+          text: "Guess if it's okay", 
+          emoji: "🤔", 
+          isCorrect: false
+        },
+        { 
+          text: "Ask a parent before taking medicine or going somewhere", 
+          emoji: "🙋‍♀️", 
+          isCorrect: false
+        },
+        { 
+          text: "Always ask for permission first", 
+          emoji: "✋", 
           isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Guess if it's okay",
-          emoji: "🤔",
-          description: "Don't guess with safety.",
-          isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Correct! Always ask for permission.",
+        wrong: "Always ask a trusted adult for permission before doing something important."
+      }
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (selectedOptionId) return;
-
-    setSelectedOptionId(optionId);
-    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (isCorrect, optionIndex) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    setSelectedAnswer(optionIndex);
+    resetFeedback();
+    
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
+    
+    const isLastChallenge = challenge === challenges.length - 1;
+    
     setTimeout(() => {
-      setSelectedOptionId(null);
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+      if (isLastChallenge) {
+        setShowResult(true);
       } else {
-        setGameFinished(true);
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
       }
     }, 2000);
+  };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
+  const currentChallenge = challenges[challenge];
+
   return (
     <GameShell
       title="Badge: Safe Girl"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={showResult ? "Game Complete!" : `Challenge ${challenge + 1} of ${challenges.length}`}
       onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
+      nextEnabled={true}
+      showGameOver={showResult}
+      score={score}
       gameId={gameId}
       gameType="health-female"
-      totalLevels={5}
-      currentLevel={90}
-      showConfetti={gameFinished}
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      showConfetti={showResult && score >= 4}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-      maxScore={maxScore}
+      maxScore={challenges.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
+        {!showResult && currentChallenge ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallenge.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(option.isCorrect, idx)}
+                    disabled={answered}
+                    className={`bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3 ${
+                      answered && selectedAnswer === idx
+                        ? option.isCorrect
+                          ? "ring-4 ring-green-400"
+                          : "ring-4 ring-red-400"
+                        : ""
+                    }`}
+                  >
+                    <span className="text-2xl">{option.emoji}</span>
+                    <span className="font-bold text-lg">{option.text}</span>
+                  </button>
+                ))}
+              </div>
+              
+              {answered && (
+                <div className={`mt-4 p-4 rounded-xl ${
+                  currentChallenge.options[selectedAnswer]?.isCorrect
+                    ? "bg-green-500/20 border border-green-500/30"
+                    : "bg-red-500/20 border border-red-500/30"
+                }`}>
+                  <p className="text-white font-semibold">
+                    {currentChallenge.options[selectedAnswer]?.isCorrect
+                      ? currentChallenge.feedback.correct
+                      : currentChallenge.feedback.wrong}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-
-          <h2 className="text-2xl font-bold text-white mb-8 text-center">
-            {questions[currentQuestion].text}
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {questions[currentQuestion].options.map(option => {
-              const isSelected = selectedOptionId === option.id;
-              const showFeedback = selectedOptionId !== null;
-
-              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
-
-              if (showFeedback && isSelected) {
-                buttonClass = option.isCorrect
-                  ? "bg-green-500 ring-4 ring-green-300"
-                  : "bg-red-500 ring-4 ring-red-300";
-              } else if (showFeedback && !isSelected) {
-                buttonClass = "bg-white/10 opacity-50";
-              }
-
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={showFeedback}
-                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-4xl mr-6">{option.emoji}</div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
-                      {showFeedback && isSelected && (
-                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
-                      )}
-                    </div>
-                    {showFeedback && isSelected && (
-                      <div className="text-3xl ml-4">
-                        {option.isCorrect ? "✅" : "❌"}
-                      </div>
-                    )}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 4 ? (
+              <div>
+                <div className="text-6xl mb-4">🏆</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Safe Girl Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-6">
+                  You demonstrated excellent safety awareness with {score} correct answers out of {challenges.length}!
+                </p>
+                
+                <div className="bg-gradient-to-br from-pink-500 to-purple-600 text-white p-6 rounded-2xl mb-6">
+                  <h4 className="text-2xl font-bold mb-2">🎉 Achievement Unlocked!</h4>
+                  <p className="text-xl">Badge: Safe Girl</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-pink-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-pink-300 mb-2">Voice</h4>
+                    <p className="text-white/90 text-sm">
+                      You know when and how to speak up for your safety.
+                    </p>
                   </div>
+                  <div className="bg-purple-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-purple-300 mb-2">Choices</h4>
+                    <p className="text-white/90 text-sm">
+                      You understand how to make safe and healthy choices.
+                    </p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={handleNext}
+                  className="bg-gradient-to-br from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all mb-4"
+                >
+                  Continue Learning
                 </button>
-              );
-            })}
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning About Safety!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {score} questions correctly out of {challenges.length}.
+                </p>
+                <p className="text-white/90 mb-6">
+                  Review safety concepts to strengthen your knowledge and earn your badge.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

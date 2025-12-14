@@ -22,29 +22,31 @@ const GoodDataVSBadDataPuzzle = () => {
   const [selectedRight, setSelectedRight] = useState(null);
   const [showResult, setShowResult] = useState(false);
 
-  // Data samples (left side) - 6 items
+  // Data samples (left side) - 5 items
   const leftItems = [
-    { id: 1, name: "📷 Clear Photo", emoji: "📷", description: "High-resolution, sharp image" },
-    { id: 2, name: "📸 Blurry Photo", emoji: "📸", description: "Low-quality, out-of-focus image" },
-    { id: 3, name: "🌅 High-Quality Landscape", emoji: "🌅", description: "Clear scenic photograph" },
-    { id: 4, name: "🌄 Low-Resolution Image", emoji: "🌄", description: "Pixelated, unclear picture" },
-    { id: 5, name: "👩 Clear Portrait", emoji: "👩", description: "Well-lit, detailed face photo" }
+    { id: 1, name: " Survey with Age, Income, Education", emoji: "📋", description: "Complete demographic information" },
+    { id: 2, name: " Form with Blank Fields", emoji: "📄", description: "Application missing required info" },
+    { id: 3, name: " Sales Records from Last Year", emoji: "📊", description: "Verified transaction data" },
+    { id: 4, name: " Handwritten Notes with Scribbles", emoji: "📝", description: "Illegible information" },
+    { id: 5, name: " Digital Photos from Security Cameras", emoji: "💾", description: "High-resolution images" }
   ];
 
-  // Data quality labels (right side) - 2 items
+  // Data quality labels (right side) - 5 items
   const rightItems = [
-    { id: 1, name: "Good Data", emoji: "✅", description: "High-quality, accurate information" },
-    { id: 2, name: "Bad Data", emoji: "❌", description: "Poor-quality, misleading information" }
+    { id: 7, name: "Missing Key Details", emoji: "❌", description: "Important fields left blank" },
+    { id: 8, name: "Verified & Timestamped", emoji: "✅", description: "Confirmed data with dates" },
+    { id: 10, name: "High Resolution & Clear", emoji: "✅", description: "Quality images with metadata" },
+    { id: 6, name: "Complete & Accurate", emoji: "✅", description: "Full information, no errors" },
+    { id: 9, name: "Illegible & Unclear", emoji: "❌", description: "Hard to read or understand" },
   ];
 
-  // Correct matches
+  // Correct matches (one-to-one mapping between left and right)
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Clear Photo → Good Data
-    { leftId: 2, rightId: 2 }, // Blurry Photo → Bad Data
-    { leftId: 3, rightId: 1 }, // High-Quality Landscape → Good Data
-    { leftId: 4, rightId: 2 }, // Low-Resolution Image → Bad Data
-    { leftId: 5, rightId: 1 }, // Clear Portrait → Good Data
-   
+    { leftId: 1, rightId: 6 }, // Survey → Complete & Accurate
+    { leftId: 2, rightId: 7 }, // Form with blanks → Missing Key Details
+    { leftId: 3, rightId: 8 }, // Sales records → Verified & Timestamped
+    { leftId: 4, rightId: 9 }, // Handwritten notes → Illegible & Unclear
+    { leftId: 5, rightId: 10 } // Digital photos → High Resolution & Clear
   ];
 
   const handleLeftSelect = (item) => {
@@ -160,7 +162,7 @@ const GoodDataVSBadDataPuzzle = () => {
                     }`}
                   >
                     <div className="flex items-center">
-                      <div className="text-4xl mr-3">{item.emoji}</div>
+                      <div className="text-2xl mr-3">{item.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{item.name}</h4>
                         <p className="text-white/80 text-sm">{item.description}</p>
@@ -258,7 +260,7 @@ const GoodDataVSBadDataPuzzle = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Good data is clear, accurate, and representative. Bad data is blurry, incomplete, or misleading.
+                  Tip: Good data is complete, accurate, and usable. Bad data is incomplete, illegible, or missing important information.
                 </p>
               </div>
             )}

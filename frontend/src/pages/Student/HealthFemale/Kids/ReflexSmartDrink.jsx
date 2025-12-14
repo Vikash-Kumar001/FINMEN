@@ -44,8 +44,8 @@ const ReflexSmartDrink = () => {
       correctAnswer: "Milk",
       options: [
         { text: "Coffee", isCorrect: false, emoji: "☕" },
-        { text: "Milk", isCorrect: true, emoji: "🥛" },
         { text: "Soda", isCorrect: false, emoji: "🥤" },
+        { text: "Milk", isCorrect: true, emoji: "🥛" },
         { text: "Tea", isCorrect: false, emoji: "🍵" }
       ]
     },
@@ -55,9 +55,9 @@ const ReflexSmartDrink = () => {
       correctAnswer: "Adults only",
       options: [
         { text: "Kids", isCorrect: false, emoji: "👶" },
-        { text: "Adults only", isCorrect: true, emoji: "👨" },
         { text: "Babies", isCorrect: false, emoji: "🍼" },
-        { text: "Pets", isCorrect: false, emoji: "🐶" }
+        { text: "Pets", isCorrect: false, emoji: "🐶" },
+        { text: "Adults only", isCorrect: true, emoji: "👨" }
       ]
     },
     {
@@ -65,8 +65,8 @@ const ReflexSmartDrink = () => {
       question: "Best juice is...",
       correctAnswer: "Fresh Orange",
       options: [
-        { text: "Sugary box", isCorrect: false, emoji: "🧃" },
         { text: "Fresh Orange", isCorrect: true, emoji: "🍊" },
+        { text: "Sugary box", isCorrect: false, emoji: "🧃" },
         { text: "Blue dye", isCorrect: false, emoji: "🔵" },
         { text: "Candy water", isCorrect: false, emoji: "🍬" }
       ]
@@ -77,9 +77,9 @@ const ReflexSmartDrink = () => {
       correctAnswer: "Thirsty",
       options: [
         { text: "Never", isCorrect: false, emoji: "🙅" },
-        { text: "Thirsty", isCorrect: true, emoji: "🥵" },
         { text: "Full", isCorrect: false, emoji: "🤢" },
-        { text: "Sleeping", isCorrect: false, emoji: "😴" }
+        { text: "Sleeping", isCorrect: false, emoji: "😴" },
+        { text: "Thirsty", isCorrect: true, emoji: "🥵" }
       ]
     }
   ];

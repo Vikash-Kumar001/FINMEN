@@ -30,12 +30,12 @@ const BadgeRightsKid = () => {
       question: "Which situation shows a violation of children's rights?",
       options: [
         { 
-          text: "A child receiving good grades in school", 
-          isCorrect: false
-        },
-        { 
           text: "A child being denied education because of their gender", 
           isCorrect: true
+        },
+        { 
+          text: "A child receiving good grades in school", 
+          isCorrect: false
         },
         { 
           text: "A child playing with friends during recess", 
@@ -56,7 +56,10 @@ const BadgeRightsKid = () => {
       title: "Freedom of Expression",
       question: "All children have the right to express their opinions.",
       options: [
-
+        { 
+          text: "True", 
+          isCorrect: true
+        },
         { 
           text: "False", 
           isCorrect: false
@@ -64,10 +67,6 @@ const BadgeRightsKid = () => {
         { 
           text: "Only if adults agree", 
           isCorrect: false
-        },
-                { 
-          text: "True", 
-          isCorrect: true
         },
         { 
           text: "Only in private", 
@@ -138,7 +137,10 @@ const BadgeRightsKid = () => {
       title: "Importance of Human Rights",
       question: "Why are human rights important for children?",
       options: [
-        
+        { 
+          text: "They ensure children can grow up safely and reach their potential", 
+          isCorrect: true
+        },
         { 
           text: "They make children more special than adults", 
           isCorrect: false
@@ -146,10 +148,6 @@ const BadgeRightsKid = () => {
         { 
           text: "They allow children to do whatever they want", 
           isCorrect: false
-        },
-        { 
-          text: "They ensure children can grow up safely and reach their potential", 
-          isCorrect: true
         },
         { 
           text: "They are only suggestions", 

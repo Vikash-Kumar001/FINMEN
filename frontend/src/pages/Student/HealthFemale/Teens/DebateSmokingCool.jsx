@@ -6,14 +6,17 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const DebateSmokingCool = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  
+  // Set to 1 for +1 coin per correct answer
+  const coinsPerLevel = 1;
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -21,25 +24,22 @@ const DebateSmokingCool = () => {
       text: "Does smoking make you cool?",
       options: [
         {
-          id: "a",
-          text: "No, it harms health and appearance",
-          emoji: "❌",
-          description: "Smoking causes bad breath, stained teeth, and health problems",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "Yes, it looks mature and stylish",
           emoji: "😎",
-          description: "True maturity comes from making healthy choices",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "No, it harms health and appearance",
+          emoji: "❌",
+          correct: true
         },
         {
           id: "c",
           text: "It depends on the brand of cigarettes",
           emoji: "🏷️",
-          description: "All cigarettes are harmful regardless of brand",
-          isCorrect: false
+          correct: false
         }
       ]
     },
@@ -48,25 +48,22 @@ const DebateSmokingCool = () => {
       text: "What is the reality of smoking addiction?",
       options: [
         {
-          id: "a",
-          text: "Most smokers want to quit but struggle",
-          emoji: "😖",
-          description: "Nicotine is highly addictive and quitting is extremely difficult",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "It's easy to smoke occasionally without becoming addicted",
           emoji: "😌",
-          description: "Even occasional smoking can lead to addiction",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
           text: "Addiction only happens to weak people",
           emoji: "🦺",
-          description: "Addiction is a medical condition, not a character flaw",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Most smokers want to quit but struggle",
+          emoji: "😖",
+          correct: true
         }
       ]
     },
@@ -75,25 +72,22 @@ const DebateSmokingCool = () => {
       text: "How does smoking affect physical fitness?",
       options: [
         {
-          id: "a",
-          text: "Reduces stamina and athletic performance",
-          emoji: "🏃",
-          description: "Smoking decreases oxygen in the blood and impairs performance",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "Improves focus and endurance",
           emoji: "🎯",
-          description: "Smoking actually impairs focus and physical endurance",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
           text: "Has no effect on fitness levels",
           emoji: "😐",
-          description: "Smoking significantly impacts cardiovascular and respiratory fitness",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Reduces stamina and athletic performance",
+          emoji: "🏃",
+          correct: true
         }
       ]
     },
@@ -102,25 +96,22 @@ const DebateSmokingCool = () => {
       text: "What is the financial cost of smoking?",
       options: [
         {
-          id: "a",
-          text: "Thousands of dollars annually plus health costs",
-          emoji: "💸",
-          description: "Smoking is expensive and leads to costly health problems",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "Minimal cost, especially for occasional smokers",
           emoji: "💰",
-          description: "Even occasional smoking adds up to significant expenses",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
           text: "Free if friends provide cigarettes",
           emoji: "🆓",
-          description: "Accepting cigarettes still contributes to the habit",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Thousands of dollars annually plus health costs",
+          emoji: "💸",
+          correct: true
         }
       ]
     },
@@ -129,50 +120,45 @@ const DebateSmokingCool = () => {
       text: "How does smoking affect social relationships?",
       options: [
         {
-          id: "a",
-          text: "Causes bad breath and smell that others notice",
-          emoji: "👃",
-          description: "Smoking affects personal hygiene and social interactions",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "Makes you more popular and attractive",
           emoji: "🌟",
-          description: "Most people prefer non-smokers for close relationships",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
           text: "Has no effect on how others perceive you",
           emoji: "🧐",
-          description: "Smoking affects how others view your health and habits",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Causes bad breath and smell that others notice",
+          emoji: "👃",
+          correct: true
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
-    if (isCorrect) {
-      showCorrectAnswerFeedback(1, true);
+  const handleAnswerSelect = (option) => {
+    resetFeedback();
+    
+    if (option.correct) {
+      const newCoins = coins + 1; // Award 1 coin per correct answer
+      setCoins(newCoins);
+      setFinalScore(finalScore + 1);
+      showCorrectAnswerFeedback(1, true); // Show feedback for 1 point
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+        setCurrentQuestion(currentQuestion + 1);
       } else {
-        setGameFinished(true);
+        setShowResult(true);
       }
     }, 1500);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-female/teens/journal-awareness");
@@ -181,52 +167,91 @@ const DebateSmokingCool = () => {
   return (
     <GameShell
       title="Debate: Is Smoking Cool?"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins}
+      subtitle={showResult ? "Debate Complete!" : `Debate ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId="health-female-teen-86"
       gameType="health-female"
-      totalLevels={10}
-      currentLevel={6}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/health-female/teens"
       showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/health-female/teens"
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
-          </div>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Debate {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-4">🚭</div>
+                <h3 className="text-2xl font-bold text-white mb-2">Smoking Debate</h3>
+              </div>
 
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
-                </div>
-              </button>
-            ))}
+              <p className="text-white text-lg mb-6">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-6">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswerSelect(option)}
+                    className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-4">{option.emoji}</div>
+                      <div>
+                        <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="text-center py-8">
+            <div className="inline-block p-4 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 mb-6">
+              <div className="bg-white p-2 rounded-full">
+                <div className="text-4xl">🏆</div>
+              </div>
+            </div>
+            
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              Excellent Debate!
+            </h2>
+            
+            <p className="text-white/80 mb-6 max-w-2xl mx-auto">
+              You understand the harmful effects of smoking and why it's not cool!
+            </p>
+            
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 border border-white/20 max-w-md mx-auto mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Your Score</span>
+                <span className="text-xl font-bold text-yellow-400">{finalScore}/{questions.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">Coins Earned</span>
+                <span className="text-xl font-bold text-yellow-400">{coins}</span>
+              </div>
+            </div>
+            
+            <p className="text-white/80 max-w-2xl mx-auto">
+              Remember: Making healthy choices is truly what makes you cool!
+            </p>
+          </div>
+        )}
       </div>
     </GameShell>
   );

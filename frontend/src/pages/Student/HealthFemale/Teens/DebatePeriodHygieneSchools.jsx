@@ -1,178 +1,89 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const DebatePeriodHygieneSchools = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const navigate = useNavigate();
+  
+  // Set to 1 for +1 coin per correct answer
+  const coinsPerLevel = 1;
+  const totalCoins = location.state?.totalCoins || 5;
+  const totalXp = location.state?.totalXp || 10;
+  
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Should schools teach period hygiene openly?",
       options: [
-        {
-          id: "a",
-          text: "Yes, with respect and scientific accuracy",
-          emoji: "✅",
-          description: "Open education reduces stigma and promotes health",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "No, it's a private family matter",
-          emoji: "🔒",
-          description: "Many families may not provide adequate education",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Only to female students",
-          emoji: "🚺",
-          description: "Males should also understand to reduce stigma",
-          isCorrect: false
-        }
+        { id: "b", text: "No, it's a private family matter", correct: false, emoji: "🔒" },
+        { id: "a", text: "Yes, with respect and scientific accuracy", correct: true, emoji: "✅" },
+        { id: "c", text: "Only to female students", correct: false, emoji: "🚺" }
       ]
     },
     {
       id: 2,
       text: "How should schools handle period hygiene education?",
       options: [
-        {
-          id: "a",
-          text: "Include all genders with scientific facts",
-          emoji: "📚",
-          description: "Inclusive education promotes understanding and empathy",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Only through female teachers",
-          emoji: "👩‍🏫",
-          description: "This may reinforce gender segregation",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Avoid the topic completely",
-          emoji: "🤫",
-          description: "Avoidance perpetuates stigma and misinformation",
-          isCorrect: false
-        }
+        { id: "b", text: "Only through female teachers", correct: false, emoji: "👩‍🏫" },
+        { id: "c", text: "Avoid the topic completely", correct: false, emoji: "🤫" },
+        { id: "a", text: "Include all genders with scientific facts", correct: true, emoji: "📚" }
       ]
     },
     {
       id: 3,
       text: "Should schools provide period products?",
       options: [
-        {
-          id: "a",
-          text: "Yes, ensure all students have access",
-          emoji: "🩹",
-          description: "Access prevents absenteeism and reduces inequality",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "No, families should provide them",
-          emoji: "🏠",
-          description: "Economic barriers may prevent access for some students",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Only for wealthy students",
-          emoji: "💰",
-          description: "This increases inequality and stigma",
-          isCorrect: false
-        }
+        { id: "b", text: "No, families should provide them", correct: false, emoji: "🏠" },
+        { id: "c", text: "Only for wealthy students", correct: false, emoji: "💰" },
+        { id: "a", text: "Yes, ensure all students have access", correct: true, emoji: "🩹" }
       ]
     },
     {
       id: 4,
       text: "How can schools create a supportive environment?",
       options: [
-        {
-          id: "a",
-          text: "Private spaces and understanding policies",
-          emoji: "🚪",
-          description: "Privacy and flexibility reduce stress and embarrassment",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Public announcements about periods",
-          emoji: "📢",
-          description: "This may cause embarrassment for students",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Ignore period-related absences",
-          emoji: "❌",
-          description: "This may increase dropout rates among affected students",
-          isCorrect: false
-        }
+        { id: "b", text: "Public announcements about periods", correct: false, emoji: "📢" },
+        { id: "c", text: "Ignore period-related absences", correct: false, emoji: "❌" },
+        { id: "a", text: "Private spaces and understanding policies", correct: true, emoji: "🚪" }
       ]
     },
     {
       id: 5,
       text: "What's the benefit of inclusive period education?",
       options: [
-        {
-          id: "a",
-          text: "Reduces stigma and improves health outcomes",
-          emoji: "🌟",
-          description: "Education leads to better health practices and social acceptance",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Creates unnecessary attention to the topic",
-          emoji: "📢",
-          description: "Proper education is essential for health and well-being",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Only benefits female students",
-          emoji: "🚺",
-          description: "All students benefit from understanding and empathy",
-          isCorrect: false
-        }
+        { id: "b", text: "Creates unnecessary attention to the topic", correct: false, emoji: "📢" },
+        { id: "c", text: "Only benefits female students", correct: false, emoji: "🚺" },
+        { id: "a", text: "Reduces stigma and improves health outcomes", correct: true, emoji: "🌟" }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
-    if (isCorrect) {
-      showCorrectAnswerFeedback(1, true);
+  const handleAnswerSelect = (option) => {
+    resetFeedback();
+    
+    if (option.correct) {
+      const newCoins = coins + 1; // Award 1 coin per correct answer
+      setCoins(newCoins);
+      setFinalScore(finalScore + 1);
+      showCorrectAnswerFeedback(1, true); // Show feedback for 1 point
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+        setCurrentQuestion(currentQuestion + 1);
       } else {
-        setGameFinished(true);
+        setShowResult(true);
       }
     }, 1500);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-female/teens/journal-teen-hygiene");
@@ -181,52 +92,91 @@ const DebatePeriodHygieneSchools = () => {
   return (
     <GameShell
       title="Debate: Period Hygiene in Schools"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins}
+      subtitle={showResult ? "Debate Complete!" : `Debate ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId="health-female-teen-46"
       gameType="health-female"
-      totalLevels={10}
-      currentLevel={6}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/health-female/teens"
       showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/health-female/teens"
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
-          </div>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Debate {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-4">🌸</div>
+                <h3 className="text-2xl font-bold text-white mb-2">Period Hygiene Debate</h3>
+              </div>
 
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
-                </div>
-              </button>
-            ))}
+              <p className="text-white text-lg mb-6">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-6">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswerSelect(option)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-4">{option.emoji}</div>
+                      <div>
+                        <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="text-center py-8">
+            <div className="inline-block p-4 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 mb-6">
+              <div className="bg-white p-2 rounded-full">
+                <div className="text-4xl">🏆</div>
+              </div>
+            </div>
+            
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              Excellent Debate!
+            </h2>
+            
+            <p className="text-white/80 mb-6 max-w-2xl mx-auto">
+              You understand the importance of period hygiene education in schools!
+            </p>
+            
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 border border-white/20 max-w-md mx-auto mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Your Score</span>
+                <span className="text-xl font-bold text-yellow-400">{finalScore}/{questions.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">Coins Earned</span>
+                <span className="text-xl font-bold text-yellow-400">{coins}</span>
+              </div>
+            </div>
+            
+            <p className="text-white/80 max-w-2xl mx-auto">
+              Remember: Proper period hygiene education helps create inclusive and supportive school environments!
+            </p>
+          </div>
+        )}
       </div>
     </GameShell>
   );

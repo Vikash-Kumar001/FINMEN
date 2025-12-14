@@ -1,253 +1,142 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 
 const FreshAndNeatPoster = () => {
   const navigate = useNavigate();
-
-  // Hardcoded Game Rewards & Configuration
-  const coinsPerLevel = 1;
-  const totalCoins = 5;
-  const totalXp = 10;
-  const maxScore = 5;
-  const gameId = "health-female-kids-6"; // Match key in index.js
-
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // 1 coin per question
+  const totalCoins = location.state?.totalCoins || 5; // Total coins for 5 questions
+  const totalXp = location.state?.totalXp || 10; // Total XP
   const [score, setScore] = useState(0);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [selectedOptionId, setSelectedOptionId] = useState(null);
-  const [gameCompleted, setGameCompleted] = useState(false);
-  const { showAnswerConfetti, showCorrectAnswerFeedback, flashPoints } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const questions = [
+  const stages = [
     {
-      id: 1,
-      text: "Which poster encourages washing hands?",
-      options: [
-        {
-          id: 'a',
-          title: "Clean Hands Save Lives",
-          emoji: "🧼",
-          description: "Wash often to kill germs!",
-          isCorrect: true
-        },
-        {
-          id: 'b',
-          title: "Dirty Hands Are Fine",
-          emoji: "🦠",
-          description: "Germs are our friends, right?",
-          isCorrect: false
-        },
-        {
-          id: 'c',
-          title: "Only Water Works",
-          emoji: "💧",
-          description: "No need for soap, just water.",
-          isCorrect: false
-        }
-      ]
+      question: 'Which poster would best encourage washing hands?',
+      choices: [
+        { text: ".poster showing dirty hands are fine 🦠", correct: false },
+        { text: "Poster showing only water works 💧", correct: false },
+        { text: "Poster showing clean hands save lives 🧼", correct: true },
+      ],
     },
     {
-      id: 2,
-      text: "Which message is best for daily hygiene?",
-      options: [
-        {
-          id: 'a',
-          title: "Bath Once a Year",
-          emoji: "📅",
-          description: "Save water, stay dirty!",
-          isCorrect: false
-        },
-        {
-          id: 'b',
-          title: "Shower Power",
-          emoji: "🚿",
-          description: "Take a bath every day to stay fresh!",
-          isCorrect: true
-        },
-        {
-          id: 'c',
-          title: "Perfume Over Bath",
-          emoji: "🌸",
-          description: "Just spray and pray!",
-          isCorrect: false
-        }
-      ]
+      question: 'Which message is best for daily hygiene?',
+      choices: [
+        { text: "Poster showing bath once a year 📅", correct: false },
+        { text: "Poster showing shower power everyday 🚿", correct: true },
+        { text: "Poster showing perfume over bath 🌸", correct: false },
+      ],
     },
     {
-      id: 3,
-      text: "Which poster promotes dental health?",
-      options: [
-        {
-          id: 'a',
-          title: "Sugar Rush",
-          emoji: "🍭",
-          description: "Eat candy all day long!",
-          isCorrect: false
-        },
-        {
-          id: 'b',
-          title: "No Brushing Needed",
-          emoji: "😷",
-          description: "Teeth clean themselves, right?",
-          isCorrect: false
-        },
-        {
-          id: 'c',
-          title: "Brush Twice Daily",
-          emoji: "🪥",
-          description: "Keep that smile bright and clean!",
-          isCorrect: true
-        }
-      ]
+      question: 'Which poster promotes dental health?',
+      choices: [
+        { text: "Poster showing sugar rush all day 🍭", correct: false },
+        { text: "Poster showing brush twice daily 🪥", correct: true },
+        { text: "Poster showing no brushing needed 😷", correct: false },
+      ],
     },
     {
-      id: 4,
-      text: "Which poster shows good nail care?",
-      options: [
-        {
-          id: 'a',
-          title: "Trim & Clean",
-          emoji: "✂️",
-          description: "Keep nails short and neat.",
-          isCorrect: true
-        },
-        {
-          id: 'b',
-          title: "Bite Your Nails",
-          emoji: "😬",
-          description: "A tasty snack for later?",
-          isCorrect: false
-        },
-        {
-          id: 'c',
-          title: "Long & Dirty",
-          emoji: "🧟‍♀️",
-          description: "Let them grow wild!",
-          isCorrect: false
-        }
-      ]
+      question: 'Which poster shows good nail care?',
+      choices: [
+        { text: "Poster showing bite your nails 😬", correct: false },
+        { text: "Poster showing long and dirty nails 🧟‍♀️", correct: false },
+        { text: "Poster showing trim and clean regularly ✂️", correct: true },
+      ],
     },
     {
-      id: 5,
-      text: "Which poster is about clean clothes?",
-      options: [
-        {
-          id: 'a',
-          title: "Wear It Twice",
-          emoji: "👃",
-          description: "Smells fine to me!",
-          isCorrect: false
-        },
-        {
-          id: 'b',
-          title: "Fresh Clothes Daily",
-          emoji: "👕",
-          description: "Change into clean clothes every day.",
-          isCorrect: true
-        },
-        {
-          id: 'c',
-          title: "Sleep in Uniform",
-          emoji: "💤",
-          description: "Save time in the morning!",
-          isCorrect: false
-        }
-      ]
-    }
+      question: 'Which poster is about clean clothes?',
+      choices: [
+        { text: "Poster showing fresh clothes daily 👕", correct: true },
+        { text: "Poster showing wear it twice 👃", correct: false },
+        { text: "Poster showing sleep in uniform 💤", correct: false },
+      ],
+    },
   ];
 
-  const handleChoice = (option) => {
-    if (showFeedback) return;
-
-    setSelectedOptionId(option.id);
-    setShowFeedback(true);
-
-    if (option.isCorrect) {
-      setScore(prev => prev + coinsPerLevel);
-      showCorrectAnswerFeedback(coinsPerLevel, true);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
+    
+    const isLastStage = currentStage === stages.length - 1;
+    
     setTimeout(() => {
-      setShowFeedback(false);
-      setSelectedOptionId(null);
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+      if (isLastStage) {
+        setShowResult(true);
       } else {
-        setGameCompleted(true);
-        showAnswerConfetti();
+        setCurrentStage(prev => prev + 1);
+        setAnswered(false);
       }
-    }, 2000);
+    }, 500);
   };
-
-  const currentQ = questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
+  const currentStageData = stages[currentStage];
+
   return (
     <GameShell
       title="Fresh & Neat Posters"
-      subtitle={`Poster ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameCompleted}
-      showGameOver={gameCompleted}
       score={score}
-      gameId={gameId}
-      gameType="health-female"
-      totalLevels={questions.length}
-      currentLevel={currentQuestion + 1}
-      showConfetti={gameCompleted}
-      flashPoints={flashPoints}
-      backPath="/games/health-female/kids"
-      showAnswerConfetti={showAnswerConfetti}
-      maxScore={maxScore}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}` : "Poster Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
+      onNext={handleNext}
+      nextButtonText="Back to Games"
+      gameId="health-female-kids-6"
+      gameType="health-female"
+      totalLevels={stages.length}
+      currentLevel={currentStage + 1}
+      maxScore={stages.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/health-female/kids"
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white">{currentQ.text}</h2>
-            <div className="text-yellow-400 font-bold">Coins: {score}/{totalCoins}</div>
+        {!showResult && currentStageData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentStage + 1}/{stages.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{stages.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentStageData.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentStageData.choices.map((choice, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleChoice(choice.correct)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <p className="font-semibold text-lg">{choice.text}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {currentQ.options.map((option) => {
-              const isSelected = selectedOptionId === option.id;
-              const isCorrect = option.isCorrect;
-
-              let cardStyle = "bg-white/5 border-white/10 hover:bg-white/10";
-              if (showFeedback) {
-                if (isCorrect) cardStyle = "bg-green-500/20 border-green-500 ring-2 ring-green-400";
-                else if (isSelected) cardStyle = "bg-red-500/20 border-red-500 ring-2 ring-red-400";
-                else cardStyle = "opacity-50";
-              }
-
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option)}
-                  disabled={showFeedback}
-                  className={`flex flex-col items-center p-6 rounded-xl border-2 transition-all duration-300 transform hover:scale-105 ${cardStyle}`}
-                >
-                  <div className="text-6xl mb-4">{option.emoji}</div>
-                  <h3 className="text-lg font-bold text-white mb-2">{option.title}</h3>
-                  <p className="text-sm text-white/80 text-center">{option.description}</p>
-
-                  {showFeedback && (isSelected || isCorrect) && (
-                    <div className={`mt-4 px-3 py-1 rounded-full text-sm font-bold ${isCorrect ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-                      {isCorrect ? 'Correct Poster!' : 'Not quite right...'}
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

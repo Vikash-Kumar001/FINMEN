@@ -1,263 +1,145 @@
 import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PeriodsAreNormalPoster = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // 1 coin per question
+  const totalCoins = location.state?.totalCoins || 5; // Total coins for 5 questions
+  const totalXp = location.state?.totalXp || 10; // Total XP
+  const [score, setScore] = useState(0);
+  const [currentStage, setCurrentStage] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-    // Hardcoded Game Rewards & Configuration
-    const coinsPerLevel = 1;
-    const totalCoins = 5;
-    const totalXp = 10;
-    const maxScore = 5;
-    const gameId = "health-female-kids-36";
+  const stages = [
+    {
+      question: 'Which poster would best show "Periods Are Normal"?',
+      choices: [
+        { text: "Poster showing I am growing up and strong 💪", correct: true },
+        { text: "Poster showing scary days 👻", correct: false },
+        { text: "Poster showing secret problem 🤫", correct: false },
+      ],
+    },
+    {
+      question: 'Which image would best show confidence about periods?',
+      choices: [
+        { text: "Poster showing hiding under a blanket 🛌", correct: false },
+        { text: "Poster showing a girl standing tall smiling 🦸‍♀️", correct: true },
+        { text: "Poster showing running away 🏃‍♀️", correct: false },
+      ],
+    },
+    {
+      question: 'What do periods signify best?',
+      choices: [
+        { text: "Poster showing health ❤️", correct: true },
+        { text: "Poster showing bad luck 🍀", correct: false },
+        { text: "Poster showing being messy 🧹", correct: false },
+      ],
+    },
+    {
+      question: 'Which colors make the poster most cheerful?',
+      choices: [
+        { text: "Poster showing all black and grey ⬛", correct: false },
+        { text: "Poster showing bright pink, yellow, and blue 🌈", correct: true },
+        { text: "Poster showing invisible ink 👻", correct: false },
+      ],
+    },
+    {
+      question: 'Who is this poster for?',
+      choices: [
+        { text: "Poster showing only aliens 👽", correct: false },
+        { text: "Poster showing to scare boys 👦", correct: false },
+        { text: "Poster showing every girl to feel brave 👭", correct: true },
+      ],
+    },
+  ];
 
-    const [coins, setCoins] = useState(0);
-    const [currentQuestion, setCurrentQuestion] = useState(0);
-    const [gameFinished, setGameFinished] = useState(false);
-    const [selectedOptionId, setSelectedOptionId] = useState(null);
-    const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    const isLastStage = currentStage === stages.length - 1;
+    
+    setTimeout(() => {
+      if (isLastStage) {
+        setShowResult(true);
+      } else {
+        setCurrentStage(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
+  };
 
-    const questions = [
-        {
-            id: 1,
-            text: "What title fits a positive period poster?",
-            options: [
-                {
-                    id: "a",
-                    text: "Scary Days",
-                    emoji: "👻",
-                    description: "Don't be scared.",
-                    isCorrect: false
-                },
-                {
-                    id: "b",
-                    text: "I Am Growing Up & Strong",
-                    emoji: "💪",
-                    description: "Correct! It is a strength.",
-                    isCorrect: true
-                },
-                {
-                    id: "c",
-                    text: "Secret Problem",
-                    emoji: "🤫",
-                    description: "It is not a problem.",
-                    isCorrect: false
-                }
-            ]
-        },
-        {
-            id: 2,
-            text: "Which image shows confidence?",
-            options: [
-                {
-                    id: "a",
-                    text: "Hiding under a blanket",
-                    emoji: "🛌",
-                    description: "That is hiding.",
-                    isCorrect: false
-                },
-                {
-                    id: "b",
-                    text: "A girl standing tall smiling",
-                    emoji: "🦸‍♀️",
-                    description: "Yes! Confident and proud.",
-                    isCorrect: true
-                },
-                {
-                    id: "c",
-                    text: "Running away",
-                    emoji: "🏃‍♀️",
-                    description: "Running from it doesn't help.",
-                    isCorrect: false
-                }
-            ]
-        },
-        {
-            id: 3,
-            text: "Periods are a sign of...",
-            options: [
-                {
-                    id: "a",
-                    text: "Bad luck",
-                    emoji: "🍀",
-                    description: "Not luck.",
-                    isCorrect: false
-                },
-                {
-                    id: "b",
-                    text: "Health",
-                    emoji: "❤️",
-                    description: "Correct! A healthy body works this way.",
-                    isCorrect: true
-                },
-                {
-                    id: "c",
-                    text: "Being messy",
-                    emoji: "🧹",
-                    description: "Hygiene manages the mess.",
-                    isCorrect: false
-                }
-            ]
-        },
-        {
-            id: 4,
-            text: "What colors make the poster cheerful?",
-            options: [
-                {
-                    id: "a",
-                    text: "All black and grey",
-                    emoji: "⬛",
-                    description: "That is sad.",
-                    isCorrect: false
-                },
-                {
-                    id: "b",
-                    text: "Bright pink, yellow, and blue",
-                    emoji: "🌈",
-                    description: "Yes! Bright colors are happy.",
-                    isCorrect: true
-                },
-                {
-                    id: "c",
-                    text: "Invisible ink",
-                    emoji: "👻",
-                    description: "No one can see it!",
-                    isCorrect: false
-                }
-            ]
-        },
-        {
-            id: 5,
-            text: "Who is this poster for?",
-            options: [
-                {
-                    id: "a",
-                    text: "Only aliens",
-                    emoji: "👽",
-                    description: "Humans need it.",
-                    isCorrect: false
-                },
-                {
-                    id: "b",
-                    text: "Every girl to feel brave",
-                    emoji: "👭",
-                    description: "Correct! Encourage everyone.",
-                    isCorrect: true
-                },
-                {
-                    id: "c",
-                    text: "To scare boys",
-                    emoji: "👦",
-                    description: "It is for education, not scaring.",
-                    isCorrect: false
-                }
-            ]
-        }
-    ];
+  const handleNext = () => {
+    navigate("/games/health-female/kids");
+  };
 
-    const handleChoice = (optionId) => {
-        if (selectedOptionId) return;
+  const currentStageData = stages[currentStage];
 
-        setSelectedOptionId(optionId);
-        const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
-        const isCorrect = selectedOption.isCorrect;
-
-        if (isCorrect) {
-            setCoins(prev => prev + 1);
-            showCorrectAnswerFeedback(1, true);
-        }
-
-        setTimeout(() => {
-            setSelectedOptionId(null);
-            if (currentQuestion < questions.length - 1) {
-                setCurrentQuestion(prev => prev + 1);
-            } else {
-                setGameFinished(true);
-            }
-        }, 2000);
-    };
-
-    const handleNext = () => {
-        navigate("/games/health-female/kids");
-    };
-
-    return (
-        <GameShell
-            title="Poster: Periods Are Normal"
-            subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-            onNext={handleNext}
-            nextEnabled={gameFinished}
-            showGameOver={gameFinished}
-            score={coins}
-            gameId={gameId}
-            gameType="health-female"
-            totalLevels={5}
-            currentLevel={36}
-            showConfetti={gameFinished}
-            flashPoints={flashPoints}
-            backPath="/games/health-female/kids"
-            showAnswerConfetti={showAnswerConfetti}
-            maxScore={maxScore}
-            coinsPerLevel={coinsPerLevel}
-            totalCoins={totalCoins}
-            totalXp={totalXp}>
-            <div className="space-y-8">
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-                    <div className="flex justify-between items-center mb-4">
-                        <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                        <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
-                    </div>
-
-                    <h2 className="text-2xl font-bold text-white mb-8 text-center">
-                        {questions[currentQuestion].text}
-                    </h2>
-
-                    <div className="grid grid-cols-1 gap-4">
-                        {questions[currentQuestion].options.map(option => {
-                            const isSelected = selectedOptionId === option.id;
-                            const showFeedback = selectedOptionId !== null;
-
-                            let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
-
-                            if (showFeedback && isSelected) {
-                                buttonClass = option.isCorrect
-                                    ? "bg-green-500 ring-4 ring-green-300"
-                                    : "bg-red-500 ring-4 ring-red-300";
-                            } else if (showFeedback && !isSelected) {
-                                buttonClass = "bg-white/10 opacity-50";
-                            }
-
-                            return (
-                                <button
-                                    key={option.id}
-                                    onClick={() => handleChoice(option.id)}
-                                    disabled={showFeedback}
-                                    className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
-                                >
-                                    <div className="flex items-center">
-                                        <div className="text-4xl mr-6">{option.emoji}</div>
-                                        <div className="flex-1">
-                                            <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
-                                            {showFeedback && isSelected && (
-                                                <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
-                                            )}
-                                        </div>
-                                        {showFeedback && isSelected && (
-                                            <div className="text-3xl ml-4">
-                                                {option.isCorrect ? "✅" : "❌"}
-                                            </div>
-                                        )}
-                                    </div>
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
+  return (
+    <GameShell
+      title="Poster: Periods Are Normal"
+      score={score}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}` : "Poster Complete!"}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showGameOver={showResult}
+      onNext={handleNext}
+      nextButtonText="Back to Games"
+      gameId="health-female-kids-36"
+      gameType="health-female"
+      totalLevels={stages.length}
+      currentLevel={currentStage + 1}
+      maxScore={stages.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/health-female/kids"
+    >
+      <div className="space-y-8">
+        {!showResult && currentStageData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentStage + 1}/{stages.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{stages.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentStageData.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentStageData.choices.map((choice, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleChoice(choice.correct)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <p className="font-semibold text-lg">{choice.text}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-        </GameShell>
-    );
+          </div>
+        ) : null}
+      </div>
+    </GameShell>
+  );
 };
 
 export default PeriodsAreNormalPoster;

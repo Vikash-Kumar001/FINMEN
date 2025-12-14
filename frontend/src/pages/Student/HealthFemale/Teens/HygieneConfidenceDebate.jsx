@@ -6,14 +6,17 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const HygieneConfidenceDebate = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  
+  // Set to 1 for +1 coin per correct answer
+  const coinsPerLevel = 1;
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -21,25 +24,22 @@ const HygieneConfidenceDebate = () => {
       text: "Should teens practice daily hygiene for confidence?",
       options: [
         {
-          id: "a",
-          text: "Yes, daily hygiene builds confidence",
-          emoji: "👍",
-          description: "Regular hygiene makes you feel fresh and confident",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "No, hygiene doesn't matter",
           emoji: "👎",
-          description: "Poor hygiene affects self-esteem and social interactions",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Yes, daily hygiene builds confidence",
+          emoji: "👍",
+          correct: true
         },
         {
           id: "c",
           text: "Only for special occasions",
           emoji: "🎭",
-          description: "Daily hygiene builds consistent confidence",
-          isCorrect: false
+          correct: false
         }
       ]
     },
@@ -51,22 +51,19 @@ const HygieneConfidenceDebate = () => {
           id: "a",
           text: "Nothing changes",
           emoji: "😊",
-          description: "Poor hygiene affects social interactions",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Lower self-confidence",
-          emoji: "😔",
-          description: "Body odor and unclean appearance reduce confidence",
-          isCorrect: true
+          correct: false
         },
         {
           id: "c",
           text: "More friends",
           emoji: "👥",
-          description: "Poor hygiene usually pushes people away",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "b",
+          text: "Lower self-confidence",
+          emoji: "😔",
+          correct: true
         }
       ]
     },
@@ -78,22 +75,19 @@ const HygieneConfidenceDebate = () => {
           id: "a",
           text: "Makes no difference",
           emoji: "😐",
-          description: "Hygiene is key to feeling good about yourself",
-          isCorrect: false
+          correct: false
         },
         {
           id: "b",
           text: "Only helps appearance",
           emoji: "💅",
-          description: "Hygiene affects both appearance and self-esteem",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
           text: "Feel fresh and ready for anything",
           emoji: "✨",
-          description: "Clean teens feel prepared and self-assured",
-          isCorrect: true
+          correct: true
         }
       ]
     },
@@ -105,22 +99,19 @@ const HygieneConfidenceDebate = () => {
           id: "a",
           text: "Doesn't affect how people treat you",
           emoji: "😕",
-          description: "Hygiene impacts social acceptance and comfort",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Makes others comfortable around you",
-          emoji: "🤝",
-          description: "Good hygiene shows respect for yourself and others",
-          isCorrect: true
+          correct: false
         },
         {
           id: "c",
           text: "Only matters for dating",
           emoji: "💕",
-          description: "Hygiene is important in all social situations",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "b",
+          text: "Makes others comfortable around you",
+          emoji: "🤝",
+          correct: true
         }
       ]
     },
@@ -132,47 +123,42 @@ const HygieneConfidenceDebate = () => {
           id: "a",
           text: "Only temporary benefit",
           emoji: "⏰",
-          description: "Teen hygiene habits shape adult confidence",
-          isCorrect: false
+          correct: false
         },
         {
           id: "b",
           text: "No lasting impact",
           emoji: "🤷",
-          description: "Hygiene habits affect mental and physical health long-term",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
           text: "Builds lifelong confidence and health",
           emoji: "🌟",
-          description: "Good habits formed in teens last a lifetime",
-          isCorrect: true
+          correct: true
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
-    if (isCorrect) {
-      showCorrectAnswerFeedback(2, true);
+  const handleAnswerSelect = (option) => {
+    resetFeedback();
+    
+    if (option.correct) {
+      const newCoins = coins + 1; // Award 1 coin per correct answer
+      setCoins(newCoins);
+      setFinalScore(finalScore + 1);
+      showCorrectAnswerFeedback(1, true); // Show feedback for 1 point
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+        setCurrentQuestion(currentQuestion + 1);
       } else {
-        setGameFinished(true);
+        setShowResult(true);
       }
     }, 1500);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-female/teens/self-care-journal");
@@ -181,57 +167,91 @@ const HygieneConfidenceDebate = () => {
   return (
     <GameShell
       title="Debate: Hygiene = Confidence?"
-      subtitle={`Debate ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length * 2}
+      score={coins}
+      subtitle={showResult ? "Debate Complete!" : `Debate ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId="health-female-teen-6"
       gameType="health-female"
-      totalLevels={10}
-      currentLevel={6}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/health-female/teens"
       showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/health-female/teens"
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Debate {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length * 2}</span>
-          </div>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Debate {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-4">🎭</div>
+                <h3 className="text-2xl font-bold text-white mb-2">Hygiene Confidence Debate</h3>
+              </div>
 
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🎭</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Hygiene Confidence Debate</h3>
+              <p className="text-white text-lg mb-6">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-6">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswerSelect(option)}
+                    className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-4">{option.emoji}</div>
+                      <div>
+                        <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
-                </div>
-              </button>
-            ))}
+        ) : (
+          <div className="text-center py-8">
+            <div className="inline-block p-4 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 mb-6">
+              <div className="bg-white p-2 rounded-full">
+                <div className="text-4xl">🏆</div>
+              </div>
+            </div>
+            
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              Excellent Debate!
+            </h2>
+            
+            <p className="text-white/80 mb-6 max-w-2xl mx-auto">
+              You understand how good hygiene builds confidence and positive social interactions!
+            </p>
+            
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 border border-white/20 max-w-md mx-auto mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Your Score</span>
+                <span className="text-xl font-bold text-yellow-400">{finalScore}/{questions.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">Coins Earned</span>
+                <span className="text-xl font-bold text-yellow-400">{coins}</span>
+              </div>
+            </div>
+            
+            <p className="text-white/80 max-w-2xl mx-auto">
+              Remember: Good hygiene habits boost confidence and contribute to lifelong health!
+            </p>
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

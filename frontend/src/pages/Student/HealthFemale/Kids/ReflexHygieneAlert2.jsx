@@ -78,8 +78,8 @@ const ReflexHygieneAlert2 = () => {
             options: [
                 { text: "Dirty Pair", isCorrect: false, emoji: "👃" },
                 { text: "None", isCorrect: false, emoji: "🚫" },
-                { text: "Clean Pair", isCorrect: true, emoji: "✨" },
-                { text: "Hat", isCorrect: false, emoji: "🧢" }
+                { text: "Hat", isCorrect: false, emoji: "🧢" },
+                { text: "Clean Pair", isCorrect: true, emoji: "✨" }
             ]
         }
     ];

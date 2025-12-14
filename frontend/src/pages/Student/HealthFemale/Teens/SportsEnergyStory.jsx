@@ -6,14 +6,17 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const SportsEnergyStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // Default 1 coin per question
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const maxScore = 5;
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const questions = [
     {
@@ -24,21 +27,18 @@ const SportsEnergyStory = () => {
           id: "a",
           text: "Water with a pinch of salt",
           emoji: "💧",
-          description: "Rehydrates and replaces lost electrolytes",
           isCorrect: true
         },
         {
           id: "b",
           text: "Energy drink",
           emoji: "🥤",
-          description: "High in sugar and caffeine, not ideal for hydration",
           isCorrect: false
         },
         {
           id: "c",
           text: "Soda",
           emoji: "🥤",
-          description: "High sugar content can dehydrate you further",
           isCorrect: false
         }
       ]
@@ -51,22 +51,19 @@ const SportsEnergyStory = () => {
           id: "a",
           text: "Banana and nuts",
           emoji: "🍌",
-          description: "Banana provides potassium, nuts provide protein and healthy fats",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "b",
           text: "Chips and cola",
           emoji: "🍟",
-          description: "Lacks nutrients needed for muscle recovery",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Nothing, just rest",
-          emoji: "😴",
-          description: "Your body needs nutrients to recover properly",
-          isCorrect: false
+          text: "Yogurt with berries",
+          emoji: "🫐",
+          isCorrect: true
         }
       ]
     },
@@ -78,22 +75,19 @@ const SportsEnergyStory = () => {
           id: "a",
           text: "Light snack like idli or banana",
           emoji: "🍌",
-          description: "Provides energy without weighing you down",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "b",
           text: "Heavy meal like dosa with sambar",
           emoji: "🍽️",
-          description: "Heavy meals can make you sluggish during exercise",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Skip breakfast to lose weight",
-          emoji: "🚫",
-          description: "Skipping meals reduces energy and performance",
-          isCorrect: false
+          text: "Oats with milk",
+          emoji: "🥣",
+          isCorrect: true
         }
       ]
     },
@@ -105,21 +99,18 @@ const SportsEnergyStory = () => {
           id: "a",
           text: "Only when feeling very thirsty",
           emoji: "🥵",
-          description: "By the time you're thirsty, you're already dehydrated",
           isCorrect: false
         },
         {
           id: "b",
           text: "Every 15-20 minutes",
           emoji: "⏰",
-          description: "Regular hydration prevents dehydration and maintains performance",
           isCorrect: true
         },
         {
           id: "c",
           text: "Drink a lot at once during breaks",
           emoji: "🥤",
-          description: "Large amounts at once can cause discomfort",
           isCorrect: false
         }
       ]
@@ -132,106 +123,157 @@ const SportsEnergyStory = () => {
           id: "a",
           text: "Protein and carbohydrates",
           emoji: "🥚",
-          description: "Protein repairs muscles, carbs replenish energy stores",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "b",
           text: "Only protein",
           emoji: "🥩",
-          description: "Carbs are also needed to replenish energy",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Only carbohydrates",
-          emoji: "🍞",
-          description: "Protein is needed for muscle repair",
-          isCorrect: false
+          text: "Carbohydrates and protein",
+          emoji: "🥞",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: optionId,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect;
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
 
   const handleNext = () => {
     navigate("/student/health-female/teens/junk-food-debate");
   };
 
+  const getCurrentQuestion = () => questions[currentQuestion];
+
   return (
     <GameShell
       title="Sports Energy Story"
-      subtitle={`Level 15 of 20`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
+      score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      showGameOver={showResult}
       gameId="health-female-teen-15"
       gameType="health-female"
       totalLevels={20}
       currentLevel={15}
-      showConfetti={gameFinished}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/health-female/teens"
       showAnswerConfetti={showAnswerConfetti}
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 15/20</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/health-female/teens"
+      maxScore={maxScore}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <h2 className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🏃</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Sports Nutrition Story</h3>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🏃</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Sports Nutrition Expert!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand the importance of proper sports nutrition!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
                 </div>
-              </button>
-            ))}
+                <p className="text-white/80 text-sm md:text-base">
+                  Great job! You know that water with salt replenishes electrolytes, yogurt with berries aids recovery, oats with milk fuel performance, regular hydration maintains energy, and carbohydrates with protein optimize muscle repair!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Proper sports nutrition is key to peak performance!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows the best approach to sports nutrition and recovery.
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

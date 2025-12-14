@@ -60,7 +60,10 @@ const BadgeVolunteerLeaderTeen = () => {
           text: "Tell them what to do without explanation", 
           isCorrect: false
         },
-        
+        { 
+          text: "Listen to their interests and guide them to suitable opportunities", 
+          isCorrect: true
+        },
         { 
           text: "Assign them the tasks you don't want to do", 
           isCorrect: false
@@ -68,11 +71,7 @@ const BadgeVolunteerLeaderTeen = () => {
         { 
           text: "Compare them to experienced volunteers", 
           isCorrect: false
-        },
-        { 
-          text: "Listen to their interests and guide them to suitable opportunities", 
-          isCorrect: true
-        },
+        }
       ],
       feedback: {
         correct: "Listening to interests and guiding to suitable opportunities helps new volunteers find their passion and stay engaged.",
@@ -112,14 +111,13 @@ const BadgeVolunteerLeaderTeen = () => {
       question: "What is the most effective way to advocate for a cause you believe in?",
       options: [
         { 
-          text: "Educating others and inspiring positive action through example", 
-          isCorrect: true
-        },
-        { 
           text: "Shouting about it on social media", 
           isCorrect: false
         },
-        
+        { 
+          text: "Educating others and inspiring positive action through example", 
+          isCorrect: true
+        },
         { 
           text: "Criticizing those who disagree", 
           isCorrect: false

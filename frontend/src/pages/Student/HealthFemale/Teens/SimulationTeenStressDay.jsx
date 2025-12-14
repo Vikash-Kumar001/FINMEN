@@ -13,6 +13,7 @@ const SimulationTeenStressDay = () => {
   const [currentScenario, setCurrentScenario] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const scenarios = [
@@ -23,23 +24,26 @@ const SimulationTeenStressDay = () => {
       options: [
         {
           id: "a",
-          text: "Stay calm, get ready quickly, and review key points",
-          emoji: "⏰",
-          description: "Composed approach helps you perform better",
-          isCorrect: true
+          text: "Panic and rush without any preparation",
+          emoji: "😰",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Panic and rush without any preparation",
-          emoji: "😰",
-          description: "Panic reduces your ability to think clearly",
+          text: "Skip the exam and stay in bed",
+          emoji: "😴",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Skip the exam and stay in bed",
-          emoji: "😴",
-          description: "Avoidance prevents learning and growth",
+          text: "Stay calm, get ready quickly, and review key points",
+          emoji: "⏰",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Call a friend to help you get ready faster",
+          emoji: "📞",
           isCorrect: false
         }
       ]
@@ -51,23 +55,26 @@ const SimulationTeenStressDay = () => {
       options: [
         {
           id: "a",
-          text: "Learn from mistakes and practice more",
-          emoji: "📈",
-          description: "Growth mindset leads to improvement",
-          isCorrect: true
+          text: "Get frustrated and give up",
+          emoji: "😤",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Get frustrated and give up",
-          emoji: "😤",
-          description: "Frustration blocks learning and progress",
-          isCorrect: false
+          text: "Learn from mistakes and practice more",
+          emoji: "📈",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Blame others for your mistakes",
           emoji: "😠",
-          description: "Blaming prevents taking responsibility for growth",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Take a short break and then continue practicing",
+          emoji: "⏸️",
           isCorrect: false
         }
       ]
@@ -79,23 +86,26 @@ const SimulationTeenStressDay = () => {
       options: [
         {
           id: "a",
-          text: "Take a proper break, eat well, and relax",
-          emoji: "🍽️",
-          description: "Rest and nutrition maintain energy and focus",
-          isCorrect: true
+          text: "Skip lunch and continue studying",
+          emoji: "📚",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Skip lunch and continue studying",
-          emoji: "📚",
-          description: "Neglecting basic needs reduces effectiveness",
+          text: "Eat junk food while multitasking",
+          emoji: "🍟",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Eat junk food while multitasking",
-          emoji: "🍟",
-          description: "Poor nutrition and divided attention are counterproductive",
+          text: "Take a proper break, eat well, and relax",
+          emoji: "🍽️",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Go for a walk to refresh your mind",
+          emoji: "🚶",
           isCorrect: false
         }
       ]
@@ -107,24 +117,27 @@ const SimulationTeenStressDay = () => {
       options: [
         {
           id: "a",
-          text: "Prioritize tasks and allocate time wisely",
-          emoji: "📋",
-          description: "Good time management reduces stress and improves results",
-          isCorrect: true
+          text: "Do everything last minute without planning",
+          emoji: "⏳",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Do everything last minute without planning",
-          emoji: "⏳",
-          description: "Poor planning increases stress and reduces quality",
+          text: "Procrastinate and worry about tomorrow",
+          emoji: "😴",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Procrastinate and worry about tomorrow",
-          emoji: "😴",
-          description: "Delaying tasks increases tomorrow's stress",
+          text: "Ask classmates for help with difficult subjects",
+          emoji: "👥",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Prioritize tasks and allocate time wisely",
+          emoji: "📋",
+          isCorrect: true
         }
       ]
     },
@@ -135,35 +148,39 @@ const SimulationTeenStressDay = () => {
       options: [
         {
           id: "a",
-          text: "Reflect positively, relax, and prepare for tomorrow",
-          emoji: "🧘",
-          description: "Positive reflection builds resilience for future challenges",
-          isCorrect: true
+          text: "Worry about tomorrow and stay up late",
+          emoji: "🌙",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Worry about tomorrow and stay up late",
-          emoji: "🌙",
-          description: "Worrying and sleep deprivation increase stress",
+          text: "Binge entertainment to escape reality",
+          emoji: "📺",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Binge entertainment to escape reality",
-          emoji: "📺",
-          description: "Avoidance prevents processing and learning from experiences",
+          text: "Plan a fun activity for the next day",
+          emoji: "🎉",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Reflect positively, relax, and prepare for tomorrow",
+          emoji: "🧘",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentScenario().options.find(opt => opt.id === optionId);
+    const selectedOption = scenarios[currentScenario].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { scenario: currentScenario, optionId, isCorrect }]);
@@ -190,7 +207,7 @@ const SimulationTeenStressDay = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -214,7 +231,7 @@ const SimulationTeenStressDay = () => {
             {getCurrentScenario().description}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +242,6 @@ const SimulationTeenStressDay = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

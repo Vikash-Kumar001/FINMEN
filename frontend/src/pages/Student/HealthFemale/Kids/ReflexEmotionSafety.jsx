@@ -33,8 +33,8 @@ const ReflexEmotionSafety = () => {
       correctAnswer: "Happy",
       options: [
         { text: "Scared to go home", isCorrect: false, emoji: "😨" },
-        { text: "Hurting", isCorrect: false, emoji: "🤕" },
         { text: "Happy", isCorrect: true, emoji: "😃" },
+        { text: "Hurting", isCorrect: false, emoji: "🤕" },
         { text: "Sad always", isCorrect: false, emoji: "😢" }
       ]
     },
@@ -57,7 +57,7 @@ const ReflexEmotionSafety = () => {
         { text: "Hide", isCorrect: false, emoji: "🙈" },
         { text: "Keep secret", isCorrect: false, emoji: "🤫" },
         { text: "Cry alone", isCorrect: false, emoji: "😿" },
-        { text: "Tell an adult", isCorrect: true, emoji: "🗣️" },,
+        { text: "Tell an adult", isCorrect: true, emoji: "🗣️" }
       ]
     },
     {
@@ -66,8 +66,8 @@ const ReflexEmotionSafety = () => {
       correctAnswer: "Safe/Okay",
       options: [
         { text: "Confused", isCorrect: false, emoji: "😕" },
-        { text: "Safe/Okay", isCorrect: true, emoji: "👍" },
         { text: "Scared", isCorrect: false, emoji: "😰" },
+        { text: "Safe/Okay", isCorrect: true, emoji: "👍" },
         { text: "Like hiding", isCorrect: false, emoji: "🫣" }
       ]
     },
@@ -77,9 +77,9 @@ const ReflexEmotionSafety = () => {
       correctAnswer: "Bad/Scared",
       options: [
         { text: "Happy", isCorrect: false, emoji: "😊" },
+        { text: "Sleepy", isCorrect: false, emoji: "😴" },
         { text: "Proud", isCorrect: false, emoji: "😎" },
-        { text: "Bad/Scared", isCorrect: true, emoji: "😖" },
-        { text: "Sleepy", isCorrect: false, emoji: "😴" }
+        { text: "Bad/Scared", isCorrect: true, emoji: "😖" }
       ]
     }
   ];

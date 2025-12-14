@@ -44,8 +44,8 @@ const ReflexCleanliness = () => {
       correctAnswer: "Flowers",
       options: [
         { text: "Garbage", isCorrect: false, emoji: "🥡" },
-        { text: "Flowers", isCorrect: true, emoji: "🌺" },
         { text: "Old Socks", isCorrect: false, emoji: "🧦" },
+        { text: "Flowers", isCorrect: true, emoji: "🌺" },
         { text: "Rotten Egg", isCorrect: false, emoji: "🥚" }
       ]
     },
@@ -66,9 +66,9 @@ const ReflexCleanliness = () => {
       correctAnswer: "After Play",
       options: [
         { text: "Never", isCorrect: false, emoji: "❌" },
-        { text: "After Play", isCorrect: true, emoji: "⚽" },
         { text: "Before Sleep Only", isCorrect: false, emoji: "🛌" },
-        { text: "Once a year", isCorrect: false, emoji: "📅" }
+        { text: "Once a year", isCorrect: false, emoji: "📅" },
+        { text: "After Play", isCorrect: true, emoji: "⚽" }
       ]
     },
     {
@@ -77,9 +77,9 @@ const ReflexCleanliness = () => {
       correctAnswer: "Comb",
       options: [
         { text: "Glue", isCorrect: false, emoji: "🧴" },
-        { text: "Comb", isCorrect: true, emoji: "🪮" },
         { text: "Fork", isCorrect: false, emoji: "🍴" },
-        { text: "Towel", isCorrect: false, emoji: "🧖‍♀️" }
+        { text: "Towel", isCorrect: false, emoji: "🧖‍♀️" },
+        { text: "Comb", isCorrect: true, emoji: "🪮" }
       ]
     }
   ];

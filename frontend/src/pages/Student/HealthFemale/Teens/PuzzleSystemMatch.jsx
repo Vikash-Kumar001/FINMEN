@@ -7,197 +7,263 @@ const PuzzleSystemMatch = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [matches, setMatches] = useState({});
-  const [matchedPairs, setMatchedPairs] = useState([]);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [gameCompleted, setGameCompleted] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
-
-  const leftItems = [
-    { id: "ovaries", text: "Ovaries", emoji: "🥚" },
-    { id: "uterus", text: "Uterus", emoji: "🤰" },
-    { id: "hormones", text: "Hormones", emoji: "⚗️" }
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // 1 coin per correct match
+  const totalCoins = location.state?.totalCoins || 5; // Total coins for 5 matches
+  const totalXp = location.state?.totalXp || 10; // Total XP
+  
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedPart, setSelectedPart] = useState(null);
+  const [selectedFunction, setSelectedFunction] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  // Reproductive System Parts (left side) - 5 items
+  const parts = [
+    { id: 1, name: "Ovaries", emoji: "🥚", hint: "Female reproductive organs" },
+    { id: 2, name: "Uterus", emoji: "🤰", hint: "Womb where baby develops" },
+    { id: 3, name: "Hormones", emoji: "⚗️", hint: "Chemical messengers in body" },
+    { id: 4, name: "Fallopian Tubes", emoji: "输卵", hint: "Pathway for egg transport" },
+    { id: 5, name: "Vagina", emoji: "🚺", hint: "Birth canal and entry point" }
   ];
-
-  const rightItems = [
-    { id: "eggs", text: "Eggs", emoji: "🥚" },
-    { id: "growth", text: "Growth", emoji: "📈" },
-    { id: "changes", text: "Changes", emoji: "🔄" }
+  
+  // Functions (right side) - 5 items (shuffled order)
+  const functions = [
+    { id: 3, text: "Regulate menstrual cycle and mood", hint: "Chemical control system" },
+    { id: 5, text: "Passageway for menstrual flow", hint: "Exit route for fluids" },
+    { id: 1, text: "Produce eggs and female hormones", hint: "Egg-making organs" },
+    { id: 4, text: "Transport eggs from ovaries to uterus", hint: "Egg travel pathway" },
+    { id: 2, text: "House and nourish developing fetus", hint: "Baby-growing chamber" }
   ];
-
-  const correctMatches = {
-    ovaries: "eggs",
-    uterus: "growth",
-    hormones: "changes"
+  
+  // Correct matches
+  const correctMatches = [
+    { partId: 1, functionId: 1 }, // Ovaries → Produce eggs and female hormones
+    { partId: 2, functionId: 2 }, // Uterus → House and nourish developing fetus
+    { partId: 3, functionId: 3 }, // Hormones → Regulate menstrual cycle and mood
+    { partId: 4, functionId: 4 }, // Fallopian Tubes → Transport eggs from ovaries to uterus
+    { partId: 5, functionId: 5 }  // Vagina → Passageway for menstrual flow
+  ];
+  
+  const handlePartSelect = (part) => {
+    if (gameFinished) return;
+    setSelectedPart(part);
   };
-
-  const handleMatch = (leftId, rightId) => {
-    if (matchedPairs.includes(leftId) || matchedPairs.includes(rightId)) return;
+  
+  const handleFunctionSelect = (func) => {
+    if (gameFinished) return;
+    setSelectedFunction(func);
+  };
+  
+  const handleMatch = () => {
+    if (!selectedPart || !selectedFunction || gameFinished) return;
     
-    const newMatches = { ...matches, [leftId]: rightId };
+    resetFeedback();
+    
+    const newMatch = {
+      partId: selectedPart.id,
+      functionId: selectedFunction.id,
+      isCorrect: correctMatches.some(
+        match => match.partId === selectedPart.id && match.functionId === selectedFunction.id
+      )
+    };
+    
+    const newMatches = [...matches, newMatch];
     setMatches(newMatches);
     
-    // Check if all matches are correct
-    const allMatched = Object.keys(newMatches).length === leftItems.length;
-    if (allMatched) {
-      const isAllCorrect = Object.entries(newMatches).every(
-        ([left, right]) => correctMatches[left] === right
-      );
-      
-      setIsCorrect(isAllCorrect);
-      setGameCompleted(true);
-      setShowFeedback(true);
-      
-      if (isAllCorrect) {
-        showCorrectAnswerFeedback(1, true);
-      }
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    // Check if all items are matched
+    if (newMatches.length === parts.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+    
+    // Reset selections
+    setSelectedPart(null);
+    setSelectedFunction(null);
   };
-
-  const handleReset = () => {
-    setMatches({});
-    setMatchedPairs([]);
-    setShowFeedback(false);
-    setIsCorrect(false);
-    setGameCompleted(false);
+  
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedPart(null);
+    setSelectedFunction(null);
+    setScore(0);
+    resetFeedback();
   };
-
+  
   const handleNext = () => {
-    navigate("/student/health-female/teens/period-pain-story");
+    navigate("/games/health-female/teens");
+  };
+  
+  // Check if a part is already matched
+  const isPartMatched = (partId) => {
+    return matches.some(match => match.partId === partId);
+  };
+  
+  // Check if a function is already matched
+  const isFunctionMatched = (functionId) => {
+    return matches.some(match => match.functionId === functionId);
+  };
+  
+  // Get match result for a part
+  const getMatchResult = (partId) => {
+    const match = matches.find(m => m.partId === partId);
+    return match ? match.isCorrect : null;
   };
 
   return (
     <GameShell
       title="Puzzle: System Match"
-      subtitle="Match reproductive system parts with their functions"
+      subtitle={gameFinished ? "Game Complete!" : `Match Parts with Functions (${matches.length}/${parts.length} matched)`}
       onNext={handleNext}
-      nextEnabled={gameCompleted}
-      showGameOver={gameCompleted}
-      score={isCorrect ? 5 : 0}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
       gameId="health-female-teen-34"
       gameType="health-female"
-      totalLevels={40}
-      currentLevel={34}
-      showConfetti={isCorrect && gameCompleted}
+      totalLevels={parts.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={40} // Max score is total number of questions (all correct)
+      maxScore={parts.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 34 of 40</span>
-            <span className="text-yellow-400 font-bold">Coins: {isCorrect ? 5 : 0}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6 text-center">
-            Match each reproductive system part with its correct function
-          </p>
-
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Left column - system parts */}
-            <div className="space-y-4">
-              <h3 className="text-white font-bold text-center mb-4">System Parts</h3>
-              {leftItems.map((item) => (
-                <div
-                  key={item.id}
-                  className={`bg-white/20 backdrop-blur-sm rounded-xl p-4 border-2 cursor-pointer transition-all duration-300 ${
-                    matchedPairs.includes(item.id)
-                      ? "border-green-400 bg-green-500/20"
-                      : "border-white/30 hover:border-purple-400"
+            {/* Left column - Parts */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">System Parts</h3>
+              <div className="space-y-4">
+                {parts.map(part => (
+                  <button
+                    key={part.id}
+                    onClick={() => handlePartSelect(part)}
+                    disabled={isPartMatched(part.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isPartMatched(part.id)
+                        ? getMatchResult(part.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedPart?.id === part.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{part.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{part.name}</h4>
+                        <p className="text-white/80 text-sm">{part.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedPart 
+                    ? `Selected: ${selectedPart.name}` 
+                    : "Select a Part"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedPart || !selectedFunction}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedPart && selectedFunction
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">{item.emoji}</span>
-                    <span className="text-white font-medium">{item.text}</span>
-                  </div>
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{parts.length}</p>
+                  <p>Matched: {matches.length}/{parts.length}</p>
                 </div>
-              ))}
-            </div>
-
-            {/* Middle column - arrows */}
-            <div className="flex flex-col justify-center items-center space-y-6">
-              <div className="w-12 h-12 flex items-center justify-center">
-                <span className="text-3xl">→</span>
-              </div>
-              <div className="w-12 h-12 flex items-center justify-center">
-                <span className="text-3xl">→</span>
-              </div>
-              <div className="w-12 h-12 flex items-center justify-center">
-                <span className="text-3xl">→</span>
               </div>
             </div>
-
-            {/* Right column - functions */}
-            <div className="space-y-4">
-              <h3 className="text-white font-bold text-center mb-4">Functions</h3>
-              {rightItems.map((item) => (
-                <div
-                  key={item.id}
-                  className={`bg-white/20 backdrop-blur-sm rounded-xl p-4 border-2 cursor-pointer transition-all duration-300 ${
-                    matchedPairs.includes(item.id)
-                      ? "border-green-400 bg-green-500/20"
-                      : "border-white/30 hover:border-purple-400"
-                  }`}
-                  onClick={() => {
-                    // Find the first unmatched left item and create a match
-                    const unmatchedLeft = leftItems.find(
-                      (leftItem) => !matchedPairs.includes(leftItem.id)
-                    );
-                    if (unmatchedLeft) {
-                      handleMatch(unmatchedLeft.id, item.id);
-                      setMatchedPairs([...matchedPairs, unmatchedLeft.id, item.id]);
-                    }
-                  }}
+            
+            {/* Right column - Functions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Functions</h3>
+              <div className="space-y-4">
+                {functions.map(func => (
+                  <button
+                    key={func.id}
+                    onClick={() => handleFunctionSelect(func)}
+                    disabled={isFunctionMatched(func.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isFunctionMatched(func.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedFunction?.id === func.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div>
+                        <h4 className="font-bold text-white">{func.text}</h4>
+                        <p className="text-white/80 text-sm">{func.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {parts.length} reproductive system parts with their functions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding reproductive system parts and their functions promotes body literacy and health awareness!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {parts.length} parts correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">{item.emoji}</span>
-                    <span className="text-white font-medium">{item.text}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {showFeedback && (
-            <div className={`mt-6 p-4 rounded-xl ${isCorrect ? "bg-green-500/20 border border-green-400" : "bg-red-500/20 border border-red-400"}`}>
-              <div className="flex items-center space-x-3">
-                {isCorrect ? (
-                  <span className="text-green-400 text-2xl">✓</span>
-                ) : (
-                  <span className="text-red-400 text-2xl">✗</span>
-                )}
-                <div>
-                  <h4 className={`font-bold ${isCorrect ? "text-green-400" : "text-red-400"}`}>
-                    {isCorrect ? "Excellent! All matches are correct!" : "Some matches need correction."}
-                  </h4>
-                  <p className="text-white/80 mt-1">
-                    {isCorrect
-                      ? "You've correctly matched all reproductive system parts with their functions."
-                      : "Review the correct matches: Ovaries → Eggs, Uterus → Growth, Hormones → Changes."}
-                  </p>
-                </div>
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about the specific role each reproductive system part plays when matching it with its function!
+                </p>
               </div>
-            </div>
-          )}
-
-          <div className="flex justify-center mt-6">
-            <button
-              onClick={handleReset}
-              className="bg-white/20 hover:bg-white/30 text-white py-2 px-6 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2"
-            >
-              <span>Reset Puzzle</span>
-            </button>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

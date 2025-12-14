@@ -55,8 +55,8 @@ const ReflexGrowthAlert = () => {
       correctAnswer: "Growing",
       options: [
         { text: "Jumping once", isCorrect: false, emoji: "🦘" },
-        { text: "Wearing hats", isCorrect: false, emoji: "🧢" },
         { text: "Growing", isCorrect: true, emoji: "📏" },
+        { text: "Wearing hats", isCorrect: false, emoji: "🧢" },
         { text: "Sitting", isCorrect: false, emoji: "🪑" }
       ]
     },
@@ -77,9 +77,9 @@ const ReflexGrowthAlert = () => {
       correctAnswer: "Doctor",
       options: [
         { text: "Clown", isCorrect: false, emoji: "🤡" },
-        { text: "Doctor", isCorrect: true, emoji: "👩‍⚕️" },
         { text: "Robot", isCorrect: false, emoji: "🤖" },
-        { text: "Alien", isCorrect: false, emoji: "👽" }
+        { text: "Alien", isCorrect: false, emoji: "👽" },
+        { text: "Doctor", isCorrect: true, emoji: "👩‍⚕️" }
       ]
     }
   ];

@@ -38,9 +38,9 @@ const ReflexDailyCheck = () => {
       scenario: "It's sunny outside! You need...",
       options: [
         { id: "coat", text: "Heavy Coat", emoji: "🧥", isCorrect: false },
-        { id: "sunscreen", text: "Sunscreen & Hat", emoji: "🧢", isCorrect: true },
+        { id: "sunscreen", text: "Sunscreen & Hat", emoji: "🧢", isCorrect: false },
         { id: "umbrella", text: "Umbrella", emoji: "☔", isCorrect: false },
-        { id: "scarf", text: "Wool Scarf", emoji: "🧣", isCorrect: false }
+        { id: "hat", text: "Sunscreen & Hat", emoji: "🧢", isCorrect: true }
       ]
     },
     {
@@ -58,8 +58,8 @@ const ReflexDailyCheck = () => {
       scenario: "You are thirsty!",
       options: [
         { id: "soda", text: "Soda", emoji: "🥤", isCorrect: false },
-        { id: "water", text: "Water", emoji: "💧", isCorrect: true },
-        { id: "candy", text: "Eat candy", emoji: "🍬", isCorrect: false },
+        { id: "water", text: "Water", emoji: "💧", isCorrect: false },
+        { id: "juice", text: "Fresh Juice", emoji: "🧃", isCorrect: true },
         { id: "salt", text: "Eat salt", emoji: "🧂", isCorrect: false }
       ]
     },
@@ -67,8 +67,8 @@ const ReflexDailyCheck = () => {
       id: 5,
       scenario: "It's getting late. Time to...",
       options: [
-        { id: "play", text: "Play loud games", emoji: "🎮", isCorrect: false },
         { id: "sleep", text: "Go to sleep", emoji: "🛌", isCorrect: true },
+        { id: "play", text: "Play loud games", emoji: "🎮", isCorrect: false },
         { id: "scream", text: "Scream", emoji: "😱", isCorrect: false },
         { id: "eat", text: "Eat cake", emoji: "🍰", isCorrect: false }
       ]

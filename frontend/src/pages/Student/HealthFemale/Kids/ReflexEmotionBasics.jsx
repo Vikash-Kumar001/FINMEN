@@ -33,8 +33,8 @@ const ReflexEmotionBasics = () => {
       correctAnswer: "Smiling",
       options: [
         { text: "Crying", isCorrect: false, emoji: "😢" },
-        { text: "Angry", isCorrect: false, emoji: "😠" },
         { text: "Smiling", isCorrect: true, emoji: "😃" },
+        { text: "Angry", isCorrect: false, emoji: "😠" },
         { text: "Sleepy", isCorrect: false, emoji: "😴" }
       ]
     },
@@ -45,8 +45,8 @@ const ReflexEmotionBasics = () => {
       options: [
         { text: "Laughing", isCorrect: false, emoji: "😆" },
         { text: "Cool", isCorrect: false, emoji: "😎" },
-        { text: "Silly", isCorrect: false, emoji: "🤪" },
         { text: "Frowning", isCorrect: true, emoji: "☹️" },
+        { text: "Silly", isCorrect: false, emoji: "🤪" }
       ]
     },
     {
@@ -55,9 +55,9 @@ const ReflexEmotionBasics = () => {
       correctAnswer: "Red Face",
       options: [
         { text: "Calm", isCorrect: false, emoji: "😌" },
-        { text: "Red Face", isCorrect: true, emoji: "😡" },
         { text: "Surprised", isCorrect: false, emoji: "😯" },
-        { text: "Happy", isCorrect: false, emoji: "😊" }
+        { text: "Happy", isCorrect: false, emoji: "😊" },
+        { text: "Red Face", isCorrect: true, emoji: "😡" }
       ]
     },
     {
@@ -66,8 +66,8 @@ const ReflexEmotionBasics = () => {
       correctAnswer: "Wide Eyes",
       options: [
         { text: "Bored", isCorrect: false, emoji: "😐" },
-        { text: "Wide Eyes", isCorrect: true, emoji: "😨" },
         { text: "Love", isCorrect: false, emoji: "😍" },
+        { text: "Wide Eyes", isCorrect: true, emoji: "😨" },
         { text: "Wink", isCorrect: false, emoji: "😉" }
       ]
     },
@@ -76,10 +76,10 @@ const ReflexEmotionBasics = () => {
       question: "Feelings are...",
       correctAnswer: "Normal",
       options: [
-        { text: "Normal", isCorrect: true, emoji: "🆗" },
         { text: "Bad", isCorrect: false, emoji: "👎" },
         { text: "Scary", isCorrect: false, emoji: "👻" },
-        { text: "Wrong", isCorrect: false, emoji: "❌" }
+        { text: "Wrong", isCorrect: false, emoji: "❌" },
+        { text: "Normal", isCorrect: true, emoji: "🆗" }
       ]
     }
   ];

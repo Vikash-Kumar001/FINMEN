@@ -141,7 +141,10 @@ const BadgeRuleFollowerKid = () => {
           text: "Only to avoid getting tickets", 
           isCorrect: false
         },
-        
+        { 
+          text: "To ensure safety for all road users", 
+          isCorrect: true
+        },
         { 
           text: "Because rules are boring", 
           isCorrect: false
@@ -149,11 +152,7 @@ const BadgeRuleFollowerKid = () => {
         { 
           text: "Only when police are watching", 
           isCorrect: false
-        },
-        { 
-          text: "To ensure safety for all road users", 
-          isCorrect: true
-        },
+        }
       ],
       feedback: {
         correct: "Traffic rules exist to protect everyone - pedestrians, cyclists, and drivers - by creating predictable and safe interactions on the road.",

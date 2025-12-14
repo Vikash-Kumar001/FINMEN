@@ -80,7 +80,7 @@ const CyberbullyStory = () => {
         },
         {
           id: "b",
-          text: "Refuse to participate and劝告 friend to stop",
+          text: "Refuse to participate and friend to stop",
           emoji: "✋",
           isCorrect: true
         },
@@ -120,6 +120,12 @@ const CyberbullyStory = () => {
       id: 5,
       text: "Someone creates a fake profile to impersonate and embarrass another student online. How should this be handled?",
       options: [
+         {
+          id: "b",
+          text: "Report the fake profile to the platform and a trusted adult",
+          emoji: "🛡️",
+          isCorrect: true
+        },
         {
           id: "a",
           text: "Ignore it as just a joke",
@@ -127,6 +133,7 @@ const CyberbullyStory = () => {
           isCorrect: false
         },
         
+       
         {
           id: "c",
           text: "Share the fake profile for entertainment",

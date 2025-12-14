@@ -56,15 +56,14 @@ const BadgeCompassionLeader = () => {
       title: "Helping Others",
       question: "What is the best way to help someone who is facing difficulties?",
       options: [
-         { 
-          text: "Offer practical support and emotional encouragement", 
-          isCorrect: true
-        },
         { 
           text: "Tell them their problems aren't important", 
           isCorrect: false
         },
-       
+        { 
+          text: "Offer practical support and emotional encouragement", 
+          isCorrect: true
+        },
         { 
           text: "Avoid them to prevent getting involved", 
           isCorrect: false
@@ -115,14 +114,13 @@ const BadgeCompassionLeader = () => {
           text: "It looks good on college applications", 
           isCorrect: false
         },
-       
+        { 
+          text: "It creates positive change and builds stronger communities", 
+          isCorrect: true
+        },
         { 
           text: "It's a requirement for graduation", 
           isCorrect: false
-        },
-         { 
-          text: "It creates positive change and builds stronger communities", 
-          isCorrect: true
         },
         { 
           text: "It's easier than finding a job", 
@@ -143,7 +141,10 @@ const BadgeCompassionLeader = () => {
           text: "Only talk to your close friends", 
           isCorrect: false
         },
-       
+        { 
+          text: "Invite others to join conversations and activities", 
+          isCorrect: true
+        },
         { 
           text: "Ignore people who seem different", 
           isCorrect: false
@@ -151,11 +152,7 @@ const BadgeCompassionLeader = () => {
         { 
           text: "Form exclusive cliques", 
           isCorrect: false
-        },
-         { 
-          text: "Invite others to join conversations and activities", 
-          isCorrect: true
-        },
+        }
       ],
       feedback: {
         correct: "Inviting others to participate creates welcoming environments where everyone feels valued.",

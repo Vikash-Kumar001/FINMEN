@@ -11,34 +11,34 @@ const QuizOnSelfEsteem = () => {
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [coins, setCoins] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Which approach builds confidence effectively?",
+      emoji: "😊",
       options: [
         {
           id: "a",
           text: "Positive self-talk and self-acceptance",
           emoji: "😊",
-          description: "Encouraging yourself promotes healthy self-esteem",
           isCorrect: true
         },
         {
           id: "b",
           text: "Negative comparisons with others",
           emoji: "😞",
-          description: "Comparing yourself negatively damages self-worth",
           isCorrect: false
         },
         {
           id: "c",
           text: "Avoiding challenges to prevent failure",
           emoji: "🏃",
-          description: "Avoidance prevents growth and genuine confidence",
           isCorrect: false
         }
       ]
@@ -46,26 +46,24 @@ const QuizOnSelfEsteem = () => {
     {
       id: 2,
       text: "What is the benefit of setting realistic goals?",
+      emoji: "🎯",
       options: [
         {
           id: "a",
           text: "They are easier to abandon",
           emoji: "🗑️",
-          description: "Abandoning goals reduces self-confidence",
           isCorrect: false
         },
         {
           id: "b",
           text: "Achieving them builds genuine confidence",
           emoji: "🎯",
-          description: "Success in realistic goals reinforces self-belief",
           isCorrect: true
         },
         {
           id: "c",
           text: "They prevent any progress",
           emoji: "🛑",
-          description: "Realistic goals facilitate steady progress",
           isCorrect: false
         }
       ]
@@ -73,26 +71,24 @@ const QuizOnSelfEsteem = () => {
     {
       id: 3,
       text: "How should you handle mistakes?",
+      emoji: "📈",
       options: [
         {
           id: "a",
           text: "View them as personal failures",
           emoji: "❌",
-          description: "This mindset prevents growth and resilience",
           isCorrect: false
         },
         {
           id: "b",
           text: "Learn from them as growth opportunities",
           emoji: "📈",
-          description: "Mistakes are valuable learning experiences",
           isCorrect: true
         },
         {
           id: "c",
           text: "Ignore them completely",
           emoji: "🙈",
-          description: "Ignoring mistakes prevents learning",
           isCorrect: false
         }
       ]
@@ -100,26 +96,24 @@ const QuizOnSelfEsteem = () => {
     {
       id: 4,
       text: "What role do supportive relationships play in self-esteem?",
+      emoji: "🤗",
       options: [
         {
           id: "a",
           text: "They create dependency and weakness",
           emoji: "🧍",
-          description: "Supportive relationships enhance independence",
           isCorrect: false
         },
         {
           id: "b",
           text: "They provide encouragement and validation",
           emoji: "🤗",
-          description: "Healthy relationships boost confidence and well-being",
           isCorrect: true
         },
         {
           id: "c",
           text: "They are unnecessary for self-worth",
           emoji: "-alone",
-          description: "Human connection is fundamental to mental health",
           isCorrect: false
         }
       ]
@@ -127,52 +121,52 @@ const QuizOnSelfEsteem = () => {
     {
       id: 5,
       text: "Why is self-compassion important?",
+      emoji: "🧘",
       options: [
         {
           id: "a",
           text: "It makes you complacent and lazy",
           emoji: "😴",
-          description: "Self-compassion encourages growth without harshness",
           isCorrect: false
         },
         {
           id: "b",
           text: "It prevents you from improving",
           emoji: "📉",
-          description: "Self-compassion actually facilitates improvement",
           isCorrect: false
         },
         {
           id: "c",
           text: "It reduces self-criticism and promotes resilience",
           emoji: "🧘",
-          description: "Treating yourself kindly improves mental health",
           isCorrect: true
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect;
+    
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
+    setSelectedOption(optionId);
+    setShowFeedback(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        resetFeedback();
+        setShowFeedback(false);
       } else {
         setGameFinished(true);
       }
     }, 1500);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-female/teens/reflex-confidence-check");
@@ -181,11 +175,10 @@ const QuizOnSelfEsteem = () => {
   return (
     <GameShell
       title="Quiz on Self-Esteem"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -196,35 +189,48 @@ const QuizOnSelfEsteem = () => {
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/teens"
-      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+            <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
           </div>
 
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+          <div className="text-6xl mb-4 text-center">{questions[currentQuestion].emoji}</div>
+
+          <p className="text-white text-lg mb-6 text-center">
+            {questions[currentQuestion].text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
-                </div>
-              </button>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {questions[currentQuestion].options.map((option) => {
+              let buttonClass = "bg-gradient-to-br from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white";
+              
+              if (showFeedback) {
+                if (option.isCorrect) {
+                  buttonClass = "bg-gradient-to-br from-green-500 to-emerald-600 text-white ring-4 ring-green-400";
+                } else if (option.id === selectedOption) {
+                  buttonClass = "bg-gradient-to-br from-red-500 to-rose-600 text-white ring-4 ring-red-400";
+                } else {
+                  buttonClass = "bg-gray-500/30 text-white";
+                }
+              } else if (option.id === selectedOption) {
+                buttonClass = "bg-gradient-to-br from-blue-500 to-sky-600 text-white ring-4 ring-blue-400";
+              }
+              
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleAnswer(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${buttonClass} ${showFeedback ? "cursor-not-allowed" : "hover:scale-105"}`}
+                >
+                  <div className="text-2xl mb-2">{option.emoji}</div>
+                  <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

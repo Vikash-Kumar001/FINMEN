@@ -10,7 +10,7 @@ const SportsStory = () => {
   
   // Check if this component should render based on gameId from location.state
   // This is needed because there are multiple "Sports Story" games with the same path
-  const expectedGameId = "brain-kids-38";
+  const expectedGameId = "brain-kids-8";
   
   // Get game data from game category folder (source of truth)
   const gameData = getGameDataById(expectedGameId);

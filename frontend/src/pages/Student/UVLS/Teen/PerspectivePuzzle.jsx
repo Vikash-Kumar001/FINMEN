@@ -8,7 +8,7 @@ import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/te
 const PerspectivePuzzle = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-74";
+  const gameId = "uvls-teen-3";
   const gameData = getGameDataById(gameId);
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;

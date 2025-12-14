@@ -7,176 +7,263 @@ const NutrientsMatchPuzzle = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(null);
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // 1 coin per correct match
+  const totalCoins = location.state?.totalCoins || 5; // Total coins for 5 matches
+  const totalXp = location.state?.totalXp || 10; // Total XP
+  
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedNutrient, setSelectedNutrient] = useState(null);
+  const [selectedSource, setSelectedSource] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
-
-  const puzzles = [
-    {
-      id: 1,
-      item: "Iron",
-      emoji: "🩸",
-      matches: [
-        { id: "spinach", text: "Spinach", emoji: "🍃", correct: true },
-        { id: "orange", text: "Orange", emoji: "🍊", correct: false },
-        { id: "milk", text: "Milk", emoji: "🥛", correct: false }
-      ]
-    },
-    {
-      id: 2,
-      item: "Vitamin C",
-      emoji: "🍊",
-      matches: [
-        { id: "eggs", text: "Eggs", emoji: "🥚", correct: false },
-        { id: "orange", text: "Orange", emoji: "🍊", correct: true },
-        { id: "bread", text: "Bread", emoji: "🍞", correct: false }
-      ]
-    },
-    {
-      id: 3,
-      item: "Protein",
-      emoji: "🥚",
-      matches: [
-        { id: "rice", text: "Rice", emoji: "🍚", correct: false },
-        { id: "eggs", text: "Eggs", emoji: "🥚", correct: true },
-        { id: "sugar", text: "Sugar", emoji: "🍬", correct: false }
-      ]
-    },
-    {
-      id: 4,
-      item: "Calcium",
-      emoji: "🥛",
-      matches: [
-        { id: "chips", text: "Chips", emoji: "🍟", correct: false },
-        { id: "milk", text: "Milk", emoji: "🥛", correct: true },
-        { id: "cola", text: "Cola", emoji: "🥤", correct: false }
-      ]
-    },
-    {
-      id: 5,
-      item: "Fiber",
-      emoji: "🌾",
-      matches: [
-        { id: "candy", text: "Candy", emoji: "🍬", correct: false },
-        { id: "oats", text: "Oats", emoji: "🌾", correct: true },
-        { id: "oil", text: "Oil", emoji: "🛢️", correct: false }
-      ]
-    }
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  // Nutrients (left side) - 5 items
+  const nutrients = [
+    { id: 1, name: "Iron", emoji: "🩸", hint: "Essential mineral for blood health" },
+    { id: 2, name: "Vitamin C", emoji: "🍊", hint: "Antioxidant for immune system" },
+    { id: 3, name: "Protein", emoji: "🥚", hint: "Building blocks for muscles" },
+    { id: 4, name: "Calcium", emoji: "🥛", hint: "Mineral for strong bones" },
+    { id: 5, name: "Fiber", emoji: "🌾", hint: "Digestive health support" }
   ];
-
-  const handleMatch = (matchId) => {
-    const currentPuzzleData = puzzles[currentPuzzle];
-    const match = currentPuzzleData.matches.find(m => m.id === matchId);
-    setSelectedMatch(matchId);
-
-    if (match.correct) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-      setShowCoinFeedback(currentPuzzleData.id);
-      setTimeout(() => setShowCoinFeedback(null), 1500);
-    }
-
-    setTimeout(() => {
-      if (currentPuzzle < puzzles.length - 1) {
-        setCurrentPuzzle(prev => prev + 1);
-        setSelectedMatch(null);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
+  
+  // Food Sources (right side) - 5 items (shuffled order)
+  const sources = [
+    { id: 3, text: "Eggs and lean meats", hint: "Complete protein sources" },
+    { id: 5, text: "Whole grains and vegetables", hint: "Rich in dietary fiber" },
+    { id: 1, text: "Spinach and red meat", hint: "High in iron content" },
+    { id: 4, text: "Dairy products and leafy greens", hint: "Excellent calcium sources" },
+    { id: 2, text: "Citrus fruits and berries", hint: "Abundant vitamin C sources" }
+  ];
+  
+  // Correct matches
+  const correctMatches = [
+    { nutrientId: 1, sourceId: 1 }, // Iron → Spinach and red meat
+    { nutrientId: 2, sourceId: 2 }, // Vitamin C → Citrus fruits and berries
+    { nutrientId: 3, sourceId: 3 }, // Protein → Eggs and lean meats
+    { nutrientId: 4, sourceId: 4 }, // Calcium → Dairy products and leafy greens
+    { nutrientId: 5, sourceId: 5 }  // Fiber → Whole grains and vegetables
+  ];
+  
+  const handleNutrientSelect = (nutrient) => {
+    if (gameFinished) return;
+    setSelectedNutrient(nutrient);
   };
-
+  
+  const handleSourceSelect = (source) => {
+    if (gameFinished) return;
+    setSelectedSource(source);
+  };
+  
+  const handleMatch = () => {
+    if (!selectedNutrient || !selectedSource || gameFinished) return;
+    
+    resetFeedback();
+    
+    const newMatch = {
+      nutrientId: selectedNutrient.id,
+      sourceId: selectedSource.id,
+      isCorrect: correctMatches.some(
+        match => match.nutrientId === selectedNutrient.id && match.sourceId === selectedSource.id
+      )
+    };
+    
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+    
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    // Check if all items are matched
+    if (newMatches.length === nutrients.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+    
+    // Reset selections
+    setSelectedNutrient(null);
+    setSelectedSource(null);
+  };
+  
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedNutrient(null);
+    setSelectedSource(null);
+    setScore(0);
+    resetFeedback();
+  };
+  
   const handleNext = () => {
-    navigate("/student/health-female/teens/sports-energy-story");
+    navigate("/games/health-female/teens");
+  };
+  
+  // Check if a nutrient is already matched
+  const isNutrientMatched = (nutrientId) => {
+    return matches.some(match => match.nutrientId === nutrientId);
+  };
+  
+  // Check if a source is already matched
+  const isSourceMatched = (sourceId) => {
+    return matches.some(match => match.sourceId === sourceId);
+  };
+  
+  // Get match result for a nutrient
+  const getMatchResult = (nutrientId) => {
+    const match = matches.find(m => m.nutrientId === nutrientId);
+    return match ? match.isCorrect : null;
   };
 
   return (
     <GameShell
       title="Puzzle: Nutrients Match"
-      subtitle={`Puzzle ${currentPuzzle + 1}/5: ${puzzles[currentPuzzle].item}`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Nutrients with Food Sources (${matches.length}/${nutrients.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="health-female-teen-14"
       gameType="health-female"
-      totalLevels={20}
-      currentLevel={14}
+      totalLevels={nutrients.length}
+      currentLevel={matches.length + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={20} // Max score is total number of questions (all correct)
+      maxScore={nutrients.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/5: {puzzles[currentPuzzle].item}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6 text-center">
-            Match the nutrient to its best food source!
-          </p>
-
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-              {showCoinFeedback === puzzles[currentPuzzle].id && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                    +1
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-4xl mr-3">{puzzles[currentPuzzle].emoji}</div>
-                <div className="text-white text-xl font-bold">{puzzles[currentPuzzle].item}</div>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Nutrients */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Nutrients</h3>
+              <div className="space-y-4">
+                {nutrients.map(nutrient => (
+                  <button
+                    key={nutrient.id}
+                    onClick={() => handleNutrientSelect(nutrient)}
+                    disabled={isNutrientMatched(nutrient.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isNutrientMatched(nutrient.id)
+                        ? getMatchResult(nutrient.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedNutrient?.id === nutrient.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{nutrient.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{nutrient.name}</h4>
+                        <p className="text-white/80 text-sm">{nutrient.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                {puzzles[currentPuzzle].matches.map((match) => {
-                  const isCorrect = selectedMatch === match.id && match.correct;
-                  const isWrong = selectedMatch === match.id && !match.correct;
-
-                  return (
-                    <button
-                      key={match.id}
-                      onClick={() => handleMatch(match.id)}
-                      disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${
-                        !selectedMatch
-                          ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                          : isCorrect
-                          ? 'bg-green-100/20 border-green-500 text-white'
-                          : isWrong
-                          ? 'bg-red-100/20 border-red-500 text-white'
-                          : 'bg-gray-100/20 border-gray-500 text-white'
-                      }`}
-                    >
-                      {isCorrect && (
-                        <div className="absolute -top-2 -right-2 text-2xl">✅</div>
-                      )}
-                      {isWrong && (
-                        <div className="absolute -top-2 -right-2 text-2xl">❌</div>
-                      )}
-                      <div className="text-2xl mb-1">{match.emoji}</div>
-                      <div className="font-medium text-sm">{match.text}</div>
-                    </button>
-                  );
-                })}
+            </div>
+            
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedNutrient 
+                    ? `Selected: ${selectedNutrient.name}` 
+                    : "Select a Nutrient"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedNutrient || !selectedSource}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedNutrient && selectedSource
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{nutrients.length}</p>
+                  <p>Matched: {matches.length}/{nutrients.length}</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Right column - Food Sources */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Food Sources</h3>
+              <div className="space-y-4">
+                {sources.map(source => (
+                  <button
+                    key={source.id}
+                    onClick={() => handleSourceSelect(source)}
+                    disabled={isSourceMatched(source.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isSourceMatched(source.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedSource?.id === source.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div>
+                        <h4 className="font-bold text-white">{source.text}</h4>
+                        <p className="text-white/80 text-sm">{source.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {nutrients.length} nutrients with their food sources!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding nutrients and their food sources helps you make informed dietary choices for optimal health!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {nutrients.length} nutrients correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each nutrient does for your body when matching it with food sources!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

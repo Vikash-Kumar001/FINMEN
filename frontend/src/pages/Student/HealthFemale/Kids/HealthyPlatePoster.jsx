@@ -1,225 +1,142 @@
 import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const HealthyPlatePoster = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // 1 coin per question
+  const totalCoins = location.state?.totalCoins || 5; // Total coins for 5 questions
+  const totalXp = location.state?.totalXp || 10; // Total XP
+  const [score, setScore] = useState(0);
+  const [currentStage, setCurrentStage] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Hardcoded Game Rewards & Configuration
-  const coinsPerLevel = 1;
-  const totalCoins = 5;
-  const totalXp = 10;
-  const maxScore = 5;
-  const gameId = "health-female-kids-16";
-
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [selectedOptionId, setSelectedOptionId] = useState(null);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
-
-  const questions = [
+  const stages = [
     {
-      id: 1,
-      text: "How much of your plate should be fruits and vegetables?",
-      options: [
-        {
-          id: "a",
-          text: "A tiny bit",
-          emoji: "🤏",
-          description: "Not quite enough! We need more vitamins.",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Half the plate",
-          emoji: "🥗",
-          description: "Correct! Half your plate should be colorful plants.",
-          isCorrect: true
-        }
-      ]
+      question: 'Which poster would best show "Half Your Plate = Fruits & Veggies"?',
+      choices: [
+        { text: "Poster showing a tiny bit of fruits and vegetables 🤏", correct: false },
+        { text: "Poster showing mostly junk food with few vegetables 🍔", correct: false },
+        { text: "Poster showing half the plate filled with colorful plants 🥗", correct: true },
+      ],
     },
     {
-      id: 2,
-      text: "What is the best drink to have with your meal?",
-      options: [
-        {
-          id: "a",
-          text: "Water",
-          emoji: "💧",
-          description: "Yes! Water hydrates you best.",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Soda",
-          emoji: "🥤",
-          description: "Soda has too much sugar.",
-          isCorrect: false
-        }
-      ]
+      question: 'Which poster would best show the best drink with your meal?',
+      choices: [
+        { text: "Poster promoting water as the best choice 💧", correct: true },
+        { text: "Poster showing soda with every meal 🥤", correct: false },
+        { text: "Poster showing energy drinks instead of water ⚡", correct: false },
+      ],
     },
     {
-      id: 3,
-      text: "What part of the plate gives you energy?",
-      options: [
-        {
-          id: "a",
-          text: "Grains",
-          emoji: "🍞",
-          description: "Right! Whole grains give lasting energy.",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Candies",
-          emoji: "🍬",
-          description: "Candy gives a crash, not good energy.",
-          isCorrect: false
-        }
-      ]
+      question: 'Which poster would best show what gives you energy?',
+      choices: [
+        { text: "Poster showing grilled fish as protein source 🐟", correct: false },
+        { text: "Poster showing whole grains for lasting energy 🍞", correct: true },
+        { text: "Poster showing candies for quick energy 🍬", correct: false },
+      ],
     },
     {
-      id: 4,
-      text: "Which of these is a healthy protein for your plate?",
-      options: [
-        {
-          id: "a",
-          text: "Fried Chicken",
-          emoji: "🍗",
-          description: "Fried food has unhealthy fats.",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Grilled Fish",
-          emoji: "🐟",
-          description: "Perfect! Fish is lean protein.",
-          isCorrect: true
-        }
-      ]
+      question: 'Which poster would best show a healthy protein choice?',
+      choices: [
+        { text: "Poster showing fried chicken with unhealthy fats 🍗", correct: false },
+        { text: "Poster showing grilled fish as lean protein 🐟", correct: true },
+        { text: "Poster showing processed meat as healthy 🌭", correct: false },
+      ],
     },
     {
-      id: 5,
-      text: "Why should we eat colorful foods?",
-      options: [
-        {
-          id: "a",
-          text: "They look pretty",
-          emoji: "🎨",
-          description: "True, but they also have different vitamins! Color = Health.",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Full of Vitamins",
-          emoji: "💪",
-          description: "Exactly! Different colors mean different nutrients.",
-          isCorrect: true
-        }
-      ]
-    }
+      question: 'Which poster would best show why we eat colorful foods?',
+      choices: [
+        { text: "Poster showing colorful foods are just pretty 🎨", correct: false },
+        { text: "Poster showing all foods should be the same color 🌫️", correct: false },
+        { text: "Poster showing colorful foods are full of vitamins 💪", correct: true },
+      ],
+    },
   ];
 
-  const handleChoice = (optionId) => {
-    if (selectedOptionId) return;
-
-    setSelectedOptionId(optionId);
-    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
+    
+    const isLastStage = currentStage === stages.length - 1;
+    
     setTimeout(() => {
-      setSelectedOptionId(null);
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+      if (isLastStage) {
+        setShowResult(true);
       } else {
-        setGameFinished(true);
+        setCurrentStage(prev => prev + 1);
+        setAnswered(false);
       }
-    }, 2000);
+    }, 500);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
+  const currentStageData = stages[currentStage];
+
   return (
     <GameShell
       title="My Healthy Plate"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
-      gameId={gameId}
-      gameType="health-female"
-      totalLevels={5}
-      currentLevel={16}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
-      backPath="/games/health-female/kids"
-      showAnswerConfetti={showAnswerConfetti}
-      maxScore={maxScore}
+      score={score}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}` : "Poster Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      onNext={handleNext}
+      nextButtonText="Back to Games"
+      gameId="health-female-kids-16"
+      gameType="health-female"
+      totalLevels={stages.length}
+      currentLevel={currentStage + 1}
+      maxScore={stages.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/health-female/kids"
+    >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
+        {!showResult && currentStageData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentStage + 1}/{stages.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{stages.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentStageData.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentStageData.choices.map((choice, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleChoice(choice.correct)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <p className="font-semibold text-lg">{choice.text}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-
-          <h2 className="text-2xl font-bold text-white mb-8 text-center">
-            {questions[currentQuestion].text}
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {questions[currentQuestion].options.map(option => {
-              const isSelected = selectedOptionId === option.id;
-              const showFeedback = selectedOptionId !== null;
-
-              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
-
-              if (showFeedback && isSelected) {
-                buttonClass = option.isCorrect
-                  ? "bg-green-500 ring-4 ring-green-300"
-                  : "bg-red-500 ring-4 ring-red-300";
-              } else if (showFeedback && !isSelected) {
-                buttonClass = "bg-white/10 opacity-50";
-              }
-
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={showFeedback}
-                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-4xl mr-6">{option.emoji}</div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
-                      {showFeedback && isSelected && (
-                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
-                      )}
-                    </div>
-                    {showFeedback && isSelected && (
-                      <div className="text-3xl ml-4">
-                        {option.isCorrect ? "✅" : "❌"}
-                      </div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

@@ -7,176 +7,263 @@ const PuzzleHabitBuilder = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(null);
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // 1 coin per correct match
+  const totalCoins = location.state?.totalCoins || 5; // Total coins for 5 matches
+  const totalXp = location.state?.totalXp || 10; // Total XP
+  
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedHabit, setSelectedHabit] = useState(null);
+  const [selectedBenefit, setSelectedBenefit] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
-
-  const puzzles = [
-    {
-      id: 1,
-      item: "Water",
-      emoji: "💧",
-      matches: [
-        { id: "hydration", text: "Hydration", emoji: "🥤", correct: true },
-        { id: "energy", text: "Energy", emoji: "⚡", correct: false },
-        { id: "focus", text: "Focus", emoji: "🎯", correct: false }
-      ]
-    },
-    {
-      id: 2,
-      item: "Exercise",
-      emoji: "🏃",
-      matches: [
-        { id: "fitness", text: "Fitness", emoji: "💪", correct: true },
-        { id: "sleep", text: "Sleep", emoji: "😴", correct: false },
-        { id: "diet", text: "Diet", emoji: "🥗", correct: false }
-      ]
-    },
-    {
-      id: 3,
-      item: "Study",
-      emoji: "📚",
-      matches: [
-        { id: "focus", text: "Focus", emoji: "🎯", correct: true },
-        { id: "hydration", text: "Hydration", emoji: "🥤", correct: false },
-        { id: "fitness", text: "Fitness", emoji: "💪", correct: false }
-      ]
-    },
-    {
-      id: 4,
-      item: "Sleep",
-      emoji: "😴",
-      matches: [
-        { id: "restoration", text: "Restoration", emoji: "🔄", correct: true },
-        { id: "entertainment", text: "Entertainment", emoji: "🎮", correct: false },
-        { id: "stress", text: "Stress", emoji: "😰", correct: false }
-      ]
-    },
-    {
-      id: 5,
-      item: "Nutrition",
-      emoji: "🍎",
-      matches: [
-        { id: "health", text: "Health", emoji: "❤️", correct: true },
-        { id: "wealth", text: "Wealth", emoji: "💰", correct: false },
-        { id: "popularity", text: "Popularity", emoji: "🌟", correct: false }
-      ]
-    }
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  // Habits (left side) - 5 items
+  const habits = [
+    { id: 1, name: "Water", emoji: "💧", hint: "Essential liquid for bodily functions" },
+    { id: 2, name: "Exercise", emoji: "🏃", hint: "Physical activity for fitness" },
+    { id: 3, name: "Study", emoji: "📚", hint: "Learning activity for knowledge" },
+    { id: 4, name: "Sleep", emoji: "😴", hint: "Rest period for recovery" },
+    { id: 5, name: "Nutrition", emoji: "🍎", hint: "Consumption of healthy foods" }
   ];
-
-  const handleMatch = (matchId) => {
-    const currentPuzzleData = puzzles[currentPuzzle];
-    const match = currentPuzzleData.matches.find(m => m.id === matchId);
-    setSelectedMatch(matchId);
-
-    if (match.correct) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-      setShowCoinFeedback(currentPuzzleData.id);
-      setTimeout(() => setShowCoinFeedback(null), 1500);
-    }
-
-    setTimeout(() => {
-      if (currentPuzzle < puzzles.length - 1) {
-        setCurrentPuzzle(prev => prev + 1);
-        setSelectedMatch(null);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
+  
+  // Benefits (right side) - 5 items (shuffled order)
+  const benefits = [
+    { id: 3, text: "Enhances concentration and learning", hint: "Mental sharpness improvement" },
+    { id: 5, text: "Supports overall physical wellbeing", hint: "Foundation for good health" },
+    { id: 1, text: "Maintains fluid balance in body", hint: "Prevents dehydration effects" },
+    { id: 4, text: "Allows body and mind to recover", hint: "Essential restorative process" },
+    { id: 2, text: "Strengthens muscles and cardiovascular system", hint: "Physical conditioning benefit" }
+  ];
+  
+  // Correct matches
+  const correctMatches = [
+    { habitId: 1, benefitId: 1 }, // Water → Maintains fluid balance in body
+    { habitId: 2, benefitId: 2 }, // Exercise → Strengthens muscles and cardiovascular system
+    { habitId: 3, benefitId: 3 }, // Study → Enhances concentration and learning
+    { habitId: 4, benefitId: 4 }, // Sleep → Allows body and mind to recover
+    { habitId: 5, benefitId: 5 }  // Nutrition → Supports overall physical wellbeing
+  ];
+  
+  const handleHabitSelect = (habit) => {
+    if (gameFinished) return;
+    setSelectedHabit(habit);
   };
-
+  
+  const handleBenefitSelect = (benefit) => {
+    if (gameFinished) return;
+    setSelectedBenefit(benefit);
+  };
+  
+  const handleMatch = () => {
+    if (!selectedHabit || !selectedBenefit || gameFinished) return;
+    
+    resetFeedback();
+    
+    const newMatch = {
+      habitId: selectedHabit.id,
+      benefitId: selectedBenefit.id,
+      isCorrect: correctMatches.some(
+        match => match.habitId === selectedHabit.id && match.benefitId === selectedBenefit.id
+      )
+    };
+    
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+    
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    // Check if all items are matched
+    if (newMatches.length === habits.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+    
+    // Reset selections
+    setSelectedHabit(null);
+    setSelectedBenefit(null);
+  };
+  
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedHabit(null);
+    setSelectedBenefit(null);
+    setScore(0);
+    resetFeedback();
+  };
+  
   const handleNext = () => {
-    navigate("/student/health-female/teens/chores-story");
+    navigate("/games/health-female/teens");
+  };
+  
+  // Check if a habit is already matched
+  const isHabitMatched = (habitId) => {
+    return matches.some(match => match.habitId === habitId);
+  };
+  
+  // Check if a benefit is already matched
+  const isBenefitMatched = (benefitId) => {
+    return matches.some(match => match.benefitId === benefitId);
+  };
+  
+  // Get match result for a habit
+  const getMatchResult = (habitId) => {
+    const match = matches.find(m => m.habitId === habitId);
+    return match ? match.isCorrect : null;
   };
 
   return (
     <GameShell
       title="Puzzle: Habit Builder"
-      subtitle={`Puzzle ${currentPuzzle + 1}/5: ${puzzles[currentPuzzle].item}`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Habits with Benefits (${matches.length}/${habits.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="health-female-teen-94"
       gameType="health-female"
-      totalLevels={10}
-      currentLevel={4}
+      totalLevels={habits.length}
+      currentLevel={matches.length + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/teens"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      maxScore={habits.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/5: {puzzles[currentPuzzle].item}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6 text-center">
-            Match the habit to its primary benefit!
-          </p>
-
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-              {showCoinFeedback === puzzles[currentPuzzle].id && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                    +1
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-4xl mr-3">{puzzles[currentPuzzle].emoji}</div>
-                <div className="text-white text-xl font-bold">{puzzles[currentPuzzle].item}</div>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Habits */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Habits</h3>
+              <div className="space-y-4">
+                {habits.map(habit => (
+                  <button
+                    key={habit.id}
+                    onClick={() => handleHabitSelect(habit)}
+                    disabled={isHabitMatched(habit.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isHabitMatched(habit.id)
+                        ? getMatchResult(habit.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedHabit?.id === habit.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{habit.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{habit.name}</h4>
+                        <p className="text-white/80 text-sm">{habit.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                {puzzles[currentPuzzle].matches.map((match) => {
-                  const isCorrect = selectedMatch === match.id && match.correct;
-                  const isWrong = selectedMatch === match.id && !match.correct;
-
-                  return (
-                    <button
-                      key={match.id}
-                      onClick={() => handleMatch(match.id)}
-                      disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${
-                        !selectedMatch
-                          ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                          : isCorrect
-                          ? 'bg-green-100/20 border-green-500 text-white'
-                          : isWrong
-                          ? 'bg-red-100/20 border-red-500 text-white'
-                          : 'bg-gray-100/20 border-gray-500 text-white'
-                      }`}
-                    >
-                      {isCorrect && (
-                        <div className="absolute -top-2 -right-2 text-2xl">✅</div>
-                      )}
-                      {isWrong && (
-                        <div className="absolute -top-2 -right-2 text-2xl">❌</div>
-                      )}
-                      <div className="text-2xl mb-1">{match.emoji}</div>
-                      <div className="font-medium text-sm">{match.text}</div>
-                    </button>
-                  );
-                })}
+            </div>
+            
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedHabit 
+                    ? `Selected: ${selectedHabit.name}` 
+                    : "Select a Habit"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedHabit || !selectedBenefit}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedHabit && selectedBenefit
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{habits.length}</p>
+                  <p>Matched: {matches.length}/{habits.length}</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Right column - Benefits */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Benefits</h3>
+              <div className="space-y-4">
+                {benefits.map(benefit => (
+                  <button
+                    key={benefit.id}
+                    onClick={() => handleBenefitSelect(benefit)}
+                    disabled={isBenefitMatched(benefit.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isBenefitMatched(benefit.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedBenefit?.id === benefit.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div>
+                        <h4 className="font-bold text-white">{benefit.text}</h4>
+                        <p className="text-white/80 text-sm">{benefit.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {habits.length} habits with their benefits!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding the benefits of healthy habits motivates consistent positive behavior!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {habits.length} habits correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about the primary outcome of each habit when matching it with its benefit!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

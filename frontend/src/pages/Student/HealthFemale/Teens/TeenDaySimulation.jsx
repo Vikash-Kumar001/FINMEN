@@ -13,6 +13,7 @@ const TeenDaySimulation = () => {
   const [currentHour, setCurrentHour] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const hours = [
@@ -23,24 +24,27 @@ const TeenDaySimulation = () => {
       options: [
         {
           id: "a",
-          text: "Brush teeth, shower, eat breakfast",
-          emoji: "🦷",
-          description: "Good hygiene and nutrition start your day right",
-          isCorrect: true
+          text: "Quick brush and skip shower",
+          emoji: "⏰",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Quick brush and skip shower",
-          emoji: "⏰",
-          description: "Incomplete hygiene may affect your confidence",
+          text: "Skip hygiene completely",
+          emoji: "😴",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Skip hygiene completely",
-          emoji: "😴",
-          description: "Poor hygiene affects health and social interactions",
+          text: "Wake up 30 minutes early to have time for full routine",
+          emoji: "🌅",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Brush teeth, shower, eat breakfast",
+          emoji: "🦷",
+          isCorrect: true
         }
       ]
     },
@@ -51,24 +55,27 @@ const TeenDaySimulation = () => {
       options: [
         {
           id: "a",
-          text: "Healthy snack like fruit or nuts",
-          emoji: "🍎",
-          description: "Provides steady energy without sugar crash",
-          isCorrect: true
+          text: "Chips from vending machine",
+          emoji: "🍟",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Chips from vending machine",
-          emoji: "🍟",
-          description: "High in unhealthy fats and low in nutrients",
+          text: "Nothing, just wait for lunch",
+          emoji: "枵",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Nothing, just wait for lunch",
-          emoji: "枵",
-          description: "Skipping meals can reduce concentration",
+          text: "Drink water and have a small healthy snack from home",
+          emoji: "💧",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Healthy snack like fruit or nuts",
+          emoji: "🍎",
+          isCorrect: true
         }
       ]
     },
@@ -79,24 +86,27 @@ const TeenDaySimulation = () => {
       options: [
         {
           id: "a",
-          text: "Balanced meal with dal, roti, vegetables",
-          emoji: "🍛",
-          description: "Nutritious meal provides energy for afternoon activities",
-          isCorrect: true
+          text: "Fast food from outside",
+          emoji: "🍔",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Fast food from outside",
-          emoji: "🍔",
-          description: "High in unhealthy fats and low in essential nutrients",
+          text: "Skip lunch to save time",
+          emoji: "⏳",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Skip lunch to save time",
-          emoji: "⏳",
-          description: "Skipping meals reduces energy and concentration",
+          text: "Pack a homemade lunch with balanced nutrition",
+          emoji: "🍱",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Balanced meal with dal, roti, vegetables",
+          emoji: "🍛",
+          isCorrect: true
         }
       ]
     },
@@ -107,24 +117,27 @@ const TeenDaySimulation = () => {
       options: [
         {
           id: "a",
-          text: "Take a walk or do light exercise",
-          emoji: "🚶",
-          description: "Physical activity helps reduce stress naturally",
-          isCorrect: true
+          text: "Eat comfort food to feel better",
+          emoji: "🍦",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Eat comfort food to feel better",
-          emoji: "🍦",
-          description: "Temporary relief but may cause energy crashes",
+          text: "Just sit and worry about assignments",
+          emoji: "😰",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Just sit and worry about assignments",
-          emoji: "😰",
-          description: "Worrying without action increases stress",
+          text: "Listen to calming music and do deep breathing exercises",
+          emoji: "🎵",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Take a walk or do light exercise",
+          emoji: "🚶",
+          isCorrect: true
         }
       ]
     },
@@ -135,35 +148,39 @@ const TeenDaySimulation = () => {
       options: [
         {
           id: "a",
-          text: "Clean face, change into clean clothes, relax",
-          emoji: "😴",
-          description: "Good hygiene and relaxation promote better sleep",
-          isCorrect: true
+          text: "Just change clothes quickly",
+          emoji: "🏃",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Just change clothes quickly",
-          emoji: "🏃",
-          description: "Incomplete hygiene may lead to skin issues",
+          text: "Stay up late on phone/social media",
+          emoji: "📱",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Stay up late on phone/social media",
-          emoji: "📱",
-          description: "Poor sleep affects growth and concentration",
+          text: "Set phone aside 30 minutes before bed for better sleep",
+          emoji: "📵",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Clean face, change into clean clothes, relax",
+          emoji: "😴",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentHour().options.find(opt => opt.id === optionId);
+    const selectedOption = hours[currentHour].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { hour: currentHour, optionId, isCorrect }]);
@@ -190,7 +207,7 @@ const TeenDaySimulation = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -219,7 +236,7 @@ const TeenDaySimulation = () => {
             {getCurrentHour().scenario}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentHour().options.map(option => (
               <button
                 key={option.id}
@@ -230,7 +247,6 @@ const TeenDaySimulation = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

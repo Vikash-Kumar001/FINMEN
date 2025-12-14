@@ -6,14 +6,17 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const ChoresStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // Default 1 coin per question
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const maxScore = 5;
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const questions = [
     {
@@ -24,21 +27,18 @@ const ChoresStory = () => {
           id: "a",
           text: "Yes, chores build responsibility and life skills",
           emoji: "✅",
-          description: "Contributing to household tasks develops important skills",
           isCorrect: true
         },
         {
           id: "b",
           text: "No, she's too busy with studies and friends",
           emoji: "❌",
-          description: "Balance is important, and chores teach valuable lessons",
           isCorrect: false
         },
         {
           id: "c",
           text: "Only if she gets paid for each task",
           emoji: "💰",
-          description: "Learning responsibility shouldn't be transactional",
           isCorrect: false
         }
       ]
@@ -49,23 +49,20 @@ const ChoresStory = () => {
       options: [
         {
           id: "a",
-          text: "Develops time management and organizational skills",
-          emoji: "⏰",
-          description: "Managing tasks teaches valuable life skills",
-          isCorrect: true
+          text: "Reduces time available for studying",
+          emoji: "📚",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Reduces time available for studying",
-          emoji: "📚",
-          description: "Efficient chore completion can actually improve time management",
-          isCorrect: false
+          text: "Develops time management and organizational skills",
+          emoji: "⏰",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Eliminates the need for other responsibilities",
           emoji: "🚫",
-          description: "Chores are one part of overall responsibility",
           isCorrect: false
         }
       ]
@@ -76,24 +73,21 @@ const ChoresStory = () => {
       options: [
         {
           id: "a",
-          text: "With a positive attitude and attention to detail",
-          emoji: "😊",
-          description: "Mindful approach builds character and skills",
-          isCorrect: true
+          text: "As quickly as possible to get them over with",
+          emoji: "🏃",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "As quickly as possible to get them over with",
-          emoji: "🏃",
-          description: "Rushing reduces learning opportunities",
+          text: "Only when parents are watching",
+          emoji: "👀",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Only when parents are watching",
-          emoji: "👀",
-          description: "Genuine effort is more important than appearance",
-          isCorrect: false
+          text: "With a positive attitude and attention to detail",
+          emoji: "😊",
+          isCorrect: true
         }
       ]
     },
@@ -103,23 +97,20 @@ const ChoresStory = () => {
       options: [
         {
           id: "a",
-          text: "Self-reliance and independence",
-          emoji: "💪",
-          description: "Practical skills build confidence for adulthood",
-          isCorrect: true
+          text: "Dependence on others for basic tasks",
+          emoji: "👶",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Dependence on others for basic tasks",
-          emoji: "👶",
-          description: "Chores teach self-sufficiency, not dependence",
-          isCorrect: false
+          text: "Self-reliance and independence",
+          emoji: "💪",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Avoiding responsibilities whenever possible",
           emoji: "😴",
-          description: "Chores teach the opposite - taking responsibility",
           isCorrect: false
         }
       ]
@@ -130,103 +121,159 @@ const ChoresStory = () => {
       options: [
         {
           id: "a",
-          text: "Prepares them for independent living",
-          emoji: "🏠",
-          description: "Practical experience is essential for adulthood",
-          isCorrect: true
+          text: "To please their parents at all costs",
+          emoji: "👨‍👩‍👧",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "To please their parents at all costs",
-          emoji: "👨‍👩‍👧",
-          description: "Learning life skills is more important than pleasing others",
+          text: "To earn the right to more privileges",
+          emoji: "🎁",
           isCorrect: false
         },
         {
           id: "c",
-          text: "To earn the right to more privileges",
-          emoji: "🎁",
-          description: "Responsibility should be its own reward",
-          isCorrect: false
+          text: "Prepares them for independent living",
+          emoji: "🏠",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: optionId,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect;
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
 
   const handleNext = () => {
     navigate("/student/health-female/teens/debate-discipline-freedom");
   };
 
+  const getCurrentQuestion = () => questions[currentQuestion];
+
   return (
     <GameShell
       title="Chores Story"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
+      score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      showGameOver={showResult}
       gameId="health-female-teen-95"
       gameType="health-female"
-      totalLevels={10}
-      currentLevel={5}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/health-female/teens"
       showAnswerConfetti={showAnswerConfetti}
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/health-female/teens"
+      maxScore={maxScore}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <h2 className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🏆</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Responsibility Master!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand the importance of contributing to household tasks!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
                 </div>
-              </button>
-            ))}
+                <p className="text-white/80 text-sm md:text-base">
+                  Great job! You know that doing chores builds responsibility, life skills, and prepares you for independent living!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Understanding the value of chores takes time and reflection!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows the most responsible approach to household tasks.
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

@@ -34,7 +34,7 @@ const TrainingAccuracyGame = () => {
       choices: [
         { id: 1, text: "Ignore errors", emoji: "🙈", isCorrect: false },
         { id: 2, text: "Restart training", emoji: "🔄", isCorrect: false },
-        { id: 2, text: "Correct mistakes", emoji: "✅", isCorrect: true },
+        { id: 3, text: "Correct mistakes", emoji: "✅", isCorrect: true },
       ],
     },
     {

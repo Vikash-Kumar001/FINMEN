@@ -6,14 +6,17 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const JunkFoodDebate = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  
+  // Set to 1 for +1 coin per correct answer
+  const coinsPerLevel = 1;
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -21,25 +24,22 @@ const JunkFoodDebate = () => {
       text: "Is it okay to eat junk food once in a while?",
       options: [
         {
-          id: "a",
-          text: "Yes, in moderation with a balanced diet",
-          emoji: "👍",
-          description: "Occasional treats are okay if overall diet is healthy",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "No, never eat junk food",
           emoji: "👎",
-          description: "Complete restriction can lead to unhealthy relationships with food",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Yes, in moderation with a balanced diet",
+          emoji: "👍",
+          correct: true
         },
         {
           id: "c",
           text: "Yes, as much as you want",
           emoji: "🍟",
-          description: "Excessive junk food leads to health issues",
-          isCorrect: false
+          correct: false
         }
       ]
     },
@@ -51,22 +51,19 @@ const JunkFoodDebate = () => {
           id: "a",
           text: "No problems, it's tasty",
           emoji: "😋",
-          description: "Daily junk food has serious health consequences",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Lacks nutrients and causes health issues",
-          emoji: "⚠️",
-          description: "Daily junk food leads to obesity, poor nutrition, and health problems",
-          isCorrect: true
+          correct: false
         },
         {
           id: "c",
           text: "Only expensive",
           emoji: "💰",
-          description: "Cost is not the main issue with junk food",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "b",
+          text: "Lacks nutrients and causes health issues",
+          emoji: "⚠️",
+          correct: true
         }
       ]
     },
@@ -75,25 +72,22 @@ const JunkFoodDebate = () => {
       text: "How can you enjoy treats while staying healthy?",
       options: [
         {
-          id: "a",
-          text: "Eat treats on special occasions only",
-          emoji: "🎉",
-          description: "Special occasions make treats more enjoyable and less routine",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "Replace all meals with treats",
           emoji: "🍔",
-          description: "This would be unhealthy and unbalanced",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
           text: "Never allow yourself treats",
           emoji: "🚫",
-          description: "Complete restriction often leads to binging later",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Eat treats on special occasions only",
+          emoji: "🎉",
+          correct: true
         }
       ]
     },
@@ -102,25 +96,22 @@ const JunkFoodDebate = () => {
       text: "What's a better approach to food choices?",
       options: [
         {
-          id: "a",
-          text: "Balance 80% healthy, 20% treats",
-          emoji: "⚖️",
-          description: "This allows for both nutrition and enjoyment",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "Only eat what tastes good",
           emoji: "👅",
-          description: "Taste alone doesn't ensure nutritional needs",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
           text: "Only eat what's healthy, no exceptions",
           emoji: "🥦",
-          description: "Too restrictive and may lead to unhealthy relationships with food",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Balance 80% healthy, 20% treats",
+          emoji: "⚖️",
+          correct: true
         }
       ]
     },
@@ -129,50 +120,45 @@ const JunkFoodDebate = () => {
       text: "Why is it important to understand moderation?",
       options: [
         {
-          id: "a",
-          text: "Helps develop a healthy relationship with food",
-          emoji: "🧠",
-          description: "Moderation teaches balance and self-control",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "Allows unlimited junk food consumption",
           emoji: "🍟",
-          description: "Moderation doesn't mean unlimited consumption",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
           text: "Makes you eat less healthy food",
           emoji: "📉",
-          description: "Moderation is about balance, not just eating less",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Helps develop a healthy relationship with food",
+          emoji: "🧠",
+          correct: true
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
-    if (isCorrect) {
-      showCorrectAnswerFeedback(2, true);
+  const handleAnswerSelect = (option) => {
+    resetFeedback();
+    
+    if (option.correct) {
+      const newCoins = coins + 1; // Award 1 coin per correct answer
+      setCoins(newCoins);
+      setFinalScore(finalScore + 1);
+      showCorrectAnswerFeedback(1, true); // Show feedback for 1 point
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+        setCurrentQuestion(currentQuestion + 1);
       } else {
-        setGameFinished(true);
+        setShowResult(true);
       }
     }, 1500);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-female/teens/food-choices-journal");
@@ -181,57 +167,91 @@ const JunkFoodDebate = () => {
   return (
     <GameShell
       title="Debate: Junk Food Sometimes?"
-      subtitle={`Debate ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length * 2}
+      score={coins}
+      subtitle={showResult ? "Debate Complete!" : `Debate ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId="health-female-teen-16"
       gameType="health-female"
-      totalLevels={20}
-      currentLevel={16}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/health-female/teens"
       showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/health-female/teens"
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Debate {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length * 2}</span>
-          </div>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Debate {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-4">🍔</div>
+                <h3 className="text-2xl font-bold text-white mb-2">Junk Food Debate</h3>
+              </div>
 
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🎭</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Junk Food Debate</h3>
+              <p className="text-white text-lg mb-6">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-6">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswerSelect(option)}
+                    className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-4">{option.emoji}</div>
+                      <div>
+                        <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
-                </div>
-              </button>
-            ))}
+        ) : (
+          <div className="text-center py-8">
+            <div className="inline-block p-4 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 mb-6">
+              <div className="bg-white p-2 rounded-full">
+                <div className="text-4xl">🏆</div>
+              </div>
+            </div>
+            
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              Excellent Debate!
+            </h2>
+            
+            <p className="text-white/80 mb-6 max-w-2xl mx-auto">
+              You understand the importance of moderation in food choices!
+            </p>
+            
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 border border-white/20 max-w-md mx-auto mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Your Score</span>
+                <span className="text-xl font-bold text-yellow-400">{finalScore}/{questions.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">Coins Earned</span>
+                <span className="text-xl font-bold text-yellow-400">{coins}</span>
+              </div>
+            </div>
+            
+            <p className="text-white/80 max-w-2xl mx-auto">
+              Remember: Balance is key to enjoying treats while maintaining good health!
+            </p>
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

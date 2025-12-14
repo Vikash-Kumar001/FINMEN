@@ -13,6 +13,7 @@ const SimulationTimeBalance = () => {
   const [currentScenario, setCurrentScenario] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const scenarios = [
@@ -23,24 +24,27 @@ const SimulationTimeBalance = () => {
       options: [
         {
           id: "a",
-          text: "Create a schedule that balances study and practice time",
-          emoji: "📅",
-          description: "Planning helps manage both commitments effectively",
-          isCorrect: true
+          text: "Skip sports practice to focus only on studying",
+          emoji: "📚",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Skip sports practice to focus only on studying",
-          emoji: "📚",
-          description: "This neglects physical health and team commitments",
+          text: "Focus only on sports and hope for the best on exams",
+          emoji: "🏃",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Focus only on sports and hope for the best on exams",
-          emoji: "🏃",
-          description: "Academic responsibilities are equally important",
+          text: "Discuss with coach about adjusting practice schedule temporarily",
+          emoji: "💬",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Create a schedule that balances study and practice time",
+          emoji: "📅",
+          isCorrect: true
         }
       ]
     },
@@ -51,24 +55,27 @@ const SimulationTimeBalance = () => {
       options: [
         {
           id: "a",
-          text: "Attend the party but reschedule study time for later",
-          emoji: "🎉",
-          description: "Flexibility within boundaries maintains both social and academic health",
-          isCorrect: true
+          text: "Cancel all study plans to attend the party",
+          emoji: "🥳",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Cancel all study plans to attend the party",
-          emoji: "🥳",
-          description: "Consistent study habits are important for academic success",
+          text: "Decline the party to stick to study schedule",
+          emoji: "📚",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Decline the party to stick to study schedule",
-          emoji: "📚",
-          description: "Social connections are also important for well-being",
+          text: "Invite friend to study together before the party",
+          emoji: "👥",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Attend the party but reschedule study time for later",
+          emoji: "🎉",
+          isCorrect: true
         }
       ]
     },
@@ -79,24 +86,27 @@ const SimulationTimeBalance = () => {
       options: [
         {
           id: "a",
-          text: "Prioritize tasks and allocate time blocks for each activity",
-          emoji: "⏰",
-          description: "Strategic planning maximizes productivity and enjoyment",
-          isCorrect: true
+          text: "Do whatever feels most appealing at the moment",
+          emoji: "😊",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Do whatever feels most appealing at the moment",
-          emoji: "😊",
-          description: "Impulse-based decisions can lead to imbalance",
+          text: "Try to do everything at once, multitasking constantly",
+          emoji: "🔄",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Try to do everything at once, multitasking constantly",
-          emoji: "🔄",
-          description: "Multitasking often reduces effectiveness of all activities",
+          text: "Ask family members to help with some tasks",
+          emoji: "👨‍👩‍👧",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Prioritize tasks and allocate time blocks for each activity",
+          emoji: "⏰",
+          isCorrect: true
         }
       ]
     },
@@ -107,24 +117,27 @@ const SimulationTimeBalance = () => {
       options: [
         {
           id: "a",
-          text: "Finish the current episode and go to sleep 30 minutes late",
-          emoji: "📺",
-          description: "Small flexibility maintains both enjoyment and routine",
-          isCorrect: true
+          text: "Stay up until the end of the movie, even if it's very late",
+          emoji: "🎬",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Stay up until the end of the movie, even if it's very late",
-          emoji: "🎬",
-          description: "Consistent sleep schedules are important for health",
+          text: "Stop the movie immediately and go to sleep",
+          emoji: "😴",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Stop the movie immediately and go to sleep",
-          emoji: "😴",
-          description: "Rigid adherence can reduce quality of life",
+          text: "Set an alarm to remind you to stop in 30 minutes",
+          emoji: "⏰",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Finish the current episode and go to sleep 30 minutes late",
+          emoji: "📺",
+          isCorrect: true
         }
       ]
     },
@@ -135,35 +148,39 @@ const SimulationTimeBalance = () => {
       options: [
         {
           id: "a",
-          text: "Evaluate the opportunity and adjust your schedule accordingly",
-          emoji: "💼",
-          description: "Strategic adjustments can enhance long-term goals",
-          isCorrect: true
+          text: "Accept without considering impact on other commitments",
+          emoji: "✅",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Accept without considering impact on other commitments",
-          emoji: "✅",
-          description: "Balanced evaluation prevents overcommitment",
+          text: "Decline to avoid disrupting your current schedule",
+          emoji: "❌",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Decline to avoid disrupting your current schedule",
-          emoji: "❌",
-          description: "Growth opportunities should be considered thoughtfully",
+          text: "Ask for a delayed start date to honor existing commitments",
+          emoji: "🗓️",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Evaluate the opportunity and adjust your schedule accordingly",
+          emoji: "💼",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentScenario().options.find(opt => opt.id === optionId);
+    const selectedOption = scenarios[currentScenario].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { scenario: currentScenario, optionId, isCorrect }]);
@@ -190,7 +207,7 @@ const SimulationTimeBalance = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -214,7 +231,7 @@ const SimulationTimeBalance = () => {
             {getCurrentScenario().description}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +242,6 @@ const SimulationTimeBalance = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

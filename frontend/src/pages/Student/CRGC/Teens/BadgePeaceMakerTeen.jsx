@@ -60,14 +60,13 @@ const BadgePeaceMakerTeen = () => {
           text: "Interrupting to offer immediate solutions", 
           isCorrect: false
         },
-        
-        { 
-          text: "Judging the speaker's emotions", 
-          isCorrect: false
-        },
         { 
           text: "Giving full attention and reflecting back what you heard", 
           isCorrect: true
+        },
+        { 
+          text: "Judging the speaker's emotions", 
+          isCorrect: false
         },
         { 
           text: "Planning your response while they're speaking", 
@@ -139,14 +138,13 @@ const BadgePeaceMakerTeen = () => {
       question: "Why is it important to ensure everyone's voice is heard in group discussions?",
       options: [
         { 
-          text: "To create an environment where all perspectives are valued", 
-          isCorrect: true
-        },
-        { 
           text: "To speed up decision-making", 
           isCorrect: false
         },
-        
+        { 
+          text: "To create an environment where all perspectives are valued", 
+          isCorrect: true
+        },
         { 
           text: "To satisfy a requirement", 
           isCorrect: false

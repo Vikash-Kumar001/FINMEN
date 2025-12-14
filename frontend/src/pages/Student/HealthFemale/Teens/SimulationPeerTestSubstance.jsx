@@ -13,6 +13,7 @@ const SimulationPeerTestSubstance = () => {
   const [currentScenario, setCurrentScenario] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const scenarios = [
@@ -23,23 +24,26 @@ const SimulationPeerTestSubstance = () => {
       options: [
         {
           id: "a",
-          text: "Politely decline and suggest a non-alcoholic drink",
-          emoji: "🙅",
-          description: "Firm refusal with an alternative shows confidence",
-          isCorrect: true
+          text: "Take it to avoid standing out",
+          emoji: "🍺",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Take it to avoid standing out",
-          emoji: "🍺",
-          description: "Compromising values for acceptance is harmful",
+          text: "Get angry and accuse friends of being bad influences",
+          emoji: "😠",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Get angry and accuse friends of being bad influences",
-          emoji: "😠",
-          description: "Anger may escalate the situation unnecessarily",
+          text: "Politely decline and suggest a non-alcoholic drink",
+          emoji: "🙅",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Explain your personal reasons for not drinking",
+          emoji: "💬",
           isCorrect: false
         }
       ]
@@ -51,23 +55,26 @@ const SimulationPeerTestSubstance = () => {
       options: [
         {
           id: "a",
-          text: "Firmly say no and leave the situation",
-          emoji: "🏃",
-          description: "Removing yourself from risk is the safest choice",
-          isCorrect: true
+          text: "Try it just this once",
+          emoji: "윙IgnoreCase",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Try it just this once",
-          emoji: "小心翼",
-          description: "Even one time can have serious consequences",
-          isCorrect: false
+          text: "Firmly say no and leave the situation",
+          emoji: "🏃",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Ask for just a small amount",
           emoji: "📏",
-          description: "Any amount of illegal substances is risky",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Suggest doing something else together",
+          emoji: "🎉",
           isCorrect: false
         }
       ]
@@ -79,23 +86,26 @@ const SimulationPeerTestSubstance = () => {
       options: [
         {
           id: "a",
-          text: "Move to a different area and breathe fresh air",
-          emoji: "🌬️",
-          description: "Protecting your health is the priority",
-          isCorrect: true
+          text: "Join in to fit in with the group",
+          emoji: "👥",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Join in to fit in with the group",
-          emoji: "👥",
-          description: "True friends respect your health choices",
+          text: "Complain about others smoking",
+          emoji: "😤",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Complain about others smoking",
-          emoji: "😤",
-          description: "Confrontation may create unnecessary conflict",
+          text: "Move to a different area and breathe fresh air",
+          emoji: "🌬️",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Ask if there's a designated smoking area",
+          emoji: "📍",
           isCorrect: false
         }
       ]
@@ -107,23 +117,26 @@ const SimulationPeerTestSubstance = () => {
       options: [
         {
           id: "a",
-          text: "Refuse and call them a taxi or rideshare",
-          emoji: "🚕",
-          description: "Enabling impaired driving endangers everyone",
-          isCorrect: true
+          text: "Drive them despite your concerns",
+          emoji: "🚗",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Drive them despite your concerns",
-          emoji: "🚗",
-          description: "Driving under influence risks lives",
+          text: "Leave them stranded",
+          emoji: "🚶",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Leave them stranded",
-          emoji: "🚶",
-          description: "Ensuring safety doesn't mean abandoning friends",
+          text: "Refuse and call them a taxi or rideshare",
+          emoji: "🚕",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Ask a sober friend to help with transportation",
+          emoji: "🤝",
           isCorrect: false
         }
       ]
@@ -135,35 +148,39 @@ const SimulationPeerTestSubstance = () => {
       options: [
         {
           id: "a",
-          text: "Don't engage and change your social circle",
-          emoji: "📵",
-          description: "Your social environment affects your choices",
-          isCorrect: true
+          text: "Like the posts to stay popular",
+          emoji: "👍",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Like the posts to stay popular",
-          emoji: "👍",
-          description: "Approval encourages continued harmful behavior",
+          text: "Publicly shame them online",
+          emoji: "📢",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Publicly shame them online",
-          emoji: "📢",
-          description: "Private conversation is more constructive",
+          text: "Privately message them about your concerns",
+          emoji: "💌",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Don't engage and change your social circle",
+          emoji: "📵",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentScenario().options.find(opt => opt.id === optionId);
+    const selectedOption = scenarios[currentScenario].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { scenario: currentScenario, optionId, isCorrect }]);
@@ -190,7 +207,7 @@ const SimulationPeerTestSubstance = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -214,7 +231,7 @@ const SimulationPeerTestSubstance = () => {
             {getCurrentScenario().description}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +242,6 @@ const SimulationPeerTestSubstance = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

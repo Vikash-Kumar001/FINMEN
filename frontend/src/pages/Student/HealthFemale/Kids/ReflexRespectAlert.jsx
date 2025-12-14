@@ -43,8 +43,8 @@ const ReflexRespectAlert = () => {
       question: "Which word is KIND?",
       correctAnswer: "Please",
       options: [
-        { text: "Move!", isCorrect: false, emoji: "😠" },
         { text: "Please", isCorrect: true, emoji: "🙏" },
+        { text: "Move!", isCorrect: false, emoji: "😠" },
         { text: "Whatever", isCorrect: false, emoji: "🙄" },
         { text: "No way", isCorrect: false, emoji: "🙅" }
       ]
@@ -77,9 +77,9 @@ const ReflexRespectAlert = () => {
       correctAnswer: "Comfort them",
       options: [
         { text: "Laugh", isCorrect: false, emoji: "😆" },
-        { text: "Comfort them", isCorrect: true, emoji: "🤗" },
         { text: "Run away", isCorrect: false, emoji: "🏃" },
-        { text: "Tease", isCorrect: false, emoji: "😜" }
+        { text: "Tease", isCorrect: false, emoji: "😜" },
+        { text: "Comfort them", isCorrect: true, emoji: "🤗" }
       ]
     }
   ];

@@ -60,14 +60,13 @@ const BadgeJusticeTeen = () => {
           text: "Ignore it to avoid conflict", 
           isCorrect: false
         },
-        
-        { 
-          text: "Join in with the discriminatory behavior", 
-          isCorrect: false
-        },
         { 
           text: "Support the victim and report the incident appropriately", 
           isCorrect: true
+        },
+        { 
+          text: "Join in with the discriminatory behavior", 
+          isCorrect: false
         },
         { 
           text: "Tell others about it for entertainment", 
@@ -112,14 +111,13 @@ const BadgeJusticeTeen = () => {
       question: "What is an effective way to support organizations working on social justice?",
       options: [
         { 
-          text: "Donate time, resources, or skills based on your abilities", 
-          isCorrect: true
-        },
-        { 
           text: "Only provide financial support when convenient", 
           isCorrect: false
         },
-        
+        { 
+          text: "Donate time, resources, or skills based on your abilities", 
+          isCorrect: true
+        },
         { 
           text: "Expect recognition for your contributions", 
           isCorrect: false
@@ -143,7 +141,10 @@ const BadgeJusticeTeen = () => {
           text: "To gain personal political advantage", 
           isCorrect: false
         },
-        
+        { 
+          text: "To create systemic solutions that address root causes of injustice", 
+          isCorrect: true
+        },
         { 
           text: "To eliminate all individual responsibility", 
           isCorrect: false
@@ -151,11 +152,7 @@ const BadgeJusticeTeen = () => {
         { 
           text: "To avoid community-based solutions", 
           isCorrect: false
-        },
-        { 
-          text: "To create systemic solutions that address root causes of injustice", 
-          isCorrect: true
-        },
+        }
       ],
       feedback: {
         correct: "Legislative change can create systemic solutions that address the root causes of injustice and protect rights.",

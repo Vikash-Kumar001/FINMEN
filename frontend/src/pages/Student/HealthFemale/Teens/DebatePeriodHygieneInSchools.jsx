@@ -6,14 +6,17 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const DebatePeriodHygieneInSchools = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  
+  // Set to 1 for +1 coin per correct answer
+  const coinsPerLevel = 1;
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -21,25 +24,22 @@ const DebatePeriodHygieneInSchools = () => {
       text: "Should schools teach period hygiene openly and provide resources?",
       options: [
         {
-          id: "a",
-          text: "Yes, with factual information and support",
-          emoji: "✅",
-          description: "Correct! Open education helps students understand and manage their health with dignity.",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "No, it should be discussed only at home",
           emoji: "🏠",
-          description: "This approach may leave students without essential knowledge and support.",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Yes, with factual information and support",
+          emoji: "✅",
+          correct: true
         },
         {
           id: "c",
           text: "Only in all-girls classes",
           emoji: "👧",
-          description: "Inclusive education benefits everyone and reduces stigma around natural processes.",
-          isCorrect: false
+          correct: false
         }
       ]
     },
@@ -48,25 +48,22 @@ const DebatePeriodHygieneInSchools = () => {
       text: "How should schools accommodate students during their periods?",
       options: [
         {
-          id: "a",
-          text: "Provide access to clean restrooms and hygiene products",
-          emoji: "🚻",
-          description: "Correct! Access to facilities and products supports student health and attendance.",
-          isCorrect: false
-        },
-        {
           id: "b",
           text: "Expect students to manage on their own",
           emoji: "自理",
-          description: "This may disadvantage students who lack resources or support at home.",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
+          text: "Offer private spaces and flexible attendance policies",
+          emoji: "📅",
+          correct: false
+        },
+        {
+          id: "a",
           text: "Provide access to clean restrooms and hygiene products",
           emoji: "🚻",
-          description: "Correct! Access to facilities and products supports student health and attendance.",
-          isCorrect: true
+          correct: true
         }
       ]
     },
@@ -75,25 +72,22 @@ const DebatePeriodHygieneInSchools = () => {
       text: "What role should teachers play in period hygiene education?",
       options: [
         {
-          id: "a",
-          text: "Provide factual, age-appropriate information",
-          emoji: "📚",
-          description: "Correct! Teachers can play a crucial role in delivering accurate health information.",
-          isCorrect: false
-        },
-        {
           id: "b",
-          text: "Provide factual, age-appropriate information",
-          emoji: "📚",
-          description: "Correct! Teachers can play a crucial role in delivering accurate health information.",
-          isCorrect: true
+          text: "Ignore the topic to avoid discomfort",
+          emoji: "🤫",
+          correct: false
         },
         {
           id: "c",
-          text: "Avoid the topic completely",
-          emoji: "🤫",
-          description: "This leaves students without important health education they need.",
-          isCorrect: false
+          text: "Refer all questions to parents only",
+          emoji: "👨‍👩‍👧‍👦",
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Provide factual, age-appropriate information",
+          emoji: "📚",
+          correct: true
         }
       ]
     },
@@ -102,25 +96,22 @@ const DebatePeriodHygieneInSchools = () => {
       text: "Should schools have policies supporting period hygiene?",
       options: [
         {
-          id: "a",
-          text: "Yes, with free products and private changing areas",
-          emoji: "🏛️",
-          description: "Correct! Supportive policies ensure all students can maintain dignity and hygiene.",
-          isCorrect: false
-        },
-        {
           id: "b",
           text: "No, this is a personal/family responsibility",
           emoji: "👪",
-          description: "Schools have a role in supporting student health and educational access.",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
+          text: "Only during emergencies or special requests",
+          emoji: "⚠️",
+          correct: false
+        },
+        {
+          id: "a",
           text: "Yes, with free products and private changing areas",
           emoji: "🏛️",
-          description: "Correct! Supportive policies ensure all students can maintain dignity and hygiene.",
-          isCorrect: true
+          correct: true
         }
       ]
     },
@@ -129,50 +120,45 @@ const DebatePeriodHygieneInSchools = () => {
       text: "How can schools reduce period-related stigma?",
       options: [
         {
-          id: "a",
-          text: "Normalize discussions and provide inclusive education",
-          emoji: "🤝",
-          description: "Correct! Open, respectful dialogue helps reduce shame and misinformation.",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "Treat it as a shameful secret",
           emoji: "🤐",
-          description: "This perpetuates stigma and prevents students from getting needed support.",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
           text: "Only address it when problems arise",
           emoji: "⚠️",
-          description: "Proactive education is more effective than reactive problem-solving.",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Normalize discussions and provide inclusive education",
+          emoji: "🤝",
+          correct: true
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
-    if (isCorrect) {
-      showCorrectAnswerFeedback(1, true);
+  const handleAnswerSelect = (option) => {
+    resetFeedback();
+    
+    if (option.correct) {
+      const newCoins = coins + 1; // Award 1 coin per correct answer
+      setCoins(newCoins);
+      setFinalScore(finalScore + 1);
+      showCorrectAnswerFeedback(1, true); // Show feedback for 1 point
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+        setCurrentQuestion(currentQuestion + 1);
       } else {
-        setGameFinished(true);
+        setShowResult(true);
       }
     }, 1500);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-female/teens/journal-teen-hygiene");
@@ -181,65 +167,91 @@ const DebatePeriodHygieneInSchools = () => {
   return (
     <GameShell
       title="Debate: Period Hygiene in Schools"
-      subtitle={`Debate Point ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins}
+      subtitle={showResult ? "Debate Complete!" : `Debate ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId="health-female-teen-46"
       gameType="health-female"
-      totalLevels={50}
-      currentLevel={46}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/health-female/teens"
       showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/health-female/teens"
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Debate Point {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
-          </div>
-
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-white mb-4">
-              {getCurrentQuestion().text}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {getCurrentQuestion().options.map((option) => (
-              <div
-                key={option.id}
-                onClick={() => !choices.find(c => c.question === currentQuestion) && handleChoice(option.id)}
-                className={`bg-white/20 backdrop-blur-sm rounded-xl p-4 border-2 cursor-pointer transition-all duration-300 hover:scale-105 ${
-                  choices.find(c => c.question === currentQuestion)?.optionId === option.id
-                    ? option.isCorrect
-                      ? "border-green-400 bg-green-500/20"
-                      : "border-red-400 bg-red-500/20"
-                    : "border-white/30 hover:border-purple-400"
-                }`}
-              >
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <span className="text-4xl">{option.emoji}</span>
-                  <span className="text-white font-medium">{option.text}</span>
-                </div>
-                
-                {choices.find(c => c.question === currentQuestion)?.optionId === option.id && (
-                  <div className={`mt-3 p-2 rounded-lg text-sm ${
-                    option.isCorrect ? "bg-green-500/30 text-green-200" : "bg-red-500/30 text-red-200"
-                  }`}>
-                    {option.description}
-                  </div>
-                )}
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Debate {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
               </div>
-            ))}
+              
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-4">🌸</div>
+                <h3 className="text-2xl font-bold text-white mb-2">Period Hygiene Debate</h3>
+              </div>
+
+              <p className="text-white text-lg mb-6">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-6">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswerSelect(option)}
+                    className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-4">{option.emoji}</div>
+                      <div>
+                        <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="text-center py-8">
+            <div className="inline-block p-4 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 mb-6">
+              <div className="bg-white p-2 rounded-full">
+                <div className="text-4xl">🏆</div>
+              </div>
+            </div>
+            
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              Excellent Debate!
+            </h2>
+            
+            <p className="text-white/80 mb-6 max-w-2xl mx-auto">
+              You understand the importance of proper period hygiene education and support!
+            </p>
+            
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 border border-white/20 max-w-md mx-auto mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Your Score</span>
+                <span className="text-xl font-bold text-yellow-400">{finalScore}/{questions.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">Coins Earned</span>
+                <span className="text-xl font-bold text-yellow-400">{coins}</span>
+              </div>
+            </div>
+            
+            <p className="text-white/80 max-w-2xl mx-auto">
+              Remember: Proper education and support systems are essential for student health and dignity!
+            </p>
+          </div>
+        )}
       </div>
     </GameShell>
   );

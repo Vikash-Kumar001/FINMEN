@@ -13,6 +13,7 @@ const SimulationPeerTest = () => {
   const [currentScenario, setCurrentScenario] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const scenarios = [
@@ -23,23 +24,26 @@ const SimulationPeerTest = () => {
       options: [
         {
           id: "a",
-          text: "Defend her and tell friends to stop",
-          emoji: "🛡️",
-          description: "Standing up for others shows character and empathy",
-          isCorrect: true
-        },
-        {
-          id: "b",
           text: "Stay silent to avoid conflict",
           emoji: "🤐",
-          description: "Silence enables bullying and hurts the victim",
           isCorrect: false
         },
         {
+          id: "b",
+          text: "Defend her and tell friends to stop",
+          emoji: "🛡️",
+          isCorrect: true
+        },
+        {
           id: "c",
+          text: "Talk to the girl privately to offer support",
+          emoji: "💬",
+          isCorrect: false
+        },
+        {
+          id: "d",
           text: "Join them to fit in",
           emoji: "👥",
-          description: "Participating in teasing is harmful and wrong",
           isCorrect: false
         }
       ]
@@ -53,21 +57,24 @@ const SimulationPeerTest = () => {
           id: "a",
           text: "Ignore them and focus only on yourself",
           emoji: "📱",
-          description: "Selfishness damages community and friendships",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Offer to help or study together",
-          emoji: "🤝",
-          description: "Helping others builds positive relationships",
-          isCorrect: true
+          text: "Make fun of their struggles",
+          emoji: "😂",
+          isCorrect: false
         },
         {
           id: "c",
-          text: "Make fun of their struggles",
-          emoji: "😂",
-          description: "Mocking others is hurtful and unkind",
+          text: "Offer to help or study together",
+          emoji: "🤝",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Suggest they ask the teacher for help",
+          emoji: "👩‍🏫",
           isCorrect: false
         }
       ]
@@ -81,21 +88,24 @@ const SimulationPeerTest = () => {
           id: "a",
           text: "Go along with the plan to keep friends happy",
           emoji: "😊",
-          description: "Compromising values for acceptance is harmful",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Speak up for inclusion and invite everyone",
-          emoji: "🤗",
-          description: "Inclusivity creates a positive environment for all",
-          isCorrect: true
+          text: "Avoid the situation entirely",
+          emoji: "🏃",
+          isCorrect: false
         },
         {
           id: "c",
-          text: "Avoid the situation entirely",
-          emoji: "🏃",
-          description: "Avoidance doesn't solve the problem or help anyone",
+          text: "Speak up for inclusion and invite everyone",
+          emoji: "🤗",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Suggest an alternative activity that includes everyone",
+          emoji: "🎉",
           isCorrect: false
         }
       ]
@@ -109,22 +119,25 @@ const SimulationPeerTest = () => {
           id: "a",
           text: "Share answers to be a good friend",
           emoji: "📋",
-          description: "Enabling dishonesty harms everyone involved",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Refuse and encourage honest effort",
-          emoji: "✅",
-          description: "Integrity is essential for personal growth and trust",
-          isCorrect: true
+          text: "Report them to the teacher",
+          emoji: "👩‍🏫",
+          isCorrect: false
         },
         {
           id: "c",
-          text: "Report them to the teacher",
-          emoji: "👩‍🏫",
-          description: "Direct confrontation is usually more constructive first",
+          text: "Explain why cheating is harmful to everyone",
+          emoji: "📖",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Refuse and encourage honest effort",
+          emoji: "✅",
+          isCorrect: true
         }
       ]
     },
@@ -137,21 +150,24 @@ const SimulationPeerTest = () => {
           id: "a",
           text: "Like or share the comments for popularity",
           emoji: "👍",
-          description: "Participating amplifies harm and encourages more bullying",
           isCorrect: false
         },
         {
           id: "b",
           text: "Ignore it completely",
           emoji: "🙈",
-          description: "Inaction allows harm to continue unchecked",
           isCorrect: false
         },
         {
           id: "c",
+          text: "Privately message the person being bullied to offer support",
+          emoji: "💌",
+          isCorrect: false
+        },
+        {
+          id: "d",
           text: "Tell them to stop and report serious threats",
           emoji: "✋",
-          description: "Addressing cyberbullying protects victims and educates peers",
           isCorrect: true
         }
       ]
@@ -159,11 +175,12 @@ const SimulationPeerTest = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentScenario().options.find(opt => opt.id === optionId);
+    const selectedOption = scenarios[currentScenario].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { scenario: currentScenario, optionId, isCorrect }]);
@@ -190,7 +207,7 @@ const SimulationPeerTest = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -214,7 +231,7 @@ const SimulationPeerTest = () => {
             {getCurrentScenario().description}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +242,6 @@ const SimulationPeerTest = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

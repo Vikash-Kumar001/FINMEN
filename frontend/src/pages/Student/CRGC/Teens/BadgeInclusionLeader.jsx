@@ -60,7 +60,10 @@ const BadgeInclusionLeader = () => {
           text: "Join the group that's excluding others", 
           isCorrect: false
         },
-        
+        { 
+          text: "Invite the excluded person to join your group", 
+          isCorrect: true
+        },
         { 
           text: "Ignore the situation", 
           isCorrect: false
@@ -68,11 +71,7 @@ const BadgeInclusionLeader = () => {
         { 
           text: "Tell others to exclude more people", 
           isCorrect: false
-        },
-        { 
-          text: "Invite the excluded person to join your group", 
-          isCorrect: true
-        },
+        }
       ],
       feedback: {
         correct: "Inviting excluded individuals to join activities promotes inclusion and belonging.",

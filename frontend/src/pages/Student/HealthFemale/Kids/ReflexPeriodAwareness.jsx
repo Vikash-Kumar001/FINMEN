@@ -43,8 +43,8 @@ const ReflexPeriodAwareness = () => {
             question: "Use a...",
             correctAnswer: "Pad",
             options: [
-                { text: "Leaf", isCorrect: false, emoji: "🍃" },
                 { text: "Pad", isCorrect: true, emoji: "🩸" },
+                { text: "Leaf", isCorrect: false, emoji: "🍃" },
                 { text: "Sock", isCorrect: false, emoji: "🧦" },
                 { text: "Hat", isCorrect: false, emoji: "🧢" }
             ]

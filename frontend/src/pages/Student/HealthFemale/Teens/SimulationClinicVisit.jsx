@@ -13,6 +13,7 @@ const SimulationClinicVisit = () => {
   const [currentScenario, setCurrentScenario] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const scenarios = [
@@ -23,23 +24,26 @@ const SimulationClinicVisit = () => {
       options: [
         {
           id: "a",
-          text: "Call the clinic and explain symptoms clearly",
-          emoji: "📞",
-          description: "Clear communication helps with appropriate scheduling",
-          isCorrect: true
-        },
-        {
-          id: "b",
           text: "Avoid booking and hope symptoms disappear",
           emoji: "🙈",
-          description: "Delaying care can worsen health conditions",
           isCorrect: false
         },
         {
+          id: "b",
+          text: "Call the clinic and explain symptoms clearly",
+          emoji: "📞",
+          isCorrect: true
+        },
+        {
           id: "c",
+          text: "Ask a parent or guardian for help with booking",
+          emoji: "👨‍👩‍👧",
+          isCorrect: false
+        },
+        {
+          id: "d",
           text: "Book the latest possible appointment",
           emoji: "⏳",
-          description: "Timely care is important for health issues",
           isCorrect: false
         }
       ]
@@ -51,23 +55,26 @@ const SimulationClinicVisit = () => {
       options: [
         {
           id: "a",
-          text: "Bring a book or quiet activity to pass time",
-          emoji: "📚",
-          description: "Preparation makes waiting more comfortable",
-          isCorrect: true
+          text: "Complain loudly about the wait time",
+          emoji: "😠",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Complain loudly about the wait time",
-          emoji: "😠",
-          description: "This creates tension and doesn't change wait times",
+          text: "Use the time to prepare questions for the doctor",
+          emoji: "📝",
           isCorrect: false
         },
         {
           id: "c",
+          text: "Bring a book or quiet activity to pass time",
+          emoji: "📚",
+          isCorrect: true
+        },
+        {
+          id: "d",
           text: "Leave and come back later without notice",
           emoji: "🏃",
-          description: "This disrupts the appointment schedule",
           isCorrect: false
         }
       ]
@@ -79,23 +86,26 @@ const SimulationClinicVisit = () => {
       options: [
         {
           id: "a",
-          text: "Be honest and specific about symptoms and concerns",
-          emoji: "✅",
-          description: "Accurate information helps with proper diagnosis",
-          isCorrect: true
+          text: "Minimize symptoms to avoid worry",
+          emoji: "🤫",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Minimize symptoms to avoid worry",
-          emoji: "🤫",
-          description: "Incomplete information can lead to misdiagnosis",
+          text: "Exaggerate symptoms to get more attention",
+          emoji: "🎭",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Exaggerate symptoms to get more attention",
-          emoji: "🎭",
-          description: "This can lead to unnecessary tests or treatments",
+          text: "Be honest and specific about symptoms and concerns",
+          emoji: "✅",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Write down symptoms to ensure nothing is forgotten",
+          emoji: "📋",
           isCorrect: false
         }
       ]
@@ -107,24 +117,27 @@ const SimulationClinicVisit = () => {
       options: [
         {
           id: "a",
-          text: "Ask questions to understand the treatment plan",
-          emoji: "❓",
-          description: "Understanding improves compliance and outcomes",
-          isCorrect: true
+          text: "Ignore advice and take medication irregularly",
+          emoji: "❌",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Ignore advice and take medication irregularly",
-          emoji: "❌",
-          description: "Non-compliance reduces treatment effectiveness",
+          text: "Set phone reminders to take medication as prescribed",
+          emoji: "📱",
           isCorrect: false
         },
         {
           id: "c",
           text: "Follow advice only when convenient",
           emoji: "⏰",
-          description: "Inconsistent adherence can worsen conditions",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Ask questions to understand the treatment plan",
+          emoji: "❓",
+          isCorrect: true
         }
       ]
     },
@@ -135,35 +148,39 @@ const SimulationClinicVisit = () => {
       options: [
         {
           id: "a",
-          text: "Schedule and attend the follow-up appointment",
-          emoji: "📅",
-          description: "Follow-up ensures treatment effectiveness",
-          isCorrect: true
+          text: "Skip the follow-up if feeling better",
+          emoji: "🏃",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Skip the follow-up if feeling better",
-          emoji: "🏃",
-          description: "Premature discontinuation can cause relapse",
+          text: "Only attend if symptoms return",
+          emoji: "🤒",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Only attend if symptoms return",
-          emoji: "🤒",
-          description: "Preventive follow-up is often more effective",
+          text: "Ask about the purpose and importance of the follow-up",
+          emoji: "🔍",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Schedule and attend the follow-up appointment",
+          emoji: "📅",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentScenario().options.find(opt => opt.id === optionId);
+    const selectedOption = scenarios[currentScenario].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { scenario: currentScenario, optionId, isCorrect }]);
@@ -190,7 +207,7 @@ const SimulationClinicVisit = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -214,7 +231,7 @@ const SimulationClinicVisit = () => {
             {getCurrentScenario().description}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +242,6 @@ const SimulationClinicVisit = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

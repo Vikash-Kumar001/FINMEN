@@ -44,8 +44,8 @@ const ReflexDoctorAlert = () => {
       correctAnswer: "Dentist",
       options: [
         { text: "Firefighter", isCorrect: false, emoji: "🚒" },
-        { text: "Dentist", isCorrect: true, emoji: "🦷" },
         { text: "Teacher", isCorrect: false, emoji: "👩‍🏫" },
+        { text: "Dentist", isCorrect: true, emoji: "🦷" },
         { text: "Baker", isCorrect: false, emoji: "🍞" }
       ]
     },
@@ -55,9 +55,9 @@ const ReflexDoctorAlert = () => {
       correctAnswer: "Rest",
       options: [
         { text: "Run", isCorrect: false, emoji: "🏃" },
-        { text: "Rest", isCorrect: true, emoji: "🛌" },
         { text: "Swim", isCorrect: false, emoji: "🏊" },
-        { text: "Dance", isCorrect: false, emoji: "💃" }
+        { text: "Dance", isCorrect: false, emoji: "💃" },
+        { text: "Rest", isCorrect: true, emoji: "🛌" }
       ]
     },
     {
@@ -65,8 +65,8 @@ const ReflexDoctorAlert = () => {
       question: "What holds a broken arm?",
       correctAnswer: "Cast",
       options: [
-        { text: "Cast", isCorrect: true, emoji: "🤕" },
         { text: "Hat", isCorrect: false, emoji: "🧢" },
+        { text: "Cast", isCorrect: true, emoji: "🤕" },
         { text: "Sock", isCorrect: false, emoji: "🧦" },
         { text: "Shoe", isCorrect: false, emoji: "👟" }
       ]
@@ -78,8 +78,8 @@ const ReflexDoctorAlert = () => {
       options: [
         { text: "Scary", isCorrect: false, emoji: "👻" },
         { text: "Monsters", isCorrect: false, emoji: "🧟" },
-        { text: "Helpers", isCorrect: true, emoji: "🦸" },
-        { text: "Mean", isCorrect: false, emoji: "😠" }
+        { text: "Mean", isCorrect: false, emoji: "😠" },
+        { text: "Helpers", isCorrect: true, emoji: "🦸" }
       ]
     }
   ];

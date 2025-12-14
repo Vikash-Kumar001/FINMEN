@@ -30,14 +30,13 @@ const BadgeGenderRightsTeen = () => {
       question: "Which action best challenges harmful gender stereotypes?",
       options: [
         { 
-          text: "Encouraging anyone to pursue interests regardless of gender", 
-          isCorrect: true
-        },
-        { 
           text: "Assuming boys are naturally better at math", 
           isCorrect: false
         },
-        
+        { 
+          text: "Encouraging anyone to pursue interests regardless of gender", 
+          isCorrect: true
+        },
         { 
           text: "Limiting career choices based on gender", 
           isCorrect: false
@@ -88,14 +87,13 @@ const BadgeGenderRightsTeen = () => {
           text: "Using 'guys' to address a mixed-gender group", 
           isCorrect: false
         },
-        
-        { 
-          text: "Referring to professionals by assumed gender", 
-          isCorrect: false
-        },
         { 
           text: "Using 'everyone' or 'folks' instead of gendered terms", 
           isCorrect: true
+        },
+        { 
+          text: "Referring to professionals by assumed gender", 
+          isCorrect: false
         },
         { 
           text: "Asking for someone's gender immediately", 

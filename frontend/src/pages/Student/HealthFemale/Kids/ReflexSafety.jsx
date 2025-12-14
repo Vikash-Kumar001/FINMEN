@@ -78,8 +78,8 @@ const ReflexSafety = () => {
       options: [
         { text: "Play dirt", isCorrect: false, emoji: "🌱" },
         { text: "Touch pets", isCorrect: false, emoji: "🐶" },
-        { text: "Wash hands", isCorrect: true, emoji: "🧼" },
-        { text: "Sleep", isCorrect: false, emoji: "😴" }
+        { text: "Sleep", isCorrect: false, emoji: "😴" },
+        { text: "Wash hands", isCorrect: true, emoji: "🧼" }
       ]
     }
   ];

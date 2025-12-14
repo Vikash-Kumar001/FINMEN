@@ -60,14 +60,13 @@ const BadgeLittleVolunteer = () => {
           text: "True", 
           isCorrect: false
         },
-        
-        { 
-          text: "Only on weekends", 
-          isCorrect: false
-        },
         { 
           text: "False", 
           isCorrect: true
+        },
+        { 
+          text: "Only on weekends", 
+          isCorrect: false
         },
         { 
           text: "Only for adults", 
@@ -142,7 +141,10 @@ const BadgeLittleVolunteer = () => {
           text: "It helps only the volunteers", 
           isCorrect: false
         },
-       
+        { 
+          text: "It strengthens communities and helps those in need", 
+          isCorrect: true
+        },
         { 
           text: "It's required by the government", 
           isCorrect: false
@@ -150,11 +152,7 @@ const BadgeLittleVolunteer = () => {
         { 
           text: "It's only for school credit", 
           isCorrect: false
-        },
-         { 
-          text: "It strengthens communities and helps those in need", 
-          isCorrect: true
-        },
+        }
       ],
       feedback: {
         correct: "Volunteering is important because it brings people together and helps create positive change!",

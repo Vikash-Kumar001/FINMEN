@@ -66,8 +66,8 @@ const ReflexPeerSafety = () => {
       correctAnswer: "Parents",
       options: [
         { text: "Bully", isCorrect: false, emoji: "😈" },
-        { text: "Parents", isCorrect: true, emoji: "👪" },
         { text: "Stranger", isCorrect: false, emoji: "🕵️" },
+        { text: "Parents", isCorrect: true, emoji: "👪" },
         { text: "Thief", isCorrect: false, emoji: "🦹" }
       ]
     },
@@ -78,8 +78,8 @@ const ReflexPeerSafety = () => {
       options: [
         { text: "Teasing", isCorrect: false, emoji: "😝" },
         { text: "Hitting", isCorrect: false, emoji: "🤕" },
-        { text: "Kindness", isCorrect: true, emoji: "💖" },
-        { text: "Yelling", isCorrect: false, emoji: "📢" }
+        { text: "Yelling", isCorrect: false, emoji: "📢" },
+        { text: "Kindness", isCorrect: true, emoji: "💖" }
       ]
     }
   ];

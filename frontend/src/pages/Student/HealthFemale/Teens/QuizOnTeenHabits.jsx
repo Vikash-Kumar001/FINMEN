@@ -11,34 +11,34 @@ const QuizOnTeenHabits = () => {
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [coins, setCoins] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Which builds long-term health?",
+      emoji: "🥗",
       options: [
         {
           id: "a",
           text: "Balanced diet and adequate sleep",
           emoji: "🥗",
-          description: "Nutrition and rest are fundamental to health",
           isCorrect: true
         },
         {
           id: "b",
           text: "Skipping meals to lose weight",
           emoji: "🍽️",
-          description: "This can lead to nutritional deficiencies",
           isCorrect: false
         },
         {
           id: "c",
           text: "Eating only favorite foods",
           emoji: "🍟",
-          description: "Limited nutrition doesn't support long-term health",
           isCorrect: false
         }
       ]
@@ -46,27 +46,24 @@ const QuizOnTeenHabits = () => {
     {
       id: 2,
       text: "What is a benefit of regular exercise for teens?",
+      emoji: "😊",
       options: [
-        
-        {
-          id: "b",
-          text: "Increased need for sleep",
-          emoji: "😴",
-          description: "Exercise actually improves sleep quality",
-          isCorrect: false
-        },
         {
           id: "a",
           text: "Improved mood and energy levels",
           emoji: "😊",
-          description: "Physical activity releases endorphins that boost mood",
           isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Increased need for sleep",
+          emoji: "😴",
+          isCorrect: false
         },
         {
           id: "c",
           text: "Reduced academic performance",
           emoji: "📉",
-          description: "Exercise typically enhances cognitive function",
           isCorrect: false
         }
       ]
@@ -74,26 +71,24 @@ const QuizOnTeenHabits = () => {
     {
       id: 3,
       text: "Why is hydration important for teens?",
+      emoji: "🧠",
       options: [
         {
           id: "a",
           text: "Supports brain function and physical performance",
           emoji: "🧠",
-          description: "Water is essential for all bodily functions",
           isCorrect: true
         },
         {
           id: "b",
           text: "Makes you feel full to avoid overeating",
           emoji: "🍽️",
-          description: "While it can help, this isn't the primary benefit",
           isCorrect: false
         },
         {
           id: "c",
           text: "Replaces sugary drinks in the diet",
           emoji: "🥤",
-          description: "This is a secondary benefit, not the primary reason",
           isCorrect: false
         }
       ]
@@ -101,80 +96,77 @@ const QuizOnTeenHabits = () => {
     {
       id: 4,
       text: "How does consistent study time benefit academic performance?",
+      emoji: "📚",
       options: [
-        
+        {
+          id: "a",
+          text: "Builds knowledge retention and reduces stress",
+          emoji: "📚",
+          isCorrect: true
+        },
         {
           id: "b",
           text: "Eliminates the need for exams",
           emoji: "✅",
-          description: "Exams are still necessary to assess learning",
           isCorrect: false
         },
         {
           id: "c",
           text: "Allows more time for entertainment",
           emoji: "🎮",
-          description: "This is a side effect, not the primary benefit",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Builds knowledge retention and reduces stress",
-          emoji: "📚",
-          description: "Regular study habits improve learning outcomes",
-          isCorrect: true
         },
       ]
     },
     {
       id: 5,
       text: "What is the impact of screen time on teen health?",
+      emoji: "📱",
       options: [
         {
           id: "a",
           text: "Excessive use can disrupt sleep and reduce activity",
           emoji: "📱",
-          description: "Balance is key for healthy screen time habits",
           isCorrect: true
         },
         {
           id: "b",
           text: "Has no effect on physical or mental health",
           emoji: "😐",
-          description: "Research shows both positive and negative effects",
           isCorrect: false
         },
         {
           id: "c",
           text: "Improves social connections in all situations",
           emoji: "👥",
-          description: "Quality of interactions matters more than quantity",
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect;
+    
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
+    setSelectedOption(optionId);
+    setShowFeedback(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        resetFeedback();
+        setShowFeedback(false);
       } else {
         setGameFinished(true);
       }
     }, 1500);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-female/teens/reflex-teen-habits");
@@ -183,11 +175,10 @@ const QuizOnTeenHabits = () => {
   return (
     <GameShell
       title="Quiz on Teen Habits"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -198,35 +189,48 @@ const QuizOnTeenHabits = () => {
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/teens"
-      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+            <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
           </div>
 
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+          <div className="text-6xl mb-4 text-center">{questions[currentQuestion].emoji}</div>
+
+          <p className="text-white text-lg mb-6 text-center">
+            {questions[currentQuestion].text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
-                </div>
-              </button>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {questions[currentQuestion].options.map((option) => {
+              let buttonClass = "bg-gradient-to-br from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white";
+              
+              if (showFeedback) {
+                if (option.isCorrect) {
+                  buttonClass = "bg-gradient-to-br from-green-500 to-emerald-600 text-white ring-4 ring-green-400";
+                } else if (option.id === selectedOption) {
+                  buttonClass = "bg-gradient-to-br from-red-500 to-rose-600 text-white ring-4 ring-red-400";
+                } else {
+                  buttonClass = "bg-gray-500/30 text-white";
+                }
+              } else if (option.id === selectedOption) {
+                buttonClass = "bg-gradient-to-br from-blue-500 to-sky-600 text-white ring-4 ring-blue-400";
+              }
+              
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleAnswer(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${buttonClass} ${showFeedback ? "cursor-not-allowed" : "hover:scale-105"}`}
+                >
+                  <div className="text-2xl mb-2">{option.emoji}</div>
+                  <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

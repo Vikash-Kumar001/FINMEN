@@ -55,8 +55,8 @@ const ReflexGrowthCheck = () => {
       correctAnswer: "I grew!",
       options: [
         { text: "They shrunk", isCorrect: false, emoji: "👕" },
-        { text: "I grew!", isCorrect: true, emoji: "📏" },
         { text: "Magic", isCorrect: false, emoji: "✨" },
+        { text: "I grew!", isCorrect: true, emoji: "📏" },
         { text: "Broken", isCorrect: false, emoji: "❌" }
       ]
     },
@@ -66,8 +66,8 @@ const ReflexGrowthCheck = () => {
       correctAnswer: "Adult",
       options: [
         { text: "Puppy", isCorrect: false, emoji: "🐶" },
-        { text: "Adult", isCorrect: true, emoji: "👩" },
         { text: "Alien", isCorrect: false, emoji: "👽" },
+        { text: "Adult", isCorrect: true, emoji: "👩" },
         { text: "Fish", isCorrect: false, emoji: "🐟" }
       ]
     },
@@ -77,9 +77,9 @@ const ReflexGrowthCheck = () => {
       correctAnswer: "Time",
       options: [
         { text: "Candy", isCorrect: false, emoji: "🍬" },
-        { text: "Time", isCorrect: true, emoji: "⏳" },
         { text: "Noise", isCorrect: false, emoji: "🔊" },
-        { text: "Speed", isCorrect: false, emoji: "🏎️" }
+        { text: "Speed", isCorrect: false, emoji: "🏎️" },
+        { text: "Time", isCorrect: true, emoji: "⏳" }
       ]
     }
   ];

@@ -60,7 +60,10 @@ const BadgeResponsibleCitizenTeen = () => {
           text: "To find reasons to complain", 
           isCorrect: false
         },
-        
+        { 
+          text: "To understand how to engage with and influence local decisions", 
+          isCorrect: true
+        },
         { 
           text: "To avoid all civic responsibilities", 
           isCorrect: false
@@ -68,11 +71,7 @@ const BadgeResponsibleCitizenTeen = () => {
         { 
           text: "To criticize without understanding", 
           isCorrect: false
-        },
-        { 
-          text: "To understand how to engage with and influence local decisions", 
-          isCorrect: true
-        },
+        }
       ],
       feedback: {
         correct: "Understanding local government helps you engage effectively and influence decisions that affect your community.",

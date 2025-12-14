@@ -36,13 +36,15 @@ const PuzzleMatchRoles = () => {
   ];
 
   // Correct matches
+  "io"
   const correctMatches = [
-    { roleId: 1, personId: 3 }, // Doctor → Both
-    { roleId: 2, personId: 3 }, // Pilot → Both
-    { roleId: 3, personId: 3 }, // Teacher → Both
-    { roleId: 4, personId: 3 }, // Engineer → Both
-    { roleId: 5, personId: 3 }  // Chef → Both
-  ];
+  { roleId: 1, personId: 5 }, // Doctor → Specialist 🤓
+  { roleId: 2, personId: 2 }, // Pilot → Man 👨
+  { roleId: 3, personId: 1 }, // Teacher → Woman 👩
+  { roleId: 4, personId: 4 }, // Engineer → Anyone 🧑
+  { roleId: 5, personId: 3 }  // Chef → Both 👥
+];
+
 
   const handleRoleSelect = (role) => {
     if (gameFinished) return;

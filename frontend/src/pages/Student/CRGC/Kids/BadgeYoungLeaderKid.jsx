@@ -83,7 +83,10 @@ const BadgeYoungLeaderKid = () => {
       title: "Leader Qualities",
       question: "One important quality of a good leader is responsibility.",
       options: [
-        
+        { 
+          text: "True", 
+          isCorrect: true
+        },
         { 
           text: "False", 
           isCorrect: false
@@ -95,11 +98,7 @@ const BadgeYoungLeaderKid = () => {
         { 
           text: "Only for elected officials", 
           isCorrect: false
-        },
-        { 
-          text: "True", 
-          isCorrect: true
-        },
+        }
       ],
       feedback: {
         correct: "Responsibility is essential for leaders because they must be accountable for their actions and decisions.",
@@ -138,15 +137,14 @@ const BadgeYoungLeaderKid = () => {
       title: "Importance of Leadership Skills",
       question: "Why is it important for kids to develop leadership skills?",
       options: [
-         { 
-          text: "To help create positive changes in their communities", 
-          isCorrect: true
-        },
         { 
           text: "To boss other kids around", 
           isCorrect: false
         },
-       
+        { 
+          text: "To help create positive changes in their communities", 
+          isCorrect: true
+        },
         { 
           text: "To avoid doing group work", 
           isCorrect: false

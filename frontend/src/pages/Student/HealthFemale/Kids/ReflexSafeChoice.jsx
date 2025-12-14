@@ -41,10 +41,10 @@ const ReflexSafeChoice = () => {
       id: 2,
       question: "Which is a healthy snack?",
       options: [
+        { text: "Apple", isCorrect: true, emoji: "🍎" },
         { text: "Cigarette", isCorrect: false, emoji: "🚬" },
         { text: "Candy", isCorrect: false, emoji: "🍬" },
         { text: "Glue", isCorrect: false, emoji: "🧴" },
-        { text: "Apple", isCorrect: true, emoji: "🍎" },
       ]
     },
     {
@@ -71,10 +71,10 @@ const ReflexSafeChoice = () => {
       id: 5,
       question: "Best for your body?",
       options: [
-        { text: "Drugs", isCorrect: false, emoji: "💊" },
-        { text: "Exercise", isCorrect: true, emoji: "🏃‍♀️" },
+        { text: "Drugs", isCorrect: false, emoji: "-pill" },
+        { text: "Sleep all day", isCorrect: false, emoji: "😴" },
         { text: "Sitting", isCorrect: false, emoji: "🪑" },
-        { text: "Sleep all day", isCorrect: false, emoji: "😴" }
+        { text: "Exercise", isCorrect: true, emoji: "🏃‍♀️" }
       ]
     }
   ];

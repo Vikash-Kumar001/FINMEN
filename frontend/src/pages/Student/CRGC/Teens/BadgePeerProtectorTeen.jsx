@@ -60,7 +60,10 @@ const BadgePeerProtectorTeen = () => {
           text: "Avoid them to stay out of drama", 
           isCorrect: false
         },
-        
+        { 
+          text: "Include them in conversations and activities", 
+          isCorrect: true
+        },
         { 
           text: "Make fun of them with others", 
           isCorrect: false
@@ -68,11 +71,7 @@ const BadgePeerProtectorTeen = () => {
         { 
           text: "Tell them to be more outgoing", 
           isCorrect: false
-        },
-        { 
-          text: "Include them in conversations and activities", 
-          isCorrect: true
-        },
+        }
       ],
       feedback: {
         correct: "Including excluded peers helps them feel valued and creates a more welcoming environment.",

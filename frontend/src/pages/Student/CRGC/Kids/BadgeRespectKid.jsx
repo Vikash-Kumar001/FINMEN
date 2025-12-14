@@ -83,7 +83,10 @@ const BadgeRespectKid = () => {
       title: "Unfair Treatment",
       question: "When someone is being treated unfairly, you should tell an adult.",
       options: [
-        
+        { 
+          text: "True", 
+          isCorrect: true
+        },
         { 
           text: "False", 
           isCorrect: false
@@ -92,15 +95,10 @@ const BadgeRespectKid = () => {
           text: "Join in the unfair treatment", 
           isCorrect: false
         },
-        
         { 
           text: "Stay quiet", 
           isCorrect: false
-        },
-        { 
-          text: "True", 
-          isCorrect: true
-        },
+        }
       ],
       feedback: {
         correct: "Telling an adult is the right way to get help when someone is being treated unfairly.",
@@ -140,10 +138,6 @@ const BadgeRespectKid = () => {
       question: "How can you show respect to someone with a disability?",
       options: [
         { 
-          text: "Treat them with the same respect as anyone else", 
-          isCorrect: true
-        },
-        { 
           text: "Make fun of their differences", 
           isCorrect: false
         },
@@ -151,7 +145,10 @@ const BadgeRespectKid = () => {
           text: "Ignore them completely", 
           isCorrect: false
         },
-        
+        { 
+          text: "Treat them with the same respect as anyone else", 
+          isCorrect: true
+        },
         { 
           text: "Avoid them", 
           isCorrect: false

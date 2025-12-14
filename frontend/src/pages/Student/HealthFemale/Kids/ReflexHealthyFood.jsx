@@ -44,8 +44,8 @@ const ReflexHealthyFood = () => {
       correctAnswer: "Water",
       options: [
         { text: "Soda", isCorrect: false, emoji: "🥤" },
-        { text: "Water", isCorrect: true, emoji: "💧" },
         { text: "Milkshake", isCorrect: false, emoji: "🥤" },
+        { text: "Water", isCorrect: true, emoji: "💧" },
         { text: "Energy Drink", isCorrect: false, emoji: "⚡" }
       ]
     },
@@ -56,8 +56,8 @@ const ReflexHealthyFood = () => {
       options: [
         { text: "Bread", isCorrect: false, emoji: "🍞" },
         { text: "Cheese", isCorrect: false, emoji: "🧀" },
-        { text: "Apple", isCorrect: true, emoji: "🍎" },
-        { text: "Chicken", isCorrect: false, emoji: "🍗" }
+        { text: "Chicken", isCorrect: false, emoji: "🍗" },
+        { text: "Apple", isCorrect: true, emoji: "🍎" }
       ]
     },
     {
@@ -66,8 +66,8 @@ const ReflexHealthyFood = () => {
       correctAnswer: "Whole Grains",
       options: [
         { text: "Sugar", isCorrect: false, emoji: "🍭" },
-        { text: "Salt", isCorrect: false, emoji: "🧂" },
         { text: "Whole Grains", isCorrect: true, emoji: "🌾" },
+        { text: "Salt", isCorrect: false, emoji: "🧂" },
         { text: "Oil", isCorrect: false, emoji: "🛢️" }
       ]
     },
@@ -77,9 +77,9 @@ const ReflexHealthyFood = () => {
       correctAnswer: "Nuts",
       options: [
         { text: "Chips", isCorrect: false, emoji: "🍟" },
-        { text: "Nuts", isCorrect: true, emoji: "🥜" },
         { text: "Donut", isCorrect: false, emoji: "🍩" },
-        { text: "Cookie", isCorrect: false, emoji: "🍪" }
+        { text: "Cookie", isCorrect: false, emoji: "🍪" },
+        { text: "Nuts", isCorrect: true, emoji: "🥜" }
       ]
     }
   ];

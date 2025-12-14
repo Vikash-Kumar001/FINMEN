@@ -66,8 +66,8 @@ const ReflexHygieneAlert3 = () => {
       correctAnswer: "Smells",
       options: [
         { text: "Fun", isCorrect: false, emoji: "🎉" },
-        { text: "Smells", isCorrect: true, emoji: "👃" },
         { text: "Time", isCorrect: false, emoji: "⏰" },
+        { text: "Smells", isCorrect: true, emoji: "👃" },
         { text: "Rain", isCorrect: false, emoji: "🌧️" }
       ]
     },
@@ -77,9 +77,9 @@ const ReflexHygieneAlert3 = () => {
       correctAnswer: "Shampoo",
       options: [
         { text: "Lotion", isCorrect: false, emoji: "🧴" },
-        { text: "Shampoo", isCorrect: true, emoji: "🚿" },
         { text: "Glue", isCorrect: false, emoji: "🖇️" },
-        { text: "Mud", isCorrect: false, emoji: "💩" }
+        { text: "Mud", isCorrect: false, emoji: "💩" },
+        { text: "Shampoo", isCorrect: true, emoji: "🚿" }
       ]
     }
   ];

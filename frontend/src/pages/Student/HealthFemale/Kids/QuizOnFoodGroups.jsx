@@ -1,260 +1,190 @@
 import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const QuizOnFoodGroups = () => {
   const navigate = useNavigate();
-
-  // Hardcoded Game Rewards & Configuration
-  const coinsPerLevel = 1;
-  const totalCoins = 5;
-  const totalXp = 10;
-  const maxScore = 5;
-  const gameId = "health-female-kids-12";
-
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const [selectedOptionId, setSelectedOptionId] = useState(null);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Which of these is a good source of protein?",
+      emoji: "💪",
       options: [
-        {
-          id: "a",
-          text: "Dal (Lentils)",
-          emoji: "🍛",
-          description: "Correct! Dal is an excellent plant-based protein that helps build strong muscles.",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Chips",
-          emoji: "🍟",
-          description: "Chips are not a good source of protein. They're mostly fat and salt.",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Ice cream",
-          emoji: "🍦",
-          description: "Ice cream has some protein from milk, but it's mostly sugar and fat.",
-          isCorrect: false
-        }
+        { id: "a", text: "Dal (Lentils)", emoji: "🍛", isCorrect: true },
+        { id: "b", text: "Chips", emoji: "🍟", isCorrect: false },
+        { id: "c", text: "Ice cream", emoji: "🍦", isCorrect: false }
       ]
     },
     {
       id: 2,
       text: "Which food group gives you energy for playing and studying?",
+      emoji: "⚡",
       options: [
-        {
-          id: "a",
-          text: "Sweets",
-          emoji: "🍰",
-          description: "Sweets give quick energy but don't last long and aren't healthy.",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Carbohydrates (Rice, Bread)",
-          emoji: "🍚",
-          description: "Exactly! Carbohydrates are your body's main source of energy.",
-          isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Fried foods",
-          emoji: "🍟",
-          description: "Fried foods are heavy and don't give you the right kind of energy.",
-          isCorrect: false
-        }
+        { id: "a", text: "Sweets", emoji: "🍰", isCorrect: false },
+        { id: "b", text: "Carbohydrates (Rice, Bread)", emoji: "🍚", isCorrect: true },
+        { id: "c", text: "Fried foods", emoji: "🍟", isCorrect: false }
       ]
     },
     {
       id: 3,
       text: "Which of these foods is rich in vitamins?",
+      emoji: "💊",
       options: [
-        {
-          id: "a",
-          text: "Candy",
-          emoji: "🍬",
-          description: "Candy doesn't have vitamins. It's mostly sugar.",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Soda",
-          emoji: "🥤",
-          description: "Soda has no vitamins and can actually take vitamins away from your body.",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Apple",
-          emoji: "🍎",
-          description: "Right! Fruits like apples are packed with vitamins to keep you healthy.",
-          isCorrect: true
-        }
+        { id: "a", text: "Candy", emoji: "🍬", isCorrect: false },
+        { id: "b", text: "Soda", emoji: "🥤", isCorrect: false },
+        { id: "c", text: "Apple", emoji: "🍎", isCorrect: true }
       ]
     },
     {
       id: 4,
       text: "Which food group helps build strong bones?",
+      emoji: "🦴",
       options: [
-        {
-          id: "a",
-          text: "Dairy (Milk, Cheese)",
-          emoji: "🥛",
-          description: "Perfect! Dairy products have calcium which makes bones strong.",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Chips",
-          emoji: "🥔",
-          description: "Chips don't help build bones. They're just empty calories.",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Cookies",
-          emoji: "🍪",
-          description: "Cookies don't help bones. They're high in sugar and fat.",
-          isCorrect: false
-        }
+        { id: "a", text: "Dairy (Milk, Cheese)", emoji: "🥛", isCorrect: false },
+        { id: "b", text: "Chips", emoji: "🥔", isCorrect: false },
+        { id: "c", text: "Cookies", emoji: "🍪", isCorrect: true }
       ]
     },
     {
       id: 5,
       text: "Which of these is a healthy fat?",
+      emoji: "🥑",
       options: [
-        {
-          id: "a",
-          text: "French fries",
-          emoji: "🍟",
-          description: "French fries have unhealthy fats from deep frying.",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Nuts and Seeds",
-          emoji: "🥜",
-          description: "Excellent! Nuts and seeds have healthy fats that are good for your brain.",
-          isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Ice cream",
-          emoji: "🍦",
-          description: "Ice cream has saturated fats which aren't as healthy.",
-          isCorrect: false
-        }
+        { id: "a", text: "French fries", emoji: "🍟", isCorrect: false },
+        { id: "b", text: "Nuts and Seeds", emoji: "🥜", isCorrect: true },
+        { id: "c", text: "Ice cream", emoji: "🍦", isCorrect: false }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (selectedOptionId) return;
-
-    setSelectedOptionId(optionId);
-    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
+    
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
+    
+    setShowFeedback(true);
+    
     setTimeout(() => {
-      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 2000);
+    }, isCorrect ? 1000 : 800);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = coins;
+
   return (
     <GameShell
       title="Quiz on Food Groups"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
-      gameId={gameId}
+      score={finalScore}
+      gameId="health-female-kids-12"
       gameType="health-female"
-      totalLevels={5}
+      totalLevels={20}
       currentLevel={12}
       showConfetti={gameFinished}
-      flashPoints={flashPoints}
       backPath="/games/health-female/kids"
-      showAnswerConfetti={showAnswerConfetti}
-      maxScore={maxScore}
+      maxScore={questions.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-
-          <h2 className="text-2xl font-bold text-white mb-8 text-center">
-            {questions[currentQuestion].text}
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {questions[currentQuestion].options.map(option => {
-              const isSelected = selectedOptionId === option.id;
-              const showFeedback = selectedOptionId !== null;
-
-              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
-
-              if (showFeedback && isSelected) {
-                buttonClass = option.isCorrect
-                  ? "bg-green-500 ring-4 ring-green-300"
-                  : "bg-red-500 ring-4 ring-red-300";
-              } else if (showFeedback && !isSelected) {
-                buttonClass = "bg-white/10 opacity-50";
-              }
-
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={showFeedback}
-                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-4xl mr-6">{option.emoji}</div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
-                      {showFeedback && isSelected && (
-                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
-                      )}
-                    </div>
-                    {showFeedback && isSelected && (
-                      <div className="text-3xl ml-4">
-                        {option.isCorrect ? "✅" : "❌"}
-                      </div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

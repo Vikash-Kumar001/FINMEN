@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
-import GameShell from '../../Finance/GameShell';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { Timer, Zap, Play } from "lucide-react";
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 5; // 5 seconds per round
 
 const ReflexHygiene = () => {
   const navigate = useNavigate();
@@ -14,221 +16,274 @@ const ReflexHygiene = () => {
   const maxScore = 5;
   const gameId = "health-female-kids-3";
 
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(5);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedback, setFeedback] = useState({ correct: false, message: '' });
-  const { showCorrectAnswerFeedback, flashPoints } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(1);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(1);
 
   const questions = [
     {
       id: 1,
-      text: "Bath Daily",
-      correctEmoji: '🚿',
-      options: ['🚿', '❌', '🧼', '🪥', '👕', '💧'],
-      feedback: {
-        correct: "Great! Daily baths remove germs!",
-        incorrect: "Oops! Baths are important for hygiene!"
-      }
+      question: "Which habit helps remove germs from your body?",
+      correctAnswer: "Take a bath",
+      options: [
+        { text: "Skip shower", isCorrect: false, emoji: "❌" },
+        { text: "Take a bath", isCorrect: true, emoji: "🚿" },
+        { text: "Wear dirty clothes", isCorrect: false, emoji: "👕" },
+        { text: "Stay sweaty", isCorrect: false, emoji: "😓" }
+      ]
     },
     {
       id: 2,
-      text: "Wash Hands",
-      correctEmoji: '🧼',
-      options: ['🚿', '❌', '🧼', '🪥', '👕', '💧'],
-      feedback: {
-        correct: "Super! Clean hands prevent sickness!",
-        incorrect: "Washing hands is key to health!"
-      }
+      question: "Which habit prevents sickness by cleaning your hands?",
+      correctAnswer: "Wash hands",
+      options: [
+        { text: "Touch everything", isCorrect: false, emoji: "👋" },
+        { text: "Don't wash", isCorrect: false, emoji: "❌" },
+        { text: "Wash hands", isCorrect: true, emoji: "🧼" },
+        { text: "Use dirty towel", isCorrect: false, emoji: "🧻" }
+      ]
     },
     {
       id: 3,
-      text: "Brush Teeth",
-      correctEmoji: '🪥',
-      options: ['🚿', '❌', '🧼', '🪥', '👕', '💧'],
-      feedback: {
-        correct: "Shiny! Brushing keeps teeth strong!",
-        incorrect: "Don't skip brushing your teeth!"
-      }
+      question: "Which habit keeps your teeth strong and healthy?",
+      correctAnswer: "Brush teeth",
+      options: [
+        { text: "Eat candy", isCorrect: false, emoji: "🍬" },
+        { text: "Skip brushing", isCorrect: false, emoji: "❌" },
+        { text: "Drink soda", isCorrect: false, emoji: "🥤" },
+        { text: "Brush teeth", isCorrect: true, emoji: "🪥" }
+      ]
     },
     {
       id: 4,
-      text: "clean Clothes",
-      correctEmoji: '👕',
-      options: ['🚿', '❌', '🧼', '🪥', '👕', '💧'],
-      feedback: {
-        correct: "Fresh! Clean clothes feel good!",
-        incorrect: "Wearing fresh clothes is important!"
-      }
+      question: "Which habit helps you feel fresh and clean?",
+      correctAnswer: "Wear clean clothes",
+      options: [
+        { text: "Wear dirty clothes", isCorrect: false, emoji: "👕" },
+        { text: "Wear clean clothes", isCorrect: true, emoji: "👚" },
+        { text: "Never change", isCorrect: false, emoji: "❌" },
+        { text: "Smell bad", isCorrect: false, emoji: "👃" }
+      ]
     },
     {
       id: 5,
-      text: "Drink Water",
-      correctEmoji: '💧',
-      options: ['🚿', '❌', '🧼', '🪥', '👕', '💧'],
-      feedback: {
-        correct: "Hydrated! Water is best for you!",
-        incorrect: "Your body needs plenty of water!"
-      }
+      question: "Which habit keeps your body hydrated and healthy?",
+      correctAnswer: "Drink water",
+      options: [
+        { text: "Drink soda", isCorrect: false, emoji: "🥤" },
+        { text: "Skip drinking", isCorrect: false, emoji: "❌" },
+        { text: "Drink water", isCorrect: true, emoji: "💧" },
+        { text: "Only juice", isCorrect: false, emoji: "🧃" }
+      ]
     }
   ];
 
+  // Update ref when currentRound changes
   useEffect(() => {
-    if (gameStarted && !gameFinished && !showFeedback) {
-      if (timeLeft > 0) {
-        const timerId = setTimeout(() => setTimeLeft(prev => prev - 1), 1000);
-        return () => clearTimeout(timerId);
-      } else {
-        // Time ran out
-        handleAnswer('TIMEOUT');
-      }
-    }
-  }, [timeLeft, gameStarted, gameFinished, showFeedback]);
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
 
-  // Reset timer on question change
+  // Reset timer configuration when round changes
   useEffect(() => {
-    if (gameStarted && !gameFinished) {
-      setTimeLeft(5);
+    if (gameState === "playing" && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
-  }, [currentQuestion, gameStarted, gameFinished]);
+  }, [currentRound, gameState]);
 
-  const handleStartGame = () => {
-    setGameStarted(true);
-    // Timer resets via useEffect
-  };
-
-  const handleAnswer = (selectedEmoji) => {
-    if (showFeedback) return;
-
-    const currentQ = questions[currentQuestion];
-    const isCorrect = selectedEmoji === currentQ.correctEmoji;
-
-    if (isCorrect) {
-      setCoins(prev => prev + coinsPerLevel);
-      showCorrectAnswerFeedback(coinsPerLevel, true);
-      setFeedback({ correct: true, message: currentQ.feedback.correct });
-    } else {
-      setFeedback({
-        correct: false,
-        message: selectedEmoji === 'TIMEOUT' ? "Time's up!" : currentQ.feedback.incorrect
-      });
-    }
-
-    setShowFeedback(true);
+  // Handle time up
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
+    resetFeedback();
 
     setTimeout(() => {
-      setShowFeedback(false);
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+      if (currentRoundRef.current >= TOTAL_ROUNDS) {
+        setGameState("finished");
       } else {
-        setGameFinished(true);
+        setCurrentRound((prev) => prev + 1);
       }
-    }, 2000);
+    }, 1000);
+  }, []);
+
+  // Timer logic - Restart on new round or playing state
+  useEffect(() => {
+    if (gameState !== "playing") {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          handleTimeUp();
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, currentRound, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setScore(0);
+    setCurrentRound(1);
+    setTimeLeft(ROUND_TIME);
+    setAnswered(false);
+    resetFeedback();
+  };
+
+  const handleAnswer = (option) => {
+    if (gameState !== "playing" || answered) return;
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    setAnswered(true);
+    resetFeedback();
+
+    if (option.isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    setTimeout(() => {
+      if (currentRound >= TOTAL_ROUNDS) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+      }
+    }, 1000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
-  const currentQ = questions[currentQuestion];
+  const currentQ = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Hygiene"
-      subtitle={gameStarted ? `Question ${currentQuestion + 1} of ${questions.length}` : "Get Ready!"}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}` : "Hygiene Blitz!"}
+      coins={score}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={gameState === "finished"}
+      score={score}
       gameId={gameId}
       gameType="health-female"
-      totalLevels={questions.length}
-      currentLevel={currentQuestion + 1}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
-      backPath="/games/health-female/kids"
       maxScore={maxScore}
-      coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      showConfetti={gameState === "finished" && score === maxScore}
+      backPath="/games/health-female/kids"
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 min-h-[400px] flex flex-col items-center justify-center">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-6xl mb-6">🧼</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Hygiene Blitz!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              You have {ROUND_TIME} seconds to choose healthy hygiene habits!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
 
-          {!gameStarted ? (
-            <div className="text-center space-y-6">
-              <div className="p-6 bg-blue-500/20 rounded-full inline-block animate-pulse">
-                <Zap size={64} className="text-yellow-400" />
+        {gameState === "playing" && currentQ && (
+          <div className="space-y-8">
+            {/* HUD */}
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-lg">
+              <div className="text-white font-bold text-lg">
+                Round: {currentRound}/{TOTAL_ROUNDS}
               </div>
-              <h2 className="text-3xl font-bold text-white">Reflex Challenge!</h2>
-              <p className="text-white/80 text-lg max-w-md">
-                Can you spot the correct hygiene habit before time runs out?
-                You have 5 seconds per question!
-              </p>
+              <div className={`font-mono text-2xl font-bold ${timeLeft <= 2 ? 'text-red-400 animate-pulse' : 'text-yellow-400'}`}>
+                {timeLeft}s
+              </div>
+              <div className="text-white font-bold text-lg">
+                Score: {score}
+              </div>
+            </div>
+
+            {/* Question Area */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+              <h2 className="text-2xl font-bold text-white mb-8">{currentQ.question}</h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                {currentQ.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-xl font-bold transition-all transform hover:scale-[1.02] shadow-xl flex items-center justify-start gap-4 ${answered
+                        ? option.isCorrect
+                          ? 'bg-green-500 ring-4 ring-green-300'
+                          : 'bg-white/10 opacity-50'
+                        : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
+                      }`}
+                  >
+                    <span className="text-4xl">{option.emoji}</span>
+                    <span className="text-white text-left">{option.text}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {gameState === "finished" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-6xl mb-6">🏆</div>
+            <h2 className="text-3xl font-bold text-white mb-4">Blitz Complete!</h2>
+            <p className="text-xl text-white/90 mb-6">You scored {score} out of {TOTAL_ROUNDS}!</p>
+
+            <div className="flex justify-center gap-4">
               <button
-                onClick={handleStartGame}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 px-8 py-4 rounded-xl text-xl font-bold text-white hover:scale-105 transition-transform flex items-center mx-auto gap-2"
+                onClick={startGame}
+                className="bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-full transition-all"
               >
-                <Play size={24} fill="currentColor" />
-                Start Game
+                Play Again
+              </button>
+              <button
+                onClick={handleNext}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-full transition-all shadow-lg"
+              >
+                Next Game
               </button>
             </div>
-          ) : (
-            <div className="w-full max-w-2xl mx-auto space-y-8">
-              {/* HUD */}
-              <div className="flex justify-between items-center w-full">
-                <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${timeLeft <= 2 ? 'bg-red-500/20 border-red-400 text-red-100' : 'bg-blue-500/20 border-blue-400 text-blue-100'}`}>
-                  <Timer size={20} />
-                  <span className="font-mono text-xl font-bold">{timeLeft}s</span>
-                </div>
-                <div className="bg-yellow-500/20 px-4 py-2 rounded-full border border-yellow-400/50">
-                  <span className="text-yellow-400 font-bold">Score: {coins}/{totalCoins}</span>
-                </div>
-              </div>
-
-              {/* Question */}
-              <div className="text-center">
-                <h3 className="text-3xl font-bold text-white mb-2">{currentQ.text}</h3>
-                <p className="text-white/60">Find the matching icon!</p>
-              </div>
-
-              {/* Grid */}
-              <div className="grid grid-cols-3 gap-4">
-                {currentQ.options.map((emoji, idx) => {
-                  let btnClass = "bg-white/10 hover:bg-white/20 border-white/10";
-                  if (showFeedback && emoji === currentQ.correctEmoji) {
-                    btnClass = "bg-green-500 border-green-400 ring-4 ring-green-500/30";
-                  } else if (showFeedback) {
-                    btnClass = "opacity-30 grayscale";
-                  }
-
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => handleAnswer(emoji)}
-                      disabled={showFeedback}
-                      className={`h-24 rounded-2xl text-4xl flex items-center justify-center border-2 transition-all duration-300 ${btnClass}`}
-                    >
-                      {emoji}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Feedback Overlay */}
-              {showFeedback && (
-                <div className="absolute inset-x-0 bottom-6 flex justify-center">
-                  <div className={`px-6 py-3 rounded-full font-bold shadow-lg backdrop-blur-md ${feedback.correct ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-                    {feedback.message}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

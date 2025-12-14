@@ -13,6 +13,7 @@ const WeeklyMealsSimulation = () => {
   const [currentDay, setCurrentDay] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const days = [
@@ -23,24 +24,27 @@ const WeeklyMealsSimulation = () => {
       options: [
         {
           id: "a",
-          text: "Balanced breakfast with idli, sambar, and fruit",
-          emoji: "🍛",
-          description: "Provides energy and nutrients for the day ahead",
-          isCorrect: true
+          text: "Instant noodles with no vegetables",
+          emoji: "🍜",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Instant noodles with no vegetables",
-          emoji: "🍜",
-          description: "Quick but lacks essential nutrients",
+          text: "Skip breakfast to save time",
+          emoji: "⏰",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Skip breakfast to save time",
-          emoji: "⏰",
-          description: "Skipping breakfast reduces concentration and energy",
+          text: "Overnight oats with fruits and nuts",
+          emoji: "🥣",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Balanced breakfast with idli, sambar, and fruit",
+          emoji: "🍛",
+          isCorrect: true
         }
       ]
     },
@@ -51,24 +55,27 @@ const WeeklyMealsSimulation = () => {
       options: [
         {
           id: "a",
-          text: "Banana and a handful of nuts",
-          emoji: "🍌",
-          description: "Banana provides potassium, nuts provide protein and healthy fats",
-          isCorrect: true
+          text: "Chips and cola",
+          emoji: "🍟",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Chips and cola",
-          emoji: "🍟",
-          description: "Lacks nutrients needed for muscle recovery",
+          text: "Nothing, just rest",
+          emoji: "😴",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Nothing, just rest",
-          emoji: "😴",
-          description: "Your body needs nutrients to recover properly",
+          text: "Protein bar and electrolyte drink",
+          emoji: "🏋️",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Banana and a handful of nuts",
+          emoji: "🍌",
+          isCorrect: true
         }
       ]
     },
@@ -79,24 +86,27 @@ const WeeklyMealsSimulation = () => {
       options: [
         {
           id: "a",
-          text: "Home-cooked meal with dal, roti, vegetables, and curd",
-          emoji: "🍛",
-          description: "Nutritious and balanced meal for sustained energy",
-          isCorrect: true
+          text: "Fast food burger and fries",
+          emoji: "🍔",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Fast food burger and fries",
-          emoji: "🍔",
-          description: "High in unhealthy fats and low in essential nutrients",
+          text: "Instant noodles again",
+          emoji: "🍜",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Instant noodles again",
-          emoji: "🍜",
-          description: "Lacks variety and essential nutrients",
+          text: "Salad with grilled chicken and whole grain bread",
+          emoji: "🥗",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Home-cooked meal with dal, roti, vegetables, and curd",
+          emoji: "🍛",
+          isCorrect: true
         }
       ]
     },
@@ -107,24 +117,27 @@ const WeeklyMealsSimulation = () => {
       options: [
         {
           id: "a",
-          text: "Light healthy snack like sprouts or fruit",
-          emoji: "🥗",
-          description: "Provides steady energy without causing drowsiness",
-          isCorrect: true
+          text: "Chocolate and energy drinks",
+          emoji: "🍫",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Chocolate and energy drinks",
-          emoji: "🍫",
-          description: "Sugar crash will reduce your study efficiency",
+          text: "Heavy meal that makes you sleepy",
+          emoji: "😴",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Heavy meal that makes you sleepy",
-          emoji: "😴",
-          description: "Heavy meals reduce concentration during study time",
+          text: "Whole grain toast with peanut butter",
+          emoji: "🍞",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Light healthy snack like sprouts or fruit",
+          emoji: "🥗",
+          isCorrect: true
         }
       ]
     },
@@ -135,35 +148,39 @@ const WeeklyMealsSimulation = () => {
       options: [
         {
           id: "a",
-          text: "Balanced meals with family, including traditional foods",
-          emoji: "👨‍👩‍👧‍👦",
-          description: "Maintains healthy habits while enjoying family time",
-          isCorrect: true
+          text: "All fast food because it's convenient",
+          emoji: "🍔",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "All fast food because it's convenient",
-          emoji: "🍔",
-          description: "Convenient but lacks nutrition and variety",
+          text: "Skip meals to maintain weight",
+          emoji: "📉",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Skip meals to maintain weight",
-          emoji: "📉",
-          description: "Skipping meals is unhealthy and unsustainable",
+          text: "Meal prep healthy options for the weekend",
+          emoji: "📅",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Balanced meals with family, including traditional foods",
+          emoji: "👨‍👩‍👧‍👦",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentDay().options.find(opt => opt.id === optionId);
+    const selectedOption = days[currentDay].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { day: currentDay, optionId, isCorrect }]);
@@ -190,7 +207,7 @@ const WeeklyMealsSimulation = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -219,7 +236,7 @@ const WeeklyMealsSimulation = () => {
             {getCurrentDay().scenario}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentDay().options.map(option => (
               <button
                 key={option.id}
@@ -230,7 +247,6 @@ const WeeklyMealsSimulation = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

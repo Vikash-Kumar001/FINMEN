@@ -33,7 +33,10 @@ const BadgeGlobalTeen = () => {
           text: "To prove your superiority over other cultures", 
           isCorrect: false
         },
-        
+        { 
+          text: "To develop understanding and appreciation for diversity", 
+          isCorrect: true
+        },
         { 
           text: "To copy other cultures without understanding", 
           isCorrect: false
@@ -41,11 +44,7 @@ const BadgeGlobalTeen = () => {
         { 
           text: "To find reasons to criticize other cultures", 
           isCorrect: false
-        },
-        { 
-          text: "To develop understanding and appreciation for diversity", 
-          isCorrect: true
-        },
+        }
       ],
       feedback: {
         correct: "Learning about different cultures develops understanding and appreciation for diversity, fostering global citizenship.",
@@ -115,7 +114,10 @@ const BadgeGlobalTeen = () => {
           text: "By ignoring cultural differences entirely", 
           isCorrect: false
         },
-        
+        { 
+          text: "By acknowledging and valuing different perspectives and practices", 
+          isCorrect: true
+        },
         { 
           text: "By imposing your cultural values on others", 
           isCorrect: false
@@ -123,11 +125,7 @@ const BadgeGlobalTeen = () => {
         { 
           text: "By avoiding interactions with people from different cultures", 
           isCorrect: false
-        },
-        { 
-          text: "By acknowledging and valuing different perspectives and practices", 
-          isCorrect: true
-        },
+        }
       ],
       feedback: {
         correct: "Acknowledging and valuing different perspectives and practices shows genuine cultural respect.",

@@ -1,261 +1,348 @@
 import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PeerPressureFighterBadge = () => {
   const navigate = useNavigate();
-
-  // Hardcoded Game Rewards & Configuration
-  const coinsPerLevel = 1;
-  const totalCoins = 5;
-  const totalXp = 10;
-  const maxScore = 5;
+  const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "health-female-kids-70";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [selectedOptionId, setSelectedOptionId] = useState(null);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
-
-  const questions = [
+  const challenges = [
     {
       id: 1,
-      text: "To earn the 'Brave Voice' badge, you must...",
+      title: "Brave Voice",
+      question: "To earn the 'Brave Voice' badge, you must...",
       options: [
-        {
-          id: "a",
-          text: "Never speak",
-          emoji: "🙊",
-          description: "You need to use your voice.",
+        { 
+          text: "Never speak", 
+          emoji: "🙊", 
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Say 'NO' to unsafe things",
-          emoji: "🛑",
-          description: "Correct! Be brave and say no.",
+        { 
+          text: "Say 'NO' to unsafe things", 
+          emoji: "🛑", 
           isCorrect: true
         },
-        {
-          id: "c",
-          text: "Yell at everyone",
-          emoji: "📣",
-          description: "Yelling isn't brave, it's loud.",
+        { 
+          text: "Yell at everyone", 
+          emoji: "📣", 
+          isCorrect: false
+        },
+        { 
+          text: "Agree with everyone", 
+          emoji: "👍", 
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Exactly! Be brave and say no to unsafe things!",
+        wrong: "A brave voice means saying 'NO' to unsafe things, even when it's difficult."
+      }
     },
     {
       id: 2,
-      text: "The 'Friendship Hero' badge is for...",
+      title: "Friendship Hero",
+      question: "The 'Friendship Hero' badge is for...",
       options: [
-        {
-          id: "a",
-          text: "Helping friends make good choices",
-          emoji: "🦸‍♀️",
-          description: "Yes! Heroes help friends.",
+        { 
+          text: "Being the boss of everyone", 
+          emoji: "👑", 
+          isCorrect: false
+        },
+        { 
+          text: "Helping friends make good choices", 
+          emoji: "🦸‍♀️", 
+          isCorrect: false
+        },
+        { 
+          text: "Ignoring friends", 
+          emoji: "🙈", 
+          isCorrect: false
+        },
+        { 
+          text: "Standing up for friends", 
+          emoji: "💪", 
           isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Being the boss of everyone",
-          emoji: "👑",
-          description: "Heroes serve, not boss.",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Ignoring friends",
-          emoji: "🙈",
-          description: "Heroes don't ignore friends.",
-          isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Perfect! Heroes stand up for their friends!",
+        wrong: "A Friendship Hero stands up for friends and helps them make good choices."
+      }
     },
     {
       id: 3,
-      text: "How do you get the 'Smart Choice' badge?",
+      title: "Smart Choice",
+      question: "How do you get the 'Smart Choice' badge?",
       options: [
-        {
-          id: "a",
-          text: "Do what everyone else does",
-          emoji: "🐑",
-          description: "Think for yourself.",
+        { 
+          text: "Do what everyone else does", 
+          emoji: "🐑", 
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Think about safety first",
-          emoji: "🧠",
-          description: "Correct! Safety first makes you smart.",
+        { 
+          text: "Think about safety first", 
+          emoji: "🧠", 
+          isCorrect: false
+        },
+        { 
+          text: "Ask a trusted adult", 
+          emoji: "👩‍🏫", 
           isCorrect: true
         },
-        {
-          id: "c",
-          text: "Flip a coin",
-          emoji: "🪙",
-          description: "Don't gamble with choices.",
+        { 
+          text: "Flip a coin", 
+          emoji: "🪙", 
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Great! Smart choices involve asking trusted adults for help!",
+        wrong: "Making smart choices means thinking about safety and asking trusted adults for guidance."
+      }
     },
     {
       id: 4,
-      text: "The 'Kindness Captain' badge requires...",
+      title: "Kindness Captain",
+      question: "The 'Kindness Captain' badge requires...",
       options: [
-        {
-          id: "a",
-          text: "Including others in games",
-          emoji: "🤝",
-          description: "Yes! Always include others.",
+        { 
+          text: "Only playing alone", 
+          emoji: "🧍", 
+          isCorrect: false
+        },
+        { 
+          text: "Including others in games", 
+          emoji: "🤝", 
+          isCorrect: false
+        },
+        { 
+          text: "Taking all the toys", 
+          emoji: "🧸", 
+          isCorrect: false
+        },
+        { 
+          text: "Being respectful to everyone", 
+          emoji: "😊", 
           isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Only playing alone",
-          emoji: "🧍",
-          description: "Captains lead by including.",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Taking all the toys",
-          emoji: "🧸",
-          description: "Sharing is caring.",
-          isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Exactly! Kindness Captains treat everyone with respect!",
+        wrong: "Kindness Captains include others, share, and treat everyone with respect."
+      }
     },
     {
       id: 5,
-      text: "Who is a 'Respect Ranger'?",
+      title: "Respect Ranger",
+      question: "Who is a 'Respect Ranger'?",
       options: [
-        {
-          id: "a",
-          text: "Someone who teases",
-          emoji: "😜",
-          description: "Teasing shows no respect.",
+        { 
+          text: "Someone who teases", 
+          emoji: "😜", 
           isCorrect: false
         },
-    
-        {
-          id: "c",
-          text: "Someone who interrupts",
-          emoji: "✋",
-          description: "Interrupting is rude.",
+        { 
+          text: "Someone who interrupts", 
+          emoji: "✋", 
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Someone who listens and cares",
-          emoji: "👂",
-          description: "Exactly! Respect means listening.",
+        { 
+          text: "Someone who listens and cares", 
+          emoji: "👂", 
+          isCorrect: false
+        },
+        { 
+          text: "Someone who treats all with dignity", 
+          emoji: "🌟", 
           isCorrect: true
-        },
-      ]
+        }
+      ],
+      feedback: {
+        correct: "Exactly! Respect Rangers treat everyone with dignity!",
+        wrong: "Respect Rangers listen, care, and treat everyone with dignity and respect."
+      }
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (selectedOptionId) return;
-
-    setSelectedOptionId(optionId);
-    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (isCorrect, optionIndex) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    setSelectedAnswer(optionIndex);
+    resetFeedback();
+    
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
+    
+    const isLastChallenge = challenge === challenges.length - 1;
+    
     setTimeout(() => {
-      setSelectedOptionId(null);
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+      if (isLastChallenge) {
+        setShowResult(true);
       } else {
-        setGameFinished(true);
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
       }
     }, 2000);
+  };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
+  const currentChallenge = challenges[challenge];
+
   return (
     <GameShell
       title="Badge: Peer Pressure Fighter"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={showResult ? "Game Complete!" : `Challenge ${challenge + 1} of ${challenges.length}`}
       onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
+      nextEnabled={true}
+      showGameOver={showResult}
+      score={score}
       gameId={gameId}
       gameType="health-female"
-      totalLevels={5}
-      currentLevel={60}
-      showConfetti={gameFinished}
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      showConfetti={showResult && score >= 4}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-      maxScore={maxScore}
+      maxScore={challenges.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
+        {!showResult && currentChallenge ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallenge.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(option.isCorrect, idx)}
+                    disabled={answered}
+                    className={`bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3 ${
+                      answered && selectedAnswer === idx
+                        ? option.isCorrect
+                          ? "ring-4 ring-green-400"
+                          : "ring-4 ring-red-400"
+                        : ""
+                    }`}
+                  >
+                    <span className="text-2xl">{option.emoji}</span>
+                    <span className="font-bold text-lg">{option.text}</span>
+                  </button>
+                ))}
+              </div>
+              
+              {answered && (
+                <div className={`mt-4 p-4 rounded-xl ${
+                  currentChallenge.options[selectedAnswer]?.isCorrect
+                    ? "bg-green-500/20 border border-green-500/30"
+                    : "bg-red-500/20 border border-red-500/30"
+                }`}>
+                  <p className="text-white font-semibold">
+                    {currentChallenge.options[selectedAnswer]?.isCorrect
+                      ? currentChallenge.feedback.correct
+                      : currentChallenge.feedback.wrong}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-
-          <h2 className="text-2xl font-bold text-white mb-8 text-center">
-            {questions[currentQuestion].text}
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {questions[currentQuestion].options.map(option => {
-              const isSelected = selectedOptionId === option.id;
-              const showFeedback = selectedOptionId !== null;
-
-              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
-
-              if (showFeedback && isSelected) {
-                buttonClass = option.isCorrect
-                  ? "bg-green-500 ring-4 ring-green-300"
-                  : "bg-red-500 ring-4 ring-red-300";
-              } else if (showFeedback && !isSelected) {
-                buttonClass = "bg-white/10 opacity-50";
-              }
-
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={showFeedback}
-                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-4xl mr-6">{option.emoji}</div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
-                      {showFeedback && isSelected && (
-                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
-                      )}
-                    </div>
-                    {showFeedback && isSelected && (
-                      <div className="text-3xl ml-4">
-                        {option.isCorrect ? "✅" : "❌"}
-                      </div>
-                    )}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 4 ? (
+              <div>
+                <div className="text-6xl mb-4">🏆</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Peer Pressure Fighter Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-6">
+                  You demonstrated excellent skills in standing up to peer pressure with {score} correct answers out of {challenges.length}!
+                </p>
+                
+                <div className="bg-gradient-to-br from-purple-500 to-pink-600 text-white p-6 rounded-2xl mb-6">
+                  <h4 className="text-2xl font-bold mb-2">🎉 Achievement Unlocked!</h4>
+                  <p className="text-xl">Badge: Peer Pressure Fighter</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-green-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-green-300 mb-2">Bravery</h4>
+                    <p className="text-white/90 text-sm">
+                      You know how to say 'NO' to unsafe things and stand up for what's right.
+                    </p>
                   </div>
+                  <div className="bg-blue-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-blue-300 mb-2">Leadership</h4>
+                    <p className="text-white/90 text-sm">
+                      You understand how to be a positive influence on your friends.
+                    </p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={handleNext}
+                  className="bg-gradient-to-br from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all mb-4"
+                >
+                  Continue Learning
                 </button>
-              );
-            })}
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Fighting Peer Pressure!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {score} questions correctly out of {challenges.length}.
+                </p>
+                <p className="text-white/90 mb-6">
+                  Review peer pressure concepts to strengthen your knowledge and earn your badge.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

@@ -5,6 +5,12 @@ import useGameFeedback from '../../../../hooks/useGameFeedback';
 
 const BathTimeStory = () => {
   const navigate = useNavigate();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   // Hardcoded Game Rewards & Configuration
   const coinsPerLevel = 1;
@@ -13,14 +19,7 @@ const BathTimeStory = () => {
   const maxScore = 5;
   const gameId = "health-female-kids-5";
 
-  const [currentScene, setCurrentScene] = useState(0);
-  const [score, setScore] = useState(0);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [selectedOptionId, setSelectedOptionId] = useState(null);
-  const [gameCompleted, setGameCompleted] = useState(false);
-  const { showAnswerConfetti, showCorrectAnswerFeedback, flashPoints } = useGameFeedback();
-
-  const scenes = [
+  const questions = [
     {
       id: 1,
       background: '🏠',
@@ -29,19 +28,19 @@ const BathTimeStory = () => {
         {
           id: 'a',
           text: "Ignore mom and keep playing",
-          feedback: "Bath time is important to stay clean and healthy!",
+          emoji: "🎮",
           isCorrect: false
         },
         {
           id: 'b',
           text: "Say 'Okay mom!' and go take a bath",
-          feedback: "Great choice! Staying clean is important for your health.",
+          emoji: "🛁",
           isCorrect: true
         },
         {
           id: 'c',
           text: "Ask if you can take a bath later",
-          feedback: "It's good to take a bath at the same time every day to build a routine.",
+          emoji: "⏰",
           isCorrect: false
         }
       ]
@@ -54,19 +53,19 @@ const BathTimeStory = () => {
         {
           id: 'a',
           text: "Check the water temperature with your hand",
-          feedback: "Perfect! Always make sure the water isn't too hot or cold.",
+          emoji: "✋",
           isCorrect: true
         },
         {
           id: 'b',
           text: "Jump right into the bath",
-          feedback: "Not quite! First, you should check the water temperature.",
+          emoji: "💦",
           isCorrect: false
         },
         {
           id: 'c',
           text: "Call for mom to test the water",
-          feedback: "It's good to learn to check the water yourself!",
+          emoji: "👩",
           isCorrect: false
         }
       ]
@@ -79,19 +78,19 @@ const BathTimeStory = () => {
         {
           id: 'a',
           text: "Just water",
-          feedback: "Water alone doesn't remove all the dirt and oil from your skin.",
-          isCorrect: false
-        },
-        {
-          id: 'b',
-          text: "Perfume",
-          feedback: "Perfume just covers up smells, it doesn't clean you!",
+          emoji: "💧",
           isCorrect: false
         },
         {
           id: 'c',
+          text: "Perfume",
+          emoji: "🌸",
+          isCorrect: false
+        },
+        {
+          id: 'b',
           text: "Soap and water",
-          feedback: "Great job! Soap helps remove dirt and germs when you wash.",
+          emoji: "🧼",
           isCorrect: true
         }
       ]
@@ -104,19 +103,19 @@ const BathTimeStory = () => {
         {
           id: 'a',
           text: "2-3 times a week",
-          feedback: "Perfect! This keeps your hair clean without drying it out.",
+          emoji: "📅",
           isCorrect: true
         },
         {
           id: 'b',
           text: "Every day",
-          feedback: "Washing hair every day can make it dry. 2-3 times a week is usually enough!",
+          emoji: "☀️",
           isCorrect: false
         },
         {
           id: 'c',
           text: "Once a month",
-          feedback: "That's not often enough! Your hair needs regular washing.",
+          emoji: "🌙",
           isCorrect: false
         }
       ]
@@ -129,136 +128,164 @@ const BathTimeStory = () => {
         {
           id: 'a',
           text: "Put on clean clothes without drying off",
-          feedback: "You should dry yourself completely before dressing to stay comfortable.",
-          isCorrect: false
-        },
-        {
-          id: 'b',
-          text: "Put on the same clothes you were wearing",
-          feedback: "Always wear clean clothes after bathing to stay fresh!",
+          emoji: "👕",
           isCorrect: false
         },
         {
           id: 'c',
+          text: "Put on the same clothes you were wearing",
+          emoji: "🔄",
+          isCorrect: false
+        },
+        {
+          id: 'b',
           text: "Dry off with a clean towel and put on clean clothes",
-          feedback: "Excellent! This keeps you clean and fresh after your bath.",
+          emoji: "🧻",
           isCorrect: true
         }
       ]
     }
   ];
 
-  const handleChoice = (option) => {
-    if (showFeedback) return;
-
-    setSelectedOptionId(option.id);
-    setShowFeedback(true);
-
-    if (option.isCorrect) {
-      setScore(prev => prev + coinsPerLevel);
-      showCorrectAnswerFeedback(coinsPerLevel, true);
+  const handleChoice = (optionId) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: optionId,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
+  };
 
-    setTimeout(() => {
-      setShowFeedback(false);
-      setSelectedOptionId(null);
-      if (currentScene < scenes.length - 1) {
-        setCurrentScene(prev => prev + 1);
-      } else {
-        setGameCompleted(true);
-        showAnswerConfetti();
-      }
-    }, 2000);
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
-  const currentSceneData = scenes[currentScene];
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Bath Time Story"
-      subtitle={`Scene ${currentScene + 1} of ${scenes.length}`}
-      onNext={handleNext}
-      nextEnabled={gameCompleted}
-      showGameOver={gameCompleted}
-      score={score}
+      score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="health-female"
-      totalLevels={scenes.length}
-      currentLevel={currentScene + 1}
-      showConfetti={gameCompleted}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/health-female/kids"
       maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <div className="bg-blue-500/20 px-4 py-2 rounded-full">
-              <span className="text-white font-medium">Question: {currentScene + 1}/{scenes.length}</span>
-            </div>
-            <div className="bg-yellow-500/20 px-4 py-2 rounded-full">
-              <span className="text-yellow-400 font-bold">Coins: {score}/{totalCoins}</span>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <div className="text-center my-6">
+                <div className="text-6xl mb-4 transform hover:scale-110 transition-transform">
+                  {getCurrentQuestion().background}
+                </div>
+                <h2 className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                  {getCurrentQuestion().text}
+                </h2>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-
-          <div className="text-center my-8">
-            <div className="text-8xl mb-6 transform hover:scale-110 transition-transform">
-              {currentSceneData.background}
-            </div>
-            <h3 className="text-2xl text-white font-semibold leading-relaxed max-w-2xl mx-auto">
-              {currentSceneData.text}
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 max-w-2xl mx-auto">
-            {currentSceneData.options.map((option) => {
-              // Determine if this specific option should show feedback state
-              const isSelected = selectedOptionId === option.id;
-              const isCorrect = option.isCorrect;
-
-              let buttonStyle = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-transparent";
-
-              if (showFeedback) {
-                if (isCorrect) {
-                  buttonStyle = "bg-green-500 border-green-400";
-                } else if (isSelected && !isCorrect) {
-                  buttonStyle = "bg-red-500 border-red-400";
-                } else {
-                  buttonStyle = "bg-white/10 opacity-50";
-                }
-              }
-
-              return (
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🛁</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Cleanliness Champion!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand the importance of good hygiene habits!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  Great job! You know that bath time is important for staying clean and healthy!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, good hygiene habits help keep you healthy!
+                </p>
                 <button
-                  key={option.id}
-                  onClick={() => handleChoice(option)}
-                  disabled={showFeedback}
-                  className={`w-full text-left p-6 rounded-2xl shadow-lg transition-all transform border-2 ${buttonStyle}`}
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
                 >
-                  <div className="font-medium text-lg text-white flex justify-between items-center">
-                    <span>{option.text}</span>
-                    {showFeedback && (isCorrect || isSelected) && (
-                      <span className="text-2xl">{isCorrect ? '✅' : '❌'}</span>
-                    )}
-                  </div>
-                  {showFeedback && (isSelected || isCorrect) && (
-                    <div className="text-sm text-white/90 mt-2 bg-black/20 p-2 rounded">
-                      {option.feedback}
-                    </div>
-                  )}
+                  Try Again
                 </button>
-              );
-            })}
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows good hygiene habits.
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

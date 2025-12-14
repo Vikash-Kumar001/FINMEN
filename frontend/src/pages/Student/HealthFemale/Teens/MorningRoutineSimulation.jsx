@@ -13,6 +13,7 @@ const MorningRoutineSimulation = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const scenarios = [
@@ -24,21 +25,24 @@ const MorningRoutineSimulation = () => {
           id: "a",
           text: "Brush teeth + take shower",
           emoji: "🪥",
-          description: "Complete morning hygiene routine",
           isCorrect: true
         },
         {
           id: "b",
           text: "Brush teeth only",
           emoji: "🪥",
-          description: "Missing shower for complete hygiene",
           isCorrect: false
         },
         {
           id: "c",
           text: "Skip both",
           emoji: "😴",
-          description: "Poor hygiene affects health and confidence",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Drink water and do light stretching",
+          emoji: "💧",
           isCorrect: false
         }
       ]
@@ -47,25 +51,29 @@ const MorningRoutineSimulation = () => {
       id: 2,
       text: "After getting ready, teen has her period. What should she do?",
       options: [
-        {
-          id: "a",
-          text: "Change to fresh sanitary product",
-          emoji: "🧻",
-          description: "Fresh products maintain hygiene and comfort",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Continue with current product",
           emoji: "❌",
-          description: "Worn products can cause odor and infections",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Change to fresh sanitary product",
+          emoji: "🧻",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Ignore period hygiene",
           emoji: "🚫",
-          description: "Proper period hygiene is essential for health",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Carry extra supplies in backpack",
+          emoji: "🎒",
           isCorrect: false
         }
       ]
@@ -74,25 +82,29 @@ const MorningRoutineSimulation = () => {
       id: 3,
       text: "Before school, teen notices oily hair. What should she do?",
       options: [
-        {
-          id: "a",
-          text: "Refresh hair with water or dry shampoo",
-          emoji: "💧",
-          description: "Quick refresh maintains appearance and confidence",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Do nothing about oily hair",
           emoji: "😴",
-          description: "Oily hair affects appearance and confidence",
           isCorrect: false
         },
         {
           id: "c",
           text: "Wash hair completely",
           emoji: "🚿",
-          description: "Full wash isn't always practical before school",
+          isCorrect: false
+        },
+         {
+          id: "a",
+          text: "Refresh hair with water or dry shampoo",
+          emoji: "💧",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Style hair to cover the oiliness",
+          emoji: "💇",
           isCorrect: false
         }
       ]
@@ -105,21 +117,24 @@ const MorningRoutineSimulation = () => {
           id: "a",
           text: "Full hygiene routine + fresh clothes",
           emoji: "✨",
-          description: "Complete preparation builds confidence for important events",
           isCorrect: true
         },
         {
           id: "b",
           text: "Just brush teeth quickly",
           emoji: "🪥",
-          description: "Need complete hygiene for important events",
           isCorrect: false
         },
         {
           id: "c",
           text: "Skip hygiene routine",
           emoji: "🤷",
-          description: "Good hygiene shows respect for yourself and others",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Check breath with mint spray",
+          emoji: "🌿",
           isCorrect: false
         }
       ]
@@ -128,37 +143,42 @@ const MorningRoutineSimulation = () => {
       id: 5,
       text: "After morning routine, teen feels confident. Why?",
       options: [
-        {
-          id: "a",
-          text: "Good hygiene boosts self-esteem",
-          emoji: "🌟",
-          description: "Feeling clean and fresh improves confidence",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Clothes make her feel good",
           emoji: "👕",
-          description: "While clothes help, hygiene is the foundation",
           isCorrect: false
         },
         {
           id: "c",
           text: "She's not sure why",
           emoji: "🤔",
-          description: "Understanding the connection helps maintain good habits",
           isCorrect: false
-        }
+        },
+        {
+          id: "d",
+          text: "She prepared well for the day",
+          emoji: "📅",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Good hygiene boosts self-esteem",
+          emoji: "🌟",
+          isCorrect: true
+        },
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentScenario().options.find(opt => opt.id === optionId);
+    const selectedOption = scenarios[currentStep].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { step: currentStep, optionId, isCorrect }]);
@@ -185,7 +205,7 @@ const MorningRoutineSimulation = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -214,7 +234,7 @@ const MorningRoutineSimulation = () => {
             {getCurrentScenario().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +245,6 @@ const MorningRoutineSimulation = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

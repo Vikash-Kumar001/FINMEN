@@ -1,260 +1,142 @@
 import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PowerOfNoPoster = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 1; // 1 coin per question
+  const totalCoins = location.state?.totalCoins || 5; // Total coins for 5 questions
+  const totalXp = location.state?.totalXp || 10; // Total XP
+  const [score, setScore] = useState(0);
+  const [currentStage, setCurrentStage] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Hardcoded Game Rewards & Configuration
-  const coinsPerLevel = 1;
-  const totalCoins = 5;
-  const totalXp = 10;
-  const maxScore = 5;
-  const gameId = "health-female-kids-66";
-
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [selectedOptionId, setSelectedOptionId] = useState(null);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
-
-  const questions = [
+  const stages = [
     {
-      id: 1,
-      text: "What slogan fits a 'Power of No' poster?",
-      options: [
-        {
-          id: "a",
-          text: "Say Yes to Everything",
-          emoji: "👍",
-          description: "That's unsafe.",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "My Body, My Choice",
-          emoji: "💪",
-          description: "Yes! You are in charge.",
-          isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Be Quiet",
-          emoji: "🤫",
-          description: "No, speak up!",
-          isCorrect: false
-        }
-      ]
+      question: 'Which poster would best show "Power of No"?',
+      choices: [
+        { text: "Poster showing my body, my choice 💪", correct: true },
+        { text: "Poster showing say yes to everything 👍", correct: false },
+        { text: "Poster showing be quiet 🤫", correct: false },
+      ],
     },
     {
-      id: 2,
-      text: "Which image shows confidence?",
-      options: [
-        {
-          id: "a",
-          text: "Looking at the floor",
-          emoji: "⬇️",
-          description: "Look people in the eye.",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Standing tall with hand out",
-          emoji: "✋",
-          description: "Correct! That says 'Stop'.",
-          isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Hiding behind a tree",
-          emoji: "🌳",
-          description: "Hiding isn't confident.",
-          isCorrect: false
-        }
-      ]
+      question: 'Which image would best show confidence?',
+      choices: [
+        { text: "Poster showing looking at the floor ⬇️", correct: false },
+        { text: "Poster showing standing tall with hand out ✋", correct: true },
+        { text: "Poster showing hiding behind a tree 🌳", correct: false },
+      ],
     },
     {
-      id: 3,
-      text: "When is it important to say No?",
-      options: [
-        {
-          id: "a",
-          text: "When eating vegetables",
-          emoji: "🥦",
-          description: "Veggies are good for you.",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "When you feel unsafe",
-          emoji: "⚠️",
-          description: "Yes! Always trust your gut.",
-          isCorrect: true
-        },
-        {
-          id: "c",
-          text: "When doing homework",
-          emoji: "📚",
-          description: "Homework is important.",
-          isCorrect: false
-        }
-      ]
+      question: 'When is it important to say No?',
+      choices: [
+        { text: "Poster showing when eating vegetables 🥦", correct: false },
+        { text: "Poster showing when doing homework 📚", correct: false },
+        { text: "Poster showing when you feel unsafe ⚠️", correct: true },
+      ],
     },
     {
-      id: 4,
-      text: "What does 'Reviewing Choices' mean?",
-      options: [
-        {
-          id: "a",
-          text: "Thinking before you act",
-          emoji: "🧠",
-          description: "Correct! Make smart choices.",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Guessing wildly",
-          emoji: "🎲",
-          description: "Don't just guess with safety.",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Sleeping",
-          emoji: "😴",
-          description: "Stay awake to choose well.",
-          isCorrect: false
-        }
-      ]
+      question: 'What does "Reviewing Choices" mean?',
+      choices: [
+        { text: "Poster showing thinking before you act 🧠", correct: true },
+        { text: "Poster showing guessing wildly 🎲", correct: false },
+        { text: "Poster showing sleeping 😴", correct: false },
+      ],
     },
     {
-      id: 5,
-      text: "Who has the power to keep you safe?",
-      options: [
-        {
-          id: "a",
-          text: "Only Superman",
-          emoji: "🦸‍♂️",
-          description: "He's just in movies.",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "You do!",
-          emoji: "🫵",
-          description: "Exactly! You have the power.",
-          isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Your pet cat",
-          emoji: "🐱",
-          description: "Cats are cute but can't protect you.",
-          isCorrect: false
-        }
-      ]
-    }
+      question: 'Who has the power to keep you safe?',
+      choices: [
+        { text: "Poster showing only Superman 🦸‍♂️", correct: false },
+        { text: "Poster showing your pet cat 🐱", correct: false },
+        { text: "Poster showing you do! 🫵", correct: true },
+      ],
+    },
   ];
 
-  const handleChoice = (optionId) => {
-    if (selectedOptionId) return;
-
-    setSelectedOptionId(optionId);
-    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
+    
+    const isLastStage = currentStage === stages.length - 1;
+    
     setTimeout(() => {
-      setSelectedOptionId(null);
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+      if (isLastStage) {
+        setShowResult(true);
       } else {
-        setGameFinished(true);
+        setCurrentStage(prev => prev + 1);
+        setAnswered(false);
       }
-    }, 2000);
+    }, 500);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
+  const currentStageData = stages[currentStage];
+
   return (
     <GameShell
       title="Poster: Power of No"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
-      gameId={gameId}
-      gameType="health-female"
-      totalLevels={5}
-      currentLevel={66}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
-      backPath="/games/health-female/kids"
-      showAnswerConfetti={showAnswerConfetti}
-      maxScore={maxScore}
+      score={score}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}` : "Poster Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      onNext={handleNext}
+      nextButtonText="Back to Games"
+      gameId="health-female-kids-66"
+      gameType="health-female"
+      totalLevels={stages.length}
+      currentLevel={currentStage + 1}
+      maxScore={stages.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/health-female/kids"
+    >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
+        {!showResult && currentStageData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentStage + 1}/{stages.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{stages.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentStageData.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentStageData.choices.map((choice, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleChoice(choice.correct)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <p className="font-semibold text-lg">{choice.text}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-
-          <h2 className="text-2xl font-bold text-white mb-8 text-center">
-            {questions[currentQuestion].text}
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {questions[currentQuestion].options.map(option => {
-              const isSelected = selectedOptionId === option.id;
-              const showFeedback = selectedOptionId !== null;
-
-              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
-
-              if (showFeedback && isSelected) {
-                buttonClass = option.isCorrect
-                  ? "bg-green-500 ring-4 ring-green-300"
-                  : "bg-red-500 ring-4 ring-red-300";
-              } else if (showFeedback && !isSelected) {
-                buttonClass = "bg-white/10 opacity-50";
-              }
-
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={showFeedback}
-                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-4xl mr-6">{option.emoji}</div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
-                      {showFeedback && isSelected && (
-                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
-                      )}
-                    </div>
-                    {showFeedback && isSelected && (
-                      <div className="text-3xl ml-4">
-                        {option.isCorrect ? "✅" : "❌"}
-                      </div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

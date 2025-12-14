@@ -44,8 +44,8 @@ const ReflexDangerAlert = () => {
       correctAnswer: "Cigarette",
       options: [
         { text: "Apple", isCorrect: false, emoji: "🍎" },
-        { text: "Cigarette", isCorrect: true, emoji: "🚬" },
         { text: "Carrot", isCorrect: false, emoji: "🥕" },
+        { text: "Cigarette", isCorrect: true, emoji: "🚬" },
         { text: "Bread", isCorrect: false, emoji: "🍞" }
       ]
     },
@@ -55,9 +55,9 @@ const ReflexDangerAlert = () => {
       correctAnswer: "Don't touch",
       options: [
         { text: "Eat them", isCorrect: false, emoji: "😋" },
-        { text: "Don't touch", isCorrect: true, emoji: "🛑" },
         { text: "Play with them", isCorrect: false, emoji: "🤹" },
-        { text: "Color them", isCorrect: false, emoji: "🖍️" }
+        { text: "Color them", isCorrect: false, emoji: "🖍️" },
+        { text: "Don't touch", isCorrect: true, emoji: "🛑" }
       ]
     },
     {
@@ -66,9 +66,9 @@ const ReflexDangerAlert = () => {
       correctAnswer: "No",
       options: [
         { text: "Yes", isCorrect: false, emoji: "👍" },
-        { text: "No", isCorrect: true, emoji: "👎" },
         { text: "Maybe", isCorrect: false, emoji: "🤷" },
-        { text: "Sometimes", isCorrect: false, emoji: "🕰️" }
+        { text: "Sometimes", isCorrect: false, emoji: "🕰️" },
+        { text: "No", isCorrect: true, emoji: "👎" }
       ]
     },
     {
@@ -77,9 +77,9 @@ const ReflexDangerAlert = () => {
       correctAnswer: "No way",
       options: [
         { text: "It's yummy", isCorrect: false, emoji: "😋" },
-        { text: "No way", isCorrect: true, emoji: "🙅‍♀️" },
         { text: "It's healthy", isCorrect: false, emoji: "💪" },
-        { text: "I love it", isCorrect: false, emoji: "❤️" }
+        { text: "I love it", isCorrect: false, emoji: "❤️" },
+        { text: "No way", isCorrect: true, emoji: "🙅‍♀️" }
       ]
     }
   ];

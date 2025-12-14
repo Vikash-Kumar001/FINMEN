@@ -5,196 +5,135 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const GrowthHelpersPuzzle = () => {
   const navigate = useNavigate();
-
+  
   // Hardcoded Game Rewards & Configuration
   const coinsPerLevel = 1;
   const totalCoins = 5;
   const totalXp = 10;
   const maxScore = 5;
   const gameId = "health-female-kids-83";
-
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedHelper, setSelectedHelper] = useState(null);
+  const [selectedRole, setSelectedRole] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const [selectedOptionId, setSelectedOptionId] = useState(null);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
-
-  const questions = [
-    {
-      id: 1,
-      text: "Which helper checks your height?",
-      options: [
-        {
-          id: "a",
-          text: "A Baker",
-          emoji: "🥖",
-          description: "Bakers bake bread.",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "A Doctor",
-          emoji: "👩‍⚕️",
-          description: "Correct! Doctors measure you.",
-          isCorrect: true
-        },
-        {
-          id: "c",
-          text: "A Pilot",
-          emoji: "✈️",
-          description: "Pilots fly planes.",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 2,
-      text: "What tool helps you know your weight?",
-      options: [
-        {
-          id: "a",
-          text: "A Scale",
-          emoji: "⚖️",
-          description: "Yes! Scales show weight.",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "A Clock",
-          emoji: "⏰",
-          description: "Clocks tell time.",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "A Spoon",
-          emoji: "🥄",
-          description: "Spoons are for eating.",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 3,
-      text: "What food group is best for growth?",
-      options: [
-        {
-          id: "a",
-          text: "Only candy",
-          emoji: "🍬",
-          description: "Candy isn't good for growth.",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "A mix of fruits, veggies, and proteins",
-          emoji: "🥗",
-          description: "Correct! A balanced diet.",
-          isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Only chips",
-          emoji: "🥔",
-          description: "Chips have too much salt.",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 4,
-      text: "Who helps you buy clothes that fit?",
-      options: [
-        {
-          id: "a",
-          text: "A Cat",
-          emoji: "🐱",
-          description: "Cats don't shop.",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Parents",
-          emoji: "👪",
-          description: "Yes! Parents help you shop.",
-          isCorrect: true
-        },
-        {
-          id: "c",
-          text: "A Tree",
-          emoji: "🌳",
-          description: "Trees stay outside.",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 5,
-      text: "What object is used to measure how tall you are?",
-      options: [
-        {
-          id: "a",
-          text: "A Ruler or Tape Measure",
-          emoji: "📏",
-          description: "Correct! Measure your height.",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "A Book",
-          emoji: "📕",
-          description: "Books are for reading.",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "A Shoe",
-          emoji: "👟",
-          description: "Shoes are for feet.",
-          isCorrect: false
-        }
-      ]
-    }
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  // Helpers (left side) - 5 items
+  const helpers = [
+    { id: 1, name: "Doctor", emoji: "👩‍⚕️", hint: "Checks your height and weight" },
+    { id: 2, name: "Parent", emoji: "👨‍👩‍👧", hint: "Buys clothes that fit you" },
+    { id: 3, name: "Teacher", emoji: "👩‍🏫", hint: "Teaches you about healthy habits" },
+    { id: 4, name: "Nutritionist", emoji: "🥗", hint: "Helps plan healthy meals" },
+    { id: 5, name: "Coach", emoji: "🏃", hint: "Guides you in physical activities" }
   ];
-
-  const handleChoice = (optionId) => {
-    if (selectedOptionId) return;
-
-    setSelectedOptionId(optionId);
-    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    }
-
-    setTimeout(() => {
-      setSelectedOptionId(null);
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 2000);
+  
+  // Roles/Functions (right side) - 5 items (shuffled order)
+  const roles = [
+    { id: 4, text: "Plans healthy meals for growth", hint: "Makes sure you eat nutritious foods" },
+    { id: 1, text: "Measures height and weight", hint: "Tracks your physical development" },
+    { id: 5, text: "Guides in sports and exercise", hint: "Helps develop physical strength" },
+    { id: 2, text: "Buys properly fitting clothes", hint: "Ensures comfort and proper fit" },
+    { id: 3, text: "Teaches about body care", hint: "Provides knowledge on staying healthy" }
+  ];
+  
+  // Correct matches
+  const correctMatches = [
+    { helperId: 1, roleId: 1 }, // Doctor → Measures height and weight
+    { helperId: 2, roleId: 2 }, // Parent → Buys properly fitting clothes
+    { helperId: 3, roleId: 3 }, // Teacher → Teaches about body care
+    { helperId: 4, roleId: 4 }, // Nutritionist → Plans healthy meals for growth
+    { helperId: 5, roleId: 5 }  // Coach → Guides in sports and exercise
+  ];
+  
+  const handleHelperSelect = (helper) => {
+    if (gameFinished) return;
+    setSelectedHelper(helper);
   };
-
+  
+  const handleRoleSelect = (role) => {
+    if (gameFinished) return;
+    setSelectedRole(role);
+  };
+  
+  const handleMatch = () => {
+    if (!selectedHelper || !selectedRole || gameFinished) return;
+    
+    resetFeedback();
+    
+    const newMatch = {
+      helperId: selectedHelper.id,
+      roleId: selectedRole.id,
+      isCorrect: correctMatches.some(
+        match => match.helperId === selectedHelper.id && match.roleId === selectedRole.id
+      )
+    };
+    
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+    
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    // Check if all items are matched
+    if (newMatches.length === helpers.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+    
+    // Reset selections
+    setSelectedHelper(null);
+    setSelectedRole(null);
+  };
+  
+  const handleTryAgain = () => {
+    setGameFinished(false);
+    setMatches([]);
+    setSelectedHelper(null);
+    setSelectedRole(null);
+    setScore(0);
+    resetFeedback();
+  };
+  
   const handleNext = () => {
     navigate("/games/health-female/kids");
+  };
+  
+  // Check if a helper is already matched
+  const isHelperMatched = (helperId) => {
+    return matches.some(match => match.helperId === helperId);
+  };
+  
+  // Check if a role is already matched
+  const isRoleMatched = (roleId) => {
+    return matches.some(match => match.roleId === roleId);
+  };
+  
+  // Get match result for a helper
+  const getMatchResult = (helperId) => {
+    const match = matches.find(m => m.helperId === helperId);
+    return match ? match.isCorrect : null;
   };
 
   return (
     <GameShell
       title="Growth Helpers Puzzle"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Game Complete!" : `Match Helpers with Their Roles (${matches.length}/${helpers.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId={gameId}
       gameType="health-female"
-      totalLevels={5}
-      currentLevel={83}
+      totalLevels={helpers.length}
+      currentLevel={matches.length + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
@@ -203,58 +142,130 @@ const GrowthHelpersPuzzle = () => {
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
-          </div>
-
-          <h2 className="text-2xl font-bold text-white mb-8 text-center">
-            {questions[currentQuestion].text}
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {questions[currentQuestion].options.map(option => {
-              const isSelected = selectedOptionId === option.id;
-              const showFeedback = selectedOptionId !== null;
-
-              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
-
-              if (showFeedback && isSelected) {
-                buttonClass = option.isCorrect
-                  ? "bg-green-500 ring-4 ring-green-300"
-                  : "bg-red-500 ring-4 ring-red-300";
-              } else if (showFeedback && !isSelected) {
-                buttonClass = "bg-white/10 opacity-50";
-              }
-
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={showFeedback}
-                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
-                >
-                  <div className="flex items-center">
-                    <div className="text-4xl mr-6">{option.emoji}</div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
-                      {showFeedback && isSelected && (
-                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
-                      )}
-                    </div>
-                    {showFeedback && isSelected && (
-                      <div className="text-3xl ml-4">
-                        {option.isCorrect ? "✅" : "❌"}
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Helpers */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Growth Helpers</h3>
+              <div className="space-y-4">
+                {helpers.map(helper => (
+                  <button
+                    key={helper.id}
+                    onClick={() => handleHelperSelect(helper)}
+                    disabled={isHelperMatched(helper.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isHelperMatched(helper.id)
+                        ? getMatchResult(helper.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedHelper?.id === helper.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{helper.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{helper.name}</h4>
+                        <p className="text-white/80 text-sm">{helper.hint}</p>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedHelper 
+                    ? `Selected: ${selectedHelper.name}` 
+                    : "Select a Helper"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedHelper || !selectedRole}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedHelper && selectedRole
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
                 </button>
-              );
-            })}
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{helpers.length}</p>
+                  <p>Matched: {matches.length}/{helpers.length}</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Right column - Roles */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Roles</h3>
+              <div className="space-y-4">
+                {roles.map(role => (
+                  <button
+                    key={role.id}
+                    onClick={() => handleRoleSelect(role)}
+                    disabled={isRoleMatched(role.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isRoleMatched(role.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedRole?.id === role.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div>
+                        <h4 className="font-bold text-white">{role.text}</h4>
+                        <p className="text-white/80 text-sm">{role.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {helpers.length} growth helpers with their roles!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Different people help us grow in different ways - doctors, parents, teachers, nutritionists, and coaches all play important roles!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {helpers.length} helpers correctly.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each helper does to support your growth and development!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

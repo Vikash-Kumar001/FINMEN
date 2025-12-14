@@ -60,14 +60,13 @@ const BadgeCivicLeaderTeen = () => {
           text: "Complain without offering solutions", 
           isCorrect: false
         },
-       
+        { 
+          text: "Come prepared with research and constructive suggestions", 
+          isCorrect: true
+        },
         { 
           text: "Avoid them entirely", 
           isCorrect: false
-        },
-         { 
-          text: "Come prepared with research and constructive suggestions", 
-          isCorrect: true
         },
         { 
           text: "Only contact them when you need something", 
@@ -88,7 +87,10 @@ const BadgeCivicLeaderTeen = () => {
           text: "Making all decisions yourself", 
           isCorrect: false
         },
-        
+        { 
+          text: "Building a team and delegating responsibilities effectively", 
+          isCorrect: true
+        },
         { 
           text: "Focusing only on popularity", 
           isCorrect: false
@@ -96,11 +98,7 @@ const BadgeCivicLeaderTeen = () => {
         { 
           text: "Copying what other schools have done", 
           isCorrect: false
-        },
-        { 
-          text: "Building a team and delegating responsibilities effectively", 
-          isCorrect: true
-        },
+        }
       ],
       feedback: {
         correct: "Building a team and delegating responsibilities effectively maximizes the impact of school initiatives.",
@@ -112,15 +110,14 @@ const BadgeCivicLeaderTeen = () => {
       title: "Responsible Citizenship",
       question: "What does practicing responsible citizenship involve?",
       options: [
-         { 
-          text: "Staying informed and participating consistently in civic processes", 
-          isCorrect: true
-        },
         { 
           text: "Only participating when it's convenient", 
           isCorrect: false
         },
-       
+        { 
+          text: "Staying informed and participating consistently in civic processes", 
+          isCorrect: true
+        },
         { 
           text: "Following others without thinking critically", 
           isCorrect: false
@@ -144,14 +141,13 @@ const BadgeCivicLeaderTeen = () => {
           text: "Doing everything for them", 
           isCorrect: false
         },
-        
-        { 
-          text: "Comparing them to other students", 
-          isCorrect: false
-        },
         { 
           text: "Providing guidance while encouraging independence and growth", 
           isCorrect: true
+        },
+        { 
+          text: "Comparing them to other students", 
+          isCorrect: false
         },
         { 
           text: "Focusing only on academic performance", 

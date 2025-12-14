@@ -13,6 +13,7 @@ const SimulationDailyRoutine = () => {
   const [currentScenario, setCurrentScenario] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const scenarios = [
@@ -23,23 +24,26 @@ const SimulationDailyRoutine = () => {
       options: [
         {
           id: "a",
-          text: "Brush teeth, wash face, shower if needed",
-          emoji: "🌞",
-          description: "Comprehensive morning care sets a fresh start to the day",
-          isCorrect: true
-        },
-        {
-          id: "b",
           text: "Only brush teeth, skip washing face",
           emoji: "🦷",
-          description: "Incomplete routine may lead to skin issues",
           isCorrect: false
         },
         {
+          id: "b",
+          text: "Brush teeth, wash face, shower if needed",
+          emoji: "🌞",
+          isCorrect: true
+        },
+        {
           id: "c",
+          text: "Follow a consistent skincare routine",
+          emoji: "🧴",
+          isCorrect: false
+        },
+        {
+          id: "d",
           text: "Skip hygiene completely to save time",
           emoji: "⏰",
-          description: "Poor hygiene affects confidence and health throughout the day",
           isCorrect: false
         }
       ]
@@ -51,23 +55,26 @@ const SimulationDailyRoutine = () => {
       options: [
         {
           id: "a",
-          text: "Use wet wipes and change if possible",
-          emoji: "🧻",
-          description: "Maintaining freshness helps with confidence during school",
-          isCorrect: true
+          text: "Ignore the feeling and continue",
+          emoji: "😴",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Ignore the feeling and continue",
-          emoji: "😴",
-          description: "Ignoring hygiene needs can affect comfort and social interactions",
+          text: "Ask to go home immediately",
+          emoji: "🏠",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Ask to go home immediately",
-          emoji: "🏠",
-          description: "This is an extreme reaction to a normal situation",
+          text: "Use wet wipes and change if possible",
+          emoji: "🧻",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Carry extra supplies for touch-ups",
+          emoji: "🎒",
           isCorrect: false
         }
       ]
@@ -79,23 +86,26 @@ const SimulationDailyRoutine = () => {
       options: [
         {
           id: "a",
-          text: "Regular checks and change during breaks",
-          emoji: "🩹",
-          description: "Proactive management prevents accidents and discomfort",
-          isCorrect: true
+          text: "Change only once at lunch",
+          emoji: "🍱",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Change only once at lunch",
-          emoji: "🍱",
-          description: "Infrequent changes increase leak risk during heavy flow",
+          text: "Avoid drinking water to reduce flow",
+          emoji: "❌",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Avoid drinking water to reduce flow",
-          emoji: "❌",
-          description: "Dehydration is unhealthy and doesn't effectively manage flow",
+          text: "Regular checks and change during breaks",
+          emoji: "🩹",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Keep extra supplies in locker or backpack",
+          emoji: "🔒",
           isCorrect: false
         }
       ]
@@ -107,24 +117,27 @@ const SimulationDailyRoutine = () => {
       options: [
         {
           id: "a",
-          text: "Change clothes, wash hands, freshen up",
-          emoji: "👕",
-          description: "Refreshing after school helps with homework and relaxation",
-          isCorrect: true
+          text: "Continue in school clothes until dinner",
+          emoji: "📚",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Continue in school clothes until dinner",
-          emoji: "📚",
-          description: "Wearing sweaty clothes for extended periods can cause skin issues",
+          text: "Immediately lie down without changing",
+          emoji: "🛋️",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Immediately lie down without changing",
-          emoji: "🛋️",
-          description: "This can transfer bacteria to bedding and cause odors",
+          text: "Take a quick shower before starting homework",
+          emoji: "🚿",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Change clothes, wash hands, freshen up",
+          emoji: "👕",
+          isCorrect: true
         }
       ]
     },
@@ -135,35 +148,39 @@ const SimulationDailyRoutine = () => {
       options: [
         {
           id: "a",
-          text: "Shower, wash face, brush teeth, change into clean PJs",
-          emoji: "🛁",
-          description: "Complete bedtime routine promotes good sleep and skin health",
-          isCorrect: true
+          text: "Only brush teeth, skip shower",
+          emoji: "🦷",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Only brush teeth, skip shower",
-          emoji: "🦷",
-          description: "Incomplete routine may lead to body odor and skin issues",
+          text: "Skip hygiene completely when tired",
+          emoji: "😴",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Skip hygiene completely when tired",
-          emoji: "😴",
-          description: "Poor nighttime hygiene affects sleep quality and next day's comfort",
+          text: "Prepare tomorrow's outfit and hygiene items",
+          emoji: "📅",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Shower, wash face, brush teeth, change into clean PJs",
+          emoji: "🛁",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentScenario().options.find(opt => opt.id === optionId);
+    const selectedOption = scenarios[currentScenario].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
     setChoices([...choices, { scenario: currentScenario, optionId, isCorrect }]);
@@ -190,7 +207,7 @@ const SimulationDailyRoutine = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins} // Use coins for score
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -214,7 +231,7 @@ const SimulationDailyRoutine = () => {
             {getCurrentScenario().description}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {getCurrentScenario().options.map(option => (
               <button
                 key={option.id}
@@ -225,7 +242,6 @@ const SimulationDailyRoutine = () => {
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

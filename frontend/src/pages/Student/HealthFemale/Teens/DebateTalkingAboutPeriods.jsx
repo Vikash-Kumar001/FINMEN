@@ -6,14 +6,17 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const DebateTalkingAboutPeriods = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  
+  // Set to 1 for +1 coin per correct answer
+  const coinsPerLevel = 1;
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -21,25 +24,22 @@ const DebateTalkingAboutPeriods = () => {
       text: "Should periods be openly discussed in schools?",
       options: [
         {
-          id: "a",
-          text: "Yes, with respect and education",
-          emoji: "✅",
-          description: "Open, respectful discussion helps normalize periods and provides important education",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "No, it's too private a topic",
           emoji: "🤫",
-          description: "While personal, education about periods is important for health and should be discussed appropriately",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Yes, with respect and education",
+          emoji: "✅",
+          correct: true
         },
         {
           id: "c",
           text: "Only in all-girls settings",
           emoji: "👭",
-          description: "Education should be inclusive - everyone should understand reproductive health",
-          isCorrect: false
+          correct: false
         }
       ]
     },
@@ -48,25 +48,22 @@ const DebateTalkingAboutPeriods = () => {
       text: "How should period discussions be approached in mixed-gender settings?",
       options: [
         {
-          id: "a",
-          text: "With scientific accuracy and respect for all",
-          emoji: "🔬",
-          description: "Scientific, respectful discussion promotes understanding and reduces stigma",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "Avoided completely to prevent embarrassment",
           emoji: "🙈",
-          description: "Avoiding the topic perpetuates stigma and prevents important education",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
           text: "Only with jokes and casual references",
           emoji: "😂",
-          description: "Jokes can increase stigma - respectful, educational discussion is more appropriate",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "With scientific accuracy and respect for all",
+          emoji: "🔬",
+          correct: true
         }
       ]
     },
@@ -75,25 +72,22 @@ const DebateTalkingAboutPeriods = () => {
       text: "What is the benefit of normalizing period conversations?",
       options: [
         {
-          id: "a",
-          text: "Reduces stigma and improves health outcomes",
-          emoji: "🌟",
-          description: "Normalizing conversations reduces shame and improves access to care and support",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "Makes periods less special and important",
           emoji: "⬇️",
-          description: "Normalizing doesn't diminish importance - it reduces unnecessary shame and secrecy",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
           text: "Encourages excessive focus on the topic",
           emoji: "📢",
-          description: "Healthy normalization is about appropriate education, not excessive focus",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Reduces stigma and improves health outcomes",
+          emoji: "🌟",
+          correct: true
         }
       ]
     },
@@ -102,25 +96,22 @@ const DebateTalkingAboutPeriods = () => {
       text: "How can parents contribute to healthy period discussions?",
       options: [
         {
-          id: "a",
-          text: "Start age-appropriate conversations early",
-          emoji: "👨‍👩‍👧",
-          description: "Early, age-appropriate education helps children understand their bodies and health",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "Wait until puberty begins to mention anything",
           emoji: "⏰",
-          description: "Waiting until puberty can create confusion and anxiety - earlier preparation is better",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
           text: "Leave all education to schools entirely",
           emoji: "🏫",
-          description: "Parents play an important role in education - partnership with schools is ideal",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Start age-appropriate conversations early",
+          emoji: "👨‍👩‍👧",
+          correct: true
         }
       ]
     },
@@ -129,50 +120,45 @@ const DebateTalkingAboutPeriods = () => {
       text: "What role should media play in period representation?",
       options: [
         {
-          id: "a",
-          text: "Accurate, inclusive, and destigmatizing portrayal",
-          emoji: "📺",
-          description: "Media has significant influence - responsible portrayal helps normalize periods",
-          isCorrect: true
-        },
-        {
           id: "b",
           text: "Avoid the topic completely in entertainment",
           emoji: "🔇",
-          description: "Complete avoidance perpetuates the idea that periods are shameful or unmentionable",
-          isCorrect: false
+          correct: false
         },
         {
           id: "c",
           text: "Only show periods as comedic or embarrassing",
           emoji: "😂",
-          description: "Comedic portrayals can reinforce negative stereotypes and stigma",
-          isCorrect: false
+          correct: false
+        },
+        {
+          id: "a",
+          text: "Accurate, inclusive, and destigmatizing portrayal",
+          emoji: "📺",
+          correct: true
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
-    if (isCorrect) {
-      showCorrectAnswerFeedback(1, true);
+  const handleAnswerSelect = (option) => {
+    resetFeedback();
+    
+    if (option.correct) {
+      const newCoins = coins + 1; // Award 1 coin per correct answer
+      setCoins(newCoins);
+      setFinalScore(finalScore + 1);
+      showCorrectAnswerFeedback(1, true); // Show feedback for 1 point
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
+        setCurrentQuestion(currentQuestion + 1);
       } else {
-        setGameFinished(true);
+        setShowResult(true);
       }
     }, 1500);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-female/teens/journal-of-awareness");
@@ -181,65 +167,91 @@ const DebateTalkingAboutPeriods = () => {
   return (
     <GameShell
       title="Debate: Talking About Periods"
-      subtitle={`Debate Point ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins}
+      subtitle={showResult ? "Debate Complete!" : `Debate ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId="health-female-teen-36"
       gameType="health-female"
-      totalLevels={40}
-      currentLevel={36}
-      showConfetti={gameFinished}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult}
       flashPoints={flashPoints}
-      backPath="/games/health-female/teens"
       showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/health-female/teens"
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Debate Point {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
-          </div>
-
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-white mb-4">
-              {getCurrentQuestion().text}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {getCurrentQuestion().options.map((option) => (
-              <div
-                key={option.id}
-                onClick={() => !choices.find(c => c.question === currentQuestion) && handleChoice(option.id)}
-                className={`bg-white/20 backdrop-blur-sm rounded-xl p-4 border-2 cursor-pointer transition-all duration-300 hover:scale-105 ${
-                  choices.find(c => c.question === currentQuestion)?.optionId === option.id
-                    ? option.isCorrect
-                      ? "border-green-400 bg-green-500/20"
-                      : "border-red-400 bg-red-500/20"
-                    : "border-white/30 hover:border-purple-400"
-                }`}
-              >
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <span className="text-4xl">{option.emoji}</span>
-                  <span className="text-white font-medium">{option.text}</span>
-                </div>
-                
-                {choices.find(c => c.question === currentQuestion)?.optionId === option.id && (
-                  <div className={`mt-3 p-2 rounded-lg text-sm ${
-                    option.isCorrect ? "bg-green-500/30 text-green-200" : "bg-red-500/30 text-red-200"
-                  }`}>
-                    {option.description}
-                  </div>
-                )}
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Debate {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
               </div>
-            ))}
+              
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-4">🌸</div>
+                <h3 className="text-2xl font-bold text-white mb-2">Period Discussion Debate</h3>
+              </div>
+
+              <p className="text-white text-lg mb-6">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-6">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswerSelect(option)}
+                    className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-4">{option.emoji}</div>
+                      <div>
+                        <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="text-center py-8">
+            <div className="inline-block p-4 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 mb-6">
+              <div className="bg-white p-2 rounded-full">
+                <div className="text-4xl">🏆</div>
+              </div>
+            </div>
+            
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              Excellent Debate!
+            </h2>
+            
+            <p className="text-white/80 mb-6 max-w-2xl mx-auto">
+              You understand the importance of open, respectful discussions about periods!
+            </p>
+            
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 border border-white/20 max-w-md mx-auto mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Your Score</span>
+                <span className="text-xl font-bold text-yellow-400">{finalScore}/{questions.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">Coins Earned</span>
+                <span className="text-xl font-bold text-yellow-400">{coins}</span>
+              </div>
+            </div>
+            
+            <p className="text-white/80 max-w-2xl mx-auto">
+              Remember: Normalizing conversations about periods helps reduce stigma and improves health outcomes!
+            </p>
+          </div>
+        )}
       </div>
     </GameShell>
   );

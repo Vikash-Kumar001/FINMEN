@@ -1,165 +1,134 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
+import { PenSquare } from 'lucide-react';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const SelfCareJournal = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [answer, setAnswer] = useState("");
-  const [currentPrompt, setCurrentPrompt] = useState(0);
-  const [responses, setResponses] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
-
-  const prompts = [
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-female-teen-7";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [entry, setEntry] = useState("");
+  const [showResult, setShowResult] = useState(false);
+  
+  const stages = [
     {
-      id: 1,
-      title: "Daily Hygiene Routine",
-      text: "One new hygiene routine I started as a teen is ___."
+      question: 'Write: "One self-care practice I enjoy is ___.',
+      minLength: 10,
     },
     {
-      id: 2,
-      title: "Personal Care Discovery",
-      text: "The first time I learned about ___ hygiene was ___."
+      question: 'Write: "My favorite way to relax after school is ___.',
+      minLength: 10,
     },
     {
-      id: 3,
-      title: "Hygiene Challenges",
-      text: "A hygiene challenge I faced as a teen was ___."
+      question: 'Write: "A challenge I face in taking care of myself is ___.',
+      minLength: 10,
     },
     {
-      id: 4,
-      title: "Hygiene Success Story",
-      text: "One hygiene habit that makes me feel confident is ___."
+      question: 'Write: "Someone who supports my self-care journey is ___.',
+      minLength: 10,
     },
     {
-      id: 5,
-      title: "Future Hygiene Goals",
-      text: "In the future, I want to improve my ___ hygiene routine."
-    }
+      question: 'Write: "In the future, I want to develop this self-care habit ___.',
+      minLength: 10,
+    },
   ];
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (answer.trim()) {
-      setResponses([...responses, { prompt: currentPrompt, answer }]);
-      setAnswer("");
-
-      if (currentPrompt < prompts.length - 1) {
-        setCurrentPrompt(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-        showCorrectAnswerFeedback(5, true);
-      }
+  const handleSubmit = () => {
+    if (showResult) return; // Prevent multiple submissions
+    
+    resetFeedback();
+    const entryText = entry.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setShowResult(true);
+        } else {
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
+        }
+      }, 1500);
     }
   };
 
-  const handleNext = () => {
-    navigate("/student/health-female/teens/morning-routine-simulation");
-  };
+  const finalScore = score;
+
+  // Log when game completes
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Journal of Self-Care game completed! Score: ${finalScore}/${stages.length}, gameId: ${gameId}`);
+    }
+  }, [showResult, finalScore, gameId, stages.length]);
 
   return (
     <GameShell
       title="Journal of Self-Care"
-      subtitle={`Prompt ${currentPrompt + 1} of ${prompts.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={responses.length * 1}
-      gameId="health-female-teen-7"
-      gameType="health-female"
-      totalLevels={10}
-      currentLevel={7}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
-      backPath="/games/health-female/teens"
-      showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on your self-care journey!` : "Journal Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="health-female"
+      maxScore={stages.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">📖</div>
-            <h3 className="text-2xl font-bold text-white mb-2">{prompts[currentPrompt].title}</h3>
-            <p className="text-white/90 mb-4">
-              {prompts[currentPrompt].text}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === stages.length}
+      backPath="/games/health-female/teens">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center text-center text-white space-y-6 md:space-y-8 max-w-4xl mx-auto px-4 py-4">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-6 md:p-8 rounded-xl md:rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-8 h-8 md:w-10 md:h-10 text-green-300" />
+            <h3 className="text-xl md:text-2xl font-bold mb-4 text-white">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4 text-sm md:text-base">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-xs md:text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
             </p>
-            <div className="flex justify-center gap-2 mb-4">
-              {prompts.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-3 h-3 rounded-full ${
-                    index <= currentPrompt ? 'bg-green-500' : 'bg-white/30'
-                  }`}
-                />
-              ))}
+            <textarea
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-base md:text-lg bg-white/90 min-h-[120px] md:min-h-[150px]"
+              disabled={showResult}
+            />
+            <div className="mt-2 text-white/50 text-xs md:text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
             </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-white font-medium mb-2">
-                Your response:
-              </label>
-              <textarea
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder="Write your thoughts here..."
-                className="w-full p-4 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:border-white/50 resize-none"
-                rows={4}
-                maxLength={200}
-              />
-              <div className="text-right text-white/60 text-sm mt-1">
-                {answer.length}/200 characters
-              </div>
-            </div>
-
             <button
-              type="submit"
-              disabled={!answer.trim()}
-              className={`w-full py-3 px-6 rounded-xl font-bold transition-all ${
-                answer.trim()
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white'
-                  : 'bg-gray-500 text-gray-300 cursor-not-allowed'
+              onClick={handleSubmit}
+              className={`mt-4 px-6 md:px-8 py-3 md:py-4 rounded-full text-base md:text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
               }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
             >
-              {currentPrompt < prompts.length - 1 ? 'Next Prompt' : 'Complete Journal'}
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
             </button>
-          </form>
-
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-6xl mb-2">📝</div>
-                <h3 className="text-2xl font-bold text-white mb-2">Journal Complete!</h3>
-                <p className="text-white/90 mb-4">
-                  Excellent reflection! You've completed all 5 journal prompts about your hygiene journey.
-                </p>
-
-                <div className="space-y-3 mb-4">
-                  {responses.map((response, index) => (
-                    <div key={index} className="bg-white/10 rounded-xl p-3 text-left">
-                      <p className="text-white font-medium mb-1">{prompts[index].title}</p>
-                      <p className="text-white/80 italic">"{response.answer}"</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex justify-center gap-2">
-                  <span className="text-yellow-500 text-2xl">+{responses.length}</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

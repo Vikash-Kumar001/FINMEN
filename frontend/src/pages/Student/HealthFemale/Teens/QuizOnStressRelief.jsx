@@ -11,34 +11,34 @@ const QuizOnStressRelief = () => {
   const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [coins, setCoins] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Which combination reduces stress effectively?",
+      emoji: "🧘",
       options: [
         {
           id: "a",
           text: "Yoga and adequate sleep",
           emoji: "🧘",
-          description: "Both practices promote relaxation and mental well-being",
           isCorrect: true
         },
         {
           id: "b",
           text: "Worry more and avoid sleep",
           emoji: "😰",
-          description: "This increases stress and harms physical health",
           isCorrect: false
         },
         {
           id: "c",
           text: "Isolate yourself from others",
           emoji: "-alone",
-          description: "Social connection is important for mental health",
           isCorrect: false
         }
       ]
@@ -46,26 +46,24 @@ const QuizOnStressRelief = () => {
     {
       id: 2,
       text: "What's the benefit of deep breathing exercises?",
+      emoji: "💨",
       options: [
         {
           id: "a",
           text: "Activates the body's relaxation response",
           emoji: "💨",
-          description: "Slows heart rate and reduces tension",
           isCorrect: true
         },
         {
           id: "b",
           text: "Increases heart rate dramatically",
           emoji: "❤️",
-          description: "This would increase stress rather than reduce it",
           isCorrect: false
         },
         {
           id: "c",
           text: "Makes you hold your breath longer",
           emoji: "憋",
-          description: "This can cause dizziness and discomfort",
           isCorrect: false
         }
       ]
@@ -73,26 +71,24 @@ const QuizOnStressRelief = () => {
     {
       id: 3,
       text: "How does regular exercise help with stress?",
+      emoji: "🏃",
       options: [
         {
           id: "a",
           text: "Releases endorphins and improves mood",
           emoji: "🏃",
-          description: "Natural chemicals that promote feelings of well-being",
           isCorrect: true
         },
         {
           id: "b",
           text: "Exhausts the body completely",
           emoji: "😵",
-          description: "Overexertion can increase stress and risk injury",
           isCorrect: false
         },
         {
           id: "c",
           text: "Creates more stress on the body",
           emoji: "💥",
-          description: "Moderate exercise actually reduces stress",
           isCorrect: false
         }
       ]
@@ -100,26 +96,24 @@ const QuizOnStressRelief = () => {
     {
       id: 4,
       text: "Why is maintaining a consistent sleep schedule important?",
+      emoji: "😴",
       options: [
         {
           id: "a",
           text: "Regulates mood and improves stress resilience",
           emoji: "😴",
-          description: "Adequate sleep is essential for emotional regulation",
           isCorrect: true
         },
         {
           id: "b",
           text: "Makes you sleep more during the day",
           emoji: "🌞",
-          description: "Daytime sleeping can disrupt nighttime rest",
           isCorrect: false
         },
         {
           id: "c",
           text: "Allows you to stay up all night",
           emoji: "🌙",
-          description: "Sleep deprivation increases stress and impairs function",
           isCorrect: false
         }
       ]
@@ -127,52 +121,52 @@ const QuizOnStressRelief = () => {
     {
       id: 5,
       text: "What's a healthy way to express emotions?",
+      emoji: "💬",
       options: [
         {
           id: "a",
           text: "Talk to trusted friends or family",
           emoji: "💬",
-          description: "Sharing feelings provides support and perspective",
           isCorrect: true
         },
         {
           id: "b",
           text: "Suppress all emotions completely",
           emoji: "🤐",
-          description: "Bottling up emotions can lead to mental health issues",
           isCorrect: false
         },
         {
           id: "c",
           text: "Express emotions aggressively",
           emoji: "😠",
-          description: "Aggressive expression can harm relationships and self",
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect;
+    
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
+    setSelectedOption(optionId);
+    setShowFeedback(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        resetFeedback();
+        setShowFeedback(false);
       } else {
         setGameFinished(true);
       }
     }, 1500);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-female/teens/reflex-stress-check");
@@ -181,11 +175,10 @@ const QuizOnStressRelief = () => {
   return (
     <GameShell
       title="Quiz on Stress Relief"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={coins}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -196,35 +189,48 @@ const QuizOnStressRelief = () => {
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/teens"
-      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+            <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
           </div>
 
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+          <div className="text-6xl mb-4 text-center">{questions[currentQuestion].emoji}</div>
+
+          <p className="text-white text-lg mb-6 text-center">
+            {questions[currentQuestion].text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
-                </div>
-              </button>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {questions[currentQuestion].options.map((option) => {
+              let buttonClass = "bg-gradient-to-br from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white";
+              
+              if (showFeedback) {
+                if (option.isCorrect) {
+                  buttonClass = "bg-gradient-to-br from-green-500 to-emerald-600 text-white ring-4 ring-green-400";
+                } else if (option.id === selectedOption) {
+                  buttonClass = "bg-gradient-to-br from-red-500 to-rose-600 text-white ring-4 ring-red-400";
+                } else {
+                  buttonClass = "bg-gray-500/30 text-white";
+                }
+              } else if (option.id === selectedOption) {
+                buttonClass = "bg-gradient-to-br from-blue-500 to-sky-600 text-white ring-4 ring-blue-400";
+              }
+              
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleAnswer(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${buttonClass} ${showFeedback ? "cursor-not-allowed" : "hover:scale-105"}`}
+                >
+                  <div className="text-2xl mb-2">{option.emoji}</div>
+                  <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

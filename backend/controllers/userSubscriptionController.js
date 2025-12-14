@@ -631,7 +631,25 @@ export const getCurrentSubscription = async (req, res) => {
       subscription = await UserSubscription.getActiveSubscription(userId);
     }
     
+    // Check for pending subscriptions - treat as cancelled
     if (!subscription) {
+      const latestSubscription = await UserSubscription.getLatestSubscription(userId);
+      if (latestSubscription && latestSubscription.status === 'pending') {
+        // Treat pending as cancelled - return free plan
+        const freePlan = {
+          planType: 'free',
+          planName: 'Free Plan',
+          status: 'active',
+          features: PLAN_CONFIGS.free.features,
+          isFirstYear: true,
+          amount: 0,
+        };
+        return res.status(200).json({
+          success: true,
+          subscription: freePlan,
+        });
+      }
+      
       // Return free plan defaults
       const freePlan = {
         planType: 'free',
@@ -649,6 +667,22 @@ export const getCurrentSubscription = async (req, res) => {
 
     // Add computed fields for frontend
     const subscriptionData = subscription.toObject ? subscription.toObject() : subscription;
+    
+    // If subscription status is pending, treat as cancelled - return free plan
+    if (subscriptionData.status === 'pending') {
+      const freePlan = {
+        planType: 'free',
+        planName: 'Free Plan',
+        status: 'active',
+        features: PLAN_CONFIGS.free.features,
+        isFirstYear: true,
+        amount: 0,
+      };
+      return res.status(200).json({
+        success: true,
+        subscription: freePlan,
+      });
+    }
     subscriptionData.daysRemaining = subscription.daysRemaining ? subscription.daysRemaining() : null;
     subscriptionData.latestTransaction = subscriptionData.transactions?.length
       ? subscriptionData.transactions[subscriptionData.transactions.length - 1]

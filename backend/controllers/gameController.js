@@ -1038,7 +1038,8 @@ export const completeUnifiedGame = async (req, res) => {
     }
     gameProgress.lastStreakDate = today;
 
-    // Add achievements
+    // Add achievements and emit real-time events
+    const newlyEarnedAchievements = [];
     if (achievements && achievements.length > 0) {
       for (const achievement of achievements) {
         const existingAchievement = gameProgress.achievements.find(
@@ -1046,11 +1047,14 @@ export const completeUnifiedGame = async (req, res) => {
         );
         
         if (!existingAchievement) {
-          gameProgress.achievements.push({
+          const newAchievement = {
             name: achievement.name,
             description: achievement.description,
-            badge: achievement.badge || 'bronze'
-          });
+            badge: achievement.badge || 'bronze',
+            earnedAt: new Date()
+          };
+          gameProgress.achievements.push(newAchievement);
+          newlyEarnedAchievements.push(newAchievement);
         }
       }
     }
@@ -1168,6 +1172,18 @@ export const completeUnifiedGame = async (req, res) => {
 
     // Emit socket event for real-time updates
     const io = req.app.get('io');
+    
+    // Emit achievement events for newly earned achievements
+    if (io && newlyEarnedAchievements.length > 0) {
+      const { emitAchievementEarned } = await import('../socketHandlers/achievementSocket.js');
+      for (const achievement of newlyEarnedAchievements) {
+        emitAchievementEarned(io, userId, achievement, {
+          gameId,
+          gameType
+        });
+      }
+    }
+    
     // Always emit game completion event if game is fully completed, even if no coins awarded
     if (io && (coinsToAward > 0 || gameProgress.fullyCompleted)) {
       // Emit game completion event

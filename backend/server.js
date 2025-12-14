@@ -236,6 +236,14 @@ io.on("connection", async (socket) => {
     setupChatSocket(io, socket, user);
     setupPresentationSocket(io, socket, user);
     
+    // Setup achievement socket handler
+    const { setupAchievementSocket } = await import('./socketHandlers/achievementSocket.js');
+    setupAchievementSocket(io, socket, user);
+    
+    // Setup mood socket handler
+    const { setupMoodSocket } = await import('./socketHandlers/moodSocket.js');
+    setupMoodSocket(io, socket, user);
+    
     // Setup CSR-specific sockets
     if (user.role === "csr") {
       setupCSROverviewSocket(io, socket, user);

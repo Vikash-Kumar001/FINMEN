@@ -31,7 +31,7 @@ const PaymentPage = () => {
   const [activeTab, setActiveTab] = useState('plans'); // 'plans', 'history'
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [historyFilter, setHistoryFilter] = useState('all'); // 'all', 'completed', 'pending', 'failed'
+  const [historyFilter, setHistoryFilter] = useState('all'); // 'all', 'completed', 'pending' (displayed as Cancelled), 'failed'
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   const fetchPaymentHistory = async () => {
@@ -266,17 +266,21 @@ const PaymentPage = () => {
                   <div className="flex items-center gap-4 mb-6">
                     <Filter className="w-5 h-5 text-gray-600" />
                     <div className="flex gap-2 flex-wrap">
-                      {['all', 'completed', 'pending', 'failed'].map((filter) => (
+                      {[
+                        { value: 'all', label: 'All' },
+                        { value: 'completed', label: 'Completed' },
+                        { value: 'failed', label: 'Failed' }
+                      ].map((filter) => (
                         <button
-                          key={filter}
-                          onClick={() => setHistoryFilter(filter)}
+                          key={filter.value}
+                          onClick={() => setHistoryFilter(filter.value)}
                           className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-                            historyFilter === filter
+                            historyFilter === filter.value
                               ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
-                          {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                          {filter.label}
                         </button>
                       ))}
                     </div>

@@ -67,12 +67,28 @@ const PLAN_CONFIGS = {
 
 /**
  * Get user's active subscription or return free plan defaults
+ * Treats pending subscriptions as cancelled (returns free plan)
  */
 export const getUserSubscription = async (userId) => {
   try {
     const subscription = await UserSubscription.getActiveSubscription(userId);
     
+    // If no active subscription, check for pending subscriptions
     if (!subscription) {
+      const latestSubscription = await UserSubscription.getLatestSubscription(userId);
+      
+      // If latest subscription is pending, treat it as cancelled (return free plan)
+      if (latestSubscription && latestSubscription.status === 'pending') {
+        return {
+          planType: 'free',
+          planName: 'Free Plan',
+          status: 'active',
+          features: PLAN_CONFIGS.free.features,
+          isFirstYear: true,
+          amount: 0,
+        };
+      }
+      
       // Return free plan defaults
       return {
         planType: 'free',
@@ -84,7 +100,20 @@ export const getUserSubscription = async (userId) => {
       };
     }
 
-    return subscription.toObject ? subscription.toObject() : subscription;
+    // If subscription status is pending, treat as cancelled (return free plan)
+    const subObj = subscription.toObject ? subscription.toObject() : subscription;
+    if (subObj.status === 'pending') {
+      return {
+        planType: 'free',
+        planName: 'Free Plan',
+        status: 'active',
+        features: PLAN_CONFIGS.free.features,
+        isFirstYear: true,
+        amount: 0,
+      };
+    }
+
+    return subObj;
   } catch (error) {
     console.error('Error getting user subscription:', error);
     // Return free plan on error
@@ -101,10 +130,17 @@ export const getUserSubscription = async (userId) => {
 
 /**
  * Check if user has access to a specific feature
+ * Treats pending subscriptions as cancelled (denies premium features)
  */
 export const hasFeatureAccess = async (userId, featureName) => {
   try {
     const subscription = await getUserSubscription(userId);
+    
+    // If subscription status is pending, deny all premium features
+    if (subscription.status === 'pending') {
+      return false;
+    }
+    
     const features = subscription.features || {};
     
     // Handle special cases

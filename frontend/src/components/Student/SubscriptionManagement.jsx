@@ -47,7 +47,7 @@ const PLANS = {
         'Full Access to All 10 Pillars',
         '2200+ Gaming Micro Lessons',
         'Advanced Analytics',
-        'Certificates & Achievements',
+        'Badges and Achievements',
         'WiseClub Community Access',
         'Presentation Tool',
       ],
@@ -76,7 +76,7 @@ const PLANS = {
         'Unlimited Academics Access',
         'Advanced Teacher & Admin Dashboards',
         'Comprehensive Analytics & Insights',
-        'Certificates & Achievements',
+        'Badges and Achievements',
         'WiseClub & Inavora Access',
         'Institution-wide Seat Management',
       ],
@@ -376,6 +376,7 @@ const SubscriptionManagement = ({ onUpgradingChange, onPlanChange }) => {
       case 'expired':
         return 'bg-red-100 text-red-800 border-red-300';
       case 'cancelled':
+      case 'pending': // Show pending as cancelled
         return 'bg-yellow-100 text-yellow-800 border-yellow-300';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-300';
@@ -501,7 +502,7 @@ const SubscriptionManagement = ({ onUpgradingChange, onPlanChange }) => {
                 <div>
                   <h3 className="text-xl font-bold">{subscription?.planName || currentPlan.name}</h3>
                   <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border-2 mt-2 ${getStatusColor(subscription?.status || 'active').replace('bg-', 'bg-white/20 ').replace('text-', 'text-white ').replace('border-', 'border-white/30 ')}`}>
-                    {subscription?.status?.toUpperCase() || 'ACTIVE'}
+                    {subscription?.status?.toLowerCase() === 'pending' ? 'CANCELLED' : (subscription?.status?.toUpperCase() || 'ACTIVE')}
                   </span>
                 </div>
               </div>
@@ -528,7 +529,7 @@ const SubscriptionManagement = ({ onUpgradingChange, onPlanChange }) => {
                     fullAccess: 'Full Access to All Pillars',
                     parentDashboard: 'Parent Dashboard',
                     advancedAnalytics: 'Advanced Analytics',
-                    certificates: 'Certificates & Achievements',
+                    certificates: 'Badges and Achievements',
                     wiseClubAccess: 'WiseClub Community Access',
                     inavoraAccess: 'Presentation Tool',
                   };
@@ -663,7 +664,7 @@ const SubscriptionManagement = ({ onUpgradingChange, onPlanChange }) => {
                   { feature: 'Total Games Access', free: '50 games', premium: '2200+ games', pro: '2200+ games' },
                   { feature: 'Full Access to All 10 Pillars', free: false, premium: true, pro: true },
                   { feature: 'Advanced Analytics', free: false, premium: true, pro: true },
-                  { feature: 'Certificates & Achievements', free: false, premium: true, pro: true },
+                  { feature: 'Badges and Achievements', free: false, premium: true, pro: true },
                   { feature: 'WiseClub Community Access', free: false, premium: true, pro: true },
                   { feature: 'Presentation Tool', free: false, premium: true, pro: true },
                   { feature: 'Parent Dashboard', free: false, premium: false, pro: true },

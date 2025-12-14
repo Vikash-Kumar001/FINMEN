@@ -138,6 +138,11 @@ export const SubscriptionProvider = ({ children }) => {
   const hasFeature = useCallback((featureName) => {
     if (!subscription || !subscription.features) return false;
     
+    // Treat pending subscriptions as cancelled - deny all premium features
+    if (subscription.status === 'pending') {
+      return false;
+    }
+    
     const features = subscription.features;
     
     switch (featureName) {
@@ -163,6 +168,26 @@ export const SubscriptionProvider = ({ children }) => {
   const canAccessGame = useCallback((pillarName, gamesCompletedCount, gameIndex = undefined) => {
     if (!subscription || !subscription.features) {
       return { allowed: false, reason: 'Subscription not loaded' };
+    }
+
+    // Treat pending subscriptions as cancelled - deny premium access
+    if (subscription.status === 'pending') {
+      const gamesPerPillar = 5; // Free plan limit
+      if (gameIndex !== undefined && gameIndex >= gamesPerPillar) {
+        return {
+          allowed: false,
+          reason: `Upgrade to premium to access more than ${gamesPerPillar} games per pillar.`,
+          gamesPlayed: gamesCompletedCount || 0,
+          gamesAllowed: gamesPerPillar,
+          mode: 'preview',
+        };
+      }
+      return {
+        allowed: gameIndex === undefined || gameIndex < gamesPerPillar,
+        gamesPlayed: gamesCompletedCount || 0,
+        gamesAllowed: gamesPerPillar,
+        mode: 'preview',
+      };
     }
 
     const features = subscription.features;
@@ -214,6 +239,15 @@ export const SubscriptionProvider = ({ children }) => {
   const canAccessPillar = useCallback((pillarName) => {
     if (!subscription || !subscription.features) {
       return { allowed: false, mode: 'none' };
+    }
+
+    // Treat pending subscriptions as cancelled - only preview mode
+    if (subscription.status === 'pending') {
+      return {
+        allowed: true,
+        mode: 'preview',
+        message: 'You are in preview mode. Upgrade to access all games.',
+      };
     }
 
     const features = subscription.features;

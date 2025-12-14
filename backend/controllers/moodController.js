@@ -1,17 +1,116 @@
 import MoodLog from "../models/MoodLog.js";
+import UserProgress from "../models/UserProgress.js";
+import XPLog from "../models/XPLog.js";
 
 export const logMood = async (req, res) => {
   const { emoji, journal } = req.body;
+  const userId = req.user._id;
 
   try {
+    // Check if mood already logged today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const existingMood = await MoodLog.findOne({
+      userId,
+      date: { $gte: today, $lt: tomorrow }
+    });
+
+    if (existingMood) {
+      // Update existing mood for today
+      existingMood.emoji = emoji;
+      existingMood.journal = journal || existingMood.journal;
+      await existingMood.save();
+
+      // Emit socket event
+      const io = req.app.get('io');
+      if (io) {
+        const { emitMoodLogged } = await import('../socketHandlers/moodSocket.js');
+        await emitMoodLogged(io, userId, existingMood);
+      }
+
+      // Get current XP for response
+      let userProgress = await UserProgress.findOne({ userId });
+      const currentXP = userProgress ? userProgress.xp : 0;
+
+      // Calculate streak
+      const { calculateMoodStreak } = await import('../socketHandlers/moodSocket.js');
+      const streak = await calculateMoodStreak(userId);
+
+      return res.status(200).json({ 
+        message: "Mood updated successfully", 
+        mood: existingMood,
+        isUpdate: true,
+        totalXP: currentXP,
+        streak
+      });
+    }
+
+    // Create new mood log
     const newMood = await MoodLog.create({
-      userId: req.user._id,
+      userId,
       emoji,
       journal,
       date: new Date(),
     });
 
-    res.status(201).json({ message: "Mood logged successfully", mood: newMood });
+    // Award XP for mood tracking (25 XP per log)
+    const XP_REWARD = 25;
+    let userProgress = await UserProgress.findOne({ userId });
+    
+    if (!userProgress) {
+      userProgress = await UserProgress.create({
+        userId,
+        xp: 0,
+        level: 1,
+        healCoins: 0,
+        streak: 0
+      });
+    }
+
+    userProgress.xp += XP_REWARD;
+    userProgress.level = Math.floor(userProgress.xp / 100) + 1;
+    await userProgress.save();
+
+    // Log XP gain
+    await XPLog.create({
+      userId,
+      xp: XP_REWARD,
+      reason: 'mood_tracking',
+      description: 'Mood logged',
+      date: new Date()
+    });
+
+    // Calculate streak
+    const { calculateMoodStreak } = await import('../socketHandlers/moodSocket.js');
+    const streak = await calculateMoodStreak(userId);
+
+    // Emit socket events
+    const io = req.app.get('io');
+    if (io) {
+      // Emit mood logged event
+      const { emitMoodLogged } = await import('../socketHandlers/moodSocket.js');
+      await emitMoodLogged(io, userId, newMood);
+
+      // Emit XP update
+      io.to(userId.toString()).emit('stats:updated', {
+        userId: userId.toString(),
+        xp: userProgress.xp,
+        level: userProgress.level
+      });
+    }
+
+    res.status(201).json({ 
+      message: "Mood logged successfully", 
+      mood: newMood,
+      xpEarned: XP_REWARD,
+      newXP: userProgress.xp,
+      newLevel: userProgress.level,
+      totalXP: userProgress.xp,
+      streak
+    });
   } catch (err) {
     console.error("❌ Error logging mood:", err);
     res.status(500).json({ error: "Failed to log mood" });

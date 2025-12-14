@@ -89,7 +89,6 @@ export default function StudentDashboard() {
     const [upgradeFeature, setUpgradeFeature] = useState(null);
     const [featureCards, setFeatureCards] = useState([]);
     const [achievements, setAchievements] = useState([]);
-    const [recentActivities, setRecentActivities] = useState([]);
     // eslint-disable-next-line no-unused-vars
     const [notifications, setNotifications] = useState([]);
     const [dashboardData, setDashboardData] = useState(null);
@@ -114,6 +113,7 @@ export default function StudentDashboard() {
     const [leaderboardData, setLeaderboardData] = useState(null);
     const [achievementTimeline, setAchievementTimeline] = useState(null);
     const [dailyActions, setDailyActions] = useState(null);
+    const [newAchievementIds, setNewAchievementIds] = useState(new Set());
     
     // Profile completion modal state
     const [showProfileModal, setShowProfileModal] = useState(false);
@@ -193,18 +193,20 @@ export default function StudentDashboard() {
         };
     };
     
-    // Track dashboard page view
+    // Track dashboard page view (non-blocking)
     useEffect(() => {
-        // Log dashboard view activity
-        logActivity({
-            activityType: "page_view",
-            description: "Viewed student dashboard",
-            metadata: {
-                page: "/student/dashboard",
-                timestamp: new Date().toISOString()
-            },
-            pageUrl: window.location.pathname
-        });
+        // Log dashboard view activity (deferred to not block rendering)
+        setTimeout(() => {
+            logActivity({
+                activityType: "page_view",
+                description: "Viewed student dashboard",
+                metadata: {
+                    page: "/student/dashboard",
+                    timestamp: new Date().toISOString()
+                },
+                pageUrl: window.location.pathname
+            });
+        }, 0);
         
         // Welcome toast for returning users
         if (user?.name && user?._id) {
@@ -212,81 +214,61 @@ export default function StudentDashboard() {
             const hasShownWelcomeToast = sessionStorage.getItem(welcomeToastKey);
 
             if (!hasShownWelcomeToast) {
-                toast.success(`Welcome back, ${user.name}! 🎮`, {
-                    duration: 3000,
-                    position: "top-center",
-                    icon: "👋"
-                });
-
+                // Defer toast to not block initial render
+                setTimeout(() => {
+                    toast.success(`Welcome back, ${user.name}! 🎮`, {
+                        duration: 3000,
+                        position: "top-center",
+                        icon: "👋"
+                    });
+                }, 300);
                 sessionStorage.setItem(welcomeToastKey, "true");
             }
         }
     }, [user]);
     
+    // Set feature cards immediately (no API call needed)
     useEffect(() => {
-        // Directly use mockFeatures data to ensure all financial literacy pages are linked
         setFeatureCards(mockFeatures);
-        setLoading(false);
-    }, []);
-    
-    useEffect(() => {
-        // Fetch achievements using service
-        const getAchievements = async () => {
-            try {
-                const data = await fetchStudentAchievements();
-                setAchievements(data);
-            } catch (error) {
-                console.error('Error fetching achievements:', error);
-                setAchievements([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-        
-        getAchievements();
     }, []);
 
-    // Load student stats with error handling and real data
-    // Load comprehensive dashboard data
+    // Optimized: Load critical dashboard data in parallel
     const loadDashboardData = React.useCallback(async () => {
         try {
             setLoading(true);
 
-            // Log dashboard data loading activity
-            logActivity({
-                activityType: "data_fetch",
-                description: "Loading comprehensive dashboard data",
-                metadata: {
-                    action: "load_dashboard_data",
-                    timestamp: new Date().toISOString()
-                },
-                pageUrl: window.location.pathname
-            });
+            // Log dashboard data loading activity (non-blocking)
+            setTimeout(() => {
+                logActivity({
+                    activityType: "data_fetch",
+                    description: "Loading comprehensive dashboard data",
+                    metadata: {
+                        action: "load_dashboard_data",
+                        timestamp: new Date().toISOString()
+                    },
+                    pageUrl: window.location.pathname
+                });
+            }, 0);
 
-            // Fetch all dashboard data using the new service
-            const data = await fetchStudentDashboardData();
+            // Fetch all critical data in parallel (dashboard data, leaderboard, notifications, wallet)
+            const [dashboardDataResult, leaderboardDataResult, notificationDataResult] = await Promise.all([
+                fetchStudentDashboardData().catch(err => {
+                    console.error("Failed to fetch dashboard data:", err);
+                    return { stats: null, achievements: [] };
+                }),
+                fetchLeaderboardSnippet().catch(() => ({ currentUserRank: null, leaderboard: [], currentUserXP: 0, totalUsers: 0 })),
+                fetchNotifications('student', true).catch(() => [])
+            ]);
+
+            const data = dashboardDataResult;
             console.log("📊 Dashboard data received:", data);
             setDashboardData(data);
+            setNotifications(notificationDataResult);
+            setLeaderboardData(leaderboardDataResult);
             
-            // Update individual state with fetched data
+            // Update stats with leaderboard rank
             if (data.stats) {
-                console.log("✅ Stats data:", data.stats);
-                
-                // Fetch leaderboard snippet to get accurate rank (same as Profile page)
-                let userRank = data.stats.rank || 0;
-                try {
-                    const leaderboardData = await fetchLeaderboardSnippet().catch(() => ({ currentUserRank: null }));
-                    if (leaderboardData?.currentUserRank !== undefined && leaderboardData?.currentUserRank !== null) {
-                        userRank = leaderboardData.currentUserRank;
-                    } else if (data.stats.rank !== undefined) {
-                        userRank = data.stats.rank;
-                    }
-                } catch (err) {
-                    console.warn("Could not fetch leaderboard rank, using stats rank:", err);
-                    if (data.stats.rank !== undefined) {
-                        userRank = data.stats.rank;
-                    }
-                }
+                const userRank = leaderboardDataResult?.currentUserRank ?? data.stats.rank ?? 0;
                 
                 setStats({
                     xp: data.stats.xp || 0,
@@ -299,31 +281,37 @@ export default function StudentDashboard() {
                 });
             } else {
                 console.error("❌ No stats data in response:", data);
+                setStats({
+                    xp: 0,
+                    level: 1,
+                    nextLevelXp: 100,
+                    todayMood: "😊",
+                    streak: 0,
+                    rank: 0,
+                    weeklyXP: 0,
+                });
             }
             
             if (data.achievements) {
                 setAchievements(data.achievements);
             }
-            
-            if (data.activities) {
-                setRecentActivities(data.activities);
-            }
-            
 
             // Cache the dashboard data
             cacheDashboardData('student', data);
             
         } catch (err) {
-            // Log error activity
-            logActivity({
-                activityType: "error",
-                description: "Failed to load dashboard data",
-                metadata: {
-                    errorMessage: err.message || "Unknown error",
-                    timestamp: new Date().toISOString()
-                },
-                pageUrl: window.location.pathname
-            });
+            // Log error activity (non-blocking)
+            setTimeout(() => {
+                logActivity({
+                    activityType: "error",
+                    description: "Failed to load dashboard data",
+                    metadata: {
+                        errorMessage: err.message || "Unknown error",
+                        timestamp: new Date().toISOString()
+                    },
+                    pageUrl: window.location.pathname
+                });
+            }, 0);
             
             // Show error toast
             toast.error("Could not load dashboard data. Please try refreshing the page.", {
@@ -350,7 +338,7 @@ export default function StudentDashboard() {
         }
     }, []);
 
-    // Load notifications
+    // Load notifications (separate for refresh purposes)
     const loadNotifications = React.useCallback(async () => {
         try {
             const notificationData = await fetchNotifications('student', true);
@@ -360,7 +348,7 @@ export default function StudentDashboard() {
         }
     }, []);
 
-    // Load new analytics data
+    // Load analytics data (deferred - non-critical, loads after initial render)
     const loadAnalyticsData = React.useCallback(async () => {
         try {
             const [
@@ -370,7 +358,6 @@ export default function StudentDashboard() {
                 heatmapData,
                 timelineData,
                 recommendationsData,
-                leaderboardSnippet,
                 achievementsData,
                 dailyActionsData
             ] = await Promise.all([
@@ -380,7 +367,6 @@ export default function StudentDashboard() {
                 fetchActivityHeatmap(),
                 fetchMoodTimeline(),
                 fetchRecommendations(),
-                fetchLeaderboardSnippet(),
                 fetchAchievementTimeline(),
                 fetchDailyActions()
             ]);
@@ -391,17 +377,10 @@ export default function StudentDashboard() {
             setActivityHeatmap(heatmapData);
             setMoodTimeline(timelineData);
             setRecommendations(recommendationsData);
-            setLeaderboardData(leaderboardSnippet);
             setAchievementTimeline(achievementsData);
             setDailyActions(dailyActionsData);
             
-            // Update rank from leaderboard data (same as Profile page)
-            if (leaderboardSnippet?.currentUserRank !== undefined && leaderboardSnippet?.currentUserRank !== null) {
-                setStats((prev) => ({
-                    ...prev,
-                    rank: leaderboardSnippet.currentUserRank
-                }));
-            }
+            // Note: Leaderboard rank is already set from loadDashboardData, no need to fetch again
         } catch (err) {
             console.error("❌ Failed to load analytics data", err);
         }
@@ -555,11 +534,17 @@ export default function StudentDashboard() {
     useEffect(() => {
         // Only run once on mount or when user changes
         if (user && (user.role === "student" || user.role === "school_student")) {
+            // Load critical data first (dashboard, notifications, wallet)
             loadDashboardData();
-            loadNotifications();
-            loadAnalyticsData();
-            // Refresh wallet when dashboard loads to ensure balance is displayed
             refreshWallet();
+            
+            // Defer analytics data loading until after initial render (non-critical)
+            // This improves perceived performance
+            const analyticsTimer = setTimeout(() => {
+                loadAnalyticsData();
+            }, 500); // Load analytics 500ms after critical data
+            
+            return () => clearTimeout(analyticsTimer);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?._id]); // Only depend on user ID to prevent infinite loops
@@ -759,12 +744,99 @@ export default function StudentDashboard() {
             }
         };
         
-        // Handle real-time achievement updates
+        // Handle real-time achievement updates with professional animations
         const handleAchievementUpdate = (data) => {
-            if (data.userId === (user?._id || user?.id)) {
+            if (data.userId === (user?._id || user?.id) && data.achievement) {
+                const achievement = data.achievement;
+                
+                // Show professional toast notification
+                toast.success(
+                    (t) => (
+                        <div className="flex items-center gap-3">
+                            <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${
+                                achievement.badge === 'gold' ? 'from-yellow-400 to-yellow-600' :
+                                achievement.badge === 'silver' ? 'from-gray-300 to-gray-500' :
+                                achievement.badge === 'platinum' ? 'from-cyan-400 to-blue-500' :
+                                achievement.badge === 'diamond' ? 'from-purple-400 to-pink-500' :
+                                'from-orange-400 to-orange-600'
+                            } flex items-center justify-center text-2xl shadow-lg`}>
+                                🏆
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-bold text-white text-sm">Achievement Unlocked!</p>
+                                <p className="text-white/90 text-xs">{achievement.name}</p>
+                            </div>
+                        </div>
+                    ),
+                    {
+                        duration: 5000,
+                        position: "top-center",
+                        style: {
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            borderRadius: '12px',
+                            padding: '16px',
+                            boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                        },
+                        icon: '🎉',
+                    }
+                );
+                
+                // Mark as new achievement
+                const achievementId = achievement.id || `${achievement.name}-${achievement.earnedAt}`;
+                setNewAchievementIds((prev) => new Set([...prev, achievementId]));
+                
+                // Remove "new" indicator after 10 seconds
+                setTimeout(() => {
+                    setNewAchievementIds((prev) => {
+                        const updated = new Set(prev);
+                        updated.delete(achievementId);
+                        return updated;
+                    });
+                }, 10000);
+                
+                // Update achievement timeline in real-time
+                setAchievementTimeline((prev) => {
+                    if (!prev) {
+                        return {
+                            achievements: [achievement],
+                            totalAchievements: 1
+                        };
+                    }
+                    
+                    // Check if achievement already exists (prevent duplicates)
+                    const exists = prev.achievements.some(
+                        a => a.id === achievement.id || 
+                        (a.name === achievement.name && 
+                         new Date(a.earnedAt).getTime() === new Date(achievement.earnedAt).getTime())
+                    );
+                    
+                    if (exists) {
+                        return prev;
+                    }
+                    
+                    // Add new achievement at the beginning and limit to 10
+                    const updatedAchievements = [achievement, ...prev.achievements].slice(0, 10);
+                    
+                    return {
+                        achievements: updatedAchievements,
+                        totalAchievements: prev.totalAchievements + 1
+                    };
+                });
+                
+                // Also refresh analytics data in background for consistency
                 setTimeout(() => {
                     loadAnalyticsData();
-                }, 300);
+                }, 1000);
+            }
+        };
+        
+        // Handle achievement timeline updates from subscription
+        const handleAchievementTimeline = (data) => {
+            if (data && data.achievements) {
+                setAchievementTimeline({
+                    achievements: data.achievements,
+                    totalAchievements: data.totalAchievements || data.achievements.length
+                });
             }
         };
         
@@ -783,6 +855,21 @@ export default function StudentDashboard() {
         socket.on('settings:updated', handleSettingsUpdate);
         socket.on('stats:updated', handleStatsUpdate);
         socket.on('achievement:earned', handleAchievementUpdate);
+        socket.on('student:achievements:timeline', handleAchievementTimeline);
+        
+        // Subscribe to achievement updates when socket is connected
+        const subscribeToAchievements = () => {
+            if (socket && user?._id) {
+                socket.emit('student:achievements:subscribe', { studentId: user._id });
+            }
+        };
+        
+        if (socket && socket.connected) {
+            subscribeToAchievements();
+        } else if (socket) {
+            // If socket exists but not connected, wait for connection
+            socket.on('connect', subscribeToAchievements);
+        }
         
         // Handle profile updates
         const handleProfileUpdate = async (data) => {
@@ -806,7 +893,9 @@ export default function StudentDashboard() {
             socket.off('settings:updated', handleSettingsUpdate);
             socket.off('stats:updated', handleStatsUpdate);
             socket.off('achievement:earned', handleAchievementUpdate);
+            socket.off('student:achievements:timeline', handleAchievementTimeline);
             socket.off('user:profile:updated', handleProfileUpdate);
+            socket.off('connect', subscribeToAchievements);
         };
     }, [socket, stats.level, setWallet, refreshWallet, user, loadAnalyticsData, fetchUser, refreshSubscription]);
 
@@ -1484,18 +1573,18 @@ export default function StudentDashboard() {
                                     </motion.div>
                                 </div>
 
-                                {/* Total Minutes Display */}
+                                {/* Total Hours Display */}
                                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 mb-4 shadow-md">
                                     <div className="text-center">
                                         <p className="text-sm text-green-600 font-medium">Last 7 Days</p>
                                         <div className="flex items-baseline justify-center gap-1 mt-1">
                                             <span className="text-5xl font-black text-green-700">
-                                                {engagementMinutes.totalMinutes}
+                                                {(engagementMinutes.totalMinutes / 60).toFixed(1)}
                                             </span>
-                                            <span className="text-xl text-gray-500">min</span>
+                                            <span className="text-xl text-gray-500">hrs</span>
                                         </div>
                                         <p className="text-xs text-green-600 mt-1">
-                                            ~{engagementMinutes.avgMinutesPerDay} min/day average
+                                            ~{(engagementMinutes.avgMinutesPerDay / 60).toFixed(1)} hrs/day average
                                         </p>
                                     </div>
                                 </div>
@@ -1547,7 +1636,7 @@ export default function StudentDashboard() {
                                         </motion.div>
                                     </div>
                                     <p className="text-xs text-center text-green-600 font-medium">
-                                        Goal: {engagementMinutes.goalMinutes} min/day
+                                        Goal: {(engagementMinutes.goalMinutes / 60).toFixed(1)} hrs/day
                                     </p>
                                 </div>
 
@@ -2104,69 +2193,147 @@ export default function StudentDashboard() {
                 )}
 
                 {/* 5. Mood Timeline */}
-                {moodTimeline && moodTimeline.timeline && (
+                {moodTimeline && (
                     <motion.div
                         initial={{ opacity: 0, x: 50 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.6, delay: 0.6 }}
                         className="mb-8 bg-gradient-to-br from-pink-50 via-rose-50 to-orange-50 rounded-3xl p-6 shadow-xl border-2 border-pink-200"
                     >
-                        <h2 className="text-2xl font-black text-gray-800 mb-6 flex items-center gap-2">
-                            <Heart className="w-7 h-7 text-pink-600" />
-                            <span className="bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-                                Mood Journey
-                            </span>
-                        </h2>
-                        <div className="relative">
-                            {/* Timeline line */}
-                            <div className="absolute left-8 top-0 bottom-0 w-1 bg-gradient-to-b from-pink-300 via-rose-300 to-orange-300 rounded-full" />
-                            
-                            {/* Timeline items */}
-                            <div className="space-y-6">
-                                {moodTimeline.timeline.map((entry, index) => (
-                                    <motion.div
-                                        key={entry.id}
-                                        initial={{ x: -50, opacity: 0 }}
-                                        animate={{ x: 0, opacity: 1 }}
-                                        transition={{ delay: index * 0.1 }}
-                                        className="relative pl-16 group"
-                                    >
-                                        {/* Timeline dot */}
-                                        <motion.div
-                                            whileHover={{ scale: 1.3 }}
-                                            className="absolute left-5 top-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-pink-300 z-10"
-                                        >
-                                            <span className="text-xl">{entry.emoji}</span>
-                                        </motion.div>
-                                        
-                                        {/* Content */}
-                                        <motion.div
-                                            whileHover={{ scale: 1.02, x: 5 }}
-                                            className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-lg transition-all"
-                                        >
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="text-sm font-bold text-gray-800">
-                                                    {new Date(entry.date).toLocaleDateString('en-US', { 
-                                                        month: 'short', 
-                                                        day: 'numeric',
-                                                        weekday: 'long'
-                                                    })}
-                                                </span>
-                                                <span className="text-xs text-gray-500">
-                                                    {new Date(entry.timestamp).toLocaleTimeString('en-US', { 
-                                                        hour: '2-digit', 
-                                                        minute: '2-digit'
-                                                    })}
-                                                </span>
-                                            </div>
-                                            {entry.note && (
-                                                <p className="text-sm text-gray-600 italic">"{entry.note}"</p>
-                                            )}
-                                        </motion.div>
-                                    </motion.div>
-                                ))}
-                            </div>
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-black text-gray-800 flex items-center gap-2">
+                                <Heart className="w-7 h-7 text-pink-600" />
+                                <span className="bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
+                                    Mood Journey
+                                </span>
+                            </h2>
+                            <motion.button
+                                whileHover={{ scale: 1.1, x: 5 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => navigate('/student/mood-tracker')}
+                                className="flex items-center justify-center w-10 h-10 rounded-full bg-pink-100 hover:bg-pink-200 text-pink-600 transition-colors shadow-md hover:shadow-lg"
+                                aria-label="Go to Mood Tracker"
+                            >
+                                <ChevronRight className="w-6 h-6" />
+                            </motion.button>
                         </div>
+                        {moodTimeline.timeline && moodTimeline.timeline.length > 0 ? (() => {
+                            // Filter to show only last 7 days
+                            const sevenDaysAgo = new Date();
+                            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                            sevenDaysAgo.setHours(0, 0, 0, 0);
+                            
+                            const recentMoodLogs = moodTimeline.timeline.filter(entry => {
+                                const entryDate = new Date(entry.date || entry.timestamp);
+                                entryDate.setHours(0, 0, 0, 0);
+                                return entryDate >= sevenDaysAgo;
+                            });
+                            
+                            return recentMoodLogs.length > 0 ? (
+                                <div className="relative">
+                                    {/* Timeline line */}
+                                    <div className="absolute left-8 top-0 bottom-0 w-1 bg-gradient-to-b from-pink-300 via-rose-300 to-orange-300 rounded-full" />
+                                    
+                                    {/* Timeline items */}
+                                    <div className="space-y-6">
+                                        {recentMoodLogs.map((entry, index) => (
+                                        <motion.div
+                                            key={entry.id}
+                                            initial={{ x: -50, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            transition={{ delay: index * 0.1 }}
+                                            className="relative pl-16 group"
+                                        >
+                                            {/* Timeline dot */}
+                                            <motion.div
+                                                whileHover={{ scale: 1.3 }}
+                                                className="absolute left-5 top-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-pink-300 z-10"
+                                            >
+                                                <span className="text-xl">{entry.emoji}</span>
+                                            </motion.div>
+                                            
+                                            {/* Content */}
+                                            <motion.div
+                                                whileHover={{ scale: 1.02, x: 5 }}
+                                                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-lg transition-all"
+                                            >
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-sm font-bold text-gray-800">
+                                                        {new Date(entry.date).toLocaleDateString('en-US', { 
+                                                            month: 'short', 
+                                                            day: 'numeric',
+                                                            weekday: 'long'
+                                                        })}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500">
+                                                        {new Date(entry.timestamp).toLocaleTimeString('en-US', { 
+                                                            hour: '2-digit', 
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </span>
+                                                </div>
+                                                {entry.note && (
+                                                    <p className="text-sm text-gray-600 italic">"{entry.note}"</p>
+                                                )}
+                                            </motion.div>
+                                        </motion.div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center py-12">
+                                    <motion.div
+                                        initial={{ scale: 0.8, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        transition={{ delay: 0.2 }}
+                                        className="flex flex-col items-center gap-4"
+                                    >
+                                        <div className="w-20 h-20 rounded-full bg-pink-100 flex items-center justify-center">
+                                            <Heart className="w-10 h-10 text-pink-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-lg font-bold text-gray-700 mb-1">No mood logs in the last 7 days</p>
+                                            <p className="text-sm text-gray-500 mb-4">Start tracking your mood to see your recent journey</p>
+                                            <motion.button
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => navigate('/student/mood-tracker')}
+                                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full font-semibold shadow-lg hover:shadow-xl transition-all"
+                                            >
+                                                <span>Track Your Mood</span>
+                                                <ArrowRight className="w-4 h-4" />
+                                            </motion.button>
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            );
+                        })() : (
+                            <div className="text-center py-12">
+                                <motion.div
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="flex flex-col items-center gap-4"
+                                >
+                                    <div className="w-20 h-20 rounded-full bg-pink-100 flex items-center justify-center">
+                                        <Heart className="w-10 h-10 text-pink-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-lg font-bold text-gray-700 mb-1">No mood logs yet</p>
+                                        <p className="text-sm text-gray-500 mb-4">Start tracking your mood to see your journey here</p>
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => navigate('/student/mood-tracker')}
+                                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full font-semibold shadow-lg hover:shadow-xl transition-all"
+                                        >
+                                            <span>Track Your Mood</span>
+                                            <ArrowRight className="w-4 h-4" />
+                                        </motion.button>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        )}
                     </motion.div>
                 )}
 
@@ -2184,8 +2351,10 @@ export default function StudentDashboard() {
                                 Recommended For You
                             </span>
                         </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {recommendations.recommendations.map((rec, index) => {
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {recommendations.recommendations
+                                .filter(rec => !(rec.title && rec.title.includes('Master') && rec.title.includes('UVLS') && rec.title.includes('Skills')))
+                                .map((rec, index) => {
                                 const bgColors = [
                                     'from-violet-400 to-purple-500',
                                     'from-cyan-400 to-blue-500',
@@ -2354,37 +2523,117 @@ export default function StudentDashboard() {
                                         };
                                         const badgeGradient = badgeColors[achievement.badge] || badgeColors.bronze;
 
+                                        // Get badge icon based on badge type
+                                        const getBadgeIcon = (badge) => {
+                                            switch(badge) {
+                                                case 'diamond': return '💎';
+                                                case 'platinum': return '⭐';
+                                                case 'gold': return '🥇';
+                                                case 'silver': return '🥈';
+                                                case 'bronze': return '🥉';
+                                                default: return '🏆';
+                                            }
+                                        };
+                                        
+                                        const achievementId = achievement.id || `${achievement.name}-${achievement.earnedAt}`;
+                                        const isNew = newAchievementIds.has(achievementId);
+
                                         return (
                                             <motion.div
-                                                key={index}
-                                                initial={{ scale: 0.8, opacity: 0 }}
-                                                animate={{ scale: 1, opacity: 1 }}
-                                                transition={{ delay: index * 0.1, type: "spring" }}
-                                                whileHover={{ scale: 1.03, x: 5 }}
-                                                className="flex items-center gap-4 bg-white/70 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-lg transition-all"
+                                                key={achievementId}
+                                                initial={{ scale: 0.8, opacity: 0, x: -20 }}
+                                                animate={{ scale: 1, opacity: 1, x: 0 }}
+                                                transition={{ 
+                                                    delay: index * 0.05, 
+                                                    type: "spring",
+                                                    stiffness: 100,
+                                                    damping: 15
+                                                }}
+                                                whileHover={{ scale: 1.03, x: 5, y: -2 }}
+                                                className={`flex items-center gap-4 bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-xl transition-all border ${
+                                                    isNew ? 'border-yellow-400 border-2 shadow-yellow-200' : 'border-white/50'
+                                                } group relative overflow-hidden`}
                                             >
-                                                {/* Badge Icon */}
-                                                <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${badgeGradient} flex items-center justify-center text-2xl shadow-lg flex-shrink-0`}>
-                                                    🏆
-                                                </div>
+                                                {/* New Achievement Sparkle Effect */}
+                                                {isNew && (
+                                                    <motion.div
+                                                        className="absolute inset-0 pointer-events-none"
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: [0, 1, 0] }}
+                                                        transition={{ duration: 2, repeat: Infinity }}
+                                                    >
+                                                        <Sparkles className="absolute top-2 right-2 w-4 h-4 text-yellow-400" />
+                                                        <Sparkles className="absolute bottom-2 left-2 w-3 h-3 text-yellow-300" />
+                                                    </motion.div>
+                                                )}
+                                                
+                                                {/* Badge Icon with pulse animation */}
+                                                <motion.div 
+                                                    className={`w-14 h-14 rounded-full bg-gradient-to-br ${badgeGradient} flex items-center justify-center text-2xl shadow-lg flex-shrink-0 relative overflow-hidden ${
+                                                        isNew ? 'ring-2 ring-yellow-400 ring-offset-2' : ''
+                                                    }`}
+                                                    whileHover={{ rotate: [0, -10, 10, -10, 0] }}
+                                                    transition={{ duration: 0.5 }}
+                                                    animate={isNew ? {
+                                                        scale: [1, 1.1, 1],
+                                                        rotate: [0, 5, -5, 0]
+                                                    } : {}}
+                                                >
+                                                    <span className="relative z-10">{getBadgeIcon(achievement.badge)}</span>
+                                                    <motion.div
+                                                        className={`absolute inset-0 bg-gradient-to-br ${badgeGradient} opacity-0 group-hover:opacity-30`}
+                                                        animate={{
+                                                            scale: [1, 1.2, 1],
+                                                            opacity: [0, 0.3, 0]
+                                                        }}
+                                                        transition={{
+                                                            duration: 2,
+                                                            repeat: Infinity,
+                                                            ease: "easeInOut"
+                                                        }}
+                                                    />
+                                                </motion.div>
                                                 
                                                 {/* Achievement Info */}
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="font-bold text-gray-800 truncate">{achievement.name}</h4>
-                                                    <p className="text-xs text-gray-600 truncate">{achievement.description}</p>
-                                                    <p className="text-xs text-gray-500 mt-1">
-                                                        {new Date(achievement.earnedAt).toLocaleDateString('en-US', {
-                                                            month: 'short',
-                                                            day: 'numeric',
-                                                            year: 'numeric'
-                                                        })}
+                                                <div className="flex-1 min-w-0 relative z-10">
+                                                    <div className="flex items-center gap-2">
+                                                        <h4 className="font-bold text-gray-800 truncate group-hover:text-purple-600 transition-colors">
+                                                            {achievement.name}
+                                                        </h4>
+                                                        {isNew && (
+                                                            <motion.span
+                                                                initial={{ scale: 0 }}
+                                                                animate={{ scale: [0, 1.2, 1] }}
+                                                                className="px-2 py-0.5 bg-yellow-400 text-yellow-900 text-[10px] font-bold rounded-full"
+                                                            >
+                                                                NEW
+                                                            </motion.span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-xs text-gray-600 truncate mt-0.5">
+                                                        {achievement.description}
                                                     </p>
+                                                    <div className="flex items-center gap-2 mt-1.5">
+                                                        <Clock className="w-3 h-3 text-gray-400" />
+                                                        <p className="text-xs text-gray-500">
+                                                            {new Date(achievement.earnedAt).toLocaleDateString('en-US', {
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                                year: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            })}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                                 
-                                                {/* Badge Label */}
-                                                <div className={`px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${badgeGradient} text-white shadow-md`}>
+                                                {/* Badge Label with shimmer effect */}
+                                                <motion.div 
+                                                    className={`px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r ${badgeGradient} text-white shadow-md flex-shrink-0 relative z-10`}
+                                                    whileHover={{ scale: 1.1 }}
+                                                >
                                                     {achievement.badge.toUpperCase()}
-                                            </div>
+                                                </motion.div>
                                             </motion.div>
                                         );
                                     })
@@ -2408,35 +2657,6 @@ export default function StudentDashboard() {
                     )}
                 </div>
 
-                {/* Recent Activities Section */}
-                {recentActivities.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 }}
-                        className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/40 mb-8"
-                    >
-                        <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                            <Activity className="w-5 h-5 text-indigo-500" />
-                            Recent Activities
-                        </h3>
-                        <div className="space-y-3">
-                            {recentActivities.slice(0, 5).map((activity, i) => (
-                                <div key={i} className="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl">
-                                    <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium text-gray-800">
-                                            {activity.description || activity.title}
-                                        </p>
-                                        <p className="text-xs text-gray-500">
-                                            {new Date(activity.timestamp || activity.createdAt).toLocaleString()}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </motion.div>
-                )}
 
 
                 {/* Motivational Footer */}
@@ -2451,7 +2671,6 @@ export default function StudentDashboard() {
                     {dashboardData && import.meta.env.DEV && (
                         <div className="mt-4 text-xs text-gray-500">
                             <p>Dashboard data loaded: {new Date().toLocaleTimeString()}</p>
-                            <p>Activities: {dashboardData.activities?.length || 0}</p>
                         </div>
                     )}
                 </div>

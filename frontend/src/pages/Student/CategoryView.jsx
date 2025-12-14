@@ -9,7 +9,8 @@ import {
     Sparkles,
     Star,
     AlertTriangle,
-    X
+    X,
+    Clock
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { mockFeatures } from "../../data/mockFeatures";
@@ -27,6 +28,8 @@ export default function CategoryView() {
     const [restrictedUserAge, setRestrictedUserAge] = useState(null);
     const [restrictedCategorySlug, setRestrictedCategorySlug] = useState(null);
     const [restrictionType, setRestrictionType] = useState(null); // 'adult' or 'kids'
+    const [showComingSoonModal, setShowComingSoonModal] = useState(false);
+    const [comingSoonCardTitle, setComingSoonCardTitle] = useState(null);
     console.log("featuresCrad,", featureCards);
 
     const categories = [
@@ -56,55 +59,8 @@ export default function CategoryView() {
         if (category) {
             setCategoryInfo(category);
             
-            // Special handling for Sustainability category
-            if (category.key === 'sustainability') {
-                // Create specific game cards for Sustainability
-                const sustainabilityCards = [
-                    {
-                        id: 'sustainability-1',
-                        title: 'Solar & City Games',
-                        description: 'Learn about solar energy and sustainable cities',
-                        icon: '☀️',
-                        path: '/games/sustainability/solar-and-city',
-                        color: 'bg-yellow-500',
-                        category: 'sustainability',
-                        xpReward: 45
-                    },
-                    {
-                        id: 'sustainability-2',
-                        title: 'Waste & Recycle Games',
-                        description: 'Learn about waste conservation and recycling',
-                        icon: '💧',
-                        path: '/games/sustainability/waste-and-recycle',
-                        color: 'bg-blue-500',
-                        category: 'sustainability',
-                        xpReward: 45
-                    },
-                    {
-                        id: 'sustainability-3',
-                        title: 'Carbon & Climate Games',
-                        description: 'Learn about carbon footprints and climate change',
-                        icon: '🌍',
-                        path: '/games/sustainability/carbon-and-climate',
-                        color: 'bg-gray-500',
-                        category: 'sustainability',
-                        xpReward: 45
-                    },
-                    {
-                        id: 'sustainability-4',
-                        title: 'Water & Energy Games',
-                        description: 'Learn about the connection between water and energy',
-                        icon: '⚡',
-                        path: '/games/sustainability/water-and-energy',
-                        color: 'bg-green-500',
-                        category: 'sustainability',
-                        xpReward: 45
-                    }
-                ];
-                setFeatureCards(sustainabilityCards);
-            } else {
-                // Filter cards by category for other categories
-                let filtered = mockFeatures.filter((card) => card.category === category.key);
+            // Filter cards by category for all categories (including Sustainability)
+            let filtered = mockFeatures.filter((card) => card.category === category.key);
                 
                 // Special handling for Digital Citizenship & Online Safety category
                 // Remove the "Financial Literacy" card to ensure game cards appear first
@@ -129,7 +85,6 @@ export default function CategoryView() {
                 }
                 
                 setFeatureCards(filtered);
-            }
         } else {
             // Invalid category, redirect to dashboard
             navigate('/student/dashboard');
@@ -140,7 +95,7 @@ export default function CategoryView() {
 
     // Prevent background scrolling when modal is open
     useEffect(() => {
-        if (showAgeRestrictionModal) {
+        if (showAgeRestrictionModal || showComingSoonModal) {
             // Save the current scroll position
             const scrollY = window.scrollY;
             document.body.style.position = 'fixed';
@@ -157,7 +112,7 @@ export default function CategoryView() {
                 window.scrollTo(0, scrollY);
             };
         }
-    }, [showAgeRestrictionModal]);
+    }, [showAgeRestrictionModal, showComingSoonModal]);
 
     const handleNavigate = (path, featureTitle) => {
         if (path && typeof path === "string") {
@@ -347,6 +302,13 @@ export default function CategoryView() {
                                             return;
                                         }
                                         
+                                        // Check if the card has comingSoon flag set to true
+                                        if (card.comingSoon === true) {
+                                            setComingSoonCardTitle(card.title);
+                                            setShowComingSoonModal(true);
+                                            return;
+                                        }
+                                        
                                         toast.success(`Loading ${card.title}...`, {
                                             duration: 2000,
                                             position: "bottom-center",
@@ -398,12 +360,16 @@ export default function CategoryView() {
                                             </p>
 
                                             <div className="flex items-center justify-between w-full">
-                                                <div className={`flex items-center gap-1 text-xs font-semibold ${
-                                                    isDisabled ? 'text-gray-500' : 'text-indigo-600'
-                                                }`}>
-                                                    <Zap className="w-4 h-4" />
-                                                    <span>+{card.xpReward} XP</span>
-                                                </div>
+                                                {card.showXp !== false ? (
+                                                    <div className={`flex items-center gap-1 text-xs font-semibold ${
+                                                        isDisabled ? 'text-gray-500' : 'text-indigo-600'
+                                                    }`}>
+                                                        <Zap className="w-4 h-4" />
+                                                        <span>+{card.xpReward} XP</span>
+                                                    </div>
+                                                ) : (
+                                                    <div></div>
+                                                )}
                                                 {isDisabled ? (
                                                     <Lock className="w-4 h-4 text-gray-500" />
                                                 ) : (
@@ -437,6 +403,75 @@ export default function CategoryView() {
                     </div>
                 </div>
             </div>
+
+            {/* Coming Soon Modal */}
+            <AnimatePresence>
+                {showComingSoonModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        onClick={() => setShowComingSoonModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full border-2 border-blue-200 relative overflow-hidden"
+                        >
+                            {/* Blue Header */}
+                            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-white/20 rounded-full">
+                                        <Clock className="w-6 h-6 text-white" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white">Coming Soon</h3>
+                                </div>
+                                <button
+                                    onClick={() => setShowComingSoonModal(false)}
+                                    className="p-1 hover:bg-white/20 rounded-full transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-white" />
+                                </button>
+                            </div>
+
+                            {/* Modal Content */}
+                            <div className="p-6">
+                                <div className="mb-4 text-center">
+                                    <div className="mb-4">
+                                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 mb-4">
+                                            <Clock className="w-10 h-10 text-blue-600" />
+                                        </div>
+                                    </div>
+                                    <h4 className="text-2xl font-bold text-gray-800 mb-3">
+                                        {comingSoonCardTitle}
+                                    </h4>
+                                    <p className="text-gray-600 text-base leading-relaxed mb-4">
+                                        We're working hard to bring you this amazing feature! 
+                                        This content will be available soon.
+                                    </p>
+                                    <p className="text-gray-500 text-sm">
+                                        Stay tuned for updates and new features in {categoryInfo?.label || 'this category'}.
+                                    </p>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex gap-3 mt-6">
+                                    <button
+                                        onClick={() => setShowComingSoonModal(false)}
+                                        className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all shadow-lg hover:shadow-xl"
+                                    >
+                                        Got it!
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Age Restriction Modal */}
             <AnimatePresence>

@@ -47,6 +47,8 @@ import InvestmentSimulator from "./pages/Student/InvestmentSimulator";
 import SavingsGoals from "./pages/Student/SavingsGoals";
 import FinancialQuiz from "./pages/Student/FinancialQuiz";
 import ExpenseTracker from "./pages/Student/ExpenseTracker";
+import CreditManagement from "./pages/Student/CreditManagement";
+import DebtTracker from "./pages/Student/DebtTracker";
 import GameCategoryPage from "./pages/Games/GameCategoryPage";
 import DCOSGames from "./pages/Games/DCOSGames";
 import BrainTeaserGames from "./pages/Games/BrainTeaserGames";
@@ -237,11 +239,13 @@ const App = () => {
       
       // Student financial literacy routes
       if (pathname === "/learn/financial-literacy") return "Financial Literacy";
-      if (pathname === "/tools/budget-planner") return "Budget Planner";
-      if (pathname === "/games/investment-simulator") return "Investment Simulator";
-      if (pathname === "/tools/savings-goals") return "Savings Goals";
-      if (pathname === "/learn/financial-quiz") return "Financial Quiz";
-      if (pathname === "/tools/expense-tracker") return "Expense Tracker";
+      if (pathname === "/student/finance/budget-planner" || pathname === "/tools/budget-planner") return "Budget Planner";
+      if (pathname === "/student/finance/investment-simulator" || pathname === "/games/investment-simulator") return "Investment Simulator";
+      if (pathname === "/student/finance/savings-goals" || pathname === "/tools/savings-goals") return "Savings Goals";
+      if (pathname === "/student/finance/financial-quiz" || pathname === "/learn/financial-quiz") return "Financial Quiz";
+      if (pathname === "/student/finance/expense-tracker" || pathname === "/tools/expense-tracker") return "Expense Tracker";
+      if (pathname === "/student/finance/credit-management" || pathname === "/tools/credit-management") return "Credit Management";
+      if (pathname === "/student/finance/debt-tracker" || pathname === "/tools/debt-tracker") return "Debt Tracker";
       
       // Student game routes
       if (pathname.startsWith("/student/") && pathname.includes("/games/")) return "Games";
@@ -1053,6 +1057,65 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          {/* Financial Literacy Routes - New structure */}
+          <Route
+            path="/student/finance/budget-planner"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <BudgetPlanner />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/finance/investment-simulator"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <InvestmentSimulator />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/finance/savings-goals"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <SavingsGoals />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/finance/financial-quiz"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <FinancialQuiz />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/finance/expense-tracker"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ExpenseTracker />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/finance/credit-management"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <CreditManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/finance/debt-tracker"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <DebtTracker />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Legacy routes for backward compatibility */}
           <Route
             path="/tools/budget-planner"
             element={
@@ -1069,7 +1132,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/tools/savings-goals"
             element={
@@ -1091,6 +1153,22 @@ const App = () => {
             element={
               <ProtectedRoute roles={["student", "school_student"]}>
                 <ExpenseTracker />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tools/credit-management"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <CreditManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tools/debt-tracker"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <DebtTracker />
               </ProtectedRoute>
             }
           />

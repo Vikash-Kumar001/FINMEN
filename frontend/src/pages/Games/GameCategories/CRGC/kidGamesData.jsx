@@ -1151,7 +1151,7 @@ export const getCrgcKidsGames = (gameCompletionStatus) => {
             xp: 10,
             completed: gameCompletionStatus['civic-responsibility-kids-81'] || false,
             isSpecial: true,
-            path: '/student/civic-responsibility/kids/food-story',
+            path: '/student/civic-responsibility/kids/food-story-2',
             index: 80
         },
         {

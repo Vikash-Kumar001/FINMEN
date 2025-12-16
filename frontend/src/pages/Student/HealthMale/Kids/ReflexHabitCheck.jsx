@@ -17,17 +17,17 @@ const ReflexHabitCheck = () => {
   const totalCoins = 5;
   const totalXp = 10;
 
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [currentRound, setCurrentRound] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [lastResult, setLastResult] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(5000); // 5 seconds per round
+  const [timeLeft, setTimeLeft] = useState(5); // 5 seconds per round
   const [isActive, setIsActive] = useState(false);
 
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const timerRef = useRef(null);
-  const ROUND_TIME = 5000;
+  const ROUND_TIME = 5;
   const TOTAL_ROUNDS = 5;
 
   const questions = [
@@ -81,18 +81,30 @@ const ReflexHabitCheck = () => {
   useEffect(() => {
     if (isActive && timeLeft > 0) {
       timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => prev - 100);
-      }, 100);
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
     } else if (timeLeft <= 0 && isActive) {
       handleTimeout();
     }
 
-    return () => clearInterval(timerRef.current);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
   }, [isActive, timeLeft]);
 
   useEffect(() => {
-    startRound();
-    return () => clearInterval(timerRef.current);
+    if (currentRound < TOTAL_ROUNDS && !gameFinished) {
+      startRound();
+    }
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
   }, [currentRound]);
 
   const startRound = () => {
@@ -103,7 +115,11 @@ const ReflexHabitCheck = () => {
 
   const handleTimeout = () => {
     setIsActive(false);
-    clearInterval(timerRef.current);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    resetFeedback();
     setLastResult({ correct: false, message: "Time's up!" });
     setShowResult(true);
 
@@ -113,20 +129,24 @@ const ReflexHabitCheck = () => {
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 500);
   };
 
   const handleEmojiClick = (selectedEmoji) => {
     if (!isActive) return;
 
     setIsActive(false);
-    clearInterval(timerRef.current);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    resetFeedback();
 
     const currentQ = questions[currentRound];
     const isCorrect = selectedEmoji === currentQ.correctAnswer;
 
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
       setLastResult({ correct: true, message: "Great habit!" });
     } else {
@@ -141,7 +161,7 @@ const ReflexHabitCheck = () => {
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 500);
   };
 
   const handleNext = () => {
@@ -153,11 +173,11 @@ const ReflexHabitCheck = () => {
   return (
     <GameShell
       title="Reflex Habit Check"
-      subtitle={`Challenge ${currentRound + 1} of ${TOTAL_ROUNDS}`}
+      subtitle={gameFinished ? "Game Complete!" : `Round ${currentRound + 1} of ${TOTAL_ROUNDS}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId={gameId}
       gameType="health-male"
       flashPoints={flashPoints}
@@ -166,41 +186,53 @@ const ReflexHabitCheck = () => {
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      totalLevels={TOTAL_ROUNDS}
+      currentLevel={currentRound + 1}
+      showConfetti={gameFinished && score >= 3}
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          {!gameFinished ? (
-            <>
-              <div className="text-center mb-6">
-                <p className="text-white text-xl mb-4">{currentQ.instruction}</p>
-                <div className="w-full bg-white/20 rounded-full h-2 mb-4">
-                  <div
-                    className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full transition-all duration-100"
-                    style={{ width: `${(timeLeft / ROUND_TIME) * 100}%` }}
-                  ></div>
+        {!gameFinished && currentQ && (
+          <div className="space-y-6">
+            {!showResult && (
+              <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+                <div className="text-white">
+                  <span className="font-bold">Round:</span> {currentRound + 1}/{TOTAL_ROUNDS}
                 </div>
-                <p className="text-white/60 text-sm">Choose quickly!</p>
+                <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                  <span className="text-white">Time:</span> {timeLeft}s
+                </div>
+                <div className="text-white">
+                  <span className="font-bold">Score:</span> {score}/{TOTAL_ROUNDS}
+                </div>
               </div>
+            )}
 
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
               {!showResult ? (
-                <div className="flex justify-center gap-8">
-                  <button
-                    onClick={() => handleEmojiClick(currentQ.correctEmoji)}
-                    className=" text-white p-8 rounded-2xl shadow-lg transition-all transform hover:scale-110 text-6xl flex flex-col items-center"
-                  >
-                    <div className="text-4xl mb-2">{currentQ.correctEmoji}</div>
-                    <div className="text-sm font-medium">{currentQ.correctText}</div>
-                  </button>
-                  <button
-                    onClick={() => handleEmojiClick(currentQ.wrongEmoji)}
-                    className=" text-white p-8 rounded-2xl shadow-lg transition-all transform hover:scale-110 text-6xl flex flex-col items-center"
-                  >
-                    <div className="text-4xl mb-2">{currentQ.wrongEmoji}</div>
-                    <div className="text-sm font-medium">{currentQ.wrongText}</div>
-                  </button>
-                </div>
+                <>
+                  <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                    {currentQ.instruction}
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button
+                      onClick={() => handleEmojiClick(currentQ.correctEmoji)}
+                      className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    >
+                      <div className="text-4xl mb-3">{currentQ.correctEmoji}</div>
+                      <h3 className="font-bold text-xl">{currentQ.correctText}</h3>
+                    </button>
+                    <button
+                      onClick={() => handleEmojiClick(currentQ.wrongEmoji)}
+                      className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    >
+                      <div className="text-4xl mb-3">{currentQ.wrongEmoji}</div>
+                      <h3 className="font-bold text-xl">{currentQ.wrongText}</h3>
+                    </button>
+                  </div>
+                </>
               ) : (
-                <div className="text-center">
+                <div className="text-center py-12">
                   <div className="text-6xl mb-4">
                     {lastResult.correct ? "🌟" : "⚠️"}
                   </div>
@@ -209,17 +241,9 @@ const ReflexHabitCheck = () => {
                   </h3>
                 </div>
               )}
-            </>
-          ) : (
-            <div className="text-center space-y-4">
-              <div className="text-6xl mb-4">📅</div>
-              <h3 className="text-2xl font-bold text-white">Reflex Challenge Complete!</h3>
-              <p className="text-white/90">
-                You're building great habits! Consistency is key to success!
-              </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

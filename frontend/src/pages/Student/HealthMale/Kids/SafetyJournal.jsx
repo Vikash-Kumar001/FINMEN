@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
+import { PenSquare } from "lucide-react";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -19,32 +20,64 @@ const SafetyJournal = () => {
 
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
   const [journalEntry, setJournalEntry] = useState("");
-  const [coins, setCoins] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const journalPrompts = [
-    "I wear a helmet when I...",
-    "Before crossing the street, I always...",
-    "If I find something dangerous, I...",
-    "I stay safe in the car by...",
-    "My favorite way to play safely is..."
+    { 
+      prompt: "I wear a helmet when I...", 
+      minLength: 10,
+      guidance: "Think about activities where protecting your head is important."
+    },
+    { 
+      prompt: "Before crossing the street, I always...", 
+      minLength: 10,
+      guidance: "Remember important safety steps when near traffic."
+    },
+    { 
+      prompt: "If I find something dangerous, I...", 
+      minLength: 10,
+      guidance: "Consider safe ways to handle potentially harmful situations."
+    },
+    { 
+      prompt: "I stay safe in the car by...", 
+      minLength: 10,
+      guidance: "Think about car safety rules like wearing seatbelts."
+    },
+    { 
+      prompt: "My favorite way to play safely is...", 
+      minLength: 10,
+      guidance: "Describe fun activities that are also safe."
+    }
   ];
 
   const handleJournalSubmit = () => {
-    if (journalEntry.trim().length >= 5) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-      setJournalEntry(""); // Clear for next prompt
-
-      setTimeout(() => {
-        if (currentPromptIndex < journalPrompts.length - 1) {
-          setCurrentPromptIndex(prev => prev + 1);
-        } else {
-          setGameFinished(true);
-        }
-      }, 1500);
+    if (answered) return;
+    
+    const currentPrompt = journalPrompts[currentPromptIndex];
+    if (journalEntry.trim().length < currentPrompt.minLength) {
+      showCorrectAnswerFeedback(0, false);
+      return;
     }
+    
+    setAnswered(true);
+    resetFeedback();
+    setScore(prev => prev + 1);
+    showCorrectAnswerFeedback(1, true);
+
+    const isLastStage = currentPromptIndex === journalPrompts.length - 1;
+    
+    setTimeout(() => {
+      if (isLastStage) {
+        setShowResult(true);
+      } else {
+        setCurrentPromptIndex(prev => prev + 1);
+        setJournalEntry("");
+        setAnswered(false);
+      }
+    }, 1500);
   };
 
   const handleNext = () => {
@@ -52,105 +85,84 @@ const SafetyJournal = () => {
   };
 
   const currentPrompt = journalPrompts[currentPromptIndex];
-  const wordCount = journalEntry.trim().split(/\s+/).filter(word => word.length > 0).length;
-  const isLongEnough = wordCount >= 5; // Reduced requirement for kids
+  const characterCount = journalEntry.length;
+  const minLength = currentPrompt?.minLength || 10;
 
   return (
     <GameShell
       title="Safety Journal"
-      subtitle={`Entry ${currentPromptIndex + 1} of ${journalPrompts.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
-      gameId={gameId}
-      gameType="health-male"
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      maxScore={journalPrompts.length}
+      subtitle={!showResult ? `Entry ${currentPromptIndex + 1} of ${journalPrompts.length}` : "Journal Complete!"}
+      score={score}
+      currentLevel={currentPromptIndex + 1}
+      totalLevels={journalPrompts.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={journalPrompts.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="health-male"
+      onNext={handleNext}
+      nextEnabled={showResult}
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">📖</div>
-            <h3 className="text-2xl font-bold text-white mb-2">My Safety Journal</h3>
-            <p className="text-white/90 mb-4">
-              Writing about safety helps you remember how to protect yourself!
-            </p>
-          </div>
-
-          {!gameFinished ? (
-            <>
-              <div className="bg-white/10 rounded-xl p-4 mb-6">
-                <div className="text-center mb-4">
-                  <div className="text-2xl mb-2">💭</div>
-                  <p className="text-white font-medium text-lg">{currentPrompt}</p>
-                </div>
+        {!showResult && currentPrompt ? (
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Entry {currentPromptIndex + 1}/{journalPrompts.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{journalPrompts.length}</span>
               </div>
-
-              <div className="space-y-4">
-                <div className="relative">
-                  <textarea
-                    value={journalEntry}
-                    onChange={(e) => setJournalEntry(e.target.value)}
-                    placeholder="Type your answer here..."
-                    className="w-full h-48 bg-white/10 border border-white/30 rounded-xl p-4 text-white placeholder-white/50 resize-none focus:outline-none focus:border-white/50 transition-all"
-                    maxLength={500}
-                  />
-                  <div className="absolute bottom-3 right-3 text-white/60 text-sm">
-                    {wordCount}/5 words
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <div className="text-white/80">
-                    {isLongEnough ? (
-                      <span className="flex items-center text-green-400">
-                        <span className="text-xl mr-2">✅</span>
-                        Great! Ready to submit.
-                      </span>
-                    ) : (
-                      <span className="flex items-center">
-                        <span className="text-xl mr-2">📝</span>
-                        Write at least 5 words...
-                      </span>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={handleJournalSubmit}
-                    disabled={!isLongEnough}
-                    className={`px-6 py-3 rounded-xl font-bold transition-all transform hover:scale-105 ${isLongEnough
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white'
-                      : 'bg-gray-500 text-gray-300 cursor-not-allowed'
-                      }`}
-                  >
-                    Submit Entry ✨
-                  </button>
-                </div>
+              
+              <div className="flex items-center gap-3 mb-4">
+                <PenSquare className="w-8 h-8 text-blue-400" />
+                <h3 className="text-xl font-bold text-white">Journal Entry</h3>
               </div>
-            </>
-          ) : (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-8xl mb-4">📖</div>
-                <h3 className="text-3xl font-bold text-white mb-2">Journal Complete!</h3>
-                <p className="text-white/90 mb-4 text-lg">
-                  Thank you for sharing your safety tips! Being smart about safety keeps you happy and healthy!
-                </p>
-                <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-full p-4 inline-block mb-4">
-                  <div className="text-white font-bold text-xl">SAFETY WRITER</div>
-                </div>
-                <p className="text-white/80">
-                  You know how to stay safe and protect yourself! 🌟
+              
+              <p className="text-white text-lg mb-4">
+                {currentPrompt.prompt}
+              </p>
+              
+              <div className="bg-blue-500/20 border border-blue-400/30 rounded-xl p-4 mb-4">
+                <p className="text-white/90 text-sm">
+                  <span className="font-semibold text-blue-300">💡 Tip:</span> {currentPrompt.guidance}
                 </p>
               </div>
+              
+              <textarea
+                value={journalEntry}
+                onChange={(e) => setJournalEntry(e.target.value)}
+                placeholder="Write your journal entry here..."
+                disabled={answered}
+                className="w-full h-32 p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+              />
+              
+              <div className="flex justify-between items-center mt-2 mb-4">
+                <span className={`text-sm ${characterCount < minLength ? 'text-red-400' : 'text-green-400'}`}>
+                  {characterCount < minLength 
+                    ? `Minimum ${minLength} characters (${minLength - characterCount} more needed)`
+                    : '✓ Minimum length reached'}
+                </span>
+                <span className="text-white/60 text-sm">{characterCount} characters</span>
+              </div>
+              
+              <button
+                onClick={handleJournalSubmit}
+                disabled={journalEntry.trim().length < minLength || answered}
+                className={`w-full py-3 rounded-xl font-bold transition-all ${
+                  journalEntry.trim().length >= minLength && !answered
+                    ? 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white'
+                    : 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {answered ? 'Submitted!' : 'Submit Entry'}
+              </button>
             </div>
-          )}
-        </div>
+          </div>
+        ) : null}
       </div>
     </GameShell>
   );

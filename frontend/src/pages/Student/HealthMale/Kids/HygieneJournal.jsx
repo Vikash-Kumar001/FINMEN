@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
+import { PenSquare } from "lucide-react";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -21,53 +22,60 @@ const HygieneJournal = () => {
   const [score, setScore] = useState(0);
   const [entry, setEntry] = useState("");
   const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const stages = [
     {
-      question: 'Write: "One habit that keeps me clean is ___."',
+      prompt: 'Write: "One habit that keeps me clean is ___."',
       minLength: 10,
+      guidance: "Think about daily routines that help you stay clean and fresh."
     },
     {
-      question: 'Write: "I wash my hands because ___."',
+      prompt: 'Write: "I wash my hands because ___."',
       minLength: 10,
+      guidance: "Consider when and why washing hands is important for health."
     },
     {
-      question: 'Write: "Brushing my teeth makes me feel ___."',
+      prompt: 'Write: "Brushing my teeth makes me feel ___."',
       minLength: 10,
+      guidance: "Describe how good oral hygiene makes you feel."
     },
     {
-      question: 'Write: "Taking a bath helps me to ___."',
+      prompt: 'Write: "Taking a bath helps me to ___."',
       minLength: 10,
+      guidance: "Think about the benefits of keeping your body clean."
     },
     {
-      question: 'Write: "Good hygiene is important because ___."',
+      prompt: 'Write: "Good hygiene is important because ___."',
       minLength: 10,
+      guidance: "Reflect on why taking care of your body matters."
     },
   ];
 
   const handleSubmit = () => {
-    if (showResult) return; // Prevent multiple submissions
+    if (answered) return;
 
     resetFeedback();
     const entryText = entry.trim();
 
     if (entryText.length >= stages[currentStage].minLength) {
+      setAnswered(true);
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
 
       const isLastQuestion = currentStage === stages.length - 1;
 
-      // Show feedback for 1.5 seconds, then move to next question or show results
       setTimeout(() => {
         if (isLastQuestion) {
-          // This is the last question (5th), show results
           setShowResult(true);
         } else {
-          // Move to next question
           setEntry("");
+          setAnswered(false);
           setCurrentStage((prev) => prev + 1);
         }
       }, 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
   };
 
@@ -75,12 +83,16 @@ const HygieneJournal = () => {
     navigate("/games/health-male/kids");
   };
 
+  const currentStageData = stages[currentStage];
+  const characterCount = entry.length;
+  const minLength = currentStageData?.minLength || 10;
+
   return (
     <GameShell
       title="Journal of Hygiene"
-      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on your hygiene!` : "Journal Complete!"}
+      subtitle={!showResult ? `Entry ${currentStage + 1} of ${stages.length}` : "Journal Complete!"}
       currentLevel={currentStage + 1}
-      totalLevels={5}
+      totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
       onNext={handleNext}
       nextEnabled={showResult}
@@ -90,41 +102,66 @@ const HygieneJournal = () => {
       gameType="health-male"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      maxScore={5}
+      maxScore={stages.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && score === 5}>
-      <div className="text-center text-white space-y-8">
-        {!showResult && stages[currentStage] && (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-4xl mb-4">📝</div>
-            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
-            <p className="text-white/60 text-sm mb-4">
-              Write at least {stages[currentStage].minLength} characters
-            </p>
-            <textarea
-              value={entry}
-              onChange={(e) => setEntry(e.target.value)}
-              placeholder="Write your journal entry here..."
-              className="w-full max-w-xl p-4 rounded-xl text-black text-lg bg-white/90"
-              disabled={showResult}
-            />
-            <div className="mt-2 text-white/50 text-sm">
-              {entry.trim().length}/{stages[currentStage].minLength} characters
-            </div>
-            <button
-              onClick={handleSubmit}
-              className={`mt-4 px-8 py-4 rounded-full text-lg font-semibold transition-transform ${entry.trim().length >= stages[currentStage].minLength && !showResult
-                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
-                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+      showConfetti={showResult && score >= 3}
+    >
+      <div className="space-y-8">
+        {!showResult && currentStageData ? (
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Entry {currentStage + 1}/{stages.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{stages.length}</span>
+              </div>
+              
+              <div className="flex items-center gap-3 mb-4">
+                <PenSquare className="w-8 h-8 text-blue-400" />
+                <h3 className="text-xl font-bold text-white">Journal Entry</h3>
+              </div>
+              
+              <p className="text-white text-lg mb-4">
+                {currentStageData.prompt}
+              </p>
+              
+              <div className="bg-blue-500/20 border border-blue-400/30 rounded-xl p-4 mb-4">
+                <p className="text-white/90 text-sm">
+                  <span className="font-semibold text-blue-300">💡 Tip:</span> {currentStageData.guidance}
+                </p>
+              </div>
+              
+              <textarea
+                value={entry}
+                onChange={(e) => setEntry(e.target.value)}
+                placeholder="Write your journal entry here..."
+                disabled={answered}
+                className="w-full h-32 p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+              />
+              
+              <div className="flex justify-between items-center mt-2 mb-4">
+                <span className={`text-sm ${characterCount < minLength ? 'text-red-400' : 'text-green-400'}`}>
+                  {characterCount < minLength 
+                    ? `Minimum ${minLength} characters (${minLength - characterCount} more needed)`
+                    : '✓ Minimum length reached'}
+                </span>
+                <span className="text-white/60 text-sm">{characterCount} characters</span>
+              </div>
+              
+              <button
+                onClick={handleSubmit}
+                disabled={entry.trim().length < minLength || answered}
+                className={`w-full py-3 rounded-xl font-bold transition-all ${
+                  entry.trim().length >= minLength && !answered
+                    ? 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white'
+                    : 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
                 }`}
-              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
-            >
-              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
-            </button>
+              >
+                {answered ? 'Submitted!' : 'Submit Entry'}
+              </button>
+            </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

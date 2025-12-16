@@ -16,12 +16,11 @@ const HygieneItemsPuzzle = () => {
   const totalCoins = 5;
   const totalXp = 10;
 
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
+  const [showResult, setShowResult] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(null);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const puzzles = [
     {
@@ -82,21 +81,21 @@ const HygieneItemsPuzzle = () => {
     const currentPuzzleData = puzzles[currentPuzzle];
     const match = currentPuzzleData.matches.find(m => m.id === matchId);
     setSelectedMatch(matchId);
+    resetFeedback();
 
     if (match.correct) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setShowCoinFeedback(currentPuzzleData.id);
-      setTimeout(() => setShowCoinFeedback(null), 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    // Move to next puzzle or finish game
     setTimeout(() => {
       if (currentPuzzle < puzzles.length - 1) {
         setCurrentPuzzle(prev => prev + 1);
         setSelectedMatch(null);
       } else {
-        setGameFinished(true);
+        setShowResult(true);
       }
     }, 1500);
   };
@@ -110,97 +109,86 @@ const HygieneItemsPuzzle = () => {
   return (
     <GameShell
       title="Hygiene Items Puzzle"
-      subtitle={gameFinished ? "Puzzle Complete!" : `Puzzle ${currentPuzzle + 1}/5: ${currentPuzzleData?.item}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
-      gameId="health-male-kids-4"
-      gameType="health-male"
-      totalLevels={10}
-      currentLevel={4}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
-      showAnswerConfetti={showAnswerConfetti}
-
-      maxScore={puzzles.length}
+      subtitle={showResult ? "Puzzle Complete!" : `Match hygiene items with their uses (${currentPuzzle + 1}/${puzzles.length} completed)`}
+      score={score}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-end items-center mb-4">
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId="health-male-kids-4"
+      gameType="health-male"
+      totalLevels={puzzles.length}
+      currentLevel={currentPuzzle + 1}
+      maxScore={puzzles.length}
+      showConfetti={showResult && score === puzzles.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
+    >
+      <div className="space-y-8 max-w-5xl mx-auto">
+        {!showResult && currentPuzzleData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Puzzles: {currentPuzzle + 1}/{puzzles.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{puzzles.length}</span>
+              </div>
 
-          <p className="text-white text-lg mb-6 text-center">
-            Match the hygiene item to what it cleans!
-          </p>
+              <p className="text-white/90 text-center mb-6">
+                Match the hygiene item to what it cleans!
+              </p>
 
-          {currentPuzzleData && (
-            <div className="grid grid-cols-1 gap-6">
-              <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-                {showCoinFeedback === currentPuzzleData.id && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                    <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                      +1
+              <div className="grid grid-cols-1 gap-6">
+                <div className="bg-white/10 rounded-xl p-4 border border-white/20 relative">
+                  <div className="flex items-center justify-center mb-4">
+                    <span className="text-2xl mr-3">{currentPuzzleData.emoji}</span>
+                    <div className="text-left flex-1">
+                      <div className="font-semibold text-white text-lg">{currentPuzzleData.item}</div>
                     </div>
                   </div>
-                )}
-                <div className="flex items-center justify-center mb-4">
-                  <div className="text-4xl mr-3">{currentPuzzleData.emoji}</div>
-                  <div className="text-white text-xl font-bold">{currentPuzzleData.item}</div>
-                </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  {currentPuzzleData.matches.map((match) => {
-                    const isCorrect = selectedMatch === match.id && match.correct;
-                    const isWrong = selectedMatch === match.id && !match.correct;
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {currentPuzzleData.matches.map((match) => {
+                      const isSelected = selectedMatch === match.id;
+                      const isCorrect = isSelected && match.correct;
+                      const isWrong = isSelected && !match.correct;
 
-                    return (
-                      <button
-                        key={match.id}
-                        onClick={() => handleMatch(match.id)}
-                        disabled={selectedMatch !== null}
-                        className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${!selectedMatch
-                            ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                            : isCorrect
-                              ? 'bg-green-100/20 border-green-500 text-white'
-                              : isWrong
-                                ? 'bg-red-100/20 border-red-500 text-white'
-                                : 'bg-gray-100/20 border-gray-500 text-white'
+                      return (
+                        <button
+                          key={match.id}
+                          onClick={() => handleMatch(match.id)}
+                          disabled={selectedMatch !== null}
+                          className={`w-full p-4 rounded-xl transition-all border-2 ${
+                            !selectedMatch
+                              ? 'bg-white/10 hover:bg-white/20 border-white/30 cursor-pointer'
+                              : isCorrect
+                                ? 'bg-green-500/20 border-green-400 opacity-70 cursor-not-allowed'
+                                : isWrong
+                                  ? 'bg-red-500/20 border-red-400 opacity-70 cursor-not-allowed'
+                                  : 'bg-white/10 border-white/30 cursor-not-allowed'
                           }`}
-                      >
-                        {isCorrect && (
-                          <div className="absolute -top-2 -right-2 text-2xl">✅</div>
-                        )}
-                        {isWrong && (
-                          <div className="absolute -top-2 -right-2 text-2xl">❌</div>
-                        )}
-                        <div className="text-2xl mb-1">{match.emoji}</div>
-                        <div className="font-medium text-sm">{match.text}</div>
-                      </button>
-                    );
-                  })}
+                        >
+                          <div className="flex items-center">
+                            <span className="text-2xl mr-3">{match.emoji}</span>
+                            <div className="text-left flex-1">
+                              <div className="font-semibold text-white">{match.text}</div>
+                            </div>
+                            {isSelected && (
+                              <span className={`text-xl ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                                {isCorrect ? '✓' : '✗'}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
-          )}
-
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-6">
-              <div className="text-green-400">
-                <div className="text-6xl mb-2">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-2">Puzzle Master!</h3>
-                <p className="text-white/90">You matched all hygiene items correctly!</p>
-              </div>
-              <div className="flex justify-center gap-2">
-                <span className="text-yellow-500 text-2xl">+{coins} Coins</span>
-              </div>
-            </div>
-          )}
-        </div>
+          </div>
+        ) : null}
       </div>
     </GameShell>
   );

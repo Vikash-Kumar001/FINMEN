@@ -19,9 +19,9 @@ const BodyMatchPuzzle = () => {
 
   const [currentPuzzle, setCurrentPuzzle] = useState(0);
   const [selectedMatch, setSelectedMatch] = useState(null);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [score, setScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const puzzles = [
     {
@@ -80,10 +80,13 @@ const BodyMatchPuzzle = () => {
     const currentPuzzleData = puzzles[currentPuzzle];
     const match = currentPuzzleData.matches.find(m => m.id === matchId);
     setSelectedMatch(matchId);
+    resetFeedback();
 
     if (match.correct) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
     setTimeout(() => {
@@ -91,7 +94,7 @@ const BodyMatchPuzzle = () => {
         setCurrentPuzzle(prev => prev + 1);
         setSelectedMatch(null);
       } else {
-        setGameFinished(true);
+        setShowResult(true);
       }
     }, 1500);
   };
@@ -103,77 +106,86 @@ const BodyMatchPuzzle = () => {
   return (
     <GameShell
       title="Body Match Puzzle"
-      subtitle={`Puzzle ${currentPuzzle + 1}/5: ${puzzles[currentPuzzle].item}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
+      subtitle={showResult ? "Puzzle Complete!" : `Match organs with their functions (${currentPuzzle + 1}/${puzzles.length} completed)`}
+      score={score}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="health-male"
-      totalLevels={5}
-      currentLevel={34}
-      showConfetti={gameFinished}
+      totalLevels={puzzles.length}
+      currentLevel={currentPuzzle + 1}
+      maxScore={puzzles.length}
+      showConfetti={showResult && score === puzzles.length}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-      maxScore={5}
+      onNext={handleNext}
+      nextEnabled={showResult}
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/5: {puzzles[currentPuzzle].item}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6 text-center">
-            Match the organ to what it does!
-          </p>
-
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-4xl mr-3">{puzzles[currentPuzzle].emoji}</div>
-                <div className="text-white text-xl font-bold">{puzzles[currentPuzzle].item}</div>
+      <div className="space-y-8 max-w-5xl mx-auto">
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Puzzles: {currentPuzzle + 1}/{puzzles.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{puzzles.length}</span>
               </div>
+              
+              <p className="text-white/90 text-center mb-6">
+                Match the organ to what it does!
+              </p>
 
-              <div className="grid grid-cols-3 gap-3">
-                {puzzles[currentPuzzle].matches.map((match) => {
-                  const isSelected = selectedMatch === match.id;
-                  const isCorrect = selectedMatch === match.id && match.correct;
-                  const isWrong = selectedMatch === match.id && !match.correct;
+              <div className="grid grid-cols-1 gap-6">
+                <div className="bg-white/10 rounded-xl p-4 border border-white/20 relative">
+                  <div className="flex items-center justify-center mb-4">
+                    <span className="text-2xl mr-3">{puzzles[currentPuzzle].emoji}</span>
+                    <div className="text-left flex-1">
+                      <div className="font-semibold text-white text-lg">{puzzles[currentPuzzle].item}</div>
+                    </div>
+                  </div>
 
-                  return (
-                    <button
-                      key={match.id}
-                      onClick={() => handleMatch(match.id)}
-                      disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${!selectedMatch
-                          ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                          : isCorrect
-                            ? 'bg-green-100/20 border-green-500 text-white'
-                            : isWrong
-                              ? 'bg-red-100/20 border-red-500 text-white'
-                              : 'bg-gray-100/20 border-gray-500 text-white'
-                        }`}
-                    >
-                      {isCorrect && (
-                        <div className="absolute -top-2 -right-2 text-2xl">✅</div>
-                      )}
-                      {isWrong && (
-                        <div className="absolute -top-2 -right-2 text-2xl">❌</div>
-                      )}
-                      <div className="text-2xl mb-1">{match.emoji}</div>
-                      <div className="font-medium text-sm">{match.text}</div>
-                    </button>
-                  );
-                })}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {puzzles[currentPuzzle].matches.map((match) => {
+                      const isSelected = selectedMatch === match.id;
+                      const isCorrect = selectedMatch === match.id && match.correct;
+                      const isWrong = selectedMatch === match.id && !match.correct;
+
+                      return (
+                        <button
+                          key={match.id}
+                          onClick={() => handleMatch(match.id)}
+                          disabled={selectedMatch !== null}
+                          className={`w-full p-4 rounded-xl transition-all border-2 ${
+                            !selectedMatch
+                              ? 'bg-white/10 hover:bg-white/20 border-white/30 cursor-pointer'
+                              : isCorrect
+                                ? 'bg-green-500/20 border-green-400 opacity-70 cursor-not-allowed'
+                                : isWrong
+                                  ? 'bg-red-500/20 border-red-400 opacity-70 cursor-not-allowed'
+                                  : 'bg-white/10 border-white/30 cursor-not-allowed'
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            <span className="text-2xl mr-3">{match.emoji}</span>
+                            <div className="text-left flex-1">
+                              <div className="font-semibold text-white">{match.text}</div>
+                            </div>
+                            {isSelected && (
+                              <span className={`text-xl ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                                {isCorrect ? '✓' : '✗'}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

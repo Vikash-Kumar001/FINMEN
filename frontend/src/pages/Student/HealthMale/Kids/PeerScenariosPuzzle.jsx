@@ -17,12 +17,11 @@ const PeerScenariosPuzzle = () => {
   const totalCoins = 5;
   const totalXp = 10;
 
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [currentPuzzle, setCurrentPuzzle] = useState(0);
   const [selectedResponse, setSelectedResponse] = useState(null);
-  const [matchedPairs, setMatchedPairs] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const puzzles = [
     {
@@ -86,21 +85,24 @@ const PeerScenariosPuzzle = () => {
     const currentP = puzzles[currentPuzzle];
     const selectedResp = currentP.responses.find(r => r.id === responseId);
     const isCorrect = selectedResp.isCorrect;
+    setSelectedResponse(responseId);
+    resetFeedback();
 
-    if (isCorrect && !matchedPairs.includes(currentPuzzle)) {
-      setCoins(prev => prev + 1);
-      setMatchedPairs(prev => [...prev, currentPuzzle]);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-
-      setTimeout(() => {
-        if (currentPuzzle < puzzles.length - 1) {
-          setCurrentPuzzle(prev => prev + 1);
-          setSelectedResponse(null);
-        } else {
-          setGameFinished(true);
-        }
-      }, 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+
+    setTimeout(() => {
+      if (currentPuzzle < puzzles.length - 1) {
+        setCurrentPuzzle(prev => prev + 1);
+        setSelectedResponse(null);
+      } else {
+        setShowResult(true);
+      }
+    }, 1500);
   };
 
   const handleNext = () => {
@@ -112,90 +114,79 @@ const PeerScenariosPuzzle = () => {
   return (
     <GameShell
       title="Peer Scenarios Puzzle"
-      subtitle={`Puzzle ${currentPuzzle + 1} of ${puzzles.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
-      gameId={gameId}
-      gameType="health-male"
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      maxScore={puzzles.length}
+      subtitle={showResult ? "Puzzle Complete!" : `Match scenarios with best responses (${currentPuzzle + 1}/${puzzles.length} completed)`}
+      score={score}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="health-male"
+      totalLevels={puzzles.length}
+      currentLevel={currentPuzzle + 1}
+      maxScore={puzzles.length}
+      showConfetti={showResult && score === puzzles.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/{puzzles.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
+      <div className="space-y-8 max-w-5xl mx-auto">
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Puzzles: {currentPuzzle + 1}/{puzzles.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{puzzles.length}</span>
+              </div>
 
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">{getCurrentPuzzle().emoji}</div>
-            <h3 className="text-2xl font-bold text-white mb-2">{getCurrentPuzzle().scenario}</h3>
-            <p className="text-white/90 mb-6">{getCurrentPuzzle().description}</p>
-            <p className="text-white text-lg">Choose the best response to this peer pressure!</p>
-          </div>
+              <div className="text-center mb-6">
+                <div className="text-6xl mb-4">{getCurrentPuzzle().emoji}</div>
+                <h3 className="text-2xl font-bold text-white mb-2">{getCurrentPuzzle().scenario}</h3>
+                <p className="text-white/90 mb-6">{getCurrentPuzzle().description}</p>
+                <p className="text-white/90 text-center">Choose the best response to this peer pressure!</p>
+              </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentPuzzle().responses.map(response => {
-              const isCorrect = response.isCorrect;
-              const isMatched = matchedPairs.includes(currentPuzzle);
+              <div className="grid grid-cols-1 gap-3">
+                {getCurrentPuzzle().responses.map(response => {
+                  const isSelected = selectedResponse === response.id;
+                  const isCorrect = isSelected && response.isCorrect;
+                  const isWrong = isSelected && !response.isCorrect;
 
-              return (
-                <button
-                  key={response.id}
-                  onClick={() => handleResponseSelect(response.id)}
-                  disabled={isMatched}
-                  className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${isMatched
-                    ? isCorrect
-                      ? 'bg-green-100/20 border-green-500 text-white'
-                      : 'bg-red-100/20 border-red-500 text-white'
-                    : 'bg-gradient-to-r from-blue-500 to-cyan-600 border-blue-400 text-white hover:from-blue-600 hover:to-cyan-700'
-                    }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className={`text-3xl mr-4 ${isMatched && isCorrect ? 'opacity-100' : 'opacity-60'}`}>
-                        {response.emoji}
+                  return (
+                    <button
+                      key={response.id}
+                      onClick={() => handleResponseSelect(response.id)}
+                      disabled={selectedResponse !== null}
+                      className={`w-full p-4 rounded-xl transition-all border-2 ${
+                        !selectedResponse
+                          ? 'bg-white/10 hover:bg-white/20 border-white/30 cursor-pointer'
+                          : isCorrect
+                            ? 'bg-green-500/20 border-green-400 opacity-70 cursor-not-allowed'
+                            : isWrong
+                              ? 'bg-red-500/20 border-red-400 opacity-70 cursor-not-allowed'
+                              : 'bg-white/10 border-white/30 cursor-not-allowed'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <span className="text-2xl mr-3">{response.emoji}</span>
+                        <div className="text-left flex-1">
+                          <div className="font-semibold text-white">{response.text}</div>
+                          <div className="text-sm text-white/70">{response.explanation}</div>
+                        </div>
+                        {isSelected && (
+                          <span className={`text-xl ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                            {isCorrect ? '✓' : '✗'}
+                          </span>
+                        )}
                       </div>
-                      <div className="text-left">
-                        <h3 className={`font-bold text-lg ${isMatched && isCorrect ? 'text-green-300' : 'text-white'}`}>
-                          {isMatched && isCorrect ? '✅ ' : isMatched && !isCorrect ? '❌ ' : ''}{response.text}
-                        </h3>
-                        <p className="text-white/80 text-sm">{response.explanation}</p>
-                      </div>
-                    </div>
-                    {isMatched && isCorrect && (
-                      <div className="text-2xl">🎉</div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-8xl mb-4">🧩</div>
-                <h3 className="text-3xl font-bold text-white mb-2">Puzzle Master!</h3>
-                <p className="text-white/90 mb-4 text-lg">
-                  You matched all peer pressure scenarios perfectly! You know how to respond to tough situations!
-                </p>
-                <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-4 inline-block mb-4">
-                  <div className="text-white font-bold text-xl">PEER PRESSURE PUZZLER</div>
-                </div>
-                <p className="text-white/80">
-                  Great job understanding how to handle peer pressure! 🌟
-                </p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        ) : null}
       </div>
     </GameShell>
   );

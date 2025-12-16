@@ -17,10 +17,11 @@ const EmotionMatchPuzzle = () => {
   const totalCoins = 5;
   const totalXp = 10;
 
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const puzzles = [
     {
@@ -82,19 +83,23 @@ const EmotionMatchPuzzle = () => {
 
   const handleMatch = (matchId) => {
     const currentP = puzzles[currentPuzzle];
-    const selectedMatch = currentP.matches.find(m => m.id === matchId);
-    const isCorrect = selectedMatch.isCorrect;
+    const match = currentP.matches.find(m => m.id === matchId);
+    setSelectedMatch(matchId);
+    resetFeedback();
 
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
+    if (match.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
     setTimeout(() => {
       if (currentPuzzle < puzzles.length - 1) {
         setCurrentPuzzle(prev => prev + 1);
+        setSelectedMatch(null);
       } else {
-        setGameFinished(true);
+        setShowResult(true);
       }
     }, 1500);
   };
@@ -108,52 +113,78 @@ const EmotionMatchPuzzle = () => {
   return (
     <GameShell
       title="Emotion Match Puzzle"
-      subtitle={`Puzzle ${currentPuzzle + 1} of ${puzzles.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
-      gameId={gameId}
-      gameType="health-male"
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      maxScore={puzzles.length}
+      subtitle={showResult ? "Puzzle Complete!" : `Match emotions with their expressions (${currentPuzzle + 1}/${puzzles.length} completed)`}
+      score={score}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      backPath="/games/health-male/kids"
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="health-male"
+      totalLevels={puzzles.length}
+      currentLevel={currentPuzzle + 1}
+      maxScore={puzzles.length}
+      showConfetti={showResult && score === puzzles.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/{puzzles.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
+      <div className="space-y-8 max-w-5xl mx-auto">
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Puzzles: {currentPuzzle + 1}/{puzzles.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{puzzles.length}</span>
+              </div>
 
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">{getCurrentPuzzle().emoji}</div>
-            <h3 className="text-2xl font-bold text-white mb-2">{getCurrentPuzzle().emotion}</h3>
-            <p className="text-white/90 mb-6">{getCurrentPuzzle().description}</p>
-            <p className="text-white text-lg">Match this feeling to the right expression!</p>
-          </div>
+              <div className="text-center mb-6">
+                <div className="text-6xl mb-4">{getCurrentPuzzle().emoji}</div>
+                <h3 className="text-2xl font-bold text-white mb-2">{getCurrentPuzzle().emotion}</h3>
+                <p className="text-white/90 mb-6">{getCurrentPuzzle().description}</p>
+                <p className="text-white/90 text-center">Match this feeling to the right expression!</p>
+              </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentPuzzle().matches.map(match => (
-              <button
-                key={match.id}
-                onClick={() => handleMatch(match.id)}
-                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-3xl mr-4">{match.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-lg">{match.text}</h3>
-                  </div>
-                </div>
-              </button>
-            ))}
+              <div className="grid grid-cols-1 gap-3">
+                {getCurrentPuzzle().matches.map(match => {
+                  const isSelected = selectedMatch === match.id;
+                  const isCorrect = isSelected && match.isCorrect;
+                  const isWrong = isSelected && !match.isCorrect;
+
+                  return (
+                    <button
+                      key={match.id}
+                      onClick={() => handleMatch(match.id)}
+                      disabled={selectedMatch !== null}
+                      className={`w-full p-4 rounded-xl transition-all border-2 ${
+                        !selectedMatch
+                          ? 'bg-white/10 hover:bg-white/20 border-white/30 cursor-pointer'
+                          : isCorrect
+                            ? 'bg-green-500/20 border-green-400 opacity-70 cursor-not-allowed'
+                            : isWrong
+                              ? 'bg-red-500/20 border-red-400 opacity-70 cursor-not-allowed'
+                              : 'bg-white/10 border-white/30 cursor-not-allowed'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <span className="text-2xl mr-3">{match.emoji}</span>
+                        <div className="text-left flex-1">
+                          <div className="font-semibold text-white">{match.text}</div>
+                        </div>
+                        {isSelected && (
+                          <span className={`text-xl ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                            {isCorrect ? '✓' : '✗'}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

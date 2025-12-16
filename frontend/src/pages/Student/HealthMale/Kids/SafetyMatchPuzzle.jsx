@@ -17,10 +17,11 @@ const SafetyMatchPuzzle = () => {
   const totalCoins = 5;
   const totalXp = 10;
 
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const puzzles = [
     {
@@ -71,20 +72,24 @@ const SafetyMatchPuzzle = () => {
   ];
 
   const handleOptionSelect = (option) => {
-    if (option.isCorrect) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
+    setSelectedOption(option.id);
+    resetFeedback();
 
-      setTimeout(() => {
-        if (currentPuzzle < puzzles.length - 1) {
-          setCurrentPuzzle(prev => prev + 1);
-        } else {
-          setGameFinished(true);
-        }
-      }, 1500);
+    if (option.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
+
+    setTimeout(() => {
+      if (currentPuzzle < puzzles.length - 1) {
+        setCurrentPuzzle(prev => prev + 1);
+        setSelectedOption(null);
+      } else {
+        setShowResult(true);
+      }
+    }, 1500);
   };
 
   const handleNext = () => {
@@ -96,44 +101,76 @@ const SafetyMatchPuzzle = () => {
   return (
     <GameShell
       title="Safety Match Puzzle"
-      subtitle={`Puzzle ${currentPuzzle + 1} of ${puzzles.length}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
-      gameId={gameId}
-      gameType="health-male"
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      maxScore={puzzles.length}
+      subtitle={showResult ? "Puzzle Complete!" : `Match safety scenarios with safety items (${currentPuzzle + 1}/${puzzles.length} completed)`}
+      score={score}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="health-male"
+      totalLevels={puzzles.length}
+      currentLevel={currentPuzzle + 1}
+      maxScore={puzzles.length}
+      showConfetti={showResult && score === puzzles.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      onNext={handleNext}
+      nextEnabled={showResult}
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-white mb-4">{currentP.scenario}</h3>
-            <p className="text-white/80">Find the matching safety item!</p>
-          </div>
+      <div className="space-y-8 max-w-5xl mx-auto">
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Puzzles: {currentPuzzle + 1}/{puzzles.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{puzzles.length}</span>
+              </div>
+              
+              <p className="text-white/90 text-center mb-6">
+                {currentP.scenario}
+              </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {currentP.options.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => handleOptionSelect(option)}
-                className="bg-white/10 hover:bg-white/20 p-6 rounded-xl border border-white/20 transition-all transform hover:scale-105 flex flex-col items-center gap-4 group"
-              >
-                <div className="text-6xl group-hover:scale-110 transition-transform">
-                  {option.emoji}
-                </div>
-                <div className="text-white font-bold text-xl text-center">
-                  {option.text}
-                </div>
-              </button>
-            ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {currentP.options.map((option) => {
+                  const isSelected = selectedOption === option.id;
+                  const isCorrect = isSelected && option.isCorrect;
+                  const isWrong = isSelected && !option.isCorrect;
+
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleOptionSelect(option)}
+                      disabled={selectedOption !== null}
+                      className={`w-full p-4 rounded-xl transition-all border-2 ${
+                        !selectedOption
+                          ? 'bg-white/10 hover:bg-white/20 border-white/30 cursor-pointer'
+                          : isCorrect
+                            ? 'bg-green-500/20 border-green-400 opacity-70 cursor-not-allowed'
+                            : isWrong
+                              ? 'bg-red-500/20 border-red-400 opacity-70 cursor-not-allowed'
+                              : 'bg-white/10 border-white/30 cursor-not-allowed'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <span className="text-2xl mr-3">{option.emoji}</span>
+                        <div className="text-left flex-1">
+                          <div className="font-semibold text-white">{option.text}</div>
+                          <div className="text-sm text-white/70">{option.explanation}</div>
+                        </div>
+                        {isSelected && (
+                          <span className={`text-xl ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                            {isCorrect ? '✓' : '✗'}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

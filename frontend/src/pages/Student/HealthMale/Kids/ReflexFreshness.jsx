@@ -202,7 +202,7 @@ const ReflexFreshness = () => {
     return (
         <GameShell
             title="Reflex Freshness"
-            subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Act fast!` : "Act fast!"}
+            subtitle={gameState === "playing" ? `Round ${currentRound} of ${TOTAL_ROUNDS}` : gameState === "finished" ? "Game Complete!" : "Act fast!"}
             currentLevel={currentRound}
             coinsPerLevel={coinsPerLevel}
             showGameOver={gameState === "finished"}
@@ -211,9 +211,9 @@ const ReflexFreshness = () => {
             gameType="health-male"
             flashPoints={flashPoints}
             showAnswerConfetti={showAnswerConfetti}
-            totalLevels={5}
-            maxScore={5}
-            showConfetti={gameState === "finished" && score === 5}
+            totalLevels={TOTAL_ROUNDS}
+            maxScore={TOTAL_ROUNDS}
+            showConfetti={gameState === "finished" && score >= 3}
             totalCoins={totalCoins}
             totalXp={totalXp}
             onNext={handleNext}
@@ -221,27 +221,20 @@ const ReflexFreshness = () => {
             <div className="space-y-8">
                 {gameState === "ready" && (
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-                        <div className="text-5xl mb-6">⚡</div>
                         <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
-                        <p className="text-white/90 text-lg mb-6">
-                            Choose the fresh option quickly!<br />
-                            You have {ROUND_TIME} seconds for each question.
-                        </p>
-                        <p className="text-white/80 mb-6">
-                            You have {TOTAL_ROUNDS} rounds to prove your reflexes!
-                        </p>
+                        <p className="text-white/80 mb-6 text-lg">Choose the fresh option quickly! You have {ROUND_TIME} seconds per round</p>
                         <button
                             onClick={startGame}
-                            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+                            className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105"
                         >
                             Start Game
                         </button>
+                        <p className="text-white/60 mt-4">You'll have {ROUND_TIME} seconds per round</p>
                     </div>
                 )}
 
                 {gameState === "playing" && currentQuestion && (
-                    <div className="space-y-8">
-                        {/* Status Bar with Timer */}
+                    <div className="space-y-6">
                         <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
                             <div className="text-white">
                                 <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
@@ -250,11 +243,11 @@ const ReflexFreshness = () => {
                                 <span className="text-white">Time:</span> {timeLeft}s
                             </div>
                             <div className="text-white">
-                                <span className="font-bold">Score:</span> {score}
+                                <span className="font-bold">Score:</span> {score}/{TOTAL_ROUNDS}
                             </div>
                         </div>
 
-                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+                        <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
                             <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
                                 {currentQuestion.question}
                             </h3>
@@ -265,7 +258,7 @@ const ReflexFreshness = () => {
                                         key={index}
                                         onClick={() => handleAnswer(option)}
                                         disabled={answered}
-                                        className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                                     >
                                         <div className="text-4xl mb-3">{option.emoji}</div>
                                         <h3 className="font-bold text-xl">{option.text}</h3>

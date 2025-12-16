@@ -7,10 +7,14 @@ import TestWasteRecycleGame from './WasteAndRecycle/TestWasteRecycleGame';
 import TestCarbonGame from './CarbonAndClimate/TestCarbonGame';
 import TestWaterEnergyGame from './WaterAndEnergy/TestWaterEnergyGame';
 
+// Import Sustainability Kids games
+import sustainabilityKidsGames, { getSustainabilityKidsGame } from './Kids';
+// Import Sustainability Teens games
+import sustainabilityTeenGames, { getSustainabilityTeenGame } from './Teens';
+
 // Create unified games registry
-// Note: Sustainability games are organized by theme, not age group
 const sustainabilityGames = {
-  // All games available for both kids and teens
+  // All games available for both kids and teens (legacy games)
   all: {
     'test-solar-game': TestSolarGame,
     'test-waste-recycle-game': TestWasteRecycleGame,
@@ -18,25 +22,59 @@ const sustainabilityGames = {
     'test-water-energy-game': TestWaterEnergyGame
   },
 
-  // For compatibility with universal renderer, mirror in both age groups
+  // Kids module games
   kids: {
+    // Legacy games
     'test-solar-game': TestSolarGame,
     'test-waste-recycle-game': TestWasteRecycleGame,
     'test-carbon-game': TestCarbonGame,
-    'test-water-energy-game': TestWaterEnergyGame
+    'test-water-energy-game': TestWaterEnergyGame,
+    // New Kids module games
+    ...sustainabilityKidsGames
   },
 
   teen: {
+    // Legacy games
     'test-solar-game': TestSolarGame,
     'test-waste-recycle-game': TestWasteRecycleGame,
     'test-carbon-game': TestCarbonGame,
-'test-water-energy-game': TestWaterEnergyGame
+    'test-water-energy-game': TestWaterEnergyGame,
+    // New Teens module games
+    ...sustainabilityTeenGames
+  },
+  teens: {
+    // Legacy games
+    'test-solar-game': TestSolarGame,
+    'test-waste-recycle-game': TestWasteRecycleGame,
+    'test-carbon-game': TestCarbonGame,
+    'test-water-energy-game': TestWaterEnergyGame,
+    // New Teens module games
+    ...sustainabilityTeenGames
   }
 };
 
 // Export functions to get games
 export const getSustainabilityGame = (age, gameId) => {
-  return sustainabilityGames[age]?.[gameId] || sustainabilityGames.all[gameId];
+  // Normalize gameId to lowercase for matching
+  const normalizedGameId = gameId?.toLowerCase();
+  
+  // For kids age group, try to get from kids games first
+  if (age === 'kids' || age === 'kid') {
+    const kidsGame = getSustainabilityKidsGame(normalizedGameId);
+    if (kidsGame) {
+      return kidsGame;
+    }
+  }
+  
+  // For teens age group, try to get from teens games first
+  if (age === 'teens' || age === 'teen') {
+    const teenGame = getSustainabilityTeenGame(normalizedGameId);
+    if (teenGame) {
+      return teenGame;
+    }
+  }
+  
+  return sustainabilityGames[age]?.[normalizedGameId] || sustainabilityGames.all[normalizedGameId];
 };
 
 export const getAllSustainabilityGames = (age = null) => {

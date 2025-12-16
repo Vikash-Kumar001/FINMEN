@@ -411,6 +411,37 @@ export const mockFeatures = [
     category: "shopping",
     xpReward: 1000
   },
+  // Sustainability Game Cards - Added before main Sustainability card
+  {
+    id: 43,
+    title: "Kids Module",
+    description: "Fun and educational sustainability games for children",
+    icon: "🧸",
+    path: "/games/sustainability/kids",
+    color: "bg-yellow-400",
+    category: "sustainability",
+    xpReward: 1000
+  },
+  {
+    id: 44,
+    title: "Teen Module",
+    description: "Engaging sustainability games designed for teenagers",
+    icon: "📱",
+    path: "/games/sustainability/teens",
+    color: "bg-blue-500",
+    category: "sustainability",
+    xpReward: 1000
+  },
+  {
+    id: 45,
+    title: "Adult Module",
+    description: "Challenging sustainability games for adults",
+    icon: "🧩",
+    path: "/games/sustainability/adults",
+    color: "bg-purple-500",
+    category: "sustainability",
+    xpReward: 1000
+  },
   // Sustainability Games - Added before challenges
   {
     id: 42,

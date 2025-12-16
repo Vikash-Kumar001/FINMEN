@@ -24,6 +24,8 @@ import { getHealthMaleKidsGames } from "../pages/Games/GameCategories/HealthMale
 import { getHealthMaleTeenGames } from "../pages/Games/GameCategories/HealthMale/teenGamesData";
 import { getHealthFemaleKidsGames } from "../pages/Games/GameCategories/HealthFemale/kidGamesData";
 import getHealthFemaleTeenGames from "../pages/Games/GameCategories/HealthFemale/teenGamesData";
+import { getSustainabilityKidsGames } from "../pages/Games/GameCategories/Sustainability/kidGamesData";
+import { getSustainabilityTeenGames } from "../pages/Games/GameCategories/Sustainability/teenGamesData";
 
 /**
  * Get game data by gameId from the appropriate game category folder
@@ -89,6 +91,10 @@ export const getGameDataById = (gameId) => {
     healthFemale: {
       kids: getHealthFemaleKidsGames,
       teens: getHealthFemaleTeenGames,
+    },
+    sustainability: {
+      kids: getSustainabilityKidsGames,
+      teens: getSustainabilityTeenGames,
     },
   };
 

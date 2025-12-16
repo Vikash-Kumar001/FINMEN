@@ -110,9 +110,12 @@ export default function CategoryView() {
             }
 
             // Special handling for Sustainability category
-            // Show only 8 cards (main Sustainability game + 7 core sustainability topics)
+            // Show Kids, Teen, Adult Module cards + main Sustainability game + core sustainability topics
             if (category.key === 'sustainability' && categorySlug === 'sustainability') {
                 const allowedTitles = [
+                    "Kids Module",
+                    "Teen Module",
+                    "Adult Module",
                     "Sustainability",
                     "Climate Change Awareness",
                     "Waste Management",

@@ -31,6 +31,8 @@ import { getHealthMaleKidsGames, healthMaleGameIdsKids } from "./GameCategories/
 import { getHealthMaleTeenGames, healthMaleGameIdsTeen } from "./GameCategories/HealthMale/teenGamesData";
 import { getHealthFemaleKidsGames, healthFemaleGameIdsKids } from "./GameCategories/HealthFemale/kidGamesData";
 import getHealthFemaleTeenGames, { healthFemaleGameIdsTeen } from "./GameCategories/HealthFemale/teenGamesData";
+import { getSustainabilityKidsGames, sustainabilityGameIdsKids } from "./GameCategories/Sustainability/kidGamesData";
+import { getSustainabilityTeenGames, sustainabilityGameIdsTeen } from "./GameCategories/Sustainability/teenGamesData";
 import UpgradePrompt from "../../components/UpgradePrompt";
 import api from "../../utils/api";
 
@@ -824,7 +826,37 @@ const GameCategoryPage = () => {
       
   }  else if (category === "sustainability") {
       // For sustainability, we need to check the ageGroup to determine which subcategory we're in
-      if (ageGroup === "solar-and-city") {
+      if (ageGroup === "kids") {
+        // Add real Sustainability Kids games
+        const realSustainabilityKidsGames = getSustainabilityKidsGames(gameCompletionStatus);
+        games.push(...realSustainabilityKidsGames);
+      } else if (ageGroup === "teens" || ageGroup === "teen") {
+        // Add real Sustainability Teen games
+        const realSustainabilityTeenGames = getSustainabilityTeenGames(gameCompletionStatus);
+        games.push(...realSustainabilityTeenGames);
+      } else if (ageGroup === "adults") {
+        // Generate 20 mock games for Adult Module
+        for (let i = 1; i <= 20; i++) {
+          const difficulty = i <= 7 ? "Medium" : i <= 14 ? "Hard" : "Expert";
+          const gameIcons = [<Leaf className="w-6 h-6" />, <Sun className="w-6 h-6" />, <Cloud className="w-6 h-6" />, <Zap className="w-6 h-6" />, <Droplets className="w-6 h-6" />];
+          const icon = gameIcons[i % gameIcons.length];
+          const gameId = `sustainability-adults-${i}`;
+          
+          games.push({
+            id: gameId,
+            title: `Sustainability Adult Game ${i}`,
+            description: `Challenging sustainability game for adults - Game ${i}`,
+            icon: icon,
+            difficulty: difficulty,
+            duration: `${Math.floor(Math.random() * 5) + 8}-${Math.floor(Math.random() * 5) + 15} min`,
+            coins: 5,
+            xp: 10,
+            completed: gameCompletionStatus[gameId] || false,
+            path: `/student/sustainability/adults/game-${i}`,
+            index: i - 1,
+          });
+        }
+      } else if (ageGroup === "solar-and-city") {
         const solarAndCityGames = [
           {
             id: "sustainability-1",
@@ -1120,8 +1152,14 @@ const GameCategoryPage = () => {
         return gameIds[index];
 
     } else if (category === 'sustainability') {
-        // For sustainability subcategories, we'll use different IDs based on the ageGroup
-        if (ageGroup === 'solar-and-city') {
+        // For sustainability kids and teens games
+        if (ageGroup === 'kids') {
+            const gameIds = sustainabilityGameIdsKids;
+            return gameIds[index];
+        } else if (ageGroup === 'teens' || ageGroup === 'teen') {
+            const gameIds = sustainabilityGameIdsTeen;
+            return gameIds[index];
+        } else if (ageGroup === 'solar-and-city') {
             const gameIds = [
                 'sustainability-solar-1', 'sustainability-solar-2', 'sustainability-solar-3', 'sustainability-solar-4',
                 'sustainability-solar-5', 'sustainability-solar-6', 'sustainability-solar-7', 'sustainability-solar-8',
@@ -1362,7 +1400,7 @@ const GameCategoryPage = () => {
       return;
     }
 
-    // Check if game is unlocked for sequential play (for finance, brain health, UVLS, DCOS, Moral Values, AI For All, EHE, CRGC, Health Male, Health Female, and kids and teens games)
+    // Check if game is unlocked for sequential play (for finance, brain health, UVLS, DCOS, Moral Values, AI For All, EHE, CRGC, Health Male, Health Female, Sustainability, and kids and teens games)
     if (
       (category === "financial-literacy" ||
         category === "brain-health" ||
@@ -1373,7 +1411,8 @@ const GameCategoryPage = () => {
         category === "ehe" ||
         category === "civic-responsibility" ||
         category === "health-male" ||
-        category === "health-female") &&
+        category === "health-female" ||
+        category === "sustainability") &&
       (ageGroup === "kids" || ageGroup === "teens" || ageGroup === "teen")
     ) {
       if (!isGameUnlocked(game.index)) {

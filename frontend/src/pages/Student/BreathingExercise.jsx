@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { logActivity } from "../../services/activityService";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const breathingPhases = [
     { 
@@ -46,6 +47,7 @@ const breathingPhases = [
 ];
 
 export default function BreathingExercise() {
+    const navigate = useNavigate();
     const [phaseIndex, setPhaseIndex] = useState(0);
     const [cycleCount, setCycleCount] = useState(1);
     const [running, setRunning] = useState(false);
@@ -222,6 +224,30 @@ export default function BreathingExercise() {
             </div>
 
             <div className="relative z-10 p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
+                {/* Top Back Button to Brain Health */}
+                <div className="flex items-center justify-start mb-4">
+                    <motion.button
+                        whileHover={{ scale: 1.03, x: -3 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => {
+                            logActivity({
+                                activityType: "navigation",
+                                description: "Navigated from breathing exercise back to Brain Health",
+                                metadata: {
+                                    action: "exit_breathing_exercise_top",
+                                    from: "/student/breathing",
+                                    to: "/student/dashboard/brain-health",
+                                }
+                            });
+                            navigate("/student/dashboard/brain-health");
+                        }}
+                        className="inline-flex items-center gap-2 bg-white/90 px-4 py-2 rounded-full shadow-md border border-gray-200 hover:shadow-lg hover:bg-gray-50 text-sm font-semibold text-gray-700"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span>Back to Brain Health</span>
+                    </motion.button>
+                </div>
+
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -30 }}
@@ -483,24 +509,25 @@ export default function BreathingExercise() {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => {
-                            // Log navigation back to dashboard
+                            // Log navigation back to Brain Health dashboard
                             logActivity({
                                 activityType: "navigation",
-                                description: "Navigated from breathing exercise to previous page",
+                                description: "Navigated from breathing exercise back to Brain Health",
                                 metadata: {
                                     action: "exit_breathing_exercise",
-                                    from: "breathing_exercise",
+                                    from: "/student/breathing",
+                                    to: "/student/dashboard/brain-health",
                                     cyclesCompleted: cycleCount,
                                     timeSpent: totalTime,
                                     xpEarned: cycleCount * 8
                                 }
                             });
-                            window.history.back();
+                            navigate("/student/dashboard/brain-health");
                         }}
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-2xl shadow-lg font-semibold hover:shadow-xl transition-all"
                     >
                         <ArrowLeft className="w-5 h-5" />
-                        Back to Dashboard
+                        Back to Brain Health
                     </motion.button>
                 </div>
             </div>

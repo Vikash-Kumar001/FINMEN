@@ -25,7 +25,6 @@ import AssignmentAttempt from "./pages/Student/AssignmentAttempt";
 import CategoryView from "./pages/Student/CategoryView";
 import QuickQuiz from "./pages/Student/QuickQuiz";
 import MoodTracker from "./pages/Student/MoodTracker";
-import Journal from "./pages/Student/Journal";
 import MindfulnessBreak from "./pages/Student/MindfulnessBreak";
 
 import RewardsPage from "./pages/Student/RewardsPage";
@@ -49,6 +48,8 @@ import FinancialQuiz from "./pages/Student/FinancialQuiz";
 import ExpenseTracker from "./pages/Student/ExpenseTracker";
 import CreditManagement from "./pages/Student/CreditManagement";
 import DebtTracker from "./pages/Student/DebtTracker";
+import BrainHealthQuiz from "./pages/Student/BrainHealthQuiz";
+import StressManagement from "./pages/Student/StressManagement";
 import GameCategoryPage from "./pages/Games/GameCategoryPage";
 import DCOSGames from "./pages/Games/DCOSGames";
 import BrainTeaserGames from "./pages/Games/BrainTeaserGames";
@@ -224,7 +225,6 @@ const App = () => {
       if (pathname.startsWith("/student/dashboard/")) return "Category";
       if (pathname === "/student/mindfull-break") return "Mindfulness Break";
       if (pathname === "/student/mood-tracker") return "Mood Tracker";
-      if (pathname === "/student/journal") return "Journal";
       if (pathname === "/student/rewards") return "Rewards";
       if (pathname === "/student/redeem") return "Redeem";
       if (pathname === "/student/wallet") return "Wallet";
@@ -236,6 +236,19 @@ const App = () => {
       if (pathname === "/student/payment") return "Payment";
       if (pathname.startsWith("/student/presentation")) return "Presentation";
       if (pathname === "/student/breathing") return "Breathing Exercise";
+      if (pathname === "/learn/brain-health-quiz") return "Brain Health Quiz";
+      if (pathname === "/tools/stress-management") return "Stress Management";
+      if (pathname === "/tools/cognitive-training") return "Cognitive Training";
+      if (pathname === "/student/ai-for-all/ai-basics") return "AI Basics & Fundamentals";
+      if (pathname === "/student/ai-for-all/machine-learning") return "Machine Learning 101";
+      if (pathname === "/student/ai-for-all/ai-applications") return "AI Applications";
+      if (pathname === "/student/ai-for-all/data-ethics") return "Data Ethics & Privacy";
+      if (pathname === "/student/ai-for-all/automation") return "Automation & Robotics";
+      if (pathname === "/student/health-female/menstrual-health") return "Menstrual Health";
+      if (pathname === "/student/health-female/nutrition") return "Nutrition & Diet";
+      if (pathname === "/student/health-female/fitness") return "Fitness & Exercise";
+      if (pathname === "/student/health-female/body-positivity") return "Body Positivity";
+      if (pathname === "/student/health-female/reproductive-health") return "Reproductive Health";
       
       // Student financial literacy routes
       if (pathname === "/learn/financial-literacy") return "Financial Literacy";
@@ -938,14 +951,6 @@ const App = () => {
             }
           />
           <Route
-            path="/student/journal"
-            element={
-              <ProtectedRoute roles={["student", "school_student"]}>
-                <Journal />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/student/rewards"
             element={
               <ProtectedRoute roles={["student", "school_student"]}>
@@ -1054,6 +1059,14 @@ const App = () => {
             element={
               <ProtectedRoute roles={["student", "school_student"]}>
                 <FinancialLiteracy />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/learn/brain-health-quiz"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <BrainHealthQuiz />
               </ProtectedRoute>
             }
           />
@@ -1169,6 +1182,14 @@ const App = () => {
             element={
               <ProtectedRoute roles={["student", "school_student"]}>
                 <DebtTracker />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tools/stress-management"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <StressManagement />
               </ProtectedRoute>
             }
           />

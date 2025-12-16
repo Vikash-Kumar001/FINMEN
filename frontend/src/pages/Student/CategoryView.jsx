@@ -62,29 +62,81 @@ export default function CategoryView() {
             // Filter cards by category for all categories (including Sustainability)
             let filtered = mockFeatures.filter((card) => card.category === category.key);
                 
-                // Special handling for Digital Citizenship & Online Safety category
-                // Remove the "Financial Literacy" card to ensure game cards appear first
-                if (category.key === 'education' && categorySlug === 'digital-citizenship-online-safety') {
-                    filtered = filtered.filter((card) => card.title !== "Financial Literacy");
+            // Special handling for Digital Citizenship & Online Safety category
+            if (category.key === 'education' && categorySlug === 'digital-citizenship-online-safety') {
+                // Remove the "Financial Literacy" card
+                filtered = filtered.filter((card) => card.title !== "Financial Literacy");
+            }
+            
+            // Special handling for Health - Female category
+            // Remove the "Leaderboard" card
+            if (category.key === 'competition' && categorySlug === 'health-female') {
+                filtered = filtered.filter((card) => card.title !== "Leaderboard");
+            }
+
+
+
+            // Special handling for Health - Male category
+            // Show only 8 cards (Kids, Teen, Adult Module + 5 core male health topics)
+            if (category.key === 'social' && categorySlug === 'health-male') {
+                const allowedTitles = [
+                    "Kids Module",
+                    "Teen Module",
+                    "Adult Module",
+                    "Puberty & Growth",
+                    "Nutrition & Diet",
+                    "Fitness & Strength Training",
+                    "Body Image & Confidence",
+                    "Reproductive Health",
+                ];
+                filtered = filtered.filter((card) => allowedTitles.includes(card.title));
+            }
+
+
+            // Special handling for Civic Responsibility & Global Citizenship category
+            // Show only 8 cards (Kids, Teen, Adult Module + 5 core civic topics)
+            if (category.key === 'shopping' && categorySlug === 'civic-responsibility-global-citizenship') {
+                const allowedTitles = [
+                    "Kids Module",
+                    "Teen Module",
+                    "Adult Module",
+                    "Civic Duties & Rights",
+                    "Volunteering & Service",
+                    "Global Citizenship",
+                    "Cultural Respect & Diversity",
+                    "UN Sustainable Development Goals",
+                ];
+                filtered = filtered.filter((card) => allowedTitles.includes(card.title));
+            }
+
+            // Special handling for Sustainability category
+            // Show only 8 cards (main Sustainability game + 7 core sustainability topics)
+            if (category.key === 'sustainability' && categorySlug === 'sustainability') {
+                const allowedTitles = [
+                    "Sustainability",
+                    "Climate Change Awareness",
+                    "Waste Management",
+                    "Energy Conservation",
+                    "Water Conservation",
+                    "Renewable Energy",
+                    "Sustainable Living",
+                    "Biodiversity & Conservation",
+                ];
+                filtered = filtered.filter((card) => allowedTitles.includes(card.title));
+            }
+            
+            // Special handling for Financial Literacy category
+            // Move "Financial Quiz" card to the end
+            if (category.key === 'finance' && categorySlug === 'financial-literacy') {
+                const financialQuizCard = filtered.find((card) => card.title === "Financial Quiz");
+                const otherCards = filtered.filter((card) => card.title !== "Financial Quiz");
+                if (financialQuizCard) {
+                    filtered = [...otherCards, financialQuizCard];
                 }
-                
-                // Special handling for Health - Female category
-                // Remove the "Leaderboard" card
-                if (category.key === 'competition' && categorySlug === 'health-female') {
-                    filtered = filtered.filter((card) => card.title !== "Leaderboard");
-                }
-                
-                // Special handling for Financial Literacy category
-                // Move "Financial Quiz" card to the end
-                if (category.key === 'finance' && categorySlug === 'financial-literacy') {
-                    const financialQuizCard = filtered.find((card) => card.title === "Financial Quiz");
-                    const otherCards = filtered.filter((card) => card.title !== "Financial Quiz");
-                    if (financialQuizCard) {
-                        filtered = [...otherCards, financialQuizCard];
-                    }
-                }
-                
-                setFeatureCards(filtered);
+            }
+
+            
+            setFeatureCards(filtered);
         } else {
             // Invalid category, redirect to dashboard
             navigate('/student/dashboard');

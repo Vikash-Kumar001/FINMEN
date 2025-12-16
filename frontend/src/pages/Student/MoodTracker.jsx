@@ -17,6 +17,7 @@ import {
     Globe,
     X,
     ChevronDown,
+    ArrowLeft,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { logActivity } from "../../services/activityService";
@@ -664,13 +665,36 @@ const MoodTracker = () => {
             </div>
 
             <div className="relative z-10 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-                <div className="absolute top-4 right-4 flex items-center gap-2">
-                    <div
-                        className="rounded-full bg-gray-200 p-2 cursor-pointer hover:bg-gray-300"
-                        onClick={() => setShowHelp(!showHelp)}
-                        title="Need help?"
+                {/* Top Bar: Back to Brain Health + Help */}
+                <div className="flex items-center justify-between mb-4">
+                    <motion.button
+                        whileHover={{ scale: 1.03, x: -3 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => {
+                            logActivity({
+                                activityType: "navigation",
+                                description: "Navigated from Mood Tracker back to Brain Health",
+                                metadata: {
+                                    action: "exit_mood_tracker_top",
+                                    from: "/student/mood-tracker",
+                                    to: "/student/dashboard/brain-health",
+                                },
+                            });
+                            navigate("/student/dashboard/brain-health");
+                        }}
+                        className="inline-flex items-center gap-2 bg-white/90 px-4 py-2 rounded-full shadow-md border border-gray-200 hover:shadow-lg hover:bg-gray-50 text-sm font-semibold text-gray-700"
                     >
-                        <HelpCircle className="w-5 h-5 text-gray-600" />
+                        <ArrowLeft className="w-4 h-4" />
+                        <span>Back to Brain Health</span>
+                    </motion.button>
+                    <div className="flex items-center gap-2">
+                        <div
+                            className="rounded-full bg-gray-200 p-2 cursor-pointer hover:bg-gray-300"
+                            onClick={() => setShowHelp(!showHelp)}
+                            title="Need help?"
+                        >
+                            <HelpCircle className="w-5 h-5 text-gray-600" />
+                        </div>
                     </div>
                 </div>
 
@@ -1502,6 +1526,30 @@ const MoodTracker = () => {
                         </div>
                     )}
                 </motion.div>
+                
+                {/* Back Button */}
+                <div className="text-center mb-4">
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                            logActivity({
+                                activityType: "navigation",
+                                description: "Navigated from Mood Tracker back to Brain Health",
+                                metadata: {
+                                    action: "exit_mood_tracker",
+                                    from: "/student/mood-tracker",
+                                    to: "/student/dashboard/brain-health",
+                                },
+                            });
+                            navigate("/student/dashboard/brain-health");
+                        }}
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-2xl shadow-lg font-semibold hover:shadow-xl transition-all"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                        Back to Brain Health
+                    </motion.button>
+                </div>
             </div>
         </div>
     );

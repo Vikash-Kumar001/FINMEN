@@ -1,123 +1,270 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
-import { Puzzle } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleOfJobs = () => {
-  const location = useLocation();
-  
-  // Get game data from game category folder (source of truth)
-  const gameId = "finance-kids-74";
-  const gameData = getGameDataById(gameId);
-  
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
-  const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
+  const navigate = useNavigate();
 
-  const stages = [
-    {
-      question: "Match: Farmer",
-      choices: [
-        { text: "Crops 🌾", correct: true },
-        { text: "Knowledge 📚", correct: false },
-        { text: "Toys 🧸", correct: false },
-      ],
-    },
-    {
-      question: "Match: Teacher",
-      choices: [
-        { text: "Goods 🛍️", correct: false },
-        { text: "Knowledge 📚", correct: true },
-        { text: "Crops 🌾", correct: false },
-      ],
-    },
-    {
-      question: "Match: Shopkeeper",
-      choices: [
-        { text: "Services 🔧", correct: false },
-        { text: "Lessons 📖", correct: false },
-        { text: "Goods 🛍️", correct: true },
-      ],
-    },
-    {
-      question: "Match: Doctor",
-      choices: [
-        { text: "Food 🍎", correct: false },
-        { text: "Health 🩺", correct: true },
-        { text: "Money 💰", correct: false },
-      ],
-    },
-    {
-      question: "Why do jobs provide value?",
-      choices: [
-        { text: "They meet people’s needs 📚", correct: true },
-        { text: "They give free toys 🧸", correct: false },
-        { text: "They make work fun 🎉", correct: false },
-      ],
-    },
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [selectedProvided, setSelectedProvided] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  // Jobs (left side) - 5 items
+  const jobs = [
+    { id: 1, name: "Farmer", emoji: "🌾", hint: "Grows crops" },
+    { id: 2, name: "Teacher", emoji: "📚", hint: "Educates students" },
+    { id: 3, name: "Doctor", emoji: "🩺", hint: "Heals people" },
+    { id: 4, name: "Chef", emoji: "👩‍🍳", hint: "Prepares meals" },
+    { id: 5, name: "Engineer", emoji: "🔧", hint: "Builds structures" }
   ];
 
-  const handleSelect = (isCorrect) => {
-    resetFeedback();
-    if (isCorrect) {
-      setScore((prev) => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
-    } else {
-      setTimeout(() => setShowResult(true), 800);
-    }
+  // What they provide (right side) - 5 items
+  const provided = [
+    { id: 6, name: "Food", emoji: "🍎", description: "Nutrition for health" },
+    { id: 7, name: "Education", emoji: "📖", description: "Knowledge and skills" },
+    { id: 8, name: "Healthcare", emoji: "💊", description: "Medical treatment" },
+    { id: 9, name: "Meals", emoji: "🍽️", description: "Prepared dishes" },
+    { id: 10, name: "Infrastructure", emoji: "🏗️", description: "Built environments" }
+  ];
+
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedProvided = [
+    provided[2], // Healthcare (id: 8)
+    provided[4], // Infrastructure (id: 10)
+    provided[1], // Education (id: 7)
+    provided[0], // Food (id: 6)
+    provided[3]  // Meals (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each job has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { jobId: 1, providedId: 6 }, // Farmer → Food
+    { jobId: 2, providedId: 7 }, // Teacher → Education
+    { jobId: 3, providedId: 8 }, // Doctor → Healthcare
+    { jobId: 4, providedId: 9 }, // Chef → Meals
+    { jobId: 5, providedId: 10 } // Engineer → Infrastructure
+  ];
+
+  const handleJobSelect = (job) => {
+    if (gameFinished) return;
+    setSelectedJob(job);
   };
 
-  const finalScore = score;
+  const handleProvidedSelect = (providedItem) => {
+    if (gameFinished) return;
+    setSelectedProvided(providedItem);
+  };
+
+  const handleMatch = () => {
+    if (!selectedJob || !selectedProvided || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      jobId: selectedJob.id,
+      providedId: selectedProvided.id,
+      isCorrect: correctMatches.some(
+        match => match.jobId === selectedJob.id && match.providedId === selectedProvided.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    // Check if all items are matched
+    if (newMatches.length === jobs.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedJob(null);
+    setSelectedProvided(null);
+  };
+
+  // Check if a job is already matched
+  const isJobMatched = (jobId) => {
+    return matches.some(match => match.jobId === jobId);
+  };
+
+  // Check if a provided item is already matched
+  const isProvidedMatched = (providedId) => {
+    return matches.some(match => match.providedId === providedId);
+  };
+
+  // Get match result for a job
+  const getMatchResult = (jobId) => {
+    const match = matches.find(m => m.jobId === jobId);
+    return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/finance/kids");
+  };
 
   return (
     <GameShell
       title="Puzzle of Jobs"
-      subtitle={`Question ${currentStage + 1} of ${stages.length}: Match jobs to what they provide!`}
-      coins={score}
-      currentLevel={currentStage + 1}
-      totalLevels={5}
-      coinsPerLevel={coinsPerLevel}
-      showGameOver={showResult}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Jobs with What They Provide (${matches.length}/${jobs.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="finance-kids-74"
+      gameType="finance"
+      totalLevels={jobs.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === jobs.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={finalScore}
-      gameId={gameId}
-      gameType="finance"
-      maxScore={5}
+      backPath="/games/finance/kids"
+      maxScore={jobs.length}
+      coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && finalScore === 5}>
-      <div className="text-center text-white space-y-6">
-        <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-          <Puzzle className="mx-auto w-10 h-10 text-purple-500 mb-4" />
-          <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-          <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {stages[currentStage].choices.map((choice, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSelect(choice.correct)}
-                className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-blue-500 transition-transform hover:scale-105"
-                disabled={showResult}
-              >
-                <div className="text-lg font-semibold">{choice.text}</div>
-              </button>
-            ))}
+    >
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Jobs */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Jobs</h3>
+              <div className="space-y-4">
+                {jobs.map(job => (
+                  <button
+                    key={job.id}
+                    onClick={() => handleJobSelect(job)}
+                    disabled={isJobMatched(job.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isJobMatched(job.id)
+                        ? getMatchResult(job.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedJob?.id === job.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{job.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{job.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {job.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedJob 
+                    ? `Selected: ${selectedJob.name}` 
+                    : "Select a Job"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedJob || !selectedProvided}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedJob && selectedProvided
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{jobs.length}</p>
+                  <p>Matched: {matches.length}/{jobs.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - What They Provide */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">What They Provide</h3>
+              <div className="space-y-4">
+                {rearrangedProvided.map(providedItem => (
+                  <button
+                    key={providedItem.id}
+                    onClick={() => handleProvidedSelect(providedItem)}
+                    disabled={isProvidedMatched(providedItem.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isProvidedMatched(providedItem.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedProvided?.id === providedItem.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{providedItem.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{providedItem.name}</h4>
+                        <p className="text-white/80 text-sm">{providedItem.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {jobs.length} jobs with what they provide!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Every job provides value by meeting people's needs!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {jobs.length} jobs correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each job creates or provides to society!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );
 };
 
-export default PuzzleOfJobs;   
+export default PuzzleOfJobs;

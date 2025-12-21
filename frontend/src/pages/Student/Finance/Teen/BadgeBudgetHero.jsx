@@ -40,12 +40,12 @@ const BadgeBudgetHero = () => {
         },
         { 
           text: "Ignore your expenses", 
-          emoji: "🙈", 
+          emoji: "📝", 
           isCorrect: false
         },
         { 
           text: "Save everything without planning", 
-          emoji: "💰", 
+          emoji: "🏦", 
           isCorrect: false
         }
       ]
@@ -62,7 +62,7 @@ const BadgeBudgetHero = () => {
         },
         { 
           text: "Cover essential needs first, then wants", 
-          emoji: "✅", 
+          emoji: "📋", 
           isCorrect: true
         },
         { 
@@ -84,12 +84,12 @@ const BadgeBudgetHero = () => {
       options: [
         { 
           text: "Save whatever is left after spending", 
-          emoji: "💵", 
+          emoji: "📊", 
           isCorrect: false
         },
         { 
           text: "Save first, then spend the rest", 
-          emoji: "💰", 
+          emoji: "🔐", 
           isCorrect: true
         },
         { 
@@ -99,7 +99,7 @@ const BadgeBudgetHero = () => {
         },
         { 
           text: "Save only when you have extra", 
-          emoji: "🎯", 
+          emoji: "📈", 
           isCorrect: false
         }
       ]
@@ -116,17 +116,17 @@ const BadgeBudgetHero = () => {
         },
         { 
           text: "Review it regularly (weekly or monthly)", 
-          emoji: "✅", 
+          emoji: "📅", 
           isCorrect: true
         },
         { 
           text: "Review it only once a year", 
-          emoji: "📅", 
+          emoji: "📆", 
           isCorrect: false
         },
         { 
           text: "Review it only when you run out of money", 
-          emoji: "💸", 
+          emoji: "📉", 
           isCorrect: false
         }
       ]
@@ -143,7 +143,7 @@ const BadgeBudgetHero = () => {
         },
         { 
           text: "Adjust other categories to stay within budget", 
-          emoji: "✅", 
+          emoji: "🔄", 
           isCorrect: true
         },
         { 

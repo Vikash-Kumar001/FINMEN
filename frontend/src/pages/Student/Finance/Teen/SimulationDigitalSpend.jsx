@@ -25,84 +25,149 @@ const SimulationDigitalSpend = () => {
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
-  const [spent, setSpent] = useState(0);
 
   const scenarios = [
     {
       id: 1,
       title: "Digital Spending Budget",
-      description: "You have ₹1000 in your digital wallet. Pay ₹200 for food, ₹300 for a book. What's the balance left?",
-      total: 1000,
-      expenses: [
-        { name: "Food", amount: 200, emoji: "🍔" },
-        { name: "Book", amount: 300, emoji: "📚" }
-      ],
-      correctBalance: 500
+      description: "You have ₹1000 in your digital wallet. What's the smart approach?",
+      amount: 1000,
+      options: [
+        { 
+          id: "track", 
+          text: "Track all digital expenses", 
+          emoji: "📊", 
+          isCorrect: true
+        },
+        { 
+          id: "spend", 
+          text: "Spend without tracking", 
+          emoji: "💸", 
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore digital spending", 
+          emoji: "🙈", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       title: "Online Shopping Budget",
-      description: "You have ₹1500. Pay ₹400 for clothes, ₹200 for transport. What's the balance left?",
-      total: 1500,
-      expenses: [
-        { name: "Clothes", amount: 400, emoji: "👕" },
-        { name: "Transport", amount: 200, emoji: "🚌" }
-      ],
-      correctBalance: 900
+      description: "You have ₹1500. What should you prioritize?",
+      amount: 1500,
+      options: [
+        { 
+          id: "needs", 
+          text: "Prioritize needs over wants", 
+          emoji: "✅", 
+          isCorrect: true
+        },
+        { 
+          id: "impulse", 
+          text: "Impulse buying", 
+          emoji: "🛒", 
+          isCorrect: false
+        },
+        { 
+          id: "overspend", 
+          text: "Overspend on wants", 
+          emoji: "💳", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       title: "Monthly Digital Budget",
-      description: "You have ₹2000. Pay ₹500 for groceries, ₹300 for entertainment, ₹200 for savings. What's the balance?",
-      total: 2000,
-      expenses: [
-        { name: "Groceries", amount: 500, emoji: "🛒" },
-        { name: "Entertainment", amount: 300, emoji: "🎬" },
-        { name: "Savings", amount: 200, emoji: "💰" }
-      ],
-      correctBalance: 1000
+      description: "You have ₹2000. What's the key?",
+      amount: 2000,
+      options: [
+        { 
+          id: "balance", 
+          text: "Balance needs, wants, savings", 
+          emoji: "⚖️", 
+          isCorrect: true
+        },
+        { 
+          id: "spend-all", 
+          text: "Spend everything on wants", 
+          emoji: "🛍️", 
+          isCorrect: false
+        },
+        { 
+          id: "save-none", 
+          text: "Save nothing", 
+          emoji: "📭", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
       title: "Weekend Spending",
-      description: "You have ₹800. Pay ₹150 for food, ₹100 for movie, ₹50 for snacks. What's the balance?",
-      total: 800,
-      expenses: [
-        { name: "Food", amount: 150, emoji: "🍔" },
-        { name: "Movie", amount: 100, emoji: "🎬" },
-        { name: "Snacks", amount: 50, emoji: "🍿" }
-      ],
-      correctBalance: 500
+      description: "You have ₹800. What's the best practice?",
+      amount: 800,
+      options: [
+        { 
+          id: "plan", 
+          text: "Plan weekend expenses", 
+          emoji: "📝", 
+          isCorrect: true
+        },
+        { 
+          id: "random", 
+          text: "Spend randomly", 
+          emoji: "🎲", 
+          isCorrect: false
+        },
+        { 
+          id: "exceed", 
+          text: "Exceed budget regularly", 
+          emoji: "⚠️", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       title: "School Expenses Budget",
-      description: "You have ₹1200. Pay ₹400 for books, ₹200 for supplies, ₹100 for lunch. What's the balance?",
-      total: 1200,
-      expenses: [
-        { name: "Books", amount: 400, emoji: "📚" },
-        { name: "Supplies", amount: 200, emoji: "✏️" },
-        { name: "Lunch", amount: 100, emoji: "🍱" }
-      ],
-      correctBalance: 500
+      description: "You have ₹1200. What should you do?",
+      amount: 1200,
+      options: [
+        { 
+          id: "allocate", 
+          text: "Allocate for essentials first", 
+          emoji: "🎯", 
+          isCorrect: true
+        },
+        { 
+          id: "luxury", 
+          text: "Spend on luxuries first", 
+          emoji: "💎", 
+          isCorrect: false
+        },
+        { 
+          id: "no-plan", 
+          text: "No expense planning", 
+          emoji: "📋", 
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleSpendChange = (value) => {
-    const numValue = parseInt(value) || 0;
-    setSpent(numValue);
-  };
-
-  const handleSubmit = () => {
+  const handleAnswer = (optionId) => {
     if (answered) return;
     
     setAnswered(true);
     resetFeedback();
     
-    const current = scenarios[currentScenario];
-    const totalExpenses = current.expenses.reduce((sum, exp) => sum + exp.amount, 0);
-    const calculatedBalance = current.total - totalExpenses;
-    const isCorrect = spent === calculatedBalance && spent === current.correctBalance;
+    const scenario = scenarios[currentScenario];
+    const selectedOption = scenario.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption?.isCorrect;
 
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -118,7 +183,6 @@ const SimulationDigitalSpend = () => {
         setShowResult(true);
       } else {
         setCurrentScenario(prev => prev + 1);
-        setSpent(0);
         setAnswered(false);
       }
     }, 500);
@@ -129,13 +193,10 @@ const SimulationDigitalSpend = () => {
     setCurrentScenario(0);
     setScore(0);
     setAnswered(false);
-    setSpent(0);
     resetFeedback();
   };
 
   const current = scenarios[currentScenario];
-  const totalExpenses = current.expenses.reduce((sum, exp) => sum + exp.amount, 0);
-  const calculatedBalance = current.total - totalExpenses;
 
   return (
     <GameShell
@@ -170,57 +231,33 @@ const SimulationDigitalSpend = () => {
               </p>
               
               <div className="bg-white/5 rounded-lg p-4 mb-6">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-white font-semibold">Starting Balance:</span>
-                    <span className="text-green-400 font-bold">₹{current.total}</span>
-                  </div>
-                  {current.expenses.map((expense, idx) => (
-                    <div key={idx} className="flex justify-between items-center border-b border-white/10 pb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">{expense.emoji}</span>
-                        <span className="text-white">{expense.name}:</span>
-                      </div>
-                      <span className="text-red-400 font-semibold">-₹{expense.amount}</span>
-                    </div>
-                  ))}
-                  <div className="flex justify-between items-center pt-2 border-t border-white/20">
-                    <span className="text-white font-semibold">Total Expenses:</span>
-                    <span className="text-red-400 font-bold">₹{totalExpenses}</span>
-                  </div>
+                <div className="text-center">
+                  <span className="text-white font-semibold text-lg">Amount: </span>
+                  <span className="text-green-400 font-bold text-2xl">₹{current.amount}</span>
                 </div>
               </div>
               
-              <div className="bg-white/10 rounded-lg p-4 mb-6">
-                <label className="block text-white font-semibold mb-3">
-                  What's the balance left after these expenses?
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max={current.total}
-                  value={spent || ""}
-                  onChange={(e) => handleSpendChange(e.target.value)}
-                  disabled={answered}
-                  placeholder="Enter balance"
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                />
-                <p className="text-white/60 text-sm mt-2">
-                  Hint: Balance = Starting Amount - Total Expenses
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {current.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.id)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
-              
-              <button
-                onClick={handleSubmit}
-                disabled={answered || spent === 0}
-                className={`w-full px-6 py-3 rounded-full font-bold text-base transition-all ${
-                  answered || spent === 0
-                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
-                }`}
-              >
-                Submit Answer
-              </button>
             </div>
           </div>
         ) : (
@@ -228,16 +265,16 @@ const SimulationDigitalSpend = () => {
             {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Excellent Budgeting!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Excellent Digital Finance Skills!</h3>
                 <p className="text-white/90 text-lg mb-4">
                   You got {score} out of {scenarios.length} scenarios correct!
-                  You're mastering digital spending calculations!
+                  You're mastering digital spending strategies!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Always track your digital spending and calculate remaining balance to stay within budget!
+                  Lesson: Always track your digital spending and plan expenses to stay within budget!
                 </p>
               </div>
             ) : (
@@ -246,7 +283,7 @@ const SimulationDigitalSpend = () => {
                 <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
                   You got {score} out of {scenarios.length} scenarios correct.
-                  Remember: Balance = Starting Amount - Total Expenses!
+                  Remember to track and plan your digital expenses!
                 </p>
                 <button
                   onClick={handleTryAgain}
@@ -255,7 +292,7 @@ const SimulationDigitalSpend = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Add up all expenses first, then subtract from your starting balance to find the remaining amount!
+                  Tip: Plan your digital expenses and track them regularly to maintain financial health!
                 </p>
               </div>
             )}

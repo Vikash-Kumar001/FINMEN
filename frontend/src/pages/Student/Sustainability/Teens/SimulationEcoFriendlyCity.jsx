@@ -45,8 +45,8 @@ const SimulationEcoFriendlyCity = () => {
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Simulation: Eco-Friendly City game completed! Score: ${score}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+    if (gameFinished) {
+      console.log(`🎮 Simulation: Eco-Friendly City game completed! Score: ${coins}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       if (nextGameId && window.history && window.history.replaceState) {
         const currentState = window.history.state || {};
         window.history.replaceState({
@@ -55,7 +55,7 @@ const SimulationEcoFriendlyCity = () => {
         }, '');
       }
     }
-  }, [showResult, score, gameId, nextGamePath, nextGameId]);
+  }, [gameFinished, coins, gameId, nextGamePath, nextGameId]);
 
   const questions = [
     {

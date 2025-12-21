@@ -46,8 +46,8 @@ const JournalRecycling = () => {
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Journal of Recycling game completed! Score: ${score}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+    if (gameFinished) {
+      console.log(`🎮 Journal of Recycling game completed! Score: ${coins}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       if (nextGameId && window.history && window.history.replaceState) {
         const currentState = window.history.state || {};
         window.history.replaceState({
@@ -56,7 +56,7 @@ const JournalRecycling = () => {
         }, '');
       }
     }
-  }, [showResult, score, gameId, nextGamePath, nextGameId]);
+  }, [gameFinished, coins, gameId, nextGamePath, nextGameId]);
 
   const stages = [
     { question: 'Write: "One thing I recycled today was ___."', minLength: 10 },

@@ -18,137 +18,279 @@ const SimulationChoice1000 = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
+  const [currentScenario, setCurrentScenario] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [selectedChoice, setSelectedChoice] = useState(null);
+  const [answered, setAnswered] = useState(false);
 
-  const stages = [
+  const scenarios = [
     {
       id: 1,
-      text: "You have ₹1000. Options: (a) FD, (b) Stocks, (c) Spend",
+      title: "₹1000 Investment Choice",
+      description: "You have ₹1000. What's the best option?",
+      amount: 1000,
       options: [
-        { id: "mix", text: "Mix FD + Stocks", emoji: "🔄", description: "Balanced approach", isCorrect: true },
-        { id: "spend", text: "Spend", emoji: "🛍️", description: "No growth", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "fd", 
+          text: "Fixed Deposit", 
+          emoji: "🏦", 
+          isCorrect: false
+        },
+        { 
+          id: "stocks", 
+          text: "Stocks", 
+          emoji: "📈", 
+          isCorrect: false
+        },
+        { 
+          id: "mix", 
+          text: "Mix FD + Stocks", 
+          emoji: "⚖️", 
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 2,
-      text: "You have ₹1500. Options: (a) Savings, (b) Mutual Fund, (c) Spend",
+      title: "₹1500 Investment Strategy",
+      description: "You have ₹1500. What's the smartest choice?",
+      amount: 1500,
       options: [
-        { id: "mix", text: "Mix Savings + Mutual Fund", emoji: "📈", description: "Safe and growth", isCorrect: true },
-        { id: "spend", text: "Spend", emoji: "💸", description: "Loses value", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "spend", 
+          text: "Spend all", 
+          emoji: "💸", 
+          isCorrect: false
+        },
+        { 
+          id: "mix2", 
+          text: "Mix Savings + Mutual Fund", 
+          emoji: "📊", 
+          isCorrect: true
+        },
+        { 
+          id: "save", 
+          text: "Save only", 
+          emoji: "💰", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      text: "You have ₹1200. Options: (a) FD, (b) Crypto, (c) Spend",
+      title: "₹1200 Allocation",
+      description: "You have ₹1200. How should you allocate it?",
+      amount: 1200,
       options: [
-        { id: "mix", text: "Mix FD + Crypto", emoji: "🛡️", description: "Balanced risk", isCorrect: true },
-        { id: "spend", text: "Spend", emoji: "🛍️", description: "No investment", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "mix3", 
+          text: "Mix FD + Crypto", 
+          emoji: "🛡️", 
+          isCorrect: true
+        },
+        { 
+          id: "all-crypto", 
+          text: "All in crypto", 
+          emoji: "📈", 
+          isCorrect: false
+        },
+        { 
+          id: "all-fd", 
+          text: "All in FD", 
+          emoji: "🏦", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      text: "You have ₹2000. Options: (a) Bonds, (b) Stocks, (c) Spend",
+      title: "₹2000 Investment Plan",
+      description: "You have ₹2000. What's the best plan?",
+      amount: 2000,
       options: [
-        { id: "mix", text: "Mix Bonds + Stocks", emoji: "🔄", description: "Diversified growth", isCorrect: true },
-        { id: "spend", text: "Spend", emoji: "💸", description: "No returns", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "waste", 
+          text: "Spend on wants", 
+          emoji: "🛍️", 
+          isCorrect: false
+        },
+        { 
+          id: "mix4", 
+          text: "Mix Bonds + Stocks", 
+          emoji: "🔄", 
+          isCorrect: true
+        },
+        { 
+          id: "hide", 
+          text: "Hide at home", 
+          emoji: "🏠", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "You have ₹1800. Options: (a) FD, (b) Mutual Fund, (c) Spend",
+      title: "₹1800 Decision",
+      description: "You have ₹1800. What should you do?",
+      amount: 1800,
       options: [
-        { id: "mix", text: "Mix FD + Mutual Fund", emoji: "📊", description: "Stable and growth", isCorrect: true },
-        { id: "spend", text: "Spend", emoji: "🛍️", description: "Missed opportunity", isCorrect: false }
-      ],
-      reward: 7
+        { 
+          id: "mix5", 
+          text: "Mix FD + Mutual Fund", 
+          emoji: "📊", 
+          isCorrect: true
+        },
+        { 
+          id: "gamble", 
+          text: "Gamble it", 
+          emoji: "🎲", 
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "😴", 
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleChoice = (choiceId) => {
+  const handleAnswer = (optionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
     resetFeedback();
-    const stage = stages[currentStage];
-    const isCorrect = stage.options.find(opt => opt.id === choiceId)?.isCorrect;
+    
+    const scenario = scenarios[currentScenario];
+    const selectedOption = scenario.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption?.isCorrect;
 
-    setSelectedChoice(choiceId);
     if (isCorrect) {
-      setScore(prev => prev + stage.reward);
-      showCorrectAnswerFeedback(stage.reward, true);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => {
-        setCurrentStage(prev => prev + 1);
-        setSelectedChoice(null);
-        resetFeedback();
-      }, 800);
-    } else {
-      setTimeout(() => setShowResult(true), 800);
-    }
+    const isLastScenario = currentScenario === scenarios.length - 1;
+    
+    setTimeout(() => {
+      if (isLastScenario) {
+        setShowResult(true);
+      } else {
+        setCurrentScenario(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleFinish = () => navigate("/student/finance/teen");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentScenario(0);
+    setScore(0);
+    setAnswered(false);
+    resetFeedback();
+  };
 
   return (
     <GameShell
       title="Simulation: ₹1000 Choice"
-      subtitle={`Stage ${currentStage + 1} of ${stages.length}`}
-      coins={score}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Simulation Complete!"}
+      score={score}
+      currentLevel={currentScenario + 1}
+      totalLevels={scenarios.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
       showGameOver={showResult}
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={scenarios.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && score>= 15}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={score}
       gameId="finance-teens-138"
-      gameType="simulation"
+      gameType="finance"
     >
       <div className="space-y-8 text-white">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Stage {currentStage + 1}/{stages.length}</span>
-              <span className="text-yellow-400 font-bold">Coins: {score}</span>
-            </div>
-            <p className="text-xl mb-6">{stages[currentStage].text}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {stages[currentStage].options.map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => handleChoice(opt.id)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-transform hover:scale-105"
-                >
-                  <div className="text-3xl mb-2">{opt.emoji}</div>
-                  <h3 className="font-bold text-xl mb-2">{opt.text}</h3>
-                  <p className="text-white/90">{opt.description}</p>
-                </button>
-              ))}
+        {!showResult && scenarios[currentScenario] ? (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Scenario {currentScenario + 1}/{scenarios.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{scenarios.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{scenarios[currentScenario].title}</h3>
+              <p className="text-white text-lg mb-6">
+                {scenarios[currentScenario].description}
+              </p>
+              
+              <div className="bg-white/5 rounded-lg p-4 mb-6">
+                <div className="text-center">
+                  <span className="text-white font-semibold text-lg">Amount: </span>
+                  <span className="text-green-400 font-bold text-2xl">₹{scenarios[currentScenario].amount}</span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {scenarios[currentScenario].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.id)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
-            <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-            <h3 className="text-3xl font-bold mb-4">Investment Choice Star!</h3>
-            <p className="text-white/90 text-lg mb-6">You scored {score} coins!</p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-              +{score} Coins
-            </div>
-            <p className="text-white/80 mt-4">Lesson: Mix investments for balance!</p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Excellent Choice!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {scenarios.length} scenarios correct!
+                  You understand smart investment allocation!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: The best strategy is to mix different investment types to balance risk and return!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {scenarios.length} scenarios correct.
+                  Remember, mixing different investments is usually the best strategy!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: The best choice is usually to mix different investment types for balanced growth!
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

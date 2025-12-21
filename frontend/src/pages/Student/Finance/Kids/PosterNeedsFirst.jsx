@@ -24,50 +24,50 @@ const PosterNeedsFirst = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Put Needs Before Wants."',
+      question: "Which expense should come first when budgeting?",
       choices: [
-        { text: "Buy Wants First 🧸", correct: false },
-        { text: "Spend Everything 🛍️", correct: false },
-        { text: "No Planning Needed 🎲", correct: false },
-        { text: "Put Needs Before Wants 📚", correct: true },
+        { text: "New video game 🎮", correct: false },
+        { text: "Movie tickets 🎥", correct: false },
+        { text: "School supplies 📚", correct: true },
+        { text: "Ice cream treat 🍦", correct: false }
       ],
     },
     {
-      question: 'Choose a poster: "Needs First, Save Smart."',
+      question: "What is the main purpose of prioritizing needs over wants?",
       choices: [
-        { text: "Needs First, Save Smart 💰", correct: true },
-        { text: "Wants Are Better 🎉", correct: false },
-        { text: "No Need to Save 🏺", correct: false },
-        { text: "Spend All Today 🛒", correct: false }
+        { text: "To never have fun", correct: false },
+        { text: "To ensure basic necessities are covered", correct: true },
+        { text: "To spend all your money", correct: false },
+        { text: "To avoid saving money", correct: false }
       ],
     },
     {
-      question: 'Choose a poster: "Choose Needs, Win Big."',
+      question: "Which of these is an example of a 'need'?",
       choices: [
-        { text: "Spend on Toys 🧸", correct: false },
-        { text: "Give Money Away 🎁", correct: false },
-        { text: "Choose Needs, Win Big 🥗", correct: true },
-        { text: "Buy Everything 🎪", correct: false }
+        { text: "Designer clothes 👗", correct: false },
+        { text: "Smartphone upgrade 📱", correct: false },
+        { text: "Healthy meals 🥗", correct: true },
+        { text: "Concert tickets 🎵", correct: false }
       ],
     },
     {
-      question: 'Choose a poster: "Needs Keep You Strong."',
+      question: "What should you do if you want both needs and wants but have limited money?",
       choices: [
-        { text: "Needs Keep You Strong 💪", correct: true },
-        { text: "Wants Make You Happy 😊", correct: false },
-        { text: "Spend Without Plan 🛒", correct: false },
-        { text: "More Toys = Better 🎮", correct: false }
+        { text: "Buy only wants", correct: false },
+        { text: "Buy needs first, then save for wants", correct: true },
+        { text: "Borrow money for everything", correct: false },
+        { text: "Forget about both", correct: false }
       ],
     },
     {
-      question: 'Why do needs-first posters help kids?',
+      question: "Why is it important to distinguish between needs and wants?",
       choices: [
-        { text: "Encourage more toys 🧸", correct: false },
-        { text: "Teach smart spending 📚", correct: true },
-        { text: "Make spending fun 🎉", correct: false },
-        { text: "Help buy expensive items 💎", correct: false }
+        { text: "To make informed financial decisions", correct: true },
+        { text: "To feel restricted", correct: false },
+        { text: "To spend impulsively", correct: false },
+        { text: "To avoid all purchases", correct: false }
       ],
-    },
+    }
   ];
 
   const handleSelect = (isCorrect) => {
@@ -98,8 +98,8 @@ const PosterNeedsFirst = () => {
 
   return (
     <GameShell
-      title="Poster: Needs First"
-      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Choose posters that prioritize needs!` : "Game Complete!"}
+      title="Understanding Needs vs Wants"
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Choose the financially smart option!` : "Game Complete!"}
       currentLevel={currentStage + 1}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}

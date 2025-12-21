@@ -1,131 +1,266 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleNeedsWants = () => {
-  const location = useLocation();
+  const navigate = useNavigate();
 
-  // Get game data from game category folder (source of truth)
-  const gameId = "finance-kids-34";
-  const gameData = getGameDataById(gameId);
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
 
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
   const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
+  const [matches, setMatches] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stages = [
-    {
-      question: "Which of these is a need?",
-      choices: [
-        { text: "Drinking water when you're thirsty", correct: true },
-        { text: "Buying a new video game", correct: false },
-        { text: "Getting a second ice cream", correct: false },
-      ],
-    },
-    {
-      question: "You have ₹500. What should you buy first?",
-      choices: [
-        { text: "Latest smartphone game", correct: false },
-        { text: "New school shoes", correct: true },
-        { text: "Designer sunglasses", correct: false },
-      ],
-    },
-    {
-      question: "Which purchase is a want?",
-      choices: [
-        { text: "A new toy car when you have many", correct: false },
-        { text: "Fresh fruits for dinner", correct: false },
-        { text: "A warm jacket in winter", correct: true }
-      ],
-    },
-    {
-      question: "What's the best use of your pocket money?",
-      choices: [
-        { text: "Spending all on candy today", correct: false },
-        { text: "Buying stickers you'll never use", correct: false },
-        { text: "Saving for a new bicycle", correct: true }
-      ],
-    },
-    {
-      question: "Why is it important to know needs vs wants?",
-      choices: [
-        { text: "Helps make smart money choices", correct: true },
-        { text: "Makes shopping more exciting", correct: false },
-        { text: "Gets you more likes on social media", correct: false },
-      ],
-    },
+  // Items (left side) - 5 items
+  const items = [
+    { id: 1, name: "Drinking Water", emoji: "💧", hint: "Essential for survival" },
+    { id: 2, name: "School Shoes", emoji: "👟", hint: "Required for education" },
+    { id: 3, name: "Toy Car", emoji: "🚗", hint: "Entertainment item" },
+    { id: 4, name: "Pocket Money", emoji: "💰", hint: "Personal funds" },
+    { id: 5, name: "Financial Knowledge", emoji: "📚", hint: "Learning skill" }
   ];
 
-  const [answered, setAnswered] = useState(false);
+  // Categories (right side) - 5 items
+  const categories = [
+    { id: 6, name: "Need", emoji: "✅", description: "Essential requirement" },
+    { id: 7, name: "Want", emoji: "🎁", description: "Desired luxury" },
+    { id: 8, name: "Save", emoji: "🏦", description: "Money for future" },
+    { id: 9, name: "Invest", emoji: "📈", description: "Grow resources" },
+    { id: 10, name: "Share", emoji: "🤲", description: "Help others" }
+  ];
 
-  const handleSelect = (isCorrect) => {
-    if (answered) return; // Prevent multiple clicks
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedCategories = [
+    categories[2], // Save (id: 8)
+    categories[4], // Share (id: 10)
+    categories[1], // Want (id: 7)
+    categories[0], // Need (id: 6)
+    categories[3]  // Invest (id: 9)
+  ];
 
-    setAnswered(true);
-    resetFeedback();
-
-    if (isCorrect) {
-      setScore((prev) => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    }
-
-    const isLastQuestion = currentStage === stages.length - 1;
-
-    // Move to next question or show results after a short delay
-    setTimeout(() => {
-      if (isLastQuestion) {
-        setShowResult(true);
-      } else {
-        setCurrentStage((prev) => prev + 1);
-        setAnswered(false);
-      }
-    }, 500);
+  // Correct matches using proper IDs, not positional order
+  // Each item has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { itemId: 1, categoryId: 6 }, // Drinking Water → Need
+    { itemId: 2, categoryId: 10 }, // School Shoes → Share
+    { itemId: 3, categoryId: 7 }, // Toy Car → Want
+    { itemId: 4, categoryId: 8 }, // Pocket Money → Save
+    { itemId: 5, categoryId: 9 }  // Financial Knowledge → Invest
+  ];
+  const handleItemSelect = (item) => {
+    if (gameFinished) return;
+    setSelectedItem(item);
   };
 
-  const finalScore = score;
+  const handleCategorySelect = (category) => {
+    if (gameFinished) return;
+    setSelectedCategory(category);
+  };
+
+  const handleMatch = () => {
+    if (!selectedItem || !selectedCategory || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      itemId: selectedItem.id,
+      categoryId: selectedCategory.id,
+      isCorrect: correctMatches.some(
+        match => match.itemId === selectedItem.id && match.categoryId === selectedCategory.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    // Check if all items are matched
+    if (newMatches.length === items.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedItem(null);
+    setSelectedCategory(null);
+  };
+
+  // Check if an item is already matched
+  const isItemMatched = (itemId) => {
+    return matches.some(match => match.itemId === itemId);
+  };
+
+  // Check if a category is already matched
+  const isCategoryMatched = (categoryId) => {
+    return matches.some(match => match.categoryId === categoryId);
+  };
+
+  // Get match result for an item
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.itemId === itemId);
+    return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/finance/kids");
+  };
 
   return (
     <GameShell
       title="Puzzle of Needs/Wants"
-      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Match items to Needs or Wants!` : "Game Complete!"}
-      currentLevel={currentStage + 1}
-      totalLevels={5}
-      coinsPerLevel={coinsPerLevel}
-      showGameOver={showResult}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Items with Categories (${matches.length}/${items.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="finance-kids-34"
+      gameType="finance"
+      totalLevels={items.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === items.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={finalScore}
-      gameId={gameId}
-      gameType="finance"
-      maxScore={5}
+      backPath="/games/finance/kids"
+      maxScore={items.length}
+      coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && finalScore === 5}>
-      <div className="text-center text-white space-y-8">
-        <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-          <div className="text-4xl mb-4">🧩</div>
-          <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-          <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {stages[currentStage].choices.map((choice, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSelect(choice.correct)}
-                className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-blue-500 transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={answered || showResult}
-              >
-                <div className="text-lg font-semibold">{choice.text}</div>
-              </button>
-            ))}
+    >
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Items */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Items</h3>
+              <div className="space-y-4">
+                {items.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleItemSelect(item)}
+                    disabled={isItemMatched(item.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isItemMatched(item.id)
+                        ? getMatchResult(item.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedItem?.id === item.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{item.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {item.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedItem 
+                    ? `Selected: ${selectedItem.name}` 
+                    : "Select an Item"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedItem || !selectedCategory}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedItem && selectedCategory
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{items.length}</p>
+                  <p>Matched: {matches.length}/{items.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Categories */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Categories</h3>
+              <div className="space-y-4">
+                {rearrangedCategories.map(category => (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategorySelect(category)}
+                    disabled={isCategoryMatched(category.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isCategoryMatched(category.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedCategory?.id === category.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{category.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{category.name}</h4>
+                        <p className="text-white/80 text-sm">{category.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {items.length} items with their categories!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding needs vs wants helps make smart money decisions!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {items.length} items correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about whether each item is essential or discretionary!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

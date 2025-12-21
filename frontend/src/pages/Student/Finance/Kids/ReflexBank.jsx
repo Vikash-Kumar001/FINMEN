@@ -5,7 +5,7 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const TOTAL_ROUNDS = 5;
-const ROUND_TIME = 5;
+const ROUND_TIME = 10;
 
 const ReflexBank = () => {
   const location = useLocation();
@@ -91,76 +91,62 @@ const ReflexBank = () => {
     currentRoundRef.current = currentRound;
   }, [currentRound]);
 
-  // Reset timer when round changes
+  // Combined timer effect - handles both round changes and timing
   useEffect(() => {
     if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
       setTimeLeft(ROUND_TIME);
       setAnswered(false);
-    }
-  }, [currentRound, gameState]);
-
-  // Handle time up - move to next question or show results
-  const handleTimeUp = useCallback(() => {
-    setAnswered(true);
-    resetFeedback();
-    
-    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
-    
-    setTimeout(() => {
-      if (isLastQuestion) {
-        setGameState("finished");
-      } else {
-        setCurrentRound((prev) => prev + 1);
-      }
-    }, 1000);
-  }, []);
-
-  // Timer effect - countdown from 5 seconds for each question
-  useEffect(() => {
-    if (gameState !== "playing") {
+      
+      // Clear any existing timer
       if (timerRef.current) {
         clearInterval(timerRef.current);
-        timerRef.current = null;
       }
-      return;
-    }
-
-    // Check if game should be finished
-    if (currentRoundRef.current > TOTAL_ROUNDS) {
-      setGameState("finished");
-      return;
-    }
-
-    // Clear any existing timer
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-
-    // Start countdown timer
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        const newTime = prev - 1;
-        if (newTime <= 0) {
-          // Time's up for this round
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
+      
+      // Start new timer for this round
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            // Time's up for this round
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+            }
+            
+            // Handle time up - move to next question or show results
+            setAnswered(true);
+            resetFeedback();
+            
+            const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
+            
+            setTimeout(() => {
+              if (isLastQuestion) {
+                setGameState("finished");
+              } else {
+                setCurrentRound((prev) => prev + 1);
+              }
+            }, 1000);
+            
+            return 0;
           }
-          handleTimeUp();
-          return 0;
-        }
-        return newTime;
-      });
-    }, 1000);
-
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
-        timerRef.current = null;
       }
     };
-  }, [gameState, handleTimeUp]);
+  }, [currentRound, gameState]);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
 
   const startGame = () => {
     setGameState("playing");
@@ -191,9 +177,9 @@ const ReflexBank = () => {
     setTimeout(() => {
       if (currentRound >= TOTAL_ROUNDS) {
         setGameState("finished");
-      } else {
+    } else {
         setCurrentRound((prev) => prev + 1);
-      }
+    }
     }, 500);
   };
 
@@ -259,15 +245,15 @@ const ReflexBank = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentQuestion.options.map((option, index) => (
-                  <button
+            <button
                     key={index}
                     onClick={() => handleAnswer(option)}
                     disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px] flex items-center justify-center"
                   >
-                    <div className="text-4xl mb-3">{option.emoji}</div>
+                    <div className="text-4xl mr-3">{option.emoji}</div>
                     <h3 className="font-bold text-xl">{option.text}</h3>
-                  </button>
+            </button>
                 ))}
               </div>
             </div>

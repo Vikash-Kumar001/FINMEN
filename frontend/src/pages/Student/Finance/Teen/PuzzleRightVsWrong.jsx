@@ -1,88 +1,81 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
-import GameShell from "../GameShell";
+import { useNavigate } from 'react-router-dom';
+import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleRightVsWrong = () => {
-  const location = useLocation();
-  
-  // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("finance-teens-94");
-  const gameId = gameData?.id || "finance-teens-94";
-  
-  // Ensure gameId is always set correctly
-  if (!gameData || !gameData.id) {
-    console.warn("Game data not found for PuzzleRightVsWrong, using fallback ID");
-  }
-  
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const navigate = useNavigate();
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [score, setScore] = useState(0);
   const [matches, setMatches] = useState([]);
-  const [selectedLeft, setSelectedLeft] = useState(null);
-  const [selectedRight, setSelectedRight] = useState(null);
-  const [showResult, setShowResult] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [selectedOutcome, setSelectedOutcome] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Financial actions and their ethical outcomes
-  const leftItems = [
-    { id: 1, name: "Donating to Charity", emoji: "💝", description: "Giving money to help others" },
-    { id: 2, name: "Stealing Money", emoji: "😈", description: "Taking money illegally" },
-    { id: 3, name: "Honest Financial Reporting", emoji: "✅", description: "Telling truth about finances" },
-    { id: 4, name: "Paying Bribes", emoji: "💰", description: "Giving money for illegal favors" },
-    { id: 5, name: "Fair Business Deal", emoji: "🤝", description: "Equal and honest transaction" }
+  // Financial actions (left side) - 5 items
+  const actions = [
+    { id: 1, name: "Donating to Charity", emoji: "💝", hint: "Giving to help others" },
+    { id: 2, name: "Stealing Money", emoji: "😈", hint: "Taking without permission" },
+    { id: 3, name: "Honest Reporting", emoji: "✅", hint: "Truthful financial records" },
+    { id: 4, name: "Paying Bribes", emoji: "💰", hint: "Illegal payments for favors" },
+    { id: 5, name: "Fair Deal", emoji: "🤝", hint: "Equal and honest exchange" }
   ];
 
-  const rightItems = [
-    { id: 1, name: "Ethical - Helps Others", emoji: "✨", description: "Moral and beneficial action" },
-    { id: 2, name: "Unethical - Illegal", emoji: "❌", description: "Wrong and punishable action" },
-    { id: 3, name: "Ethical - Builds Trust", emoji: "✨", description: "Honest and trustworthy action" },
-    { id: 4, name: "Unethical - Corrupt", emoji: "❌", description: "Dishonest and illegal action" },
-    { id: 5, name: "Ethical - Fair Practice", emoji: "✨", description: "Just and equal action" }
+  // Financial outcomes (right side) - 5 items
+  const outcomes = [
+    { id: 6, name: "Positive Impact", emoji: "🌟", description: "Benefits society and others" },
+    { id: 7, name: "Legal Consequences", emoji: "⛓️", description: "Results in punishment" },
+    { id: 8, name: "Trust Building", emoji: "🏗️", description: "Creates reliable relationships" },
+    { id: 9, name: "Corruption", emoji: "🐍", description: "Undermines fair systems" },
+    { id: 10, name: "Mutual Benefit", emoji: "双赢", description: "Advantages for all parties" }
   ];
 
-  // Correct matches
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedOutcomes = [
+    outcomes[2], // Trust Building (id: 8)
+    outcomes[4], // Mutual Benefit (id: 10)
+    outcomes[1], // Legal Consequences (id: 7)
+    outcomes[0], // Positive Impact (id: 6)
+    outcomes[3]  // Corruption (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each action has a unique correct match for true one-to-one mapping
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Donating to Charity → Ethical - Helps Others
-    { leftId: 2, rightId: 2 }, // Stealing Money → Unethical - Illegal
-    { leftId: 3, rightId: 3 }, // Honest Financial Reporting → Ethical - Builds Trust
-    { leftId: 4, rightId: 4 }, // Paying Bribes → Unethical - Corrupt
-    { leftId: 5, rightId: 5 }  // Fair Business Deal → Ethical - Fair Practice
+    { actionId: 1, outcomeId: 6 }, // Donating to Charity → Positive Impact
+    { actionId: 2, outcomeId: 7 }, // Stealing Money → Legal Consequences
+    { actionId: 3, outcomeId: 8 }, // Honest Reporting → Trust Building
+    { actionId: 4, outcomeId: 9 }, // Paying Bribes → Corruption
+    { actionId: 5, outcomeId: 10 } // Fair Deal → Mutual Benefit
   ];
 
-  // Shuffled right items for display (to split matches across positions)
-  // This ensures matches are not in the same position
-  const shuffledRightItems = [
-    rightItems[2], // Ethical - Builds Trust (id: 3) - matches Honest Financial Reporting - position 1
-    rightItems[1], // Unethical - Illegal (id: 2) - matches Stealing Money - position 2
-    rightItems[4], // Ethical - Fair Practice (id: 5) - matches Fair Business Deal - position 3
-    rightItems[0], // Ethical - Helps Others (id: 1) - matches Donating to Charity - position 4
-    rightItems[3]  // Unethical - Corrupt (id: 4) - matches Paying Bribes - position 5
-  ];
-
-  const handleLeftSelect = (item) => {
-    if (showResult) return;
-    setSelectedLeft(item);
+  const handleActionSelect = (action) => {
+    if (gameFinished) return;
+    setSelectedAction(action);
   };
 
-  const handleRightSelect = (item) => {
-    if (showResult) return;
-    setSelectedRight(item);
+  const handleOutcomeSelect = (outcome) => {
+    if (gameFinished) return;
+    setSelectedOutcome(outcome);
   };
 
   const handleMatch = () => {
-    if (!selectedLeft || !selectedRight || showResult) return;
+    if (!selectedAction || !selectedOutcome || gameFinished) return;
 
     resetFeedback();
 
     const newMatch = {
-      leftId: selectedLeft.id,
-      rightId: selectedRight.id,
+      actionId: selectedAction.id,
+      outcomeId: selectedOutcome.id,
       isCorrect: correctMatches.some(
-        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+        match => match.actionId === selectedAction.id && match.outcomeId === selectedOutcome.id
       )
     };
 
@@ -98,132 +91,177 @@ const PuzzleRightVsWrong = () => {
     }
 
     // Check if all items are matched
-    if (newMatches.length === leftItems.length) {
+    if (newMatches.length === actions.length) {
       setTimeout(() => {
-        setShowResult(true);
-      }, 1000);
+        setGameFinished(true);
+      }, 1500);
     }
 
-    setSelectedLeft(null);
-    setSelectedRight(null);
+    // Reset selections
+    setSelectedAction(null);
+    setSelectedOutcome(null);
   };
 
-  const isMatched = (leftId, rightId) => {
-    return matches.some(m => m.leftId === leftId && m.rightId === rightId);
+  // Check if an action is already matched
+  const isActionMatched = (actionId) => {
+    return matches.some(match => match.actionId === actionId);
   };
 
-  const isLeftMatched = (leftId) => {
-    return matches.some(m => m.leftId === leftId);
+  // Check if an outcome is already matched
+  const isOutcomeMatched = (outcomeId) => {
+    return matches.some(match => match.outcomeId === outcomeId);
   };
 
-  const isRightMatched = (rightId) => {
-    return matches.some(m => m.rightId === rightId);
+  // Get match result for an action
+  const getMatchResult = (actionId) => {
+    const match = matches.find(m => m.actionId === actionId);
+    return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/finance/teens");
   };
 
   return (
     <GameShell
       title="Puzzle: Right vs Wrong"
-      subtitle={!showResult ? `Match ${matches.length + 1} of ${leftItems.length}` : "Puzzle Complete!"}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Actions with Outcomes (${matches.length}/${actions.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={score}
+      gameId="finance-teens-94"
+      gameType="finance"
+      totalLevels={actions.length}
       currentLevel={matches.length + 1}
-      totalLevels={leftItems.length}
-      coinsPerLevel={coinsPerLevel}
-      showGameOver={showResult}
-      maxScore={leftItems.length}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showConfetti={showResult && score >= 3}
+      showConfetti={gameFinished && score === actions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      gameId={gameId}
-      gameType="finance"
+      backPath="/games/finance/teens"
+      maxScore={actions.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="max-w-6xl mx-auto">
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Financial Actions */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Match {matches.length + 1}/{leftItems.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}/{leftItems.length}</span>
-              </div>
-              
-              <p className="text-white/80 text-center mb-6">
-                Match each financial action with its ethical classification
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                {/* Left Column - Actions */}
-                <div className="space-y-3">
-                  <h3 className="text-white font-bold text-lg mb-4 text-center">Financial Actions</h3>
-                  {leftItems.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => handleLeftSelect(item)}
-                      disabled={isLeftMatched(item.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        selectedLeft?.id === item.id
-                          ? "bg-blue-500 border-4 border-blue-300"
-                          : isLeftMatched(item.id)
-                          ? "bg-green-500/30 border-2 border-green-400 opacity-60"
-                          : "bg-white/10 hover:bg-white/20 border-2 border-white/20"
-                      } ${isLeftMatched(item.id) ? "cursor-not-allowed" : "cursor-pointer"}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{item.emoji}</span>
-                        <div>
-                          <div className="text-white font-semibold">{item.name}</div>
-                          <div className="text-white/70 text-sm">{item.description}</div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Middle Column - Match Button */}
-                <div className="flex items-center justify-center">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Financial Actions</h3>
+              <div className="space-y-4">
+                {actions.map(action => (
                   <button
-                    onClick={handleMatch}
-                    disabled={!selectedLeft || !selectedRight}
-                    className={`px-6 py-3 rounded-full font-bold transition-all ${
-                      selectedLeft && selectedRight
-                        ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
-                        : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                    key={action.id}
+                    onClick={() => handleActionSelect(action)}
+                    disabled={isActionMatched(action.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isActionMatched(action.id)
+                        ? getMatchResult(action.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedAction?.id === action.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
-                    Match
-                  </button>
-                </div>
-
-                {/* Right Column - Classifications */}
-                <div className="space-y-3">
-                  <h3 className="text-white font-bold text-lg mb-4 text-center">Ethical Classification</h3>
-                  {shuffledRightItems.map((item, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleRightSelect(item)}
-                      disabled={isRightMatched(item.id)}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        selectedRight?.id === item.id
-                          ? "bg-blue-500 border-4 border-blue-300"
-                          : isRightMatched(item.id)
-                          ? "bg-green-500/30 border-2 border-green-400 opacity-60"
-                          : "bg-white/10 hover:bg-white/20 border-2 border-white/20"
-                      } ${isRightMatched(item.id) ? "cursor-not-allowed" : "cursor-pointer"}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{item.emoji}</span>
-                        <div>
-                          <div className="text-white font-semibold">{item.name}</div>
-                          <div className="text-white/70 text-sm">{item.description}</div>
-                        </div>
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{action.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{action.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {action.hint}</p>
                       </div>
-                    </button>
-                  ))}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedAction 
+                    ? `Selected: ${selectedAction.name}` 
+                    : "Select a Financial Action"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedAction || !selectedOutcome}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedAction && selectedOutcome
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{actions.length}</p>
+                  <p>Matched: {matches.length}/{actions.length}</p>
                 </div>
               </div>
             </div>
+
+            {/* Right column - Financial Outcomes */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Financial Outcomes</h3>
+              <div className="space-y-4">
+                {rearrangedOutcomes.map(outcome => (
+                  <button
+                    key={outcome.id}
+                    onClick={() => handleOutcomeSelect(outcome)}
+                    disabled={isOutcomeMatched(outcome.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isOutcomeMatched(outcome.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedOutcome?.id === outcome.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{outcome.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{outcome.name}</h4>
+                        <p className="text-white/80 text-sm">{outcome.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {actions.length} financial actions with their outcomes!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Ethical financial decisions lead to positive outcomes for everyone!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {actions.length} financial actions correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about the consequences of each financial action!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

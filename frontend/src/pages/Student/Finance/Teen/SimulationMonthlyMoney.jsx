@@ -33,21 +33,18 @@ const SimulationMonthlyMoney = () => {
           id: "save", 
           text: "Save half (₹250)", 
           emoji: "💰", 
-          description: "Put ₹250 in savings, use ₹250 for expenses",
           isCorrect: true
         },
         { 
           id: "spend", 
           text: "Spend all", 
           emoji: "🛍️", 
-          description: "Use the entire ₹500 for entertainment and treats",
           isCorrect: false
         },
         { 
           id: "lend", 
           text: "Lend risky", 
           emoji: "🎲", 
-          description: "Lend to a friend with uncertain repayment",
           isCorrect: false
         }
       ]
@@ -61,21 +58,18 @@ const SimulationMonthlyMoney = () => {
           id: "spend", 
           text: "Borrow from parents", 
           emoji: "👨‍👩‍👧‍👦", 
-          description: "Ask parents to pay for the full repair",
           isCorrect: false
         },
         { 
           id: "save", 
           text: "Use savings + earn more", 
           emoji: "🏦", 
-          description: "Use ₹200 savings and do extra chores to earn the remaining ₹100",
           isCorrect: true
         },
         { 
           id: "lend", 
           text: "Use credit", 
           emoji: "💳", 
-          description: "Use a credit card to pay and pay later with interest",
           isCorrect: false
         }
       ]
@@ -89,21 +83,18 @@ const SimulationMonthlyMoney = () => {
           id: "spend", 
           text: "Spend all on treats", 
           emoji: "🎉", 
-          description: "Buy expensive items you wanted",
           isCorrect: false
         },
         { 
           id: "lend", 
           text: "Lend to friends", 
           emoji: "👥", 
-          description: "Lend to friends who promised to return",
           isCorrect: false
         },
         { 
           id: "save", 
           text: "Save most, small treat", 
           emoji: "🎯", 
-          description: "Save ₹150 and use ₹50 for a small reward",
           isCorrect: true
         }
       ]
@@ -117,21 +108,18 @@ const SimulationMonthlyMoney = () => {
           id: "spend", 
           text: "Spend on lifestyle", 
           emoji: "🛍️", 
-          description: "Upgrade your lifestyle with better clothes and gadgets",
           isCorrect: false
         },
         { 
           id: "save", 
           text: "Save 50%, use 50%", 
           emoji: "📈", 
-          description: "Save ₹500 for future goals, use ₹500 for necessary expenses",
           isCorrect: true
         },
         { 
           id: "lend", 
           text: "Invest risky", 
           emoji: "🎰", 
-          description: "Invest in a friend's risky business idea",
           isCorrect: false
         }
       ]
@@ -145,21 +133,18 @@ const SimulationMonthlyMoney = () => {
           id: "lend", 
           text: "Buy both on credit", 
           emoji: "💸", 
-          description: "Buy both items using credit cards",
           isCorrect: false
         },
         { 
           id: "save", 
           text: "Buy textbooks first", 
           emoji: "📚", 
-          description: "Buy necessary textbooks first, save for shoes later",
           isCorrect: true
         },
         { 
           id: "spend", 
           text: "Buy shoes first", 
           emoji: "👟", 
-          description: "Buy the shoes you want now",
           isCorrect: false
         }
       ]
@@ -254,7 +239,6 @@ const SimulationMonthlyMoney = () => {
                     <div className="flex flex-col items-center">
                       <div className="text-3xl mb-3">{choice.emoji}</div>
                       <h4 className="font-bold text-lg mb-2">{choice.text}</h4>
-                      <p className="text-white/90 text-sm">{choice.description}</p>
                     </div>
                   </button>
                 ))}

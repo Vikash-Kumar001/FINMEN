@@ -28,45 +28,45 @@ const DebateBudgetFreedom = () => {
       id: 1,
       scenario: "Does budgeting give you control or stress?",
       positions: [
-        { id: "control", text: "FOR: Budgeting gives control", emoji: "✅", points: ["Plan spending", "Avoid debt", "Achieve goals"], isCorrect: true },
-        { id: "balanced", text: "BALANCED: Budget wisely", emoji: "⚖️", points: ["Plan but stay flexible", "Track important expenses", "Balance control and freedom"], isCorrect: false },
-        { id: "stress", text: "AGAINST: Budgeting causes stress", emoji: "❌", points: ["Feels restrictive", "Requires tracking", "Less fun"], isCorrect: false }
+        { id: "control", text: "Budgeting gives control", emoji: "💡", points: ["Plan spending", "Avoid debt", "Achieve goals"], isCorrect: true },
+        { id: "balanced", text: "Budget with flexibility", emoji: "⚠️", points: ["Plan but stay flexible", "Track important expenses", "Balance control and freedom"], isCorrect: false },
+        { id: "stress", text: "Budgeting causes stress", emoji: "🚫", points: ["Feels restrictive", "Requires tracking", "Less fun"], isCorrect: false }
       ]
     },
     {
       id: 2,
       scenario: "Is saving better than spending freely?",
       positions: [
-        { id: "balanced", text: "BALANCED: Save and spend wisely", emoji: "⚖️", points: ["Save some, enjoy some", "Balance present and future", "Moderate approach"], isCorrect: false },
-        { id: "save", text: "FOR: Saving is better", emoji: "✅", points: ["Builds security", "Prepares for future", "Reduces worry"], isCorrect: true },
-        { id: "spend", text: "AGAINST: Spending freely is better", emoji: "❌", points: ["More fun now", "Live in the moment", "No planning"], isCorrect: false }
+        { id: "balanced", text: "Save and spend wisely", emoji: "📋", points: ["Save some, enjoy some", "Balance present and future", "Moderate approach"], isCorrect: false },
+        { id: "save", text: "Saving is better", emoji: "🎓", points: ["Builds security", "Prepares for future", "Reduces worry"], isCorrect: true },
+        { id: "spend", text: "Spending freely is better", emoji: "🎯", points: ["More fun now", "Live in the moment", "No planning"], isCorrect: false }
       ]
     },
     {
       id: 3,
       scenario: "Should you track every expense?",
       positions: [
-        { id: "ignore", text: "AGAINST: Don't track", emoji: "❌", points: ["Less effort", "Feels free", "No hassle"], isCorrect: false },
-        { id: "balanced", text: "BALANCED: Track important ones", emoji: "⚖️", points: ["Track major expenses", "Skip small purchases", "Moderate tracking"], isCorrect: false },
-        { id: "track", text: "FOR: Track expenses", emoji: "✅", points: ["Know your spending", "Stay in budget", "Make smart choices"], isCorrect: true }
+        { id: "ignore", text: "Don't track expenses", emoji: "🌀", points: ["Less effort", "Feels free", "No hassle"], isCorrect: false },
+        { id: "balanced", text: "Track important ones", emoji: "⏳", points: ["Track major expenses", "Skip small purchases", "Moderate tracking"], isCorrect: false },
+        { id: "track", text: "Track all expenses", emoji: "📝", points: ["Know your spending", "Stay in budget", "Make smart choices"], isCorrect: true }
       ]
     },
     {
       id: 4,
       scenario: "Is a budget needed for small incomes?",
       positions: [
-        { id: "budget", text: "FOR: Budget is needed", emoji: "✅", points: ["Maximize money", "Prioritize needs", "Avoid waste"], isCorrect: true },
-        { id: "nobudget", text: "AGAINST: No budget needed", emoji: "❌", points: ["Too little to plan", "Spend as it comes", "No stress"], isCorrect: false },
-        { id: "balanced", text: "BALANCED: Simple budget", emoji: "⚖️", points: ["Basic planning", "Track essentials only", "Keep it simple"], isCorrect: false }
+        { id: "budget", text: "Budget is essential", emoji: "🚀", points: ["Maximize money", "Prioritize needs", "Avoid waste"], isCorrect: true },
+        { id: "nobudget", text: "No budget needed", emoji: "🛑", points: ["Too little to plan", "Spend as it comes", "No stress"], isCorrect: false },
+        { id: "balanced", text: "Simple budget works", emoji: "🔍", points: ["Basic planning", "Track essentials only", "Keep it simple"], isCorrect: false }
       ]
     },
     {
       id: 5,
       scenario: "Does budgeting limit fun or enable it?",
       positions: [
-        { id: "limit", text: "AGAINST: Budgeting limits fun", emoji: "❌", points: ["Feels restrictive", "Less spontaneous", "More work"], isCorrect: false },
-        { id: "balanced", text: "BALANCED: Budget for fun", emoji: "⚖️", points: ["Plan fun activities", "Set aside fun money", "Balance planning and enjoyment"], isCorrect: false },
-        { id: "enable", text: "FOR: Budgeting enables fun", emoji: "✅", points: ["Plan for fun", "Avoid overspending", "Guilt-free spending"], isCorrect: true }
+        { id: "limit", text: "Budgeting limits fun", emoji: "💸", points: ["Feels restrictive", "Less spontaneous", "More work"], isCorrect: false },
+        { id: "balanced", text: "Budget for enjoyment", emoji: "📊", points: ["Plan fun activities", "Set aside fun money", "Balance planning and enjoyment"], isCorrect: false },
+        { id: "enable", text: "Budgeting enables fun", emoji: "⏱️", points: ["Plan for fun", "Avoid overspending", "Guilt-free spending"], isCorrect: true }
       ]
     }
   ];

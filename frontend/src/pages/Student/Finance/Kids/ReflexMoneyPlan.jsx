@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const TOTAL_ROUNDS = 5;
-const ROUND_TIME = 5;
+const ROUND_TIME = 10;
 
 const ReflexMoneyPlan = () => {
   const location = useLocation();
@@ -19,78 +19,116 @@ const ReflexMoneyPlan = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
   const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
+  const [currentRound, setCurrentRound] = useState(0);
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [answered, setAnswered] = useState(false);
-  const [lastAnswerCorrect, setLastAnswerCorrect] = useState(false);
   const timerRef = useRef(null);
-  const currentStageRef = useRef(0);
+  const currentRoundRef = useRef(0);
 
-  const stages = [
+  const questions = [
     {
+      id: 1,
       question: "Before buying something, what should you do first?",
-      action: "Plan & Budget",
-      wrong: "Buy Immediately",
-      prompt: "What's the smart way to handle money before spending?",
-      correctExplanation: "Planning helps you make smart choices!",
-      wrongExplanation: "Planning first saves money!"
+      correctAnswer: "Plan & Budget",
+      options: [
+        { text: "Plan & Budget", isCorrect: true, emoji: "📋" },
+        { text: "Buy Immediately", isCorrect: false, emoji: "💸" },
+        { text: "Ask Friends", isCorrect: false, emoji: "👥" },
+        { text: "Wait Randomly", isCorrect: false, emoji: "⏳" }
+      ]
     },
     {
+      id: 2,
       question: "You want a toy that costs ₹200, but you only have ₹150. What should you do?",
-      action: "Save More First",
-      wrong: "Borrow Money",
-      prompt: "What's the best way to get something you want?",
-      correctExplanation: "Saving first teaches patience and planning!",
-      wrongExplanation: "Saving is better than borrowing!"
+      correctAnswer: "Save More First",
+      options: [
+        { text: "Save More First", isCorrect: true, emoji: "💰" },
+        { text: "Borrow Money", isCorrect: false, emoji: "💳" },
+        { text: "Forget About It", isCorrect: false, emoji: "😔" },
+        { text: "Buy Anyway", isCorrect: false, emoji: "🛒" }
+      ]
     },
     {
+      id: 3,
       question: "What helps you know where your money goes?",
-      action: "Track Expenses",
-      wrong: "Ignore Spending",
-      prompt: "How do you keep track of your money?",
-      correctExplanation: "Tracking helps you understand your spending!",
-      wrongExplanation: "Tracking expenses is important!"
+      correctAnswer: "Track Expenses",
+      options: [
+        { text: "Track Expenses", isCorrect: true, emoji: "📊" },
+        { text: "Ignore Spending", isCorrect: false, emoji: "🙈" },
+        { text: "Spend Randomly", isCorrect: false, emoji: "🎲" },
+        { text: "Hide Receipts", isCorrect: false, emoji: "📄" }
+      ]
     },
     {
+      id: 4,
       question: "You get ₹100. What's the smart way to use it?",
-      action: "Save Some, Spend Some",
-      wrong: "Spend Everything",
-      prompt: "What's a balanced way to handle your money?",
-      correctExplanation: "Balancing saving and spending is smart!",
-      wrongExplanation: "Balance is key to good money habits!"
+      correctAnswer: "Save Some, Spend Some",
+      options: [
+        { text: "Save Some, Spend Some", isCorrect: true, emoji: "⚖️" },
+        { text: "Spend Everything", isCorrect: false, emoji: "🛍️" },
+        { text: "Save Nothing", isCorrect: false, emoji: "📭" },
+        { text: "Lose It", isCorrect: false, emoji: "💸" }
+      ]
     },
     {
+      id: 5,
       question: "What should you do to reach a big money goal?",
-      action: "Set a Savings Plan",
-      wrong: "Spend on Small Things",
-      prompt: "How do you achieve big financial goals?",
-      correctExplanation: "Planning helps you reach your goals!",
-      wrongExplanation: "Planning is essential for big goals!"
-    },
+      correctAnswer: "Set a Savings Plan",
+      options: [
+        { text: "Set a Savings Plan", isCorrect: true, emoji: "🎯" },
+        { text: "Spend on Small Things", isCorrect: false, emoji: "🍬" },
+        { text: "Hope for Luck", isCorrect: false, emoji: "🍀" },
+        { text: "Ask for Money", isCorrect: false, emoji: "🙏" }
+      ]
+    }
   ];
 
-  // Update ref when currentStage changes
+  // Update ref when currentRound changes
   useEffect(() => {
-    currentStageRef.current = currentStage;
-  }, [currentStage]);
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
 
-  // Reset timer when stage changes
+  // Reset timer when round changes
   useEffect(() => {
-    if (showResult) return;
-    setTimeLeft(ROUND_TIME);
-    setAnswered(false);
-    setLastAnswerCorrect(false);
-  }, [currentStage, showResult]);
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
 
-  // Timer effect - countdown from 5 seconds for each question
+  // Handle time up - move to next question or show results
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
+    resetFeedback();
+    
+    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 1000);
+  }, [resetFeedback]);
+
+  // Timer effect - countdown from 10 seconds for each question
   useEffect(() => {
-    if (showResult) {
+    if (gameState !== "playing") {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
+      return;
+    }
+
+    // Check if game should be finished
+    if (currentRoundRef.current > TOTAL_ROUNDS) {
+      setGameState("finished");
       return;
     }
 
@@ -105,42 +143,37 @@ const ReflexMoneyPlan = () => {
       setTimeLeft((prev) => {
         const newTime = prev - 1;
         if (newTime <= 0) {
-          // Time's up for this question
+          // Time's up for this round
           if (timerRef.current) {
             clearInterval(timerRef.current);
             timerRef.current = null;
           }
-
-          setAnswered(true);
-          resetFeedback();
-
-          const isLastQuestion = currentStageRef.current >= TOTAL_ROUNDS - 1;
-
-          setTimeout(() => {
-            if (isLastQuestion) {
-              setShowResult(true);
-            } else {
-              setCurrentStage((prev) => prev + 1);
-            }
-          }, 1000);
-
+          handleTimeUp();
           return 0;
         }
         return newTime;
       });
     }, 1000);
 
-    // Cleanup on unmount or stage change
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
     };
-  }, [currentStage, showResult, resetFeedback]);
+  }, [gameState, handleTimeUp]);
 
-  const handleTap = (choice) => {
-    if (answered || showResult) return; // Prevent multiple clicks
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
+    resetFeedback();
+  };
+
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
 
     // Clear the timer immediately when user answers
     if (timerRef.current) {
@@ -151,53 +184,71 @@ const ReflexMoneyPlan = () => {
     setAnswered(true);
     resetFeedback();
 
-    const isCorrect = choice === stages[currentStage].action;
-    const isLastQuestion = currentStage === stages.length - 1;
-
-    setLastAnswerCorrect(isCorrect);
+    const isCorrect = option.isCorrect;
+    const isLastQuestion = currentRound === questions.length;
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
-    // Move to next question or show results after 1.5 seconds (to show feedback)
+    // Move to next round or show results after a short delay
     setTimeout(() => {
       if (isLastQuestion) {
-        setShowResult(true);
+        setGameState("finished");
       } else {
-        setCurrentStage((prev) => prev + 1);
-        setLastAnswerCorrect(false);
+        setCurrentRound((prev) => prev + 1);
+        setAnswered(false);
       }
-    }, 1500);
+    }, 500);
   };
 
   const finalScore = score;
 
+  const currentQuestion = questions[currentRound - 1];
+
   return (
     <GameShell
       title="Reflex Money Plan"
-      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: ${stages[currentStage]?.prompt || "Test your planning reflexes!"}` : "Game Complete!"}
-      currentLevel={currentStage + 1}
-      totalLevels={5}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your money planning skills!` : "Test your money planning skills!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      showGameOver={showResult}
-      showConfetti={showResult && finalScore === 5}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       score={finalScore}
       gameId={gameId}
       gameType="finance"
-      maxScore={5}
+      maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showResult && stages[currentStage] && (
-          <>
-            {/* Status Bar with Timer - Similar to ReflexSavings */}
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">💰</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Ready to Test Your Money Planning Skills?</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Answer questions about smart money planning and budgeting.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
             <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <div className="text-white">
-                <span className="font-bold">Round:</span> {currentStage + 1}/{TOTAL_ROUNDS}
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
               <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
                 <span className="text-white">Time:</span> {timeLeft}s
@@ -208,28 +259,24 @@ const ReflexMoneyPlan = () => {
             </div>
 
             <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
-              <h4 className="text-xl font-semibold mb-4 text-white">
-                {stages[currentStage].question}
-              </h4>
-              <p className="text-white/70 text-sm mb-6">{stages[currentStage].prompt}</p>
-              <div className="flex flex-col md:flex-row justify-center gap-4">
-                <button
-                  onClick={() => handleTap(stages[currentStage].action)}
-                  disabled={answered || showResult}
-                  className="w-full md:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-xl text-lg font-bold transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-                >
-                  {stages[currentStage].action}
-                </button>
-                <button
-                  onClick={() => handleTap(stages[currentStage].wrong)}
-                  disabled={answered || showResult}
-                  className="w-full md:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-xl text-lg font-bold transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-                >
-                  {stages[currentStage].wrong}
-                </button>
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </GameShell>

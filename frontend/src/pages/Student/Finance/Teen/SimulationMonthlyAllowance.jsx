@@ -20,73 +20,152 @@ const SimulationMonthlyAllowance = () => {
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
-  const [allocations, setAllocations] = useState({
-    food: 0,
-    transport: 0,
-    save: 0,
-    fun: 0
-  });
 
   const scenarios = [
     {
       id: 1,
       title: "Monthly Allowance Budget",
-      description: "You receive ₹1000 as monthly allowance. Allocate it wisely:",
-      correctAllocation: { food: 400, transport: 300, save: 200, fun: 100 },
-      total: 1000
+      description: "You receive ₹1000 as monthly allowance. What's the best approach?",
+      amount: 1000,
+      options: [
+       
+        { 
+          id: "spend-all", 
+          text: "Spend all on wants", 
+          emoji: "🛍️", 
+          isCorrect: false
+        },
+         { 
+          id: "balanced", 
+          text: "Balanced 40-30-20-10 plan", 
+          emoji: "📊", 
+          isCorrect: true
+        },
+        { 
+          id: "save-all", 
+          text: "Save everything", 
+          emoji: "💰", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       title: "Part-time Job Earnings",
-      description: "You earn ₹1500 from a part-time job. Plan your budget:",
-      correctAllocation: { food: 500, transport: 400, save: 400, fun: 200 },
-      total: 1500
+      description: "You earn ₹1500 from a part-time job. How should you use it?",
+      amount: 1500,
+      options: [
+        { 
+          id: "smart-plan", 
+          text: "Smart allocation plan", 
+          emoji: "🎯", 
+          isCorrect: true
+        },
+        { 
+          id: "luxury", 
+          text: "All luxury items", 
+          emoji: "💎", 
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore and forget", 
+          emoji: "😴", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       title: "Scholarship Money",
-      description: "You receive ₹2000 as scholarship. Allocate it smartly:",
-      correctAllocation: { food: 600, transport: 500, save: 600, fun: 300 },
-      total: 2000
+      description: "You receive ₹2000 as scholarship. What's the wisest choice?",
+      amount: 2000,
+      options: [
+        { 
+          id: "invest-in-self", 
+          text: "Invest in education first", 
+          emoji: "🎓", 
+          isCorrect: true
+        },
+        { 
+          id: "vacation", 
+          text: "Fun vacation trip", 
+          emoji: "✈️", 
+          isCorrect: false
+        },
+        { 
+          id: "hoard", 
+          text: "Hide under mattress", 
+          emoji: "🛏️", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
       title: "Birthday Gift Money",
-      description: "You get ₹800 as birthday gift. Budget it carefully:",
-      correctAllocation: { food: 300, transport: 200, save: 200, fun: 100 },
-      total: 800
+      description: "You get ₹800 as birthday gift. What should you do?",
+      amount: 800,
+      options: [
+        
+        { 
+          id: "instant-gratification", 
+          text: "Instant gratification", 
+          emoji: "🎁", 
+          isCorrect: false
+        },
+        { 
+          id: "random", 
+          text: "Random spending", 
+          emoji: "🎲", 
+          isCorrect: false
+        },
+        { 
+          id: "plan-ahead", 
+          text: "Plan for future needs", 
+          emoji: "📅", 
+          isCorrect: true
+        },
+      ]
     },
     {
       id: 5,
       title: "Summer Job Income",
-      description: "You earn ₹2500 from summer job. Create a balanced budget:",
-      correctAllocation: { food: 800, transport: 600, save: 800, fun: 300 },
-      total: 2500
+      description: "You earn ₹2500 from summer job. What's the best strategy?",
+      amount: 2500,
+      options: [
+        
+        { 
+          id: "debt", 
+          text: "Pay off debts", 
+          emoji: "💳", 
+          isCorrect: false
+        },
+        { 
+          id: "strategy", 
+          text: "Balanced strategy", 
+          emoji: "📈", 
+          isCorrect: true
+        },
+        { 
+          id: "impulse", 
+          text: "Impulse buying", 
+          emoji: "🛒", 
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleAllocationChange = (category, value) => {
-    const numValue = parseInt(value) || 0;
-    setAllocations(prev => ({
-      ...prev,
-      [category]: numValue
-    }));
-  };
-
-  const handleSubmit = () => {
+  const handleAnswer = (optionId) => {
     if (answered) return;
     
     setAnswered(true);
     resetFeedback();
     
-    const current = scenarios[currentScenario];
-    const totalAllocated = allocations.food + allocations.transport + allocations.save + allocations.fun;
-    const isCorrect = 
-      totalAllocated === current.total &&
-      allocations.food === current.correctAllocation.food &&
-      allocations.transport === current.correctAllocation.transport &&
-      allocations.save === current.correctAllocation.save &&
-      allocations.fun === current.correctAllocation.fun;
+    const scenario = scenarios[currentScenario];
+    const selectedOption = scenario.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption?.isCorrect;
 
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -102,7 +181,6 @@ const SimulationMonthlyAllowance = () => {
         setShowResult(true);
       } else {
         setCurrentScenario(prev => prev + 1);
-        setAllocations({ food: 0, transport: 0, save: 0, fun: 0 });
         setAnswered(false);
       }
     }, 500);
@@ -113,18 +191,15 @@ const SimulationMonthlyAllowance = () => {
     setCurrentScenario(0);
     setScore(0);
     setAnswered(false);
-    setAllocations({ food: 0, transport: 0, save: 0, fun: 0 });
     resetFeedback();
   };
 
   const current = scenarios[currentScenario];
-  const totalAllocated = allocations.food + allocations.transport + allocations.save + allocations.fun;
-  const remaining = current.total - totalAllocated;
 
   return (
     <GameShell
       title="Simulation: Monthly Allowance"
-      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}: Allocate ₹${current.total}` : "Simulation Complete!"}
+      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Simulation Complete!"}
       score={score}
       currentLevel={currentScenario + 1}
       totalLevels={scenarios.length}
@@ -153,113 +228,34 @@ const SimulationMonthlyAllowance = () => {
                 {current.description}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-white/5 rounded-lg p-4 border border-green-500/30">
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-white font-semibold flex items-center gap-2">
-                      <span className="text-2xl">🍔</span> Food
-                    </label>
-                  </div>
-                  <input
-                    type="number"
-                    min="0"
-                    max={current.total}
-                    value={allocations.food || ""}
-                    onChange={(e) => handleAllocationChange("food", e.target.value)}
-                    disabled={answered}
-                    placeholder="0"
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
-                  />
-                  <p className="text-white/60 text-sm mt-2">Recommended: ₹{current.correctAllocation.food}</p>
-                </div>
-                
-                <div className="bg-white/5 rounded-lg p-4 border border-blue-500/30">
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-white font-semibold flex items-center gap-2">
-                      <span className="text-2xl">🚌</span> Transport
-                    </label>
-                  </div>
-                  <input
-                    type="number"
-                    min="0"
-                    max={current.total}
-                    value={allocations.transport || ""}
-                    onChange={(e) => handleAllocationChange("transport", e.target.value)}
-                    disabled={answered}
-                    placeholder="0"
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                  />
-                  <p className="text-white/60 text-sm mt-2">Recommended: ₹{current.correctAllocation.transport}</p>
-                </div>
-                
-                <div className="bg-white/5 rounded-lg p-4 border border-yellow-500/30">
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-white font-semibold flex items-center gap-2">
-                      <span className="text-2xl">💰</span> Savings
-                    </label>
-                  </div>
-                  <input
-                    type="number"
-                    min="0"
-                    max={current.total}
-                    value={allocations.save || ""}
-                    onChange={(e) => handleAllocationChange("save", e.target.value)}
-                    disabled={answered}
-                    placeholder="0"
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-yellow-500 disabled:opacity-50"
-                  />
-                  <p className="text-white/60 text-sm mt-2">Recommended: ₹{current.correctAllocation.save}</p>
-                </div>
-                
-                <div className="bg-white/5 rounded-lg p-4 border border-pink-500/30">
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-white font-semibold flex items-center gap-2">
-                      <span className="text-2xl">🎉</span> Fun/Entertainment
-                    </label>
-                  </div>
-                  <input
-                    type="number"
-                    min="0"
-                    max={current.total}
-                    value={allocations.fun || ""}
-                    onChange={(e) => handleAllocationChange("fun", e.target.value)}
-                    disabled={answered}
-                    placeholder="0"
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-pink-500 disabled:opacity-50"
-                  />
-                  <p className="text-white/60 text-sm mt-2">Recommended: ₹{current.correctAllocation.fun}</p>
+              <div className="bg-white/5 rounded-lg p-4 mb-6">
+                <div className="text-center">
+                  <span className="text-white font-semibold text-lg">Amount: </span>
+                  <span className="text-green-400 font-bold text-2xl">₹{current.amount}</span>
                 </div>
               </div>
               
-              <div className="bg-white/10 rounded-lg p-4 mb-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-white font-semibold">Total Allocated:</span>
-                  <span className={`text-lg font-bold ${remaining === 0 ? "text-green-400" : remaining > 0 ? "text-yellow-400" : "text-red-400"}`}>
-                    ₹{totalAllocated} / ₹{current.total}
-                  </span>
-                </div>
-                {remaining !== 0 && (
-                  <p className={`text-sm mt-2 ${remaining > 0 ? "text-yellow-400" : "text-red-400"}`}>
-                    {remaining > 0 ? `Remaining: ₹${remaining}` : `Over budget by: ₹${Math.abs(remaining)}`}
-                  </p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {current.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.id)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
-              
-              <button
-                onClick={handleSubmit}
-                disabled={answered || totalAllocated !== current.total}
-                className={`w-full px-6 py-3 rounded-full font-bold text-base transition-all ${
-                  answered || totalAllocated !== current.total
-                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
-                }`}
-              >
-                Submit Budget
-              </button>
-              
-              <p className="text-white/60 text-sm mt-4 text-center">
-                Hint: A balanced budget allocates approximately 40% for food, 30% for transport, 20% for savings, and 10% for fun.
-              </p>
             </div>
           </div>
         ) : (

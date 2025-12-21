@@ -25,64 +25,149 @@ const SimulationLoanRepayment = () => {
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
-  const [months, setMonths] = useState(0);
 
   const scenarios = [
     {
       id: 1,
       title: "Loan Repayment Calculation",
-      description: "You borrow ₹1000. You repay ₹200 per month. How many months will it take to fully repay?",
-      loanAmount: 1000,
-      monthlyPayment: 200,
-      correctMonths: 5
+      description: "You have ₹1000. What's the best approach to loan repayment?",
+      amount: 1000,
+      options: [
+        { 
+          id: "ignore", 
+          text: "Borrow without planning", 
+          emoji: "💸", 
+          isCorrect: false
+        },
+        { 
+          id: "delay", 
+          text: "Delay repayment", 
+          emoji: "⏳", 
+          isCorrect: false
+        },
+        { 
+          id: "calculate", 
+          text: "Calculate before borrowing", 
+          emoji: "🧮", 
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 2,
       title: "Education Loan Repayment",
-      description: "You borrow ₹2000 for education. You repay ₹400 per month. How many months to repay?",
-      loanAmount: 2000,
-      monthlyPayment: 400,
-      correctMonths: 5
+      description: "You have ₹2000. What should you prioritize?",
+      amount: 2000,
+      options: [
+        { 
+          id: "commitment", 
+          text: "Commit to repayment schedule", 
+          emoji: "✅", 
+          isCorrect: true
+        },
+        { 
+          id: "skip", 
+          text: "Skip payments sometimes", 
+          emoji: "🚫", 
+          isCorrect: false
+        },
+        { 
+          id: "extra", 
+          text: "Borrow more unnecessarily", 
+          emoji: "➕", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       title: "Phone Loan Repayment",
-      description: "You borrow ₹1500 for a phone. You repay ₹300 per month. How many months needed?",
-      loanAmount: 1500,
-      monthlyPayment: 300,
-      correctMonths: 5
+      description: "You have ₹1500. What's the smart choice?",
+      amount: 1500,
+      options: [
+        { 
+          id: "want", 
+          text: "Borrow for all wants", 
+          emoji: "🛍️", 
+          isCorrect: false
+        },
+        { 
+          id: "multiple", 
+          text: "Multiple loans at once", 
+          emoji: "🔢", 
+          isCorrect: false
+        },
+        { 
+          id: "need", 
+          text: "Only borrow for needs", 
+          emoji: "📱", 
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
       title: "Bike Loan Repayment",
-      description: "You borrow ₹3000 for a bike. You repay ₹500 per month. How many months to clear?",
-      loanAmount: 3000,
-      monthlyPayment: 500,
-      correctMonths: 6
+      description: "You have ₹3000. What's the key principle?",
+      amount: 3000,
+      options: [
+        { 
+          id: "strain", 
+          text: "Payments that strain budget", 
+          emoji: "😣", 
+          isCorrect: false
+        },
+        { 
+          id: "affordable", 
+          text: "Ensure affordable payments", 
+          emoji: "🚴", 
+          isCorrect: true
+        },
+        { 
+          id: "luxury", 
+          text: "Luxury over necessities", 
+          emoji: "💎", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       title: "Emergency Loan Repayment",
-      description: "You borrow ₹1200 for emergency. You repay ₹200 per month. How many months required?",
-      loanAmount: 1200,
-      monthlyPayment: 200,
-      correctMonths: 6
+      description: "You have ₹1200. What should you do?",
+      amount: 1200,
+      options: [
+        { 
+          id: "emergency-only", 
+          text: "Use loans for emergencies", 
+          emoji: "🚑", 
+          isCorrect: true
+        },
+        { 
+          id: "regular", 
+          text: "Regular expense loans", 
+          emoji: "🔁", 
+          isCorrect: false
+        },
+        { 
+          id: "avoid", 
+          text: "Avoid all borrowing", 
+          emoji: "🙅", 
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleMonthsChange = (value) => {
-    const numValue = parseInt(value) || 0;
-    setMonths(numValue);
-  };
-
-  const handleSubmit = () => {
+  const handleAnswer = (optionId) => {
     if (answered) return;
     
     setAnswered(true);
     resetFeedback();
     
-    const current = scenarios[currentScenario];
-    const isCorrect = months === current.correctMonths;
+    const scenario = scenarios[currentScenario];
+    const selectedOption = scenario.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption?.isCorrect;
 
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -98,7 +183,6 @@ const SimulationLoanRepayment = () => {
         setShowResult(true);
       } else {
         setCurrentScenario(prev => prev + 1);
-        setMonths(0);
         setAnswered(false);
       }
     }, 500);
@@ -109,7 +193,6 @@ const SimulationLoanRepayment = () => {
     setCurrentScenario(0);
     setScore(0);
     setAnswered(false);
-    setMonths(0);
     resetFeedback();
   };
 
@@ -148,48 +231,33 @@ const SimulationLoanRepayment = () => {
               </p>
               
               <div className="bg-white/5 rounded-lg p-4 mb-6">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-white font-semibold">Loan Amount:</span>
-                    <span className="text-red-400 font-bold">₹{current.loanAmount}</span>
-                  </div>
-                  <div className="flex justify-between items-center border-t border-white/10 pt-3">
-                    <span className="text-white font-semibold">Monthly Payment:</span>
-                    <span className="text-green-400 font-bold">₹{current.monthlyPayment}/month</span>
-                  </div>
+                <div className="text-center">
+                  <span className="text-white font-semibold text-lg">Amount: </span>
+                  <span className="text-green-400 font-bold text-2xl">₹{current.amount}</span>
                 </div>
               </div>
               
-              <div className="bg-white/10 rounded-lg p-4 mb-6">
-                <label className="block text-white font-semibold mb-3">
-                  How many months will it take to fully repay the loan?
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="24"
-                  value={months || ""}
-                  onChange={(e) => handleMonthsChange(e.target.value)}
-                  disabled={answered}
-                  placeholder="Enter number of months"
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                />
-                <p className="text-white/60 text-sm mt-2">
-                  Hint: Months = Loan Amount ÷ Monthly Payment
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {current.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.id)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
-              
-              <button
-                onClick={handleSubmit}
-                disabled={answered || months === 0}
-                className={`w-full px-6 py-3 rounded-full font-bold text-base transition-all ${
-                  answered || months === 0
-                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
-                }`}
-              >
-                Submit Answer
-              </button>
             </div>
           </div>
         ) : (
@@ -197,16 +265,16 @@ const SimulationLoanRepayment = () => {
             {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Excellent Calculation!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Excellent Loan Management!</h3>
                 <p className="text-white/90 text-lg mb-4">
                   You got {score} out of {scenarios.length} scenarios correct!
-                  You're mastering loan repayment calculations!
+                  You're mastering responsible loan practices!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Always calculate how long it will take to repay a loan before borrowing. Months = Loan Amount ÷ Monthly Payment!
+                  Lesson: Always calculate loan repayment before borrowing and prioritize needs over wants!
                 </p>
               </div>
             ) : (
@@ -215,7 +283,7 @@ const SimulationLoanRepayment = () => {
                 <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
                   You got {score} out of {scenarios.length} scenarios correct.
-                  Remember: Months = Loan Amount ÷ Monthly Payment!
+                  Remember to calculate before borrowing!
                 </p>
                 <button
                   onClick={handleTryAgain}
@@ -224,7 +292,7 @@ const SimulationLoanRepayment = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Divide the loan amount by the monthly payment to find how many months it will take to repay!
+                  Tip: Only borrow for needs and ensure you can afford the monthly payments!
                 </p>
               </div>
             )}

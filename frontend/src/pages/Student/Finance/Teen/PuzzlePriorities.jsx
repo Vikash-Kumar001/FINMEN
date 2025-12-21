@@ -1,74 +1,79 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
-import GameShell from "../GameShell";
+import { useNavigate } from 'react-router-dom';
+import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzlePriorities = () => {
-  const location = useLocation();
-  
-  // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("finance-teens-24");
-  const gameId = gameData?.id || "finance-teens-24";
-  
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const navigate = useNavigate();
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [score, setScore] = useState(0);
   const [matches, setMatches] = useState([]);
-  const [selectedLeft, setSelectedLeft] = useState(null);
-  const [selectedRight, setSelectedRight] = useState(null);
-  const [showResult, setShowResult] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedPriority, setSelectedPriority] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Must expenses (left side) - 5 items with clear descriptions
-  const leftItems = [
-    { id: 1, name: "School Fees", emoji: "🎓", description: "Must pay for education" },
-    { id: 2, name: "Groceries", emoji: "🛒", description: "Must buy food to eat" },
-    { id: 3, name: "Rent", emoji: "🏠", description: "Must pay for housing" },
-    { id: 4, name: "Medicine", emoji: "💊", description: "Must buy for health" },
-    { id: 5, name: "Electricity Bill", emoji: "💡", description: "Must pay utility bill" }
+  // Expenses (left side) - 5 items
+  const items = [
+    { id: 1, name: "School Fees", emoji: "🎓", hint: "Education costs" },
+    { id: 2, name: "Groceries", emoji: "🛒", hint: "Food shopping" },
+    { id: 3, name: "Rent", emoji: "🏠", hint: "Housing payment" },
+    { id: 4, name: "Medicine", emoji: "💊", hint: "Health needs" },
+    { id: 5, name: "Electricity", emoji: "💡", hint: "Utility bills" }
   ];
 
-  // Want expenses (right side) - 5 items with clear descriptions, rearranged to split matches
-  const rightItems = [
-    { id: 1, name: "Video Game", emoji: "🎮", description: "Want for fun" },
-    { id: 2, name: "Concert Ticket", emoji: "🎵", description: "Want for entertainment" },
-    { id: 3, name: "Designer Clothes", emoji: "👔", description: "Want fashionable items" },
-    { id: 4, name: "Movie Tickets", emoji: "🎬", description: "Want for leisure" },
-    { id: 5, name: "New Phone", emoji: "📱", description: "Want latest technology" }
+  // Priorities (right side) - 5 items
+  const priorities = [
+    { id: 6, name: "Need", emoji: "✅", description: "Essential for life" },
+    { id: 7, name: "Want", emoji: "🎁", description: "Nice to have" },
+    { id: 8, name: "Save", emoji: "💰", description: "Money for future" },
+    { id: 9, name: "Invest", emoji: "📈", description: "Grow money" },
+    { id: 10, name: "Share", emoji: "🤲", description: "Help others" }
   ];
 
-  // Correct matches (split across different positions for variety)
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedPriorities = [
+    priorities[2], // Save (id: 8)
+    priorities[4], // Share (id: 10)
+    priorities[1], // Want (id: 7)
+    priorities[0], // Need (id: 6)
+    priorities[3]  // Invest (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each item has a unique correct match for true one-to-one mapping
   const correctMatches = [
-    { leftId: 1, rightId: 2 }, // School Fees → Concert Ticket (position 2)
-    { leftId: 2, rightId: 1 }, // Groceries → Video Game (position 1)
-    { leftId: 3, rightId: 5 }, // Rent → New Phone (position 5)
-    { leftId: 4, rightId: 3 }, // Medicine → Designer Clothes (position 3)
-    { leftId: 5, rightId: 4 }  // Electricity Bill → Movie Tickets (position 4)
-  ];
-
-  const handleLeftSelect = (item) => {
-    if (showResult) return;
-    setSelectedLeft(item);
+    { itemId: 1, priorityId: 6 }, // School Fees → Need
+    { itemId: 2, priorityId: 7 }, // Groceries → Want
+    { itemId: 3, priorityId: 8 }, // Rent → Save
+    { itemId: 4, priorityId: 9 }, // Medicine → Invest
+    { itemId: 5, priorityId: 10 } // Electricity → Share
+  ];  const handleItemSelect = (item) => {
+    if (gameFinished) return;
+    setSelectedItem(item);
   };
 
-  const handleRightSelect = (item) => {
-    if (showResult) return;
-    setSelectedRight(item);
+  const handlePrioritySelect = (priority) => {
+    if (gameFinished) return;
+    setSelectedPriority(priority);
   };
 
   const handleMatch = () => {
-    if (!selectedLeft || !selectedRight || showResult) return;
+    if (!selectedItem || !selectedPriority || gameFinished) return;
 
     resetFeedback();
 
     const newMatch = {
-      leftId: selectedLeft.id,
-      rightId: selectedRight.id,
+      itemId: selectedItem.id,
+      priorityId: selectedPriority.id,
       isCorrect: correctMatches.some(
-        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+        match => match.itemId === selectedItem.id && match.priorityId === selectedPriority.id
       )
     };
 
@@ -79,81 +84,81 @@ const PuzzlePriorities = () => {
     if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
     // Check if all items are matched
-    if (newMatches.length === leftItems.length) {
+    if (newMatches.length === items.length) {
       setTimeout(() => {
-        setShowResult(true);
-      }, 800);
+        setGameFinished(true);
+      }, 1500);
     }
 
     // Reset selections
-    setSelectedLeft(null);
-    setSelectedRight(null);
+    setSelectedItem(null);
+    setSelectedPriority(null);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setMatches([]);
-    setSelectedLeft(null);
-    setSelectedRight(null);
-    setScore(0);
-    resetFeedback();
+  // Check if an item is already matched
+  const isItemMatched = (itemId) => {
+    return matches.some(match => match.itemId === itemId);
   };
 
-  // Check if a left item is already matched
-  const isLeftItemMatched = (itemId) => {
-    return matches.some(match => match.leftId === itemId);
+  // Check if a priority is already matched
+  const isPriorityMatched = (priorityId) => {
+    return matches.some(match => match.priorityId === priorityId);
   };
 
-  // Check if a right item is already matched
-  const isRightItemMatched = (itemId) => {
-    return matches.some(match => match.rightId === itemId);
-  };
-
-  // Get match result for a left item
+  // Get match result for an item
   const getMatchResult = (itemId) => {
-    const match = matches.find(m => m.leftId === itemId);
+    const match = matches.find(m => m.itemId === itemId);
     return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/finance/teens");
   };
 
   return (
     <GameShell
       title="Puzzle of Priorities"
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Expenses with Priorities (${matches.length}/${items.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={score}
-      subtitle={showResult ? "Game Complete!" : `Match Must expenses with Want expenses (${matches.length}/${leftItems.length} matched)`}
+      gameId="finance-teens-24"
+      gameType="finance"
+      totalLevels={items.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === items.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/finance/teens"
+      maxScore={items.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      gameId={gameId}
-      gameType="finance"
-      totalLevels={leftItems.length}
-      currentLevel={matches.length + 1}
-      maxScore={leftItems.length}
-      showConfetti={showResult && score >= 3}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8 max-w-4xl mx-auto">
-        {!showResult ? (
+        {!gameFinished ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Left column - Must expenses */}
+            {/* Left column - Expenses */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Must Expenses</h3>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Expenses</h3>
               <div className="space-y-4">
-                {leftItems.map(item => (
+                {items.map(item => (
                   <button
                     key={item.id}
-                    onClick={() => handleLeftSelect(item)}
-                    disabled={isLeftItemMatched(item.id)}
+                    onClick={() => handleItemSelect(item)}
+                    disabled={isItemMatched(item.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      isLeftItemMatched(item.id)
+                      isItemMatched(item.id)
                         ? getMatchResult(item.id)
                           ? "bg-green-500/30 border-2 border-green-500"
                           : "bg-red-500/30 border-2 border-red-500"
-                        : selectedLeft?.id === item.id
+                        : selectedItem?.id === item.id
                         ? "bg-blue-500/50 border-2 border-blue-400"
                         : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
@@ -162,7 +167,7 @@ const PuzzlePriorities = () => {
                       <div className="text-2xl mr-3">{item.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{item.name}</h4>
-                        <p className="text-white/80 text-sm">{item.description}</p>
+                        <p className="text-white/80 text-sm">Hint: {item.hint}</p>
                       </div>
                     </div>
                   </button>
@@ -174,15 +179,15 @@ const PuzzlePriorities = () => {
             <div className="flex flex-col items-center justify-center">
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
                 <p className="text-white/80 mb-4">
-                  {selectedLeft 
-                    ? `Selected: ${selectedLeft.name}` 
-                    : "Select a Must expense"}
+                  {selectedItem 
+                    ? `Selected: ${selectedItem.name}` 
+                    : "Select an Expense"}
                 </p>
                 <button
                   onClick={handleMatch}
-                  disabled={!selectedLeft || !selectedRight}
+                  disabled={!selectedItem || !selectedPriority}
                   className={`py-3 px-6 rounded-full font-bold transition-all ${
-                    selectedLeft && selectedRight
+                    selectedItem && selectedPriority
                       ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
                       : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
@@ -190,34 +195,34 @@ const PuzzlePriorities = () => {
                   Match
                 </button>
                 <div className="mt-4 text-white/80">
-                  <p>Score: {score}/{leftItems.length}</p>
-                  <p>Matched: {matches.length}/{leftItems.length}</p>
+                  <p>Score: {score}/{items.length}</p>
+                  <p>Matched: {matches.length}/{items.length}</p>
                 </div>
               </div>
             </div>
 
-            {/* Right column - Want expenses */}
+            {/* Right column - Priorities */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Want Expenses</h3>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Priorities</h3>
               <div className="space-y-4">
-                {rightItems.map(item => (
+                {rearrangedPriorities.map(priority => (
                   <button
-                    key={item.id}
-                    onClick={() => handleRightSelect(item)}
-                    disabled={isRightItemMatched(item.id)}
+                    key={priority.id}
+                    onClick={() => handlePrioritySelect(priority)}
+                    disabled={isPriorityMatched(priority.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      isRightItemMatched(item.id)
+                      isPriorityMatched(priority.id)
                         ? "bg-green-500/30 border-2 border-green-500 opacity-50"
-                        : selectedRight?.id === item.id
+                        : selectedPriority?.id === priority.id
                         ? "bg-purple-500/50 border-2 border-purple-400"
                         : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div className="text-2xl mr-3">{priority.emoji}</div>
                       <div>
-                        <h4 className="font-bold text-white">{item.name}</h4>
-                        <p className="text-white/80 text-sm">{item.description}</p>
+                        <h4 className="font-bold text-white">{priority.name}</h4>
+                        <p className="text-white/80 text-sm">{priority.description}</p>
                       </div>
                     </div>
                   </button>
@@ -230,34 +235,26 @@ const PuzzlePriorities = () => {
             {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You correctly matched {score} out of {leftItems.length} expense pairs!
-                  You understand the difference between must-haves and wants!
+                  You correctly matched {score} out of {items.length} expenses with their priorities!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Always prioritize must expenses (like school fees, rent, groceries) over wants (like concerts, games, movies)!
+                  Lesson: Understanding expense priorities helps make smart financial decisions!
                 </p>
               </div>
             ) : (
               <div>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You matched {score} out of {leftItems.length} expense pairs correctly.
-                  Remember, must expenses are essential for survival and well-being!
+                  You matched {score} out of {items.length} expenses correctly.
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Must expenses are things you need (school fees, rent, groceries), while wants are things you'd like to have (entertainment, luxury items).
+                  Tip: Think about whether each expense is essential or discretionary!
                 </p>
               </div>
             )}

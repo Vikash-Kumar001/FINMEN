@@ -9,82 +9,89 @@ const ROUND_TIME = 10;
 
 const ReflexDebtControl = () => {
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("finance-teens-59");
-  const gameId = gameData?.id || "finance-teens-59";
-  
-  // Ensure gameId is always set correctly
-  if (!gameData || !gameData.id) {
-    console.warn("Game data not found for ReflexDebtControl, using fallback ID");
-  }
-  
+  const gameId = "finance-teens-59";
+  const gameData = getGameDataById(gameId);
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  
+
   const [gameState, setGameState] = useState("ready"); // ready, playing, finished
-  const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [answered, setAnswered] = useState(false);
   const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
   const questions = [
     {
       id: 1,
-      question: "Choose the smart financial choice:",
-      correctAnswer: "Borrow Wisely",
+      question: "What's the best approach to borrowing money?",
+      correctAnswer: "Only borrow what you can afford to repay",
       options: [
-        { text: "Borrow Wisely", isCorrect: true, emoji: "✅" },
-        { text: "Overspend + Debt", isCorrect: false, emoji: "💸" },
-        { text: "Borrow without plan", isCorrect: false, emoji: "🚫" }
+        { text: "Borrow as much as possible", isCorrect: false, emoji: "💰" },
+        { text: "Only borrow what you can afford to repay", isCorrect: true, emoji: "✅" },
+        { text: "Borrow without a repayment plan", isCorrect: false, emoji: "📝" },
+        { text: "Borrow from multiple sources", isCorrect: false, emoji: "🏦" }
       ]
     },
     {
       id: 2,
-      question: "Choose the smart financial choice:",
-      correctAnswer: "Plan Before Borrowing",
+      question: "How should you prioritize debt payments?",
+      correctAnswer: "Pay high-interest debts first",
       options: [
-        { text: "Borrow impulsively", isCorrect: false, emoji: "⚡" },
-        { text: "Plan Before Borrowing", isCorrect: true, emoji: "📋" },
-        { text: "Ignore repayment", isCorrect: false, emoji: "😴" }
+        { text: "Pay the smallest debts first", isCorrect: false, emoji: "🔢" },
+        { text: "Pay oldest debts first", isCorrect: false, emoji: "📅" },
+        { text: "Pay high-interest debts first", isCorrect: true, emoji: "🔥" },
+        { text: "Pay whichever debt you want", isCorrect: false, emoji: "🎲" }
       ]
     },
     {
       id: 3,
-      question: "Choose the smart financial choice:",
-      correctAnswer: "Repay on Time",
+      question: "What should you do before taking on new debt?",
+      correctAnswer: "Evaluate if it's truly necessary",
       options: [
-        { text: "Delay repayment", isCorrect: false, emoji: "⏳" },
-        { text: "Skip payments", isCorrect: false, emoji: "❌" },
-        { text: "Repay on Time", isCorrect: true, emoji: "⏰" }
+        { text: "Evaluate if it's truly necessary", isCorrect: true, emoji: "🧐" },
+        { text: "Take it without thinking", isCorrect: false, emoji: "🤔" },
+        { text: "Borrow for luxury items", isCorrect: false, emoji: "🛍️" },
+        { text: "Ignore the interest rate", isCorrect: false, emoji: "💸" }
       ]
     },
     {
       id: 4,
-      question: "Choose the smart financial choice:",
-      correctAnswer: "Avoid Unnecessary Debt",
+      question: "What's a key strategy for managing existing debt?",
+      correctAnswer: "Create a realistic repayment plan",
       options: [
-        { text: "Avoid Unnecessary Debt", isCorrect: true, emoji: "🛡️" },
-        { text: "Borrow for wants", isCorrect: false, emoji: "🛍️" },
-        { text: "Create more debt", isCorrect: false, emoji: "📈" }
+        { text: "Ignore the debt", isCorrect: false, emoji: "🙈" },
+        { text: "Just make minimum payments", isCorrect: false, emoji: "📉" },
+        { text: "Take on more debt to cover it", isCorrect: false, emoji: "🔄" },
+        { text: "Create a realistic repayment plan", isCorrect: true, emoji: "📋" },
       ]
     },
     {
       id: 5,
-      question: "Choose the smart financial choice:",
-      correctAnswer: "Control Spending",
+      question: "What's the best way to avoid accumulating problematic debt?",
+      correctAnswer: "Live within your means",
       options: [
-        { text: "Spend without limit", isCorrect: false, emoji: "💳" },
-        { text: "Control Spending", isCorrect: true, emoji: "🎯" },
-        { text: "Ignore budget", isCorrect: false, emoji: "📊" }
+        { text: "Spend as you please", isCorrect: false, emoji: "💳" },
+        { text: "Live within your means", isCorrect: true, emoji: "🏠" },
+        { text: "Always use credit cards", isCorrect: false, emoji: "💳" },
+        { text: "Borrow for every purchase", isCorrect: false, emoji: "🛒" }
       ]
     }
   ];
 
+  // Update ref when currentRound changes
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  // Reset timer when round changes
   useEffect(() => {
     if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
       setTimeLeft(ROUND_TIME);
@@ -92,32 +99,61 @@ const ReflexDebtControl = () => {
     }
   }, [currentRound, gameState]);
 
+  // Handle time up - move to next question or show results
   const handleTimeUp = useCallback(() => {
-    if (currentRound < TOTAL_ROUNDS) {
-      setCurrentRound(prev => prev + 1);
-    } else {
-      setGameState("finished");
-    }
-  }, [currentRound]);
+    setAnswered(true);
+    resetFeedback();
 
-  // Timer effect
+    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
+
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 1000);
+  }, [resetFeedback]);
+
+  // Timer effect - countdown from 10 seconds for each question
   useEffect(() => {
-    if (gameState === "playing" && !answered && timeLeft > 0) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            handleTimeUp();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
+    if (gameState !== "playing") {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
+      return;
     }
+
+    // Check if game should be finished
+    if (currentRoundRef.current > TOTAL_ROUNDS) {
+      setGameState("finished");
+      return;
+    }
+
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // Start countdown timer
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          // Time's up for this round
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          handleTimeUp();
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
 
     return () => {
       if (timerRef.current) {
@@ -125,7 +161,7 @@ const ReflexDebtControl = () => {
         timerRef.current = null;
       }
     };
-  }, [gameState, answered, timeLeft, handleTimeUp]);
+  }, [gameState, handleTimeUp]);
 
   const startGame = () => {
     setGameState("playing");
@@ -136,75 +172,72 @@ const ReflexDebtControl = () => {
     resetFeedback();
   };
 
-  const handleAnswer = (isCorrect) => {
-    if (answered) return;
-    
-    setAnswered(true);
-    resetFeedback();
-    
-    if (isCorrect) {
-      setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
+
+    // Clear the timer immediately when user answers
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
 
+    setAnswered(true);
+    resetFeedback();
+
+    const isCorrect = option.isCorrect;
+    const isLastQuestion = currentRound === questions.length;
+
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    // Move to next round or show results after a short delay
     setTimeout(() => {
-      if (currentRound < TOTAL_ROUNDS) {
-        setCurrentRound(prev => prev + 1);
-      } else {
+      if (isLastQuestion) {
         setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+        setAnswered(false);
       }
     }, 500);
   };
 
-  const handleTryAgain = () => {
-    setGameState("ready");
-    setCurrentRound(0);
-    setScore(0);
-    setTimeLeft(ROUND_TIME);
-    setAnswered(false);
-    resetFeedback();
-  };
+  const finalScore = score;
 
   const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Debt Control"
-      subtitle={
-        gameState === "ready" 
-          ? "Test your debt control reflexes!" 
-          : gameState === "playing" 
-          ? `Round ${currentRound} of ${TOTAL_ROUNDS}` 
-          : "Game Complete!"
-      }
-      score={score}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your debt management reflexes!` : "Test your debt management reflexes!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
       showGameOver={gameState === "finished"}
-      maxScore={TOTAL_ROUNDS}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showConfetti={gameState === "finished" && score >= 3}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
       gameId={gameId}
       gameType="finance"
-    >
-      <div className="space-y-8">
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="text-center text-white space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-5xl mb-4">⚡</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Ready to Test Your Debt Control Reflexes?</h3>
+            <div className="text-5xl mb-6">💳</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Ready to Test Your Debt Management Skills?</h3>
             <p className="text-white/90 text-lg mb-6">
-              Choose the smart financial choice quickly!
-              You have {ROUND_TIME} seconds per question.
+              Answer questions about responsible debt management.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
             </p>
             <button
               onClick={startGame}
-              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all transform hover:scale-105"
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
             >
               Start Game
             </button>
@@ -212,49 +245,33 @@ const ReflexDebtControl = () => {
         )}
 
         {gameState === "playing" && currentQuestion && (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Round {currentRound}/{TOTAL_ROUNDS}</span>
-                <div className="flex items-center gap-4">
-                  <span className="text-yellow-400 font-bold">Score: {score}/{TOTAL_ROUNDS}</span>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-lg font-bold ${timeLeft <= 3 ? "text-red-400 animate-pulse" : "text-blue-400"}`}>
-                      ⏱️ {timeLeft}s
-                    </span>
-                  </div>
-                </div>
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
-              
-              <div className="w-full bg-white/20 rounded-full h-2 mb-6">
-                <div 
-                  className={`h-2 rounded-full transition-all ${timeLeft <= 3 ? "bg-red-500" : "bg-blue-500"}`}
-                  style={{ width: `${(timeLeft / ROUND_TIME) * 100}%` }}
-                />
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
               </div>
-              
-              <h3 className="text-xl font-bold text-white mb-6 text-center">
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
                 {currentQuestion.question}
               </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestion.options.map((option, idx) => (
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={idx}
-                    onClick={() => handleAnswer(option.isCorrect)}
+                    key={index}
+                    onClick={() => handleAnswer(option)}
                     disabled={answered}
-                    className={`p-6 rounded-2xl text-center transition-all transform ${
-                      answered
-                        ? option.isCorrect
-                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
-                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                    } ${answered ? "cursor-not-allowed" : ""}`}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <div className="flex flex-col items-center justify-center gap-3">
-                      <span className="text-4xl">{option.emoji}</span>
-                      <span className="text-white font-semibold text-lg">{option.text}</span>
-                    </div>
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
                 ))}
               </div>
@@ -264,40 +281,20 @@ const ReflexDebtControl = () => {
 
         {gameState === "finished" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {score >= 3 ? (
-              <div>
-                <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Debt Control Master!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You scored {score} out of {TOTAL_ROUNDS}!
-                  You have quick reflexes for controlling debt!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{score} Coins</span>
-                </div>
-                <p className="text-white/80">
-                  Lesson: Quick thinking helps you borrow wisely, plan before borrowing, repay on time, avoid unnecessary debt, and control spending!
-                </p>
-              </div>
-            ) : (
-              <div>
-                <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You scored {score} out of {TOTAL_ROUNDS}.
-                  Practice makes perfect with debt control!
-                </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
-                <p className="text-white/80 text-sm">
-                  Tip: Always borrow wisely, plan before borrowing, repay on time, avoid unnecessary debt, and control your spending!
-                </p>
-              </div>
-            )}
+            <div className="text-5xl mb-6">💳</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              You scored {finalScore} out of {TOTAL_ROUNDS}!
+            </p>
+            <p className="text-white/80 mb-6">
+              You're developing strong debt management skills!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+            >
+              Play Again
+            </button>
           </div>
         )}
       </div>

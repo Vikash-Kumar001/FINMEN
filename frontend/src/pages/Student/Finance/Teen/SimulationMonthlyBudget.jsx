@@ -25,69 +25,153 @@ const SimulationMonthlyBudget = () => {
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
-  const [allocations, setAllocations] = useState({
-    needs: 0,
-    wants: 0
-  });
 
   const scenarios = [
     {
       id: 1,
       title: "Monthly Budget Allocation",
-      description: "You have ₹2000 allowance. Allocate it between needs and wants. Remember: Pay needs first!",
-      total: 2000,
-      correctAllocation: { needs: 1200, wants: 800 }
+      description: "You have ₹2000 allowance. What's the best budgeting approach?",
+      amount: 2000,
+      options: [
+        
+        { 
+          id: "wants-first", 
+          text: "Spend on wants first", 
+          emoji: "🛍️", 
+          isCorrect: false
+        },
+        { 
+          id: "needs-first", 
+          text: "60% needs, 40% wants", 
+          emoji: "📊", 
+          isCorrect: true
+        },
+        { 
+          id: "save-all", 
+          text: "Save everything", 
+          emoji: "💰", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       title: "Part-time Job Income",
-      description: "You earn ₹2500 from a part-time job. Allocate it wisely:",
-      total: 2500,
-      correctAllocation: { needs: 1500, wants: 1000 }
+      description: "You earn ₹2500 from a part-time job. How should you allocate it?",
+      amount: 2500,
+      options: [
+        
+        { 
+          id: "spend-all", 
+          text: "Spend everything immediately", 
+          emoji: "💸", 
+          isCorrect: false
+        },
+        { 
+          id: "invest-all", 
+          text: "Invest all without needs", 
+          emoji: "📈", 
+          isCorrect: false
+        },
+        { 
+          id: "balanced", 
+          text: "Prioritize needs, then wants", 
+          emoji: "⚖️", 
+          isCorrect: true
+        },
+      ]
     },
     {
       id: 3,
       title: "Scholarship Money",
-      description: "You receive ₹1800 as scholarship. Plan your budget:",
-      total: 1800,
-      correctAllocation: { needs: 1100, wants: 700 }
+      description: "You receive ₹1800 as scholarship. What's the smartest plan?",
+      amount: 1800,
+      options: [
+        { 
+          id: "smart-plan", 
+          text: "Cover needs first, some wants", 
+          emoji: "🎓", 
+          isCorrect: true
+        },
+        { 
+          id: "luxury", 
+          text: "All luxury items", 
+          emoji: "💎", 
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore and forget", 
+          emoji: "😴", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
       title: "Birthday Gift Money",
-      description: "You get ₹3000 as birthday gift. Allocate it carefully:",
-      total: 3000,
-      correctAllocation: { needs: 1800, wants: 1200 }
+      description: "You get ₹3000 as birthday gift. What should you do?",
+      amount: 3000,
+      options: [
+        
+        { 
+          id: "instant-gratification", 
+          text: "Instant gratification", 
+          emoji: "🎁", 
+          isCorrect: false
+        },
+        { 
+          id: "plan-ahead", 
+          text: "Plan needs, wants, savings", 
+          emoji: "📝", 
+          isCorrect: true
+        },
+        { 
+          id: "hoard", 
+          text: "Hoarding without purpose", 
+          emoji: "📦", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       title: "Summer Job Earnings",
-      description: "You earn ₹2200 from summer job. Create a balanced budget:",
-      total: 2200,
-      correctAllocation: { needs: 1300, wants: 900 }
+      description: "You earn ₹2200 from summer job. What's the best strategy?",
+      amount: 2200,
+      options: [
+       
+        { 
+          id: "random", 
+          text: "Random spending", 
+          emoji: "🎲", 
+          isCorrect: false
+        },
+        { 
+          id: "debt", 
+          text: "Pay off debts", 
+          emoji: "💳", 
+          isCorrect: false
+        },
+         { 
+          id: "strategy", 
+          text: "Strategic allocation", 
+          emoji: "🎯", 
+          isCorrect: true
+        },
+      ]
     }
   ];
 
-  const handleAllocationChange = (category, value) => {
-    const numValue = parseInt(value) || 0;
-    setAllocations(prev => ({
-      ...prev,
-      [category]: numValue
-    }));
-  };
-
-  const handleSubmit = () => {
+  const handleAnswer = (optionId) => {
     if (answered) return;
     
     setAnswered(true);
     resetFeedback();
     
-    const current = scenarios[currentScenario];
-    const totalAllocated = allocations.needs + allocations.wants;
-    const isCorrect = 
-      totalAllocated === current.total &&
-      allocations.needs === current.correctAllocation.needs &&
-      allocations.wants === current.correctAllocation.wants;
+    const scenario = scenarios[currentScenario];
+    const selectedOption = scenario.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption?.isCorrect;
 
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -103,7 +187,6 @@ const SimulationMonthlyBudget = () => {
         setShowResult(true);
       } else {
         setCurrentScenario(prev => prev + 1);
-        setAllocations({ needs: 0, wants: 0 });
         setAnswered(false);
       }
     }, 500);
@@ -114,18 +197,15 @@ const SimulationMonthlyBudget = () => {
     setCurrentScenario(0);
     setScore(0);
     setAnswered(false);
-    setAllocations({ needs: 0, wants: 0 });
     resetFeedback();
   };
 
   const current = scenarios[currentScenario];
-  const totalAllocated = allocations.needs + allocations.wants;
-  const remaining = current.total - totalAllocated;
 
   return (
     <GameShell
       title="Simulation: Monthly Budget"
-      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}: Allocate ₹${current.total}` : "Simulation Complete!"}
+      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Simulation Complete!"}
       score={score}
       currentLevel={currentScenario + 1}
       totalLevels={scenarios.length}
@@ -154,75 +234,34 @@ const SimulationMonthlyBudget = () => {
                 {current.description}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-white/5 rounded-lg p-4 border border-green-500/30">
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-white font-semibold flex items-center gap-2">
-                      <span className="text-2xl">🏠</span> Needs (Essential)
-                    </label>
-                  </div>
-                  <input
-                    type="number"
-                    min="0"
-                    max={current.total}
-                    value={allocations.needs || ""}
-                    onChange={(e) => handleAllocationChange("needs", e.target.value)}
-                    disabled={answered}
-                    placeholder="0"
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
-                  />
-                  <p className="text-white/60 text-sm mt-2">Recommended: ₹{current.correctAllocation.needs}</p>
-                </div>
-                
-                <div className="bg-white/5 rounded-lg p-4 border border-blue-500/30">
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-white font-semibold flex items-center gap-2">
-                      <span className="text-2xl">🎉</span> Wants (Optional)
-                    </label>
-                  </div>
-                  <input
-                    type="number"
-                    min="0"
-                    max={current.total}
-                    value={allocations.wants || ""}
-                    onChange={(e) => handleAllocationChange("wants", e.target.value)}
-                    disabled={answered}
-                    placeholder="0"
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                  />
-                  <p className="text-white/60 text-sm mt-2">Recommended: ₹{current.correctAllocation.wants}</p>
+              <div className="bg-white/5 rounded-lg p-4 mb-6">
+                <div className="text-center">
+                  <span className="text-white font-semibold text-lg">Amount: </span>
+                  <span className="text-green-400 font-bold text-2xl">₹{current.amount}</span>
                 </div>
               </div>
               
-              <div className="bg-white/10 rounded-lg p-4 mb-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-white font-semibold">Total Allocated:</span>
-                  <span className={`text-lg font-bold ${remaining === 0 ? "text-green-400" : remaining > 0 ? "text-yellow-400" : "text-red-400"}`}>
-                    ₹{totalAllocated} / ₹{current.total}
-                  </span>
-                </div>
-                {remaining !== 0 && (
-                  <p className={`text-sm mt-2 ${remaining > 0 ? "text-yellow-400" : "text-red-400"}`}>
-                    {remaining > 0 ? `Remaining: ₹${remaining}` : `Over budget by: ₹${Math.abs(remaining)}`}
-                  </p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {current.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.id)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
-              
-              <button
-                onClick={handleSubmit}
-                disabled={answered || totalAllocated !== current.total}
-                className={`w-full px-6 py-3 rounded-full font-bold text-base transition-all ${
-                  answered || totalAllocated !== current.total
-                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
-                }`}
-              >
-                Submit Budget
-              </button>
-              
-              <p className="text-white/60 text-sm mt-4 text-center">
-                Hint: Always prioritize needs (essential expenses) before wants (optional expenses). The correct balance is 60% needs and 40% wants.
-              </p>
             </div>
           </div>
         ) : (

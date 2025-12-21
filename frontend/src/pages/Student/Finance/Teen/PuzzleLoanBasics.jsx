@@ -1,91 +1,81 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
-import GameShell from "../GameShell";
+import { useNavigate } from 'react-router-dom';
+import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleLoanBasics = () => {
-  const location = useLocation();
-  
-  // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("finance-teens-54");
-  const gameId = gameData?.id || "finance-teens-54";
-  
-  // Ensure gameId is always set correctly
-  if (!gameData || !gameData.id) {
-    console.warn("Game data not found for PuzzleLoanBasics, using fallback ID");
-  }
-  
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const navigate = useNavigate();
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [score, setScore] = useState(0);
   const [matches, setMatches] = useState([]);
-  const [selectedLeft, setSelectedLeft] = useState(null);
-  const [selectedRight, setSelectedRight] = useState(null);
-  const [showResult, setShowResult] = useState(false);
+  const [selectedTerm, setSelectedTerm] = useState(null);
+  const [selectedConcept, setSelectedConcept] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Loan terms and their meanings
-  const leftItems = [
-    { id: 1, name: "Principal", emoji: "💵", description: "Original amount borrowed" },
-    { id: 2, name: "Interest", emoji: "💰", description: "Extra cost of borrowing" },
-    { id: 3, name: "Loan Term", emoji: "📅", description: "Time to repay loan" },
-    { id: 4, name: "EMI", emoji: "📊", description: "Monthly payment amount" },
-    { id: 5, name: "Default", emoji: "⚠️", description: "Failure to repay" }
+  // Loan terms (left side) - 5 items
+  const terms = [
+    { id: 1, name: "Principal", emoji: "💵", hint: "Original borrowed amount" },
+    { id: 2, name: "Interest", emoji: "💰", hint: "Cost of borrowing" },
+    { id: 3, name: "Loan Term", emoji: "📅", hint: "Repayment duration" },
+    { id: 4, name: "EMI", emoji: "📊", hint: "Monthly payment" },
+    { id: 5, name: "Default", emoji: "⚠️", hint: "Failed repayment" }
   ];
 
-  // Right items shuffled to split matches across different positions
-  const rightItems = [
-    { id: 1, name: "Original", emoji: "📝", description: "The initial borrowed amount" },
-    { id: 2, name: "Extra", emoji: "➕", description: "Additional cost paid" },
-    { id: 3, name: "Duration", emoji: "⏱️", description: "Repayment period" },
-    { id: 4, name: "Monthly Installment", emoji: "💳", description: "Regular payment" },
-    { id: 5, name: "Non-Payment", emoji: "🚫", description: "Missing payments" }
+  // Loan concepts (right side) - 5 items
+  const concepts = [
+    { id: 6, name: "Original Amount", emoji: "📝", description: "Initial borrowed sum" },
+    { id: 7, name: "Extra Cost", emoji: "➕", description: "Borrowing charges" },
+    { id: 8, name: "Time Period", emoji: "⏱️", description: "Loan duration" },
+    { id: 9, name: "Regular Payment", emoji: "💳", description: "Scheduled installments" },
+    { id: 10, name: "Missed Payments", emoji: "🚫", description: "Repayment failure" }
   ];
 
-  // Correct matches (split across different positions)
-  // Principal (1) → Original (1), Interest (2) → Extra (2), Loan Term (3) → Duration (3), 
-  // EMI (4) → Monthly Installment (4), Default (5) → Non-Payment (5)
-  // But shuffled display order: Original(1), Duration(3), Non-Payment(5), Extra(2), Monthly Installment(4)
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedConcepts = [
+    concepts[2], // Time Period (id: 8)
+    concepts[4], // Missed Payments (id: 10)
+    concepts[1], // Extra Cost (id: 7)
+    concepts[0], // Original Amount (id: 6)
+    concepts[3]  // Regular Payment (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each term has a unique correct match for true one-to-one mapping
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Principal → Original (position 1)
-    { leftId: 2, rightId: 2 }, // Interest → Extra (position 2)
-    { leftId: 3, rightId: 3 }, // Loan Term → Duration (position 3)
-    { leftId: 4, rightId: 4 }, // EMI → Monthly Installment (position 4)
-    { leftId: 5, rightId: 5 }  // Default → Non-Payment (position 5)
+    { termId: 1, conceptId: 6 }, // Principal → Original Amount
+    { termId: 2, conceptId: 7 }, // Interest → Extra Cost
+    { termId: 3, conceptId: 8 }, // Loan Term → Time Period
+    { termId: 4, conceptId: 9 }, // EMI → Regular Payment
+    { termId: 5, conceptId: 10 } // Default → Missed Payments
   ];
 
-  // Shuffled right items for display (to split matches)
-  const shuffledRightItems = [
-    rightItems[0], // Original (id: 1) - position 1
-    rightItems[2], // Duration (id: 3) - position 2
-    rightItems[4], // Non-Payment (id: 5) - position 3
-    rightItems[1], // Extra (id: 2) - position 4
-    rightItems[3]  // Monthly Installment (id: 4) - position 5
-  ];
-
-  const handleLeftSelect = (item) => {
-    if (showResult) return;
-    setSelectedLeft(item);
+  const handleTermSelect = (term) => {
+    if (gameFinished) return;
+    setSelectedTerm(term);
   };
 
-  const handleRightSelect = (item) => {
-    if (showResult) return;
-    setSelectedRight(item);
+  const handleConceptSelect = (concept) => {
+    if (gameFinished) return;
+    setSelectedConcept(concept);
   };
 
   const handleMatch = () => {
-    if (!selectedLeft || !selectedRight || showResult) return;
+    if (!selectedTerm || !selectedConcept || gameFinished) return;
 
     resetFeedback();
 
     const newMatch = {
-      leftId: selectedLeft.id,
-      rightId: selectedRight.id,
+      termId: selectedTerm.id,
+      conceptId: selectedConcept.id,
       isCorrect: correctMatches.some(
-        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+        match => match.termId === selectedTerm.id && match.conceptId === selectedConcept.id
       )
     };
 
@@ -96,90 +86,90 @@ const PuzzleLoanBasics = () => {
     if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
     // Check if all items are matched
-    if (newMatches.length === leftItems.length) {
+    if (newMatches.length === terms.length) {
       setTimeout(() => {
-        setShowResult(true);
-      }, 800);
+        setGameFinished(true);
+      }, 1500);
     }
 
     // Reset selections
-    setSelectedLeft(null);
-    setSelectedRight(null);
+    setSelectedTerm(null);
+    setSelectedConcept(null);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setMatches([]);
-    setSelectedLeft(null);
-    setSelectedRight(null);
-    setScore(0);
-    resetFeedback();
+  // Check if a term is already matched
+  const isTermMatched = (termId) => {
+    return matches.some(match => match.termId === termId);
   };
 
-  // Check if a left item is already matched
-  const isLeftItemMatched = (itemId) => {
-    return matches.some(match => match.leftId === itemId);
+  // Check if a concept is already matched
+  const isConceptMatched = (conceptId) => {
+    return matches.some(match => match.conceptId === conceptId);
   };
 
-  // Check if a right item is already matched
-  const isRightItemMatched = (itemId) => {
-    return matches.some(match => match.rightId === itemId);
-  };
-
-  // Get match result for a left item
-  const getMatchResult = (itemId) => {
-    const match = matches.find(m => m.leftId === itemId);
+  // Get match result for a term
+  const getMatchResult = (termId) => {
+    const match = matches.find(m => m.termId === termId);
     return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/finance/teens");
   };
 
   return (
     <GameShell
       title="Puzzle: Loan Basics"
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Loan Terms with Concepts (${matches.length}/${terms.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={score}
-      subtitle={showResult ? "Game Complete!" : `Match loan terms to their meanings (${matches.length}/${leftItems.length} matched)`}
+      gameId="finance-teens-54"
+      gameType="finance"
+      totalLevels={terms.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === terms.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/finance/teens"
+      maxScore={terms.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      gameId={gameId}
-      gameType="finance"
-      totalLevels={leftItems.length}
-      currentLevel={matches.length + 1}
-      maxScore={leftItems.length}
-      showConfetti={showResult && score >= 3}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8 max-w-4xl mx-auto">
-        {!showResult ? (
+        {!gameFinished ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Left column - Loan Terms */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <h3 className="text-xl font-bold text-white mb-4 text-center">Loan Terms</h3>
               <div className="space-y-4">
-                {leftItems.map(item => (
+                {terms.map(term => (
                   <button
-                    key={item.id}
-                    onClick={() => handleLeftSelect(item)}
-                    disabled={isLeftItemMatched(item.id)}
+                    key={term.id}
+                    onClick={() => handleTermSelect(term)}
+                    disabled={isTermMatched(term.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      isLeftItemMatched(item.id)
-                        ? getMatchResult(item.id)
+                      isTermMatched(term.id)
+                        ? getMatchResult(term.id)
                           ? "bg-green-500/30 border-2 border-green-500"
                           : "bg-red-500/30 border-2 border-red-500"
-                        : selectedLeft?.id === item.id
+                        : selectedTerm?.id === term.id
                         ? "bg-blue-500/50 border-2 border-blue-400"
                         : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div className="text-2xl mr-3">{term.emoji}</div>
                       <div>
-                        <h4 className="font-bold text-white">{item.name}</h4>
-                        <p className="text-white/80 text-sm">{item.description}</p>
+                        <h4 className="font-bold text-white">{term.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {term.hint}</p>
                       </div>
                     </div>
                   </button>
@@ -191,15 +181,15 @@ const PuzzleLoanBasics = () => {
             <div className="flex flex-col items-center justify-center">
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
                 <p className="text-white/80 mb-4">
-                  {selectedLeft 
-                    ? `Selected: ${selectedLeft.name}` 
-                    : "Select a term"}
+                  {selectedTerm 
+                    ? `Selected: ${selectedTerm.name}` 
+                    : "Select a Loan Term"}
                 </p>
                 <button
                   onClick={handleMatch}
-                  disabled={!selectedLeft || !selectedRight}
+                  disabled={!selectedTerm || !selectedConcept}
                   className={`py-3 px-6 rounded-full font-bold transition-all ${
-                    selectedLeft && selectedRight
+                    selectedTerm && selectedConcept
                       ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
                       : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
@@ -207,34 +197,34 @@ const PuzzleLoanBasics = () => {
                   Match
                 </button>
                 <div className="mt-4 text-white/80">
-                  <p>Score: {score}/{leftItems.length}</p>
-                  <p>Matched: {matches.length}/{leftItems.length}</p>
+                  <p>Score: {score}/{terms.length}</p>
+                  <p>Matched: {matches.length}/{terms.length}</p>
                 </div>
               </div>
             </div>
 
-            {/* Right column - Meanings */}
+            {/* Right column - Loan Concepts */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Meanings</h3>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Loan Concepts</h3>
               <div className="space-y-4">
-                {shuffledRightItems.map(item => (
+                {rearrangedConcepts.map(concept => (
                   <button
-                    key={item.id}
-                    onClick={() => handleRightSelect(item)}
-                    disabled={isRightItemMatched(item.id)}
+                    key={concept.id}
+                    onClick={() => handleConceptSelect(concept)}
+                    disabled={isConceptMatched(concept.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      isRightItemMatched(item.id)
+                      isConceptMatched(concept.id)
                         ? "bg-green-500/30 border-2 border-green-500 opacity-50"
-                        : selectedRight?.id === item.id
+                        : selectedConcept?.id === concept.id
                         ? "bg-purple-500/50 border-2 border-purple-400"
                         : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div className="text-2xl mr-3">{concept.emoji}</div>
                       <div>
-                        <h4 className="font-bold text-white">{item.name}</h4>
-                        <p className="text-white/80 text-sm">{item.description}</p>
+                        <h4 className="font-bold text-white">{concept.name}</h4>
+                        <p className="text-white/80 text-sm">{concept.description}</p>
                       </div>
                     </div>
                   </button>
@@ -247,34 +237,26 @@ const PuzzleLoanBasics = () => {
             {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You correctly matched {score} out of {leftItems.length} loan terms!
-                  You understand loan basics!
+                  You correctly matched {score} out of {terms.length} loan terms with their concepts!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  You know that Principal is the original amount, Interest is the extra cost, and EMI is the monthly installment!
+                  Lesson: Understanding loan basics helps make informed borrowing decisions!
                 </p>
               </div>
             ) : (
               <div>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You matched {score} out of {leftItems.length} loan terms correctly.
-                  Remember, understanding loan terms helps you make better borrowing decisions!
+                  You matched {score} out of {terms.length} loan terms correctly.
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
                 <p className="text-white/80 text-sm">
-                  Try to match each loan term with its appropriate meaning. Principal → Original, Interest → Extra!
+                  Tip: Think about what each loan term actually represents!
                 </p>
               </div>
             )}

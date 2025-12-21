@@ -1,87 +1,81 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
-import GameShell from "../GameShell";
+import { useNavigate } from 'react-router-dom';
+import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleOfEntrepreneurs = () => {
-  const location = useLocation();
-  
-  // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("finance-teens-74");
-  const gameId = gameData?.id || "finance-teens-74";
-  
-  // Ensure gameId is always set correctly
-  if (!gameData || !gameData.id) {
-    console.warn("Game data not found for PuzzleOfEntrepreneurs, using fallback ID");
-  }
-  
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const navigate = useNavigate();
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [score, setScore] = useState(0);
   const [matches, setMatches] = useState([]);
-  const [selectedLeft, setSelectedLeft] = useState(null);
-  const [selectedRight, setSelectedRight] = useState(null);
-  const [showResult, setShowResult] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedField, setSelectedField] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Entrepreneurs and their specialties
-  const leftItems = [
-    { id: 1, name: "Ratan Tata", emoji: "👔", description: "Indian Business Leader" },
-    { id: 2, name: "Elon Musk", emoji: "🚀", description: "Tech Innovator" },
-    { id: 3, name: "Narayana Murthy", emoji: "💻", description: "IT Pioneer" },
-    { id: 4, name: "Kiran Mazumdar", emoji: "🔬", description: "Biotech Leader" },
-    { id: 5, name: "Falguni Nayar", emoji: "💄", description: "Beauty Entrepreneur" }
+  // Entrepreneurs (left side) - 5 items
+  const items = [
+    { id: 1, name: "Ratan Tata", emoji: "👔", hint: "Business leader" },
+    { id: 2, name: "Elon Musk", emoji: "🚀", hint: "Tech innovator" },
+    { id: 3, name: "Narayana Murthy", emoji: "💻", hint: "IT pioneer" },
+    { id: 4, name: "Kiran Mazumdar", emoji: "🔬", hint: "Biotech leader" },
+    { id: 5, name: "Falguni Nayar", emoji: "💄", hint: "Beauty entrepreneur" }
   ];
 
-  const rightItems = [
-    { id: 1, name: "Industry", emoji: "🏭", description: "Diversified business empire" },
-    { id: 2, name: "Innovation", emoji: "💡", description: "Revolutionary technology" },
-    { id: 3, name: "IT", emoji: "💻", description: "Information technology services" },
-    { id: 4, name: "Biotech", emoji: "🧬", description: "Biotechnology research" },
-    { id: 5, name: "E-commerce", emoji: "🛒", description: "Online retail platform" }
+  // Fields (right side) - 5 items
+  const fields = [
+    { id: 6, name: "Industry", emoji: "🏭", description: "Diversified business" },
+    { id: 7, name: "Innovation", emoji: "💡", description: "Revolutionary tech" },
+    { id: 8, name: "IT", emoji: "💻", description: "Technology services" },
+    { id: 9, name: "Biotech", emoji: "🧬", description: "Biology research" },
+    { id: 10, name: "E-commerce", emoji: "🛒", description: "Online retail" }
   ];
 
-  // Correct matches (split across different positions)
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedFields = [
+    fields[2], // IT (id: 8)
+    fields[4], // E-commerce (id: 10)
+    fields[1], // Innovation (id: 7)
+    fields[0], // Industry (id: 6)
+    fields[3]  // Biotech (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each item has a unique correct match for true one-to-one mapping
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Ratan Tata → Industry (position 1)
-    { leftId: 2, rightId: 2 }, // Elon Musk → Innovation (position 2)
-    { leftId: 3, rightId: 3 }, // Narayana Murthy → IT (position 3)
-    { leftId: 4, rightId: 4 }, // Kiran Mazumdar → Biotech (position 4)
-    { leftId: 5, rightId: 5 }  // Falguni Nayar → E-commerce (position 5)
+    { itemId: 1, fieldId: 6 }, // Ratan Tata → Industry
+    { itemId: 2, fieldId: 7 }, // Elon Musk → Innovation
+    { itemId: 3, fieldId: 8 }, // Narayana Murthy → IT
+    { itemId: 4, fieldId: 9 }, // Kiran Mazumdar → Biotech
+    { itemId: 5, fieldId: 10 }  // Falguni Nayar → E-commerce
   ];
 
-  // Shuffled right items for display (to split matches)
-  const shuffledRightItems = [
-    rightItems[0], // Industry (id: 1) - position 1
-    rightItems[2], // IT (id: 3) - position 2
-    rightItems[4], // E-commerce (id: 5) - position 3
-    rightItems[1], // Innovation (id: 2) - position 4
-    rightItems[3]  // Biotech (id: 4) - position 5
-  ];
-
-  const handleLeftSelect = (item) => {
-    if (showResult) return;
-    setSelectedLeft(item);
+  const handleItemSelect = (item) => {
+    if (gameFinished) return;
+    setSelectedItem(item);
   };
 
-  const handleRightSelect = (item) => {
-    if (showResult) return;
-    setSelectedRight(item);
+  const handleFieldSelect = (field) => {
+    if (gameFinished) return;
+    setSelectedField(field);
   };
 
   const handleMatch = () => {
-    if (!selectedLeft || !selectedRight || showResult) return;
+    if (!selectedItem || !selectedField || gameFinished) return;
 
     resetFeedback();
 
     const newMatch = {
-      leftId: selectedLeft.id,
-      rightId: selectedRight.id,
+      itemId: selectedItem.id,
+      fieldId: selectedField.id,
       isCorrect: correctMatches.some(
-        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+        match => match.itemId === selectedItem.id && match.fieldId === selectedField.id
       )
     };
 
@@ -92,81 +86,81 @@ const PuzzleOfEntrepreneurs = () => {
     if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
     // Check if all items are matched
-    if (newMatches.length === leftItems.length) {
+    if (newMatches.length === items.length) {
       setTimeout(() => {
-        setShowResult(true);
-      }, 800);
+        setGameFinished(true);
+      }, 1500);
     }
 
     // Reset selections
-    setSelectedLeft(null);
-    setSelectedRight(null);
+    setSelectedItem(null);
+    setSelectedField(null);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setMatches([]);
-    setSelectedLeft(null);
-    setSelectedRight(null);
-    setScore(0);
-    resetFeedback();
+  // Check if an item is already matched
+  const isItemMatched = (itemId) => {
+    return matches.some(match => match.itemId === itemId);
   };
 
-  // Check if a left item is already matched
-  const isLeftItemMatched = (itemId) => {
-    return matches.some(match => match.leftId === itemId);
+  // Check if a field is already matched
+  const isFieldMatched = (fieldId) => {
+    return matches.some(match => match.fieldId === fieldId);
   };
 
-  // Check if a right item is already matched
-  const isRightItemMatched = (itemId) => {
-    return matches.some(match => match.rightId === itemId);
-  };
-
-  // Get match result for a left item
+  // Get match result for an item
   const getMatchResult = (itemId) => {
-    const match = matches.find(m => m.leftId === itemId);
+    const match = matches.find(m => m.itemId === itemId);
     return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/finance/teens");
   };
 
   return (
     <GameShell
       title="Puzzle of Entrepreneurs"
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Entrepreneurs with Fields (${matches.length}/${items.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={score}
-      subtitle={showResult ? "Game Complete!" : `Match entrepreneurs to their specialties (${matches.length}/${leftItems.length} matched)`}
+      gameId="finance-teens-74"
+      gameType="finance"
+      totalLevels={items.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === items.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/finance/teens"
+      maxScore={items.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      gameId={gameId}
-      gameType="finance"
-      totalLevels={leftItems.length}
-      currentLevel={matches.length + 1}
-      maxScore={leftItems.length}
-      showConfetti={showResult && score >= 3}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8 max-w-4xl mx-auto">
-        {!showResult ? (
+        {!gameFinished ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Left column - Entrepreneurs */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <h3 className="text-xl font-bold text-white mb-4 text-center">Entrepreneurs</h3>
               <div className="space-y-4">
-                {leftItems.map(item => (
+                {items.map(item => (
                   <button
                     key={item.id}
-                    onClick={() => handleLeftSelect(item)}
-                    disabled={isLeftItemMatched(item.id)}
+                    onClick={() => handleItemSelect(item)}
+                    disabled={isItemMatched(item.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      isLeftItemMatched(item.id)
+                      isItemMatched(item.id)
                         ? getMatchResult(item.id)
                           ? "bg-green-500/30 border-2 border-green-500"
                           : "bg-red-500/30 border-2 border-red-500"
-                        : selectedLeft?.id === item.id
+                        : selectedItem?.id === item.id
                         ? "bg-blue-500/50 border-2 border-blue-400"
                         : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
@@ -175,7 +169,7 @@ const PuzzleOfEntrepreneurs = () => {
                       <div className="text-2xl mr-3">{item.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{item.name}</h4>
-                        <p className="text-white/80 text-sm">{item.description}</p>
+                        <p className="text-white/80 text-sm">Hint: {item.hint}</p>
                       </div>
                     </div>
                   </button>
@@ -187,15 +181,15 @@ const PuzzleOfEntrepreneurs = () => {
             <div className="flex flex-col items-center justify-center">
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
                 <p className="text-white/80 mb-4">
-                  {selectedLeft 
-                    ? `Selected: ${selectedLeft.name}` 
-                    : "Select an entrepreneur"}
+                  {selectedItem 
+                    ? `Selected: ${selectedItem.name}` 
+                    : "Select an Entrepreneur"}
                 </p>
                 <button
                   onClick={handleMatch}
-                  disabled={!selectedLeft || !selectedRight}
+                  disabled={!selectedItem || !selectedField}
                   className={`py-3 px-6 rounded-full font-bold transition-all ${
-                    selectedLeft && selectedRight
+                    selectedItem && selectedField
                       ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
                       : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
@@ -203,34 +197,34 @@ const PuzzleOfEntrepreneurs = () => {
                   Match
                 </button>
                 <div className="mt-4 text-white/80">
-                  <p>Score: {score}/{leftItems.length}</p>
-                  <p>Matched: {matches.length}/{leftItems.length}</p>
+                  <p>Score: {score}/{items.length}</p>
+                  <p>Matched: {matches.length}/{items.length}</p>
                 </div>
               </div>
             </div>
 
-            {/* Right column - Specialties */}
+            {/* Right column - Fields */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Specialties</h3>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Fields</h3>
               <div className="space-y-4">
-                {shuffledRightItems.map(item => (
+                {rearrangedFields.map(field => (
                   <button
-                    key={item.id}
-                    onClick={() => handleRightSelect(item)}
-                    disabled={isRightItemMatched(item.id)}
+                    key={field.id}
+                    onClick={() => handleFieldSelect(field)}
+                    disabled={isFieldMatched(field.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      isRightItemMatched(item.id)
+                      isFieldMatched(field.id)
                         ? "bg-green-500/30 border-2 border-green-500 opacity-50"
-                        : selectedRight?.id === item.id
+                        : selectedField?.id === field.id
                         ? "bg-purple-500/50 border-2 border-purple-400"
                         : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div className="text-2xl mr-3">{field.emoji}</div>
                       <div>
-                        <h4 className="font-bold text-white">{item.name}</h4>
-                        <p className="text-white/80 text-sm">{item.description}</p>
+                        <h4 className="font-bold text-white">{field.name}</h4>
+                        <p className="text-white/80 text-sm">{field.description}</p>
                       </div>
                     </div>
                   </button>
@@ -243,34 +237,26 @@ const PuzzleOfEntrepreneurs = () => {
             {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You correctly matched {score} out of {leftItems.length} entrepreneurs!
-                  You know famous entrepreneurs!
+                  You correctly matched {score} out of {items.length} entrepreneurs with their fields!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  You know that Ratan Tata → Industry, Elon Musk → Innovation, and Narayana Murthy → IT!
+                  Lesson: Understanding entrepreneurial fields helps inspire innovation!
                 </p>
               </div>
             ) : (
               <div>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You matched {score} out of {leftItems.length} entrepreneurs correctly.
-                  Remember, Ratan Tata → Industry, Elon Musk → Innovation, Narayana Murthy → IT!
+                  You matched {score} out of {items.length} entrepreneurs correctly.
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
                 <p className="text-white/80 text-sm">
-                  Try to match each entrepreneur with their specialty. Ratan Tata → Industry, Elon Musk → Innovation, Narayana Murthy → IT!
+                  Tip: Think about which field each entrepreneur is most known for!
                 </p>
               </div>
             )}
@@ -282,4 +268,3 @@ const PuzzleOfEntrepreneurs = () => {
 };
 
 export default PuzzleOfEntrepreneurs;
-

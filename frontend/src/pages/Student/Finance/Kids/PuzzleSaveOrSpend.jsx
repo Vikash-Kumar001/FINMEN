@@ -1,244 +1,264 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleSaveOrSpend = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Get game data from game category folder (source of truth)
-  const gameId = "finance-kids-4";
-  const gameData = getGameDataById(gameId);
-  
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [coins, setCoins] = useState(0);
-  const [draggedItem, setDraggedItem] = useState(null);
-  const [droppedItems, setDroppedItems] = useState([]);
-  const [showResult, setShowResult] = useState(false);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
+  // Items (left side) - 5 items
   const items = [
-    { id: 1, name: "Money Bank", type: "save", emoji: "💰" },
-    { id: 2, name: "Ice Cream", type: "spend", emoji: "🍦" },
-    { id: 3, name: "New Bicycle", type: "save", emoji: "🚲" },
-    { id: 4, name: "Candy", type: "spend", emoji: "🍬" },
-    { id: 5, name: "School Books", type: "save", emoji: "📚" },
-    { id: 6, name: "Study Desk", type: "save", emoji: "🪑" }
+    { id: 1, name: "Money Bank", emoji: "💰", hint: "Future security" },
+    { id: 2, name: "Ice Cream", emoji: "🍦", hint: "Sweet treat" },
+    { id: 3, name: "New Bicycle", emoji: "🚲", hint: "Transportation" },
+    { id: 4, name: "Candy", emoji: "🍬", hint: "Quick snack" },
+    { id: 5, name: "School Books", emoji: "📚", hint: "Learning tools" }
   ];
 
-  const categories = [
-    { id: "save", name: "Save", emoji: "📥", color: "from-green-500 to-emerald-600" },
-    { id: "spend", name: "Spend", emoji: "📤", color: "from-red-500 to-orange-600" }
+  // Actions (right side) - 5 items
+  const actions = [
+    { id: 6, name: "Save", emoji: "📥", description: "Keep for later" },
+    { id: 7, name: "Spend", emoji: "📤", description: "Use now" },
+    { id: 8, name: "Invest", emoji: "📈", description: "Grow money" },
+    { id: 9, name: "Donate", emoji: "❤️", description: "Help others" },
+    { id: 10, name: "Budget", emoji: "📋", description: "Plan usage" }
   ];
 
-  const handleDragStart = (e, item) => {
-    setDraggedItem(item);
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedActions = [
+    actions[2], // Invest (id: 8)
+    actions[4], // Budget (id: 10)
+    actions[1], // Spend (id: 7)
+    actions[0], // Save (id: 6)
+    actions[3]  // Donate (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each item has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { itemId: 1, actionId: 6 }, // Money Bank → Save
+    { itemId: 2, actionId: 7 }, // Ice Cream → Spend
+    { itemId: 3, actionId: 8 }, // New Bicycle → Invest
+    { itemId: 4, actionId: 9 }, // Candy → Donate
+    { itemId: 5, actionId: 10 } // School Books → Budget
+  ];
+  const handleItemSelect = (item) => {
+    if (gameFinished) return;
+    setSelectedItem(item);
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
+  const handleActionSelect = (action) => {
+    if (gameFinished) return;
+    setSelectedAction(action);
   };
 
-  const handleDrop = (e, category) => {
-    e.preventDefault();
-    if (draggedItem) {
-      const newItem = { ...draggedItem, category: category.id };
-      setDroppedItems(prev => {
-        // Remove if already exists
-        const filtered = prev.filter(item => item.id !== draggedItem.id);
-        return [...filtered, newItem];
-      });
-      setDraggedItem(null);
+  const handleMatch = () => {
+    if (!selectedItem || !selectedAction || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      itemId: selectedItem.id,
+      actionId: selectedAction.id,
+      isCorrect: correctMatches.some(
+        match => match.itemId === selectedItem.id && match.actionId === selectedAction.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === items.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedItem(null);
+    setSelectedAction(null);
   };
 
-  const checkAnswers = () => {
-    const correctAnswers = droppedItems.filter(item => 
-      item.type === item.category
-    ).length;
-    
-    setCoins(correctAnswers);
-    
-    if (correctAnswers > 0) {
-      showCorrectAnswerFeedback(correctAnswers, true);
-    }
-    
-    setTimeout(() => {
-      setShowResult(true);
-    }, correctAnswers > 0 ? 1000 : 0);
+  // Check if an item is already matched
+  const isItemMatched = (itemId) => {
+    return matches.some(match => match.itemId === itemId);
+  };
+
+  // Check if an action is already matched
+  const isActionMatched = (actionId) => {
+    return matches.some(match => match.actionId === actionId);
+  };
+
+  // Get match result for an item
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.itemId === itemId);
+    return match ? match.isCorrect : null;
   };
 
   const handleNext = () => {
-    navigate("/student/finance/kids/birthday-money-story");
-  };
-
-  const resetGame = () => {
-    setDroppedItems([]);
-    setShowResult(false);
-    setCoins(0);
-    resetFeedback();
-  };
-
-  const getItemsForCategory = (categoryId) => {
-    return droppedItems.filter(item => item.category === categoryId);
-  };
-
-  const isItemDropped = (itemId) => {
-    return droppedItems.some(item => item.id === itemId);
+    navigate("/games/finance/kids");
   };
 
   return (
     <GameShell
       title="Puzzle: Save or Spend"
-      subtitle="Drag items to the correct category!"
-      currentLevel={4}
-      totalLevels={10}
-      coinsPerLevel={coinsPerLevel}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Items with Actions (${matches.length}/${items.length} matched)`}
       onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={coins}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
       gameId="finance-kids-4"
       gameType="finance"
+      totalLevels={items.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === items.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/finance/kids"
       maxScore={items.length}
+      coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-8">
+      totalXp={totalXp}
+    >
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Items */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-6 text-center">
-                Drag each item to the correct category: Save or Spend
-              </p>
-              
-              {/* Single row layout: Save | Items | Spend */}
-              <div className="flex flex-wrap items-start justify-center gap-4 mb-8">
-                {/* Save Category - Left */}
-                <div
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, categories[0])}
-                  className={`bg-gradient-to-r ${categories[0].color} p-6 rounded-2xl border-2 border-dashed border-white/30 min-h-[200px] min-w-[150px] flex-shrink-0`}
-                >
-                  <div className="flex items-center justify-center mb-4">
-                    <div className="text-3xl mr-3">{categories[0].emoji}</div>
-                    <h3 className="text-2xl font-bold text-white">{categories[0].name}</h3>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    {getItemsForCategory(categories[0].id).map(item => (
-                      <div
-                        key={item.id}
-                        className="bg-white/20 backdrop-blur-sm p-3 rounded-lg flex items-center"
-                      >
-                        <div className="text-xl mr-2">{item.emoji}</div>
-                        <span className="text-white font-medium text-sm">{item.name}</span>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Items</h3>
+              <div className="space-y-4">
+                {items.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleItemSelect(item)}
+                    disabled={isItemMatched(item.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isItemMatched(item.id)
+                        ? getMatchResult(item.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedItem?.id === item.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{item.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {item.hint}</p>
                       </div>
-                    ))}
-                    
-                    {getItemsForCategory(categories[0].id).length === 0 && (
-                      <div className="text-white/70 text-center py-8 text-sm">
-                        Drop items here
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Items to drag - Middle */}
-                <div className="flex flex-wrap gap-4 justify-center items-start">
-                  {items.map(item => (
-                    !isItemDropped(item.id) && (
-                      <div
-                        key={item.id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, item)}
-                        className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-xl shadow-lg cursor-move transition-all hover:scale-105 min-w-[120px]"
-                      >
-                        <div className="text-2xl mb-2 text-center">{item.emoji}</div>
-                        <h3 className="font-bold text-center text-sm">{item.name}</h3>
-                      </div>
-                    )
-                  ))}
-                </div>
-                
-                {/* Spend Category - Right */}
-                <div
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, categories[1])}
-                  className={`bg-gradient-to-r ${categories[1].color} p-6 rounded-2xl border-2 border-dashed border-white/30 min-h-[200px] min-w-[150px] flex-shrink-0`}
-                >
-                  <div className="flex items-center justify-center mb-4">
-                    <div className="text-3xl mr-3">{categories[1].emoji}</div>
-                    <h3 className="text-2xl font-bold text-white">{categories[1].name}</h3>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    {getItemsForCategory(categories[1].id).map(item => (
-                      <div
-                        key={item.id}
-                        className="bg-white/20 backdrop-blur-sm p-3 rounded-lg flex items-center"
-                      >
-                        <div className="text-xl mr-2">{item.emoji}</div>
-                        <span className="text-white font-medium text-sm">{item.name}</span>
-                      </div>
-                    ))}
-                    
-                    {getItemsForCategory(categories[1].id).length === 0 && (
-                      <div className="text-white/70 text-center py-8 text-sm">
-                        Drop items here
-                      </div>
-                    )}
-                  </div>
-                </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-              
-              <div className="flex justify-center mt-6 space-x-4">
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedItem 
+                    ? `Selected: ${selectedItem.name}` 
+                    : "Select an Item"}
+                </p>
                 <button
-                  onClick={checkAnswers}
-                  disabled={droppedItems.length === 0}
+                  onClick={handleMatch}
+                  disabled={!selectedItem || !selectedAction}
                   className={`py-3 px-6 rounded-full font-bold transition-all ${
-                    droppedItems.length === 0
-                      ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white'
+                    selectedItem && selectedAction
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  Check My Answers
+                  Match
                 </button>
-                
-                <button
-                  onClick={resetGame}
-                  className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white py-3 px-6 rounded-full font-bold transition-all"
-                >
-                  Reset
-                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{items.length}</p>
+                  <p>Matched: {matches.length}/{items.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Actions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Actions</h3>
+              <div className="space-y-4">
+                {rearrangedActions.map(action => (
+                  <button
+                    key={action.id}
+                    onClick={() => handleActionSelect(action)}
+                    disabled={isActionMatched(action.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isActionMatched(action.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedAction?.id === action.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{action.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{action.name}</h4>
+                        <p className="text-white/80 text-sm">{action.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
-            <div className="text-5xl mb-4">🎉</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
-            <p className="text-white/90 text-lg mb-4">
-              You correctly categorized {coins} items!
-            </p>
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              <span>+{coins} Coins</span>
-            </div>
-            <p className="text-white/80 mb-6">
-              Remember: Save for important things and spend on wants!
-            </p>
-            <button
-              onClick={resetGame}
-              className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mr-4"
-            >
-              Try Again
-            </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {items.length} items with actions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Saving for important things helps build a secure future!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {items.length} items correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about whether each item is essential or discretionary!
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

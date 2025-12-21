@@ -33,45 +33,45 @@ const DebateSaveVsInvest = () => {
       id: 1,
       scenario: "Is saving enough or should we invest too?",
       positions: [
-        { id: "invest", text: "FOR: Invest wisely", emoji: "✅", points: ["Beat inflation", "Higher returns", "Grow wealth"], isCorrect: true },
-        { id: "balanced", text: "BALANCED: Save and invest", emoji: "⚖️", points: ["Save for safety", "Invest for growth", "Mix both"], isCorrect: false },
-        { id: "save", text: "AGAINST: Only save", emoji: "💰", points: ["Saving is enough", "No risk", "Keep it simple"], isCorrect: false }
+        { id: "invest", text: "Invest wisely", emoji: "💡", points: ["Beat inflation", "Higher returns", "Grow wealth"], isCorrect: true },
+        { id: "balanced", text: "Save and invest mix", emoji: "⚠️", points: ["Save for safety", "Invest for growth", "Mix both"], isCorrect: false },
+        { id: "save", text: "Only save", emoji: "🚫", points: ["Saving is enough", "No risk", "Keep it simple"], isCorrect: false }
       ]
     },
     {
       id: 2,
       scenario: "Should you invest all your savings?",
       positions: [
-        { id: "balanced2", text: "BALANCED: Keep emergency fund", emoji: "⚖️", points: ["Save for emergencies", "Invest the rest", "Balance both"], isCorrect: false },
-        { id: "invest2", text: "FOR: Invest after emergency fund", emoji: "✅", points: ["Save 3-6 months expenses", "Then invest", "Smart strategy"], isCorrect: true },
-        { id: "all", text: "AGAINST: Invest everything", emoji: "🎯", points: ["Put all in investments", "No savings", "Maximum growth"], isCorrect: false }
+        { id: "balanced2", text: "Keep emergency fund", emoji: "📋", points: ["Save for emergencies", "Invest the rest", "Balance both"], isCorrect: false },
+        { id: "invest2", text: "Invest after emergency fund", emoji: "🎓", points: ["Save 3-6 months expenses", "Then invest", "Smart strategy"], isCorrect: true },
+        { id: "all", text: "Invest everything", emoji: "🚀", points: ["Put all in investments", "No savings", "Maximum growth"], isCorrect: false }
       ]
     },
     {
       id: 3,
       scenario: "Which grows money faster?",
       positions: [
-        { id: "invest3", text: "FOR: Investing", emoji: "✅", points: ["Higher returns", "Beat inflation", "Compound growth"], isCorrect: true },
-        { id: "same", text: "BALANCED: Both same", emoji: "➡️", points: ["Equal growth", "No difference", "Same result"], isCorrect: false },
-        { id: "save2", text: "AGAINST: Saving", emoji: "💰", points: ["Saving is faster", "No risk", "Guaranteed"], isCorrect: false }
+        { id: "invest3", text: "Investing wins", emoji: "📈", points: ["Higher returns", "Beat inflation", "Compound growth"], isCorrect: true },
+        { id: "same", text: "Both equal", emoji: "📊", points: ["Equal growth", "No difference", "Same result"], isCorrect: false },
+        { id: "save2", text: "Saving wins", emoji: "🏦", points: ["Saving is faster", "No risk", "Guaranteed"], isCorrect: false }
       ]
     },
     {
       id: 4,
       scenario: "What's the best strategy for long-term wealth?",
       positions: [
-        { id: "mix", text: "FOR: Mix save and invest", emoji: "✅", points: ["Save for security", "Invest for growth", "Best of both"], isCorrect: true },
-        { id: "only-save", text: "BALANCED: Only save", emoji: "💰", points: ["Saving is enough", "Low risk", "Simple approach"], isCorrect: false },
-        { id: "only-invest", text: "AGAINST: Only invest", emoji: "📈", points: ["Invest everything", "No savings", "Maximum risk"], isCorrect: false }
+        { id: "mix", text: "Mix save and invest", emoji: "💼", points: ["Save for security", "Invest for growth", "Best of both"], isCorrect: true },
+        { id: "only-save", text: "Only save", emoji: "🔐", points: ["Saving is enough", "Low risk", "Simple approach"], isCorrect: false },
+        { id: "only-invest", text: "Only invest", emoji: "🎲", points: ["Invest everything", "No savings", "Maximum risk"], isCorrect: false }
       ]
     },
     {
       id: 5,
       scenario: "When should you start investing?",
       positions: [
-        { id: "early", text: "FOR: Start early", emoji: "✅", points: ["Time is your friend", "Compound interest", "Long-term growth"], isCorrect: true },
-        { id: "later", text: "BALANCED: Wait until older", emoji: "⏳", points: ["Wait for more money", "Start later", "No rush"], isCorrect: false },
-        { id: "never", text: "AGAINST: Never invest", emoji: "❌", points: ["Too risky", "Just save", "Avoid investing"], isCorrect: false }
+        { id: "early", text: "Start early", emoji: "⏱️", points: ["Time is your friend", "Compound interest", "Long-term growth"], isCorrect: true },
+        { id: "later", text: "Wait until older", emoji: "⏰", points: ["Wait for more money", "Start later", "No rush"], isCorrect: false },
+        { id: "never", text: "Never invest", emoji: "💸", points: ["Too risky", "Just save", "Avoid investing"], isCorrect: false }
       ]
     }
   ];

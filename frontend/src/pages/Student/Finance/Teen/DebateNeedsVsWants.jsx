@@ -28,21 +28,21 @@ const DebateNeedsVsWants = () => {
       id: 1,
       scenario: "Should a teenager buy the latest smartphone or use their current phone that works fine?",
       positions: [
-        { id: 'for', text: "FOR: Buy the latest smartphone", points: [
+        { id: 'latest', text: "Buy the latest smartphone", points: [
           "Staying connected with friends and family is important",
           "Newer phones have better cameras for documenting memories",
           "Technology skills are important for future careers"
-        ]},
-        { id: 'balanced', text: "BALANCED: Upgrade when truly needed", points: [
+        ], isCorrect: true},
+        { id: 'upgrade', text: "Upgrade when truly needed", points: [
           "Wait until current phone has significant limitations",
           "Research if new features justify the cost",
           "Consider refurbished or previous generation models"
-        ]},
-        { id: 'against', text: "AGAINST: Keep using the current phone", points: [
+        ], isCorrect: false},
+        { id: 'keep', text: "Keep using the current phone", points: [
           "The current phone meets basic communication needs",
           "Money could be saved for more important future goals",
           "Frequent upgrades contribute to electronic waste"
-        ]}
+        ], isCorrect: false}
       ],
       reflection: "Consider both staying connected AND financial responsibility. A newer phone might help with career preparation, but your current phone likely meets essential needs."
     },
@@ -50,21 +50,21 @@ const DebateNeedsVsWants = () => {
       id: 2,
       scenario: "Is joining an expensive sports team worth the cost if it improves physical fitness and social connections?",
       positions: [
-        { id: 'balanced', text: "BALANCED: Find middle ground", points: [
+        { id: 'middle', text: "Find middle ground", points: [
           "Look for moderately priced sports programs",
           "Consider seasonal participation instead of year-round",
           "Explore scholarship or financial aid options"
-        ]},
-        { id: 'for', text: "FOR: Join the expensive sports team", points: [
+        ], isCorrect: false},
+        { id: 'expensive', text: "Join the expensive sports team", points: [
           "Physical fitness is crucial for long-term health",
           "Team participation builds valuable social skills",
           "Sports can lead to college scholarships"
-        ]},
-        { id: 'against', text: "AGAINST: Choose free/low-cost fitness activities", points: [
+        ], isCorrect: true},
+        { id: 'free', text: "Choose free/low-cost fitness activities", points: [
           "Many free activities provide similar fitness benefits",
           "Expensive commitments can strain family finances",
           "Community sports leagues offer social connections too"
-        ]}
+        ], isCorrect: false}
       ],
       reflection: "Both physical health and financial stability matter. Consider if the benefits justify the cost compared to alternatives."
     },
@@ -72,21 +72,21 @@ const DebateNeedsVsWants = () => {
       id: 3,
       scenario: "Should teenagers prioritize saving for college or enjoying experiences now?",
       positions: [
-        { id: 'against', text: "AGAINST: Enjoy experiences while young", points: [
+        { id: 'enjoy', text: "Enjoy experiences while young", points: [
           "Memories from experiences last longer than material possessions",
           "Learning financial balance includes reasonable enjoyment",
           "Future earning potential may offset current savings"
-        ]},
-        { id: 'balanced', text: "BALANCED: Save some, enjoy some", points: [
+        ], isCorrect: false},
+        { id: 'mix', text: "Save some, enjoy some", points: [
           "Allocate a percentage for savings and experiences",
           "Prioritize meaningful experiences over impulse spending",
           "Build savings while still creating valuable memories"
-        ]},
-        { id: 'for', text: "FOR: Prioritize saving for college", points: [
+        ], isCorrect: true},
+        { id: 'save', text: "Prioritize saving for college", points: [
           "College costs continue rising and require significant savings",
           "Starting early maximizes compound interest benefits",
           "Financial stress during college affects academic performance"
-        ]}
+        ], isCorrect: false}
       ],
       reflection: "Finding balance is key. Both saving for future goals and enjoying present moments contribute to well-being."
     },
@@ -94,21 +94,21 @@ const DebateNeedsVsWants = () => {
       id: 4,
       scenario: "Is eating out regularly a reasonable expense or financial waste?",
       positions: [
-        { id: 'against', text: "AGAINST: Cooking at home most of the time", points: [
+        { id: 'home', text: "Cooking at home most of the time", points: [
           "Home-cooked meals are typically much more economical",
           "Cooking develops life skills and promotes healthier eating",
           "Regular restaurant spending can quickly deplete budgets"
-        ]},
-        { id: 'for', text: "FOR: Eating out regularly", points: [
+        ], isCorrect: true},
+        { id: 'out', text: "Eating out regularly", points: [
           "Cooking skills take time to develop and aren't always practical",
           "Social dining strengthens relationships with friends/family",
           "Supporting local businesses contributes to community economy"
-        ]},
-        { id: 'balanced', text: "BALANCED: Mix of both approaches", points: [
+        ], isCorrect: false},
+        { id: 'both', text: "Mix of both approaches", points: [
           "Cook at home for regular meals, dine out for special occasions",
           "Learn basic cooking skills to reduce restaurant dependency",
           "Set a monthly dining out budget to control spending"
-        ]}
+        ], isCorrect: false}
       ],
       reflection: "Balance convenience and social connection with financial responsibility. Occasional dining out can fit in a healthy budget."
     },
@@ -116,21 +116,21 @@ const DebateNeedsVsWants = () => {
       id: 5,
       scenario: "Should teenagers invest in branded clothing or choose affordable alternatives?",
       positions: [
-        { id: 'balanced', text: "BALANCED: Mix quality and affordability", points: [
+        { id: 'mix', text: "Mix quality and affordability", points: [
           "Invest in key pieces that need durability",
           "Choose affordable options for trendy items",
           "Focus on style and fit rather than brand names"
-        ]},
-        { id: 'against', text: "AGAINST: Choose affordable clothing", points: [
+        ], isCorrect: true},
+        { id: 'affordable', text: "Choose affordable clothing", points: [
           "Personal style matters more than brand labels",
           "Money saved can be invested in experiences or education",
           "Brand loyalty often reflects marketing influence rather than value"
-        ]},
-        { id: 'for', text: "FOR: Invest in branded clothing", points: [
+        ], isCorrect: false},
+        { id: 'branded', text: "Invest in branded clothing", points: [
           "Quality branded items last longer, offering better value over time",
           "Professional appearance can impact job interviews and opportunities",
           "Self-confidence from looking good can improve performance"
-        ]}
+        ], isCorrect: false}
       ],
       reflection: "Consider both self-expression and financial prudence. Quality matters, but brand names don't guarantee value."
     }
@@ -143,10 +143,17 @@ const DebateNeedsVsWants = () => {
     setSelectedPosition(positionId);
     setAnswered(true);
     
-    // In a debate game, either position can demonstrate understanding
-    // We'll give credit for engaging with either side thoughtfully
-    setScore(prev => prev + 1);
-    showCorrectAnswerFeedback(1, true);
+    // Check if the selected position is correct
+    const currentTopic = debateTopics[currentRound];
+    const selectedPositionObj = currentTopic.positions.find(pos => pos.id === positionId);
+    const isCorrect = selectedPositionObj && selectedPositionObj.isCorrect;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
     
     setShowReflection(true);
 
@@ -200,8 +207,14 @@ const DebateNeedsVsWants = () => {
                     onClick={() => handlePositionSelect(position.id)}
                     disabled={answered}
                     className={`w-full text-left p-4 rounded-lg transition duration-200 border ${
-                      selectedPosition === position.id 
-                        ? 'bg-indigo-500/50 border-indigo-300' 
+                      answered
+                        ? position.isCorrect
+                          ? 'bg-green-500/30 border-green-400 ring-4 ring-green-400'
+                          : selectedPosition === position.id
+                          ? 'bg-red-500/20 border-red-400 ring-4 ring-red-400'
+                          : 'bg-white/5 border-white/20 opacity-50'
+                        : selectedPosition === position.id
+                        ? 'bg-indigo-500/50 border-indigo-300'
                         : 'bg-blue-500/30 hover:bg-blue-500/40 border-blue-300/50 hover:border-blue-300'
                     } ${answered ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer'}`}
                   >

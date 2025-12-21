@@ -33,45 +33,45 @@ const DebateBorrowGoodOrBad = () => {
       id: 1,
       scenario: "Is borrowing always bad?",
       positions: [
-        { id: "good", text: "FOR: Good if planned & repaid", emoji: "✅", points: ["Helps in emergencies", "Enables big purchases", "When planned properly"], isCorrect: true },
-        { id: "balanced", text: "BALANCED: Borrow wisely", emoji: "⚖️", points: ["For needs, not wants", "Plan repayment", "Use responsibly"], isCorrect: false },
-        { id: "bad", text: "AGAINST: Borrowing is always bad", emoji: "❌", points: ["Creates debt", "Adds interest cost", "Financial burden"], isCorrect: false }
+        { id: "planned", text: "Planned borrowing works", emoji: "💡", points: ["Helps in emergencies", "Enables big purchases", "When planned properly"], isCorrect: true },
+        { id: "balanced", text: "Borrow with caution", emoji: "⚠️", points: ["For needs, not wants", "Plan repayment", "Use responsibly"], isCorrect: false },
+        { id: "bad", text: "Avoid borrowing", emoji: "🚫", points: ["Creates debt", "Adds interest cost", "Financial burden"], isCorrect: false }
       ]
     },
     {
       id: 2,
       scenario: "Should you borrow for wants or needs?",
       positions: [
-        { id: "balanced", text: "BALANCED: Borrow for needs only", emoji: "⚖️", points: ["Needs: education, health", "Avoid wants", "Prioritize essentials"], isCorrect: false },
-        { id: "needs", text: "FOR: Borrow for needs, not wants", emoji: "✅", points: ["Education is investment", "Health is essential", "Wants can wait"], isCorrect: true },
-        { id: "wants", text: "AGAINST: Borrow for anything", emoji: "❌", points: ["Borrow for fun", "No planning needed", "Repay later"], isCorrect: false }
+        { id: "balanced", text: "Borrow for essentials", emoji: "📋", points: ["Needs: education, health", "Avoid wants", "Prioritize essentials"], isCorrect: false },
+        { id: "needs", text: "Needs over wants", emoji: "🎓", points: ["Education is investment", "Health is essential", "Wants can wait"], isCorrect: true },
+        { id: "wants", text: "Borrow for anything", emoji: "🎯", points: ["Borrow for fun", "No planning needed", "Repay later"], isCorrect: false }
       ]
     },
     {
       id: 3,
       scenario: "Is it okay to borrow without a repayment plan?",
       positions: [
-        { id: "no-plan", text: "AGAINST: No plan needed", emoji: "❌", points: ["Worry later", "No planning", "Spend freely"], isCorrect: false },
-        { id: "plan", text: "FOR: Always plan repayment", emoji: "✅", points: ["Know how to repay", "Avoid debt trap", "Stay in control"], isCorrect: true },
-        { id: "balanced", text: "BALANCED: Sometimes plan", emoji: "⚖️", points: ["Plan for big loans", "Skip for small", "Partial planning"], isCorrect: false }
+        { id: "no-plan", text: "No planning needed", emoji: "🌀", points: ["Worry later", "No planning", "Spend freely"], isCorrect: false },
+        { id: "plan", text: "Always plan repayment", emoji: "📝", points: ["Know how to repay", "Avoid debt trap", "Stay in control"], isCorrect: true },
+        { id: "balanced", text: "Sometimes plan", emoji: "⏳", points: ["Plan for big loans", "Skip for small", "Partial planning"], isCorrect: false }
       ]
     },
     {
       id: 4,
       scenario: "Can borrowing help achieve goals?",
       positions: [
-        { id: "help", text: "FOR: Yes, when used wisely", emoji: "✅", points: ["Education loans help", "Business loans enable growth", "Smart borrowing works"], isCorrect: true },
-        { id: "balanced", text: "BALANCED: Depends on purpose", emoji: "⚖️", points: ["Good for education", "Bad for wants", "Case by case"], isCorrect: false },
-        { id: "never", text: "AGAINST: Never helps", emoji: "❌", points: ["Always creates problems", "Never worth it", "Avoid completely"], isCorrect: false }
+        { id: "help", text: "Yes, when used wisely", emoji: "🚀", points: ["Education loans help", "Business loans enable growth", "Smart borrowing works"], isCorrect: true },
+        { id: "balanced", text: "Depends on purpose", emoji: "🔍", points: ["Good for education", "Bad for wants", "Case by case"], isCorrect: false },
+        { id: "never", text: "Never helps", emoji: "🛑", points: ["Always creates problems", "Never worth it", "Avoid completely"], isCorrect: false }
       ]
     },
     {
       id: 5,
       scenario: "What's the key to good borrowing?",
       positions: [
-        { id: "balanced", text: "BALANCED: Moderate borrowing", emoji: "⚖️", points: ["Borrow sometimes", "Not too much", "Keep it simple"], isCorrect: false },
-        { id: "plan-repay", text: "FOR: Plan and repay on time", emoji: "✅", points: ["Plan before borrowing", "Repay as promised", "Stay disciplined"], isCorrect: true },
-        { id: "ignore", text: "AGAINST: Ignore repayment", emoji: "❌", points: ["Borrow freely", "No repayment", "Worry later"], isCorrect: false }
+        { id: "balanced", text: "Moderate borrowing", emoji: "📊", points: ["Borrow sometimes", "Not too much", "Keep it simple"], isCorrect: false },
+        { id: "plan-repay", text: "Plan and repay on time", emoji: "⏱️", points: ["Plan before borrowing", "Repay as promised", "Stay disciplined"], isCorrect: true },
+        { id: "ignore", text: "Ignore repayment", emoji: "💸", points: ["Borrow freely", "No repayment", "Worry later"], isCorrect: false }
       ]
     }
   ];

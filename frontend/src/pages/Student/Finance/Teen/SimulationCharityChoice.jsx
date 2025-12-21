@@ -36,21 +36,18 @@ const SimulationCharityChoice = () => {
           id: "all-gadgets", 
           text: "Spend all on gadgets", 
           emoji: "📱", 
-          description: "Buy everything",
           isCorrect: false
         },
         { 
           id: "balanced", 
           text: "Donate ₹200 + Save ₹300 + Spend ₹500", 
           emoji: "⚖️", 
-          description: "Balanced approach",
           isCorrect: true
         },
         { 
           id: "save-all", 
           text: "Save all ₹1000", 
           emoji: "💰", 
-          description: "Keep everything",
           isCorrect: false
         }
       ]
@@ -64,21 +61,18 @@ const SimulationCharityChoice = () => {
           id: "balanced2", 
           text: "Donate ₹100 + Save ₹200 + Spend ₹200", 
           emoji: "✨", 
-          description: "Balanced choice",
           isCorrect: true
         },
         { 
           id: "spend-all2", 
           text: "Spend all ₹500", 
           emoji: "💸", 
-          description: "Use everything",
           isCorrect: false
         },
         { 
           id: "donate-all", 
           text: "Donate all ₹500", 
           emoji: "💝", 
-          description: "Give everything",
           isCorrect: false
         }
       ]
@@ -92,21 +86,18 @@ const SimulationCharityChoice = () => {
           id: "spend-all3", 
           text: "Spend all on wants", 
           emoji: "🛍️", 
-          description: "Buy everything",
           isCorrect: false
         },
         { 
           id: "balanced3", 
           text: "Donate ₹400 + Save ₹600 + Spend ₹1000", 
           emoji: "🎯", 
-          description: "Smart balance",
           isCorrect: true
         },
         { 
           id: "save-all2", 
           text: "Save all ₹2000", 
           emoji: "🏦", 
-          description: "Keep everything",
           isCorrect: false
         }
       ]
@@ -120,21 +111,18 @@ const SimulationCharityChoice = () => {
           id: "balanced4", 
           text: "Donate ₹150 + Save ₹250 + Spend ₹400", 
           emoji: "⚖️", 
-          description: "Balanced plan",
           isCorrect: true
         },
         { 
           id: "entertainment", 
           text: "All on entertainment", 
           emoji: "🎮", 
-          description: "Fun only",
           isCorrect: false
         },
         { 
           id: "no-donate", 
           text: "No donation, save all", 
           emoji: "💾", 
-          description: "Keep everything",
           isCorrect: false
         }
       ]
@@ -148,21 +136,18 @@ const SimulationCharityChoice = () => {
           id: "shopping", 
           text: "Spend all on shopping", 
           emoji: "🛒", 
-          description: "Buy everything",
           isCorrect: false
         },
         { 
           id: "balanced5", 
           text: "Donate ₹300 + Save ₹450 + Spend ₹750", 
           emoji: "🌟", 
-          description: "Responsible choice",
           isCorrect: true
         },
         { 
           id: "only-donate", 
           text: "Donate all ₹1500", 
           emoji: "❤️", 
-          description: "Give everything",
           isCorrect: false
         }
       ]

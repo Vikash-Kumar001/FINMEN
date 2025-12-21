@@ -1,87 +1,81 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
-import GameShell from "../GameShell";
+import { useNavigate } from 'react-router-dom';
+import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleOfDigitalTools = () => {
-  const location = useLocation();
-  
-  // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("finance-teens-44");
-  const gameId = gameData?.id || "finance-teens-44";
-  
-  // Ensure gameId is always set correctly
-  if (!gameData || !gameData.id) {
-    console.warn("Game data not found for PuzzleOfDigitalTools, using fallback ID");
-  }
-  
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const navigate = useNavigate();
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [score, setScore] = useState(0);
   const [matches, setMatches] = useState([]);
-  const [selectedLeft, setSelectedLeft] = useState(null);
-  const [selectedRight, setSelectedRight] = useState(null);
-  const [showResult, setShowResult] = useState(false);
+  const [selectedTool, setSelectedTool] = useState(null);
+  const [selectedFunction, setSelectedFunction] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Digital tools and their uses
-  const leftItems = [
-    { id: 1, name: "UPI", emoji: "📱", description: "Unified Payment Interface" },
-    { id: 2, name: "Debit Card", emoji: "💳", description: "Bank card for payments" },
-    { id: 3, name: "OTP", emoji: "🔐", description: "One-Time Password" },
-    { id: 4, name: "QR Code", emoji: "📷", description: "Quick Response code" },
-    { id: 5, name: "CVV", emoji: "🔒", description: "Card Verification Value" }
+  // Digital tools (left side) - 5 items
+  const tools = [
+    { id: 1, name: "UPI", emoji: "📱", hint: "Instant bank transfers" },
+    { id: 2, name: "Debit Card", emoji: "💳", hint: "Spending your own money" },
+    { id: 3, name: "OTP", emoji: "🔐", hint: "One-time security code" },
+    { id: 4, name: "QR Code", emoji: "📷", hint: "Scannable payment link" },
+    { id: 5, name: "CVV", emoji: "🔒", hint: "Card verification digits" }
   ];
 
-  const rightItems = [
-    { id: 1, name: "PhonePe", emoji: "📲", description: "UPI payment app" },
-    { id: 2, name: "ATM", emoji: "🏧", description: "Cash withdrawal machine" },
-    { id: 3, name: "Security", emoji: "🛡️", description: "Protection and verification" },
-    { id: 4, name: "GPay", emoji: "💸", description: "Google Pay app" },
-    { id: 5, name: "Card Safety", emoji: "🔐", description: "Protects card information" }
+  // Digital functions (right side) - 5 items
+  const functions = [
+    { id: 6, name: "Instant Transfer", emoji: "⚡", description: "Real-time money movement" },
+    { id: 7, name: "Bank Spending", emoji: "🏦", description: "Direct account withdrawals" },
+    { id: 8, name: "Security Code", emoji: "🛡️", description: "Temporary protection pin" },
+    { id: 9, name: "Scan & Pay", emoji: "📲", description: "Mobile payment method" },
+    { id: 10, name: "Card Protection", emoji: "🧾", description: "Prevents unauthorized use" }
   ];
 
-  // Correct matches
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedFunctions = [
+    functions[2], // Security Code (id: 8)
+    functions[4], // Card Protection (id: 10)
+    functions[1], // Bank Spending (id: 7)
+    functions[0], // Instant Transfer (id: 6)
+    functions[3]  // Scan & Pay (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each tool has a unique correct match for true one-to-one mapping
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // UPI → PhonePe
-    { leftId: 2, rightId: 2 }, // Debit Card → ATM
-    { leftId: 3, rightId: 3 }, // OTP → Security
-    { leftId: 4, rightId: 4 }, // QR Code → GPay
-    { leftId: 5, rightId: 5 }  // CVV → Card Safety
+    { toolId: 1, functionId: 6 }, // UPI → Instant Transfer
+    { toolId: 2, functionId: 7 }, // Debit Card → Bank Spending
+    { toolId: 3, functionId: 8 }, // OTP → Security Code
+    { toolId: 4, functionId: 9 }, // QR Code → Scan & Pay
+    { toolId: 5, functionId: 10 } // CVV → Card Protection
   ];
 
-  // Shuffled right items for display (to split matches across different positions)
-  const shuffledRightItems = [
-    rightItems[1], // ATM (id: 2) - position 1
-    rightItems[3], // GPay (id: 4) - position 2
-    rightItems[0], // PhonePe (id: 1) - position 3
-    rightItems[4], // Card Safety (id: 5) - position 4
-    rightItems[2]  // Security (id: 3) - position 5
-  ];
-
-  const handleLeftSelect = (item) => {
-    if (showResult) return;
-    setSelectedLeft(item);
+  const handleToolSelect = (tool) => {
+    if (gameFinished) return;
+    setSelectedTool(tool);
   };
 
-  const handleRightSelect = (item) => {
-    if (showResult) return;
-    setSelectedRight(item);
+  const handleFunctionSelect = (func) => {
+    if (gameFinished) return;
+    setSelectedFunction(func);
   };
 
   const handleMatch = () => {
-    if (!selectedLeft || !selectedRight || showResult) return;
+    if (!selectedTool || !selectedFunction || gameFinished) return;
 
     resetFeedback();
 
     const newMatch = {
-      leftId: selectedLeft.id,
-      rightId: selectedRight.id,
+      toolId: selectedTool.id,
+      functionId: selectedFunction.id,
       isCorrect: correctMatches.some(
-        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+        match => match.toolId === selectedTool.id && match.functionId === selectedFunction.id
       )
     };
 
@@ -92,90 +86,90 @@ const PuzzleOfDigitalTools = () => {
     if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
     // Check if all items are matched
-    if (newMatches.length === leftItems.length) {
+    if (newMatches.length === tools.length) {
       setTimeout(() => {
-        setShowResult(true);
-      }, 800);
+        setGameFinished(true);
+      }, 1500);
     }
 
     // Reset selections
-    setSelectedLeft(null);
-    setSelectedRight(null);
+    setSelectedTool(null);
+    setSelectedFunction(null);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setMatches([]);
-    setSelectedLeft(null);
-    setSelectedRight(null);
-    setScore(0);
-    resetFeedback();
+  // Check if a tool is already matched
+  const isToolMatched = (toolId) => {
+    return matches.some(match => match.toolId === toolId);
   };
 
-  // Check if a left item is already matched
-  const isLeftItemMatched = (itemId) => {
-    return matches.some(match => match.leftId === itemId);
+  // Check if a function is already matched
+  const isFunctionMatched = (functionId) => {
+    return matches.some(match => match.functionId === functionId);
   };
 
-  // Check if a right item is already matched
-  const isRightItemMatched = (itemId) => {
-    return matches.some(match => match.rightId === itemId);
-  };
-
-  // Get match result for a left item
-  const getMatchResult = (itemId) => {
-    const match = matches.find(m => m.leftId === itemId);
+  // Get match result for a tool
+  const getMatchResult = (toolId) => {
+    const match = matches.find(m => m.toolId === toolId);
     return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/finance/teens");
   };
 
   return (
     <GameShell
-      title="Puzzle of Digital Tools"
+      title="Puzzle: Digital Tools"
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Digital Tools with Functions (${matches.length}/${tools.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={score}
-      subtitle={showResult ? "Game Complete!" : `Match digital tools to their uses (${matches.length}/${leftItems.length} matched)`}
+      gameId="finance-teens-44"
+      gameType="finance"
+      totalLevels={tools.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === tools.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/finance/teens"
+      maxScore={tools.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      gameId={gameId}
-      gameType="finance"
-      totalLevels={leftItems.length}
-      currentLevel={matches.length + 1}
-      maxScore={leftItems.length}
-      showConfetti={showResult && score >= 3}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8 max-w-4xl mx-auto">
-        {!showResult ? (
+        {!gameFinished ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Left column - Digital Tools */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <h3 className="text-xl font-bold text-white mb-4 text-center">Digital Tools</h3>
               <div className="space-y-4">
-                {leftItems.map(item => (
+                {tools.map(tool => (
                   <button
-                    key={item.id}
-                    onClick={() => handleLeftSelect(item)}
-                    disabled={isLeftItemMatched(item.id)}
+                    key={tool.id}
+                    onClick={() => handleToolSelect(tool)}
+                    disabled={isToolMatched(tool.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      isLeftItemMatched(item.id)
-                        ? getMatchResult(item.id)
+                      isToolMatched(tool.id)
+                        ? getMatchResult(tool.id)
                           ? "bg-green-500/30 border-2 border-green-500"
                           : "bg-red-500/30 border-2 border-red-500"
-                        : selectedLeft?.id === item.id
+                        : selectedTool?.id === tool.id
                         ? "bg-blue-500/50 border-2 border-blue-400"
                         : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div className="text-2xl mr-3">{tool.emoji}</div>
                       <div>
-                        <h4 className="font-bold text-white">{item.name}</h4>
-                        <p className="text-white/80 text-sm">{item.description}</p>
+                        <h4 className="font-bold text-white">{tool.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {tool.hint}</p>
                       </div>
                     </div>
                   </button>
@@ -187,15 +181,15 @@ const PuzzleOfDigitalTools = () => {
             <div className="flex flex-col items-center justify-center">
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
                 <p className="text-white/80 mb-4">
-                  {selectedLeft 
-                    ? `Selected: ${selectedLeft.name}` 
-                    : "Select a tool"}
+                  {selectedTool 
+                    ? `Selected: ${selectedTool.name}` 
+                    : "Select a Digital Tool"}
                 </p>
                 <button
                   onClick={handleMatch}
-                  disabled={!selectedLeft || !selectedRight}
+                  disabled={!selectedTool || !selectedFunction}
                   className={`py-3 px-6 rounded-full font-bold transition-all ${
-                    selectedLeft && selectedRight
+                    selectedTool && selectedFunction
                       ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
                       : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
@@ -203,34 +197,34 @@ const PuzzleOfDigitalTools = () => {
                   Match
                 </button>
                 <div className="mt-4 text-white/80">
-                  <p>Score: {score}/{leftItems.length}</p>
-                  <p>Matched: {matches.length}/{leftItems.length}</p>
+                  <p>Score: {score}/{tools.length}</p>
+                  <p>Matched: {matches.length}/{tools.length}</p>
                 </div>
               </div>
             </div>
 
-            {/* Right column - Uses */}
+            {/* Right column - Digital Functions */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Uses</h3>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Digital Functions</h3>
               <div className="space-y-4">
-                {shuffledRightItems.map(item => (
+                {rearrangedFunctions.map(func => (
                   <button
-                    key={item.id}
-                    onClick={() => handleRightSelect(item)}
-                    disabled={isRightItemMatched(item.id)}
+                    key={func.id}
+                    onClick={() => handleFunctionSelect(func)}
+                    disabled={isFunctionMatched(func.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      isRightItemMatched(item.id)
+                      isFunctionMatched(func.id)
                         ? "bg-green-500/30 border-2 border-green-500 opacity-50"
-                        : selectedRight?.id === item.id
+                        : selectedFunction?.id === func.id
                         ? "bg-purple-500/50 border-2 border-purple-400"
                         : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div className="text-2xl mr-3">{func.emoji}</div>
                       <div>
-                        <h4 className="font-bold text-white">{item.name}</h4>
-                        <p className="text-white/80 text-sm">{item.description}</p>
+                        <h4 className="font-bold text-white">{func.name}</h4>
+                        <p className="text-white/80 text-sm">{func.description}</p>
                       </div>
                     </div>
                   </button>
@@ -243,34 +237,26 @@ const PuzzleOfDigitalTools = () => {
             {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You correctly matched {score} out of {leftItems.length} digital tools!
-                  You understand how digital payment tools work!
+                  You correctly matched {score} out of {tools.length} digital tools with their functions!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  You know that UPI works with apps like PhonePe, Debit Cards are used at ATMs, and OTP provides security!
+                  Lesson: Understanding digital tools helps you make secure online transactions!
                 </p>
               </div>
             ) : (
               <div>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You matched {score} out of {leftItems.length} digital tools correctly.
-                  Remember, understanding these tools helps you use digital payments safely!
+                  You matched {score} out of {tools.length} digital tools correctly.
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
                 <p className="text-white/80 text-sm">
-                  Try to match each digital tool with its appropriate use. UPI → PhonePe, Debit Card → ATM, OTP → Security!
+                  Tip: Think about what each digital tool actually does!
                 </p>
               </div>
             )}

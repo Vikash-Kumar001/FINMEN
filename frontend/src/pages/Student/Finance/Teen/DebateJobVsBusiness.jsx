@@ -33,45 +33,45 @@ const DebateJobVsBusiness = () => {
       id: 1,
       scenario: "Is it better to do a job or start a business?",
       positions: [
-        { id: "business", text: "FOR: Business builds independence", emoji: "✅", points: ["Own your time", "Unlimited earning", "Build wealth"], isCorrect: true },
-        { id: "balanced", text: "BALANCED: Depends on person", emoji: "⚖️", points: ["Job for security", "Business for growth", "Choose wisely"], isCorrect: false },
-        { id: "job", text: "AGAINST: Job is always better", emoji: "💼", points: ["Guaranteed income", "Less risk", "Stable life"], isCorrect: false }
+        { id: "business", text: "Business builds independence", emoji: "💡", points: ["Own your time", "Unlimited earning", "Build wealth"], isCorrect: true },
+        { id: "balanced", text: "Depends on person", emoji: "⚠️", points: ["Job for security", "Business for growth", "Choose wisely"], isCorrect: false },
+        { id: "job", text: "Job is always better", emoji: "🚫", points: ["Guaranteed income", "Less risk", "Stable life"], isCorrect: false }
       ]
     },
     {
       id: 2,
       scenario: "Which offers more financial freedom?",
       positions: [
-        { id: "balanced2", text: "BALANCED: Both can work", emoji: "⚖️", points: ["Job provides security", "Business provides growth", "Depends on goals"], isCorrect: false },
-        { id: "business2", text: "FOR: Business", emoji: "✅", points: ["Unlimited income", "Own decisions", "Build assets"], isCorrect: true },
-        { id: "job2", text: "AGAINST: Job", emoji: "💼", points: ["Fixed salary", "Limited growth", "Dependent on employer"], isCorrect: false }
+        { id: "balanced2", text: "Both can work", emoji: "📋", points: ["Job provides security", "Business provides growth", "Depends on goals"], isCorrect: false },
+        { id: "business2", text: "Business wins", emoji: "🎓", points: ["Unlimited income", "Own decisions", "Build assets"], isCorrect: true },
+        { id: "job2", text: "Job wins", emoji: "🎯", points: ["Fixed salary", "Limited growth", "Dependent on employer"], isCorrect: false }
       ]
     },
     {
       id: 3,
       scenario: "Which has more risk?",
       positions: [
-        { id: "business3", text: "FOR: Business", emoji: "✅", points: ["Can lose money", "No guaranteed income", "Market risks"], isCorrect: true },
-        { id: "same", text: "BALANCED: Both same", emoji: "➡️", points: ["Equal risk", "No difference", "Same challenges"], isCorrect: false },
-        { id: "job3", text: "AGAINST: Job", emoji: "💼", points: ["Job is riskier", "Can be fired", "Less secure"], isCorrect: false }
+        { id: "business3", text: "Business has more risk", emoji: "📈", points: ["Can lose money", "No guaranteed income", "Market risks"], isCorrect: true },
+        { id: "same", text: "Both equal risk", emoji: "📊", points: ["Equal risk", "No difference", "Same challenges"], isCorrect: false },
+        { id: "job3", text: "Job has more risk", emoji: "🏦", points: ["Job is riskier", "Can be fired", "Less secure"], isCorrect: false }
       ]
     },
     {
       id: 4,
       scenario: "What's better for long-term wealth?",
       positions: [
-        { id: "business4", text: "FOR: Business", emoji: "✅", points: ["Build assets", "Scalable income", "Create value"], isCorrect: true },
-        { id: "balanced3", text: "BALANCED: Both can work", emoji: "⚖️", points: ["Job with savings", "Business with risk", "Mix both"], isCorrect: false },
-        { id: "job4", text: "AGAINST: Job", emoji: "💼", points: ["Fixed income", "Limited growth", "Salary only"], isCorrect: false }
+        { id: "business4", text: "Business for wealth", emoji: "💼", points: ["Build assets", "Scalable income", "Create value"], isCorrect: true },
+        { id: "balanced3", text: "Both can work", emoji: "🔐", points: ["Job with savings", "Business with risk", "Mix both"], isCorrect: false },
+        { id: "job4", text: "Job for wealth", emoji: "🎲", points: ["Fixed income", "Limited growth", "Salary only"], isCorrect: false }
       ]
     },
     {
       id: 5,
       scenario: "Which requires more responsibility?",
       positions: [
-        { id: "balanced4", text: "BALANCED: Both have responsibility", emoji: "⚖️", points: ["Job: work duties", "Business: everything", "Both matter"], isCorrect: false },
-        { id: "business5", text: "FOR: Business", emoji: "✅", points: ["Full responsibility", "All decisions", "Success or failure"], isCorrect: true },
-        { id: "job5", text: "AGAINST: Job", emoji: "💼", points: ["Less responsibility", "Follow orders", "Limited scope"], isCorrect: false }
+        { id: "balanced4", text: "Both have responsibility", emoji: "⏱️", points: ["Job: work duties", "Business: everything", "Both matter"], isCorrect: false },
+        { id: "business5", text: "Business requires more", emoji: "⏰", points: ["Full responsibility", "All decisions", "Success or failure"], isCorrect: true },
+        { id: "job5", text: "Job requires more", emoji: "💸", points: ["Less responsibility", "Follow orders", "Limited scope"], isCorrect: false }
       ]
     }
   ];

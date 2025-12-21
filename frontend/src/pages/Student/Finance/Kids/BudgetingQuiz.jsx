@@ -30,19 +30,20 @@ const BudgetingQuiz = () => {
       text: "What is a budget?",
       icon: Calculator,
       options: [
-        { 
-          id: "plan", 
-          text: "A spending plan", 
-          emoji: "📊", 
-          description: "A plan for how to use your money",
-          isCorrect: true
-        },
+        
         { 
           id: "list", 
           text: "A shopping list", 
           emoji: "📝", 
           description: "Just a list of things to buy",
           isCorrect: false
+        },
+        { 
+          id: "plan", 
+          text: "A spending plan", 
+          emoji: "📊", 
+          description: "A plan for how to use your money",
+          isCorrect: true
         },
         { 
           id: "free", 
@@ -86,13 +87,7 @@ const BudgetingQuiz = () => {
       text: "Earn ₹100, spend ₹120. What happens?",
       icon: TrendingUp,
       options: [
-        { 
-          id: "debt", 
-          text: "You go into debt", 
-          emoji: "📉", 
-          description: "You owe money you don't have",
-          isCorrect: true
-        },
+       
         { 
           id: "save", 
           text: "You save ₹20", 
@@ -106,7 +101,14 @@ const BudgetingQuiz = () => {
           emoji: "🏆", 
           description: "Something good happens",
           isCorrect: false
-        }
+        },
+         { 
+          id: "debt", 
+          text: "You go into debt", 
+          emoji: "📉", 
+          description: "You owe money you don't have",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -114,19 +116,20 @@ const BudgetingQuiz = () => {
       text: "Which is a good budgeting habit?",
       icon: CheckCircle,
       options: [
-        { 
-          id: "plan", 
-          text: "List expenses and plan", 
-          emoji: "📋", 
-          description: "Write down what you'll spend and stick to it",
-          isCorrect: true
-        },
+        
         { 
           id: "guess", 
           text: "Guess and spend randomly", 
           emoji: "🎲", 
           description: "Just spend without thinking",
           isCorrect: false
+        },
+        { 
+          id: "plan", 
+          text: "List expenses and plan", 
+          emoji: "📋", 
+          description: "Write down what you'll spend and stick to it",
+          isCorrect: true
         },
         { 
           id: "ignore", 

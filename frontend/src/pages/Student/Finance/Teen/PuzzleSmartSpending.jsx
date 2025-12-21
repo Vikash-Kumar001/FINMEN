@@ -1,73 +1,81 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
-import GameShell from "../GameShell";
+import { useNavigate } from 'react-router-dom';
+import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleSmartSpending = () => {
-  const location = useLocation();
-  
-  // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-14";
-  const gameData = getGameDataById(gameId);
-  
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const navigate = useNavigate();
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [score, setScore] = useState(0);
   const [matches, setMatches] = useState([]);
-  const [selectedLeft, setSelectedLeft] = useState(null);
-  const [selectedRight, setSelectedRight] = useState(null);
-  const [showResult, setShowResult] = useState(false);
+  const [selectedConcept, setSelectedConcept] = useState(null);
+  const [selectedMeaning, setSelectedMeaning] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Smart spending concepts and their descriptions
-  const leftItems = [
-    { id: 1, name: "Budget", emoji: "📋", description: "A plan for how to spend your money" },
-    { id: 2, name: "Waste", emoji: "🗑️", description: "Spending money on things you don't need" },
-    { id: 3, name: "Needs", emoji: "🎯", description: "Essential items for survival and well-being" },
-    { id: 4, name: "Wants", emoji: "🎁", description: "Items that are nice to have but not essential" },
-    { id: 5, name: "Emergency Fund", emoji: "🛡️", description: "Money saved for unexpected expenses" }
+  // Spending concepts (left side) - 5 items
+  const concepts = [
+    { id: 1, name: "Budget", emoji: "📋", hint: "Money allocation plan" },
+    { id: 2, name: "Waste", emoji: "🗑️", hint: "Unnecessary expenditure" },
+    { id: 3, name: "Needs", emoji: "🎯", hint: "Essential requirements" },
+    { id: 4, name: "Wants", emoji: "🎁", hint: "Desired luxuries" },
+    { id: 5, name: "Emergency Fund", emoji: "🛡️", hint: "Unexpected expense reserve" }
   ];
 
-  const rightItems = [
-    { id: 1, name: "Plan", emoji: "📝", description: "A strategy or method for achieving something" },
-    { id: 2, name: "Priority", emoji: "⭐", description: "Something that should be dealt with first" },
-    { id: 3, name: "Trouble", emoji: "⚠️", description: "Problems or difficulties" },
-    { id: 4, name: "Security", emoji: "🔒", description: "Protection from financial risks" },
-    { id: 5, name: "Luxury", emoji: "💎", description: "Non-essential items that provide comfort or pleasure" }
+  // Financial meanings (right side) - 5 items
+  const meanings = [
+    { id: 6, name: "Financial Planning", emoji: "📝", description: "Organizing money for goals" },
+    { id: 7, name: "Resource Misuse", emoji: "⚠️", description: "Inefficient money usage" },
+    { id: 8, name: "Essential Priorities", emoji: "⭐", description: "Basic necessity focus" },
+    { id: 9, name: "Discretionary Spending", emoji: "💎", description: "Optional purchase choices" },
+    { id: 10, name: "Risk Protection", emoji: "🔒", description: "Safety against uncertainties" }
   ];
 
-  // Correct matches (split across different positions)
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedMeanings = [
+    meanings[2], // Essential Priorities (id: 8)
+    meanings[4], // Risk Protection (id: 10)
+    meanings[1], // Resource Misuse (id: 7)
+    meanings[0], // Financial Planning (id: 6)
+    meanings[3]  // Discretionary Spending (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each concept has a unique correct match for true one-to-one mapping
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Budget → Plan (position 1)
-    { leftId: 2, rightId: 3 }, // Waste → Trouble (position 3)
-    { leftId: 3, rightId: 2 }, // Needs → Priority (position 2)
-    { leftId: 4, rightId: 5 }, // Wants → Luxury (position 5)
-    { leftId: 5, rightId: 4 }  // Emergency Fund → Security (position 4)
+    { conceptId: 1, meaningId: 6 }, // Budget → Financial Planning
+    { conceptId: 2, meaningId: 7 }, // Waste → Resource Misuse
+    { conceptId: 3, meaningId: 8 }, // Needs → Essential Priorities
+    { conceptId: 4, meaningId: 9 }, // Wants → Discretionary Spending
+    { conceptId: 5, meaningId: 10 } // Emergency Fund → Risk Protection
   ];
 
-  const handleLeftSelect = (item) => {
-    if (showResult) return;
-    setSelectedLeft(item);
+  const handleConceptSelect = (concept) => {
+    if (gameFinished) return;
+    setSelectedConcept(concept);
   };
 
-  const handleRightSelect = (item) => {
-    if (showResult) return;
-    setSelectedRight(item);
+  const handleMeaningSelect = (meaning) => {
+    if (gameFinished) return;
+    setSelectedMeaning(meaning);
   };
 
   const handleMatch = () => {
-    if (!selectedLeft || !selectedRight || showResult) return;
+    if (!selectedConcept || !selectedMeaning || gameFinished) return;
 
     resetFeedback();
 
     const newMatch = {
-      leftId: selectedLeft.id,
-      rightId: selectedRight.id,
+      conceptId: selectedConcept.id,
+      meaningId: selectedMeaning.id,
       isCorrect: correctMatches.some(
-        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+        match => match.conceptId === selectedConcept.id && match.meaningId === selectedMeaning.id
       )
     };
 
@@ -78,90 +86,90 @@ const PuzzleSmartSpending = () => {
     if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
     // Check if all items are matched
-    if (newMatches.length === leftItems.length) {
+    if (newMatches.length === concepts.length) {
       setTimeout(() => {
-        setShowResult(true);
-      }, 800);
+        setGameFinished(true);
+      }, 1500);
     }
 
     // Reset selections
-    setSelectedLeft(null);
-    setSelectedRight(null);
+    setSelectedConcept(null);
+    setSelectedMeaning(null);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setMatches([]);
-    setSelectedLeft(null);
-    setSelectedRight(null);
-    setScore(0);
-    resetFeedback();
+  // Check if a concept is already matched
+  const isConceptMatched = (conceptId) => {
+    return matches.some(match => match.conceptId === conceptId);
   };
 
-  // Check if a left item is already matched
-  const isLeftItemMatched = (itemId) => {
-    return matches.some(match => match.leftId === itemId);
+  // Check if a meaning is already matched
+  const isMeaningMatched = (meaningId) => {
+    return matches.some(match => match.meaningId === meaningId);
   };
 
-  // Check if a right item is already matched
-  const isRightItemMatched = (itemId) => {
-    return matches.some(match => match.rightId === itemId);
-  };
-
-  // Get match result for a left item
-  const getMatchResult = (itemId) => {
-    const match = matches.find(m => m.leftId === itemId);
+  // Get match result for a concept
+  const getMatchResult = (conceptId) => {
+    const match = matches.find(m => m.conceptId === conceptId);
     return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/finance/teens");
   };
 
   return (
     <GameShell
       title="Puzzle: Smart Spending"
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Concepts with Meanings (${matches.length}/${concepts.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={score}
-      subtitle={showResult ? "Game Complete!" : `Match spending concepts to their meanings (${matches.length}/${leftItems.length} matched)`}
+      gameId="finance-teens-14"
+      gameType="finance"
+      totalLevels={concepts.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === concepts.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/finance/teens"
+      maxScore={concepts.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      gameId={gameId}
-      gameType="finance"
-      totalLevels={leftItems.length}
-      currentLevel={matches.length + 1}
-      maxScore={leftItems.length}
-      showConfetti={showResult && score >= 3}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8 max-w-4xl mx-auto">
-        {!showResult ? (
+        {!gameFinished ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Left column - Spending concepts */}
+            {/* Left column - Spending Concepts */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <h3 className="text-xl font-bold text-white mb-4 text-center">Spending Concepts</h3>
               <div className="space-y-4">
-                {leftItems.map(item => (
+                {concepts.map(concept => (
                   <button
-                    key={item.id}
-                    onClick={() => handleLeftSelect(item)}
-                    disabled={isLeftItemMatched(item.id)}
+                    key={concept.id}
+                    onClick={() => handleConceptSelect(concept)}
+                    disabled={isConceptMatched(concept.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      isLeftItemMatched(item.id)
-                        ? getMatchResult(item.id)
+                      isConceptMatched(concept.id)
+                        ? getMatchResult(concept.id)
                           ? "bg-green-500/30 border-2 border-green-500"
                           : "bg-red-500/30 border-2 border-red-500"
-                        : selectedLeft?.id === item.id
+                        : selectedConcept?.id === concept.id
                         ? "bg-blue-500/50 border-2 border-blue-400"
                         : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div className="text-2xl mr-3">{concept.emoji}</div>
                       <div>
-                        <h4 className="font-bold text-white">{item.name}</h4>
-                        <p className="text-white/80 text-sm">{item.description}</p>
+                        <h4 className="font-bold text-white">{concept.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {concept.hint}</p>
                       </div>
                     </div>
                   </button>
@@ -173,15 +181,15 @@ const PuzzleSmartSpending = () => {
             <div className="flex flex-col items-center justify-center">
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
                 <p className="text-white/80 mb-4">
-                  {selectedLeft 
-                    ? `Selected: ${selectedLeft.name}` 
-                    : "Select a concept"}
+                  {selectedConcept 
+                    ? `Selected: ${selectedConcept.name}` 
+                    : "Select a Spending Concept"}
                 </p>
                 <button
                   onClick={handleMatch}
-                  disabled={!selectedLeft || !selectedRight}
+                  disabled={!selectedConcept || !selectedMeaning}
                   className={`py-3 px-6 rounded-full font-bold transition-all ${
-                    selectedLeft && selectedRight
+                    selectedConcept && selectedMeaning
                       ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
                       : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
@@ -189,34 +197,34 @@ const PuzzleSmartSpending = () => {
                   Match
                 </button>
                 <div className="mt-4 text-white/80">
-                  <p>Score: {score}/{leftItems.length}</p>
-                  <p>Matched: {matches.length}/{leftItems.length}</p>
+                  <p>Score: {score}/{concepts.length}</p>
+                  <p>Matched: {matches.length}/{concepts.length}</p>
                 </div>
               </div>
             </div>
 
-            {/* Right column - Meanings */}
+            {/* Right column - Financial Meanings */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Meanings</h3>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Financial Meanings</h3>
               <div className="space-y-4">
-                {rightItems.map(item => (
+                {rearrangedMeanings.map(meaning => (
                   <button
-                    key={item.id}
-                    onClick={() => handleRightSelect(item)}
-                    disabled={isRightItemMatched(item.id)}
+                    key={meaning.id}
+                    onClick={() => handleMeaningSelect(meaning)}
+                    disabled={isMeaningMatched(meaning.id)}
                     className={`w-full p-4 rounded-xl text-left transition-all ${
-                      isRightItemMatched(item.id)
+                      isMeaningMatched(meaning.id)
                         ? "bg-green-500/30 border-2 border-green-500 opacity-50"
-                        : selectedRight?.id === item.id
+                        : selectedMeaning?.id === meaning.id
                         ? "bg-purple-500/50 border-2 border-purple-400"
                         : "bg-white/10 hover:bg-white/20 border border-white/20"
                     }`}
                   >
                     <div className="flex items-center">
-                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div className="text-2xl mr-3">{meaning.emoji}</div>
                       <div>
-                        <h4 className="font-bold text-white">{item.name}</h4>
-                        <p className="text-white/80 text-sm">{item.description}</p>
+                        <h4 className="font-bold text-white">{meaning.name}</h4>
+                        <p className="text-white/80 text-sm">{meaning.description}</p>
                       </div>
                     </div>
                   </button>
@@ -229,34 +237,26 @@ const PuzzleSmartSpending = () => {
             {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You correctly matched {score} out of {leftItems.length} spending concepts!
-                  You understand the key concepts of smart spending!
+                  You correctly matched {score} out of {concepts.length} spending concepts with their meanings!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  You know that budgeting is planning, wasting money leads to trouble, and needs should be prioritized!
+                  Lesson: Understanding spending concepts leads to better financial decisions!
                 </p>
               </div>
             ) : (
               <div>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You matched {score} out of {leftItems.length} spending concepts correctly.
-                  Remember, understanding these concepts helps you make better financial decisions!
+                  You matched {score} out of {concepts.length} spending concepts correctly.
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
                 <p className="text-white/80 text-sm">
-                  Try to match each spending concept with its appropriate meaning.
+                  Tip: Think about what each spending concept actually represents!
                 </p>
               </div>
             )}

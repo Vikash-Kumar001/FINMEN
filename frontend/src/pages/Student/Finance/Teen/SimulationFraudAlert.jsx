@@ -36,21 +36,18 @@ const SimulationFraudAlert = () => {
           id: "click", 
           text: "Click the link", 
           emoji: "🔗", 
-          description: "See what happens",
           isCorrect: false
         },
         { 
           id: "delete", 
           text: "Delete the message", 
           emoji: "🗑️", 
-          description: "Ignore and delete",
           isCorrect: true
         },
         { 
           id: "forward", 
           text: "Forward to friends", 
           emoji: "📤", 
-          description: "Share with others",
           isCorrect: false
         }
       ]
@@ -64,21 +61,18 @@ const SimulationFraudAlert = () => {
           id: "give-otp", 
           text: "Give OTP", 
           emoji: "🔢", 
-          description: "Share the code",
           isCorrect: false
         },
         { 
           id: "hang-up", 
           text: "Hang up and call bank", 
           emoji: "📞", 
-          description: "Verify with bank",
           isCorrect: true
         },
         { 
           id: "trust", 
           text: "Trust the caller", 
           emoji: "😊", 
-          description: "Believe them",
           isCorrect: false
         }
       ]
@@ -92,21 +86,18 @@ const SimulationFraudAlert = () => {
           id: "refuse", 
           text: "Refuse, it's a scam", 
           emoji: "🚫", 
-          description: "Too good to be true",
           isCorrect: true
         },
         { 
           id: "pay", 
           text: "Pay ₹50", 
           emoji: "💳", 
-          description: "It's cheap",
           isCorrect: false
         },
         { 
           id: "check", 
           text: "Check website first", 
           emoji: "🔍", 
-          description: "Verify authenticity",
           isCorrect: false
         }
       ]
@@ -120,21 +111,18 @@ const SimulationFraudAlert = () => {
           id: "ignore", 
           text: "Ignore and delete", 
           emoji: "🗑️", 
-          description: "Don't respond",
           isCorrect: true
         },
         { 
           id: "reply", 
           text: "Reply with password", 
           emoji: "📧", 
-          description: "Share details",
           isCorrect: false
         },
         { 
           id: "forward-email", 
           text: "Forward email", 
           emoji: "📤", 
-          description: "Share with others",
           isCorrect: false
         }
       ]
@@ -148,21 +136,18 @@ const SimulationFraudAlert = () => {
           id: "invest", 
           text: "Invest immediately", 
           emoji: "💰", 
-          description: "Great opportunity",
           isCorrect: false
         },
         { 
           id: "refuse2", 
           text: "Refuse, report scam", 
           emoji: "🚫", 
-          description: "Unrealistic offer",
           isCorrect: true
         },
         { 
           id: "think", 
           text: "Think about it", 
           emoji: "🤔", 
-          description: "Consider options",
           isCorrect: false
         }
       ]
@@ -249,7 +234,6 @@ const SimulationFraudAlert = () => {
                     <div className="flex flex-col items-center justify-center gap-3">
                       <span className="text-4xl">{option.emoji}</span>
                       <span className="font-semibold text-lg">{option.text}</span>
-                      <p className="text-sm opacity-90">{option.description}</p>
                     </div>
                   </button>
                 ))}

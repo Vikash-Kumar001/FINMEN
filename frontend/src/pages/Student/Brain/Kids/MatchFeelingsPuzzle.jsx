@@ -38,11 +38,11 @@ const MatchFeelingsPuzzle = () => {
 
   // Right side - emotions
   const rightItems = [
-    { id: 1, name: "Happy", emoji: "😊", description: "Feeling joyful" },
-    { id: 2, name: "Sad", emoji: "😢", description: "Feeling down" },
-    { id: 3, name: "Angry", emoji: "😠", description: "Feeling mad" },
-    { id: 4, name: "Excited", emoji: "🎉", description: "Feeling thrilled" },
-    { id: 5, name: "Scared", emoji: "😨", description: "Feeling afraid" }
+    { id: 1, name: "Happy", description: "Feeling joyful" },
+    { id: 2, name: "Sad",  description: "Feeling down" },
+    { id: 3, name: "Angry",  description: "Feeling mad" },
+    { id: 4, name: "Excited",  description: "Feeling thrilled" },
+    { id: 5, name: "Scared",  description: "Feeling afraid" }
   ];
 
   // Correct matches

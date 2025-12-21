@@ -1,178 +1,264 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
-import GameShell from "../GameShell";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
+import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleInvestmentTypes = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-134";
-  const gameData = getGameDataById(gameId);
-  
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [coins, setCoins] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [choices, setChoices] = useState([]);
 
-  const puzzles = [
-    {
-      id: 1,
-      text: "Match: FD → Safe, Stocks → Risky, Mutual Fund → Mixed",
-      options: [
-        { id: "correct", text: "Match correctly", emoji: "✅", description: "Correct investment types", isCorrect: true },
-        { id: "wrong", text: "Match wrong", emoji: "❌", description: "Incorrect pairing", isCorrect: false }
-      ],
-      reward: 5
-    },
-    {
-      id: 2,
-      text: "Match: Bonds → Stable, Real Estate → Long-term, Stocks → Volatile",
-      options: [
-        { id: "correct", text: "Match correctly", emoji: "✅", description: "Right types", isCorrect: true },
-        { id: "wrong", text: "Match wrong", emoji: "❌", description: "Wrong pairing", isCorrect: false }
-      ],
-      reward: 5
-    },
-    {
-      id: 3,
-      text: "Match: Savings → Low Risk, Gold → Hedge, Crypto → High Risk",
-      options: [
-        { id: "correct", text: "Match correctly", emoji: "✅", description: "Accurate matches", isCorrect: true },
-        { id: "wrong", text: "Match wrong", emoji: "❌", description: "Incorrect", isCorrect: false }
-      ],
-      reward: 6
-    },
-    {
-      id: 4,
-      text: "Match: FD → Fixed Return, Stocks → Variable Return, SIP → Regular",
-      options: [
-        { id: "correct", text: "Match correctly", emoji: "✅", description: "Correct types", isCorrect: true },
-        { id: "wrong", text: "Match wrong", emoji: "❌", description: "Wrong types", isCorrect: false }
-      ],
-      reward: 6
-    },
-    {
-      id: 5,
-      text: "Match: Mutual Fund → Diversified, Bonds → Secure, Stocks → Growth",
-      options: [
-        { id: "correct", text: "Match correctly", emoji: "✅", description: "Perfect pairing", isCorrect: true },
-        { id: "wrong", text: "Match wrong", emoji: "❌", description: "Incorrect", isCorrect: false }
-      ],
-      reward: 7
-    }
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedInvestment, setSelectedInvestment] = useState(null);
+  const [selectedCharacteristic, setSelectedCharacteristic] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  // Investments (left side) - 5 items
+  const investments = [
+    { id: 1, name: "Fixed Deposit", emoji: "🏦", hint: "Bank savings" },
+    { id: 2, name: "Stocks", emoji: "📊", hint: "Company shares" },
+    { id: 3, name: "Mutual Fund", emoji: "💼", hint: "Pooled investment" },
+    { id: 4, name: "Bonds", emoji: "📝", hint: "Loan certificates" },
+    { id: 5, name: "Real Estate", emoji: "🏠", hint: "Property assets" }
   ];
 
-  const handleChoice = (selectedChoice) => {
-    resetFeedback();
-    const puzzle = puzzles[currentPuzzle];
-    const isCorrect = puzzle.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+  // Characteristics (right side) - 5 items
+  const characteristics = [
+    { id: 6, name: "Safe", emoji: "🛡️", description: "Low risk investment" },
+    { id: 7, name: "Risky", emoji: "⚠️", description: "High volatility" },
+    { id: 8, name: "Diversified", emoji: "🔄", description: "Spread across assets" },
+    { id: 9, name: "Stable", emoji: "⚖️", description: "Consistent returns" },
+    { id: 10, name: "Long-term", emoji: "📅", description: "Multi-year holding" }
+  ];
 
-    setChoices([...choices, { puzzleId: puzzle.id, choice: selectedChoice, isCorrect }]);
-    if (isCorrect) {
-      setCoins(prev => prev + puzzle.reward);
-      showCorrectAnswerFeedback(puzzle.reward, true);
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedCharacteristics = [
+    characteristics[2], // Diversified (id: 8)
+    characteristics[4], // Long-term (id: 10)
+    characteristics[1], // Risky (id: 7)
+    characteristics[0], // Safe (id: 6)
+    characteristics[3]  // Stable (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each investment has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { investmentId: 1, characteristicId: 6 }, // Fixed Deposit → Safe
+    { investmentId: 2, characteristicId: 7 }, // Stocks → Risky
+    { investmentId: 3, characteristicId: 8 }, // Mutual Fund → Diversified
+    { investmentId: 4, characteristicId: 9 }, // Bonds → Stable
+    { investmentId: 5, characteristicId: 10 } // Real Estate → Long-term
+  ];
+
+  const handleInvestmentSelect = (investment) => {
+    if (gameFinished) return;
+    setSelectedInvestment(investment);
+  };
+
+  const handleCharacteristicSelect = (characteristic) => {
+    if (gameFinished) return;
+    setSelectedCharacteristic(characteristic);
+  };
+
+  const handleMatch = () => {
+    if (!selectedInvestment || !selectedCharacteristic || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      investmentId: selectedInvestment.id,
+      characteristicId: selectedCharacteristic.id,
+      isCorrect: correctMatches.some(
+        match => match.investmentId === selectedInvestment.id && match.characteristicId === selectedCharacteristic.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentPuzzle < puzzles.length - 1) {
-      setTimeout(() => setCurrentPuzzle(prev => prev + 1), 800);
-    } else {
-      const correctAnswers = [...choices, { puzzleId: puzzle.id, choice: selectedChoice, isCorrect }].filter(c => c.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setShowResult(true);
+    // Check if all items are matched
+    if (newMatches.length === investments.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
     }
+
+    // Reset selections
+    setSelectedInvestment(null);
+    setSelectedCharacteristic(null);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentPuzzle(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
-    resetFeedback();
+  // Check if an investment is already matched
+  const isInvestmentMatched = (investmentId) => {
+    return matches.some(match => match.investmentId === investmentId);
   };
 
-  const handleNext = () => navigate("/student/finance/teen");
+  // Check if a characteristic is already matched
+  const isCharacteristicMatched = (characteristicId) => {
+    return matches.some(match => match.characteristicId === characteristicId);
+  };
+
+  // Get match result for an investment
+  const getMatchResult = (investmentId) => {
+    const match = matches.find(m => m.investmentId === investmentId);
+    return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/finance/teens");
+  };
 
   return (
     <GameShell
       title="Puzzle: Investment Types"
-      score={coins}
-      subtitle={`Puzzle ${currentPuzzle + 1} of ${puzzles.length}`}
-      coins={coins}
-      currentLevel={currentPuzzle + 1}
-      totalLevels={puzzles.length}
-      coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore>= 3}
-      maxScore={puzzles.length} // Max score is total number of questions (all correct)
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      showConfetti={showResult && finalScore >= 3}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Investments with Characteristics (${matches.length}/${investments.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
       gameId="finance-teens-134"
       gameType="finance"
+      totalLevels={investments.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === investments.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/finance/teens"
+      maxScore={investments.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
-      <div className="space-y-8 text-white">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Puzzle {currentPuzzle + 1}/{puzzles.length}</span>
-              <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Investments */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Investments</h3>
+              <div className="space-y-4">
+                {investments.map(investment => (
+                  <button
+                    key={investment.id}
+                    onClick={() => handleInvestmentSelect(investment)}
+                    disabled={isInvestmentMatched(investment.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isInvestmentMatched(investment.id)
+                        ? getMatchResult(investment.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedInvestment?.id === investment.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{investment.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{investment.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {investment.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-            <p className="text-xl mb-6">{puzzles[currentPuzzle].text}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {puzzles[currentPuzzle].options.map(opt => (
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedInvestment 
+                    ? `Selected: ${selectedInvestment.name}` 
+                    : "Select an Investment"}
+                </p>
                 <button
-                  key={opt.id}
-                  onClick={() => handleChoice(opt.id)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-transform hover:scale-105"
+                  onClick={handleMatch}
+                  disabled={!selectedInvestment || !selectedCharacteristic}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedInvestment && selectedCharacteristic
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
                 >
-                  <div className="text-3xl mb-2">{opt.emoji}</div>
-                  <h3 className="font-bold text-xl mb-2">{opt.text}</h3>
-                  <p className="text-white/90">{opt.description}</p>
+                  Match
                 </button>
-              ))}
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{investments.length}</p>
+                  <p>Matched: {matches.length}/{investments.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Characteristics */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Characteristics</h3>
+              <div className="space-y-4">
+                {rearrangedCharacteristics.map(characteristic => (
+                  <button
+                    key={characteristic.id}
+                    onClick={() => handleCharacteristicSelect(characteristic)}
+                    disabled={isCharacteristicMatched(characteristic.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isCharacteristicMatched(characteristic.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedCharacteristic?.id === characteristic.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{characteristic.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{characteristic.name}</h4>
+                        <p className="text-white/80 text-sm">{characteristic.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
-            {finalScore >= 3 ? (
-              <>
-                <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-                <h3 className="text-3xl font-bold mb-4">Investment Types Puzzle Star!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct!</p>
-                <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-                  +{coins} Coins
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {investments.length} investments with their characteristics!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
-                <p className="text-white/80 mt-4">Lesson: Know investment types for smart choices!</p>
-              </>
+                <p className="text-white/80">
+                  Lesson: Understanding investment types helps make informed financial decisions!
+                </p>
+              </div>
             ) : (
-              <>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold mb-4">Keep Practicing!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct.</p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-transform hover:scale-105"
-                >
-                  Try Again
-                </button>
-              </>
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {investments.length} investments correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about the risk level and nature of each investment type!
+                </p>
+              </div>
             )}
           </div>
         )}

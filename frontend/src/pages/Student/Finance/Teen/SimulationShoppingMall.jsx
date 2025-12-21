@@ -1,68 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import GameShell from '../GameShell';
-import useGameFeedback from '../../../../hooks/useGameFeedback';
-import { getGameDataById } from '../../../../utils/getGameData';
-
-// Items available in the shopping mall
-const items = [
-  { id: 1, name: "Designer Jeans", price: 80, category: "Clothing", necessity: "want" },
-  { id: 2, name: "Basic T-Shirt", price: 15, category: "Clothing", necessity: "need" },
-  { id: 3, name: "Smartphone", price: 700, category: "Electronics", necessity: "want" },
-  { id: 4, name: "School Supplies", price: 25, category: "Education", necessity: "need" },
-  { id: 5, name: "Gaming Headset", price: 120, category: "Electronics", necessity: "want" },
-  { id: 6, name: "Running Shoes", price: 90, category: "Footwear", necessity: "need" },
-  { id: 7, name: "Coffee Shop Gift Card", price: 25, category: "Food", necessity: "want" },
-  { id: 8, name: "Textbook", price: 120, category: "Education", necessity: "need" },
-  { id: 9, name: "Movie Tickets", price: 30, category: "Entertainment", necessity: "want" },
-  { id: 10, name: "Winter Coat", price: 150, category: "Clothing", necessity: "need" },
-  { id: 11, name: "Video Game", price: 60, category: "Entertainment", necessity: "want" },
-  { id: 12, name: "Toothbrush Set", price: 10, category: "Personal Care", necessity: "need" }
-];
-
-// Different shopping scenarios
-const scenarios = [
-    {
-      id: 1,
-      title: "Back to School Shopping",
-      budget: 150,
-      goal: "Buy essential school supplies and clothes while staying within budget",
-      required: ["School Supplies"],
-      timeLimit: 120
-    },
-    {
-      id: 2,
-      title: "Holiday Gift Shopping",
-      budget: 100,
-      goal: "Buy thoughtful gifts for family members with different needs",
-      required: [],
-      timeLimit: 120
-    },
-    {
-      id: 3,
-      title: "Emergency Clothing Needs",
-      budget: 110,
-      goal: "Replace essential clothing items after an unexpected situation",
-      required: ["Basic T-Shirt", "Running Shoes"],
-      timeLimit: 90
-    },
-    {
-      id: 4,
-      title: "Entertainment and Socializing",
-      budget: 60,
-      goal: "Plan for social activities while maintaining financial responsibility",
-      required: [],
-      timeLimit: 90
-    },
-    {
-      id: 5,
-      title: "Balanced Shopping Day",
-      budget: 200,
-      goal: "Make purchases for needs, some wants, and save some money",
-      required: ["Toothbrush Set"],
-      timeLimit: 150
-    }
-];
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SimulationShoppingMall = () => {
   const location = useLocation();
@@ -76,209 +16,284 @@ const SimulationShoppingMall = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [budget, setBudget] = useState(150);
-  const [cart, setCart] = useState([]);
   const [currentScenario, setCurrentScenario] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
 
-  // Reset budget and cart when scenario changes
-  useEffect(() => {
-    if (scenarios[currentScenario]) {
-      setBudget(scenarios[currentScenario].budget);
-      setCart([]);
-      setAnswered(false);
+  const scenarios = [
+    {
+      id: 1,
+      title: "Back to School Shopping",
+      description: "You have ₹150 for school supplies. What's the best approach?",
+      budget: 150,
+      options: [
+        
+        { 
+          id: "everything", 
+          text: "Buy everything I want", 
+          emoji: "🛍️", 
+          isCorrect: false
+        },
+        { 
+          id: "needs-only", 
+          text: "Buy only essentials", 
+          emoji: "📚", 
+          isCorrect: true
+        },
+        { 
+          id: "nothing", 
+          text: "Buy nothing, save all", 
+          emoji: "💰", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Holiday Gift Shopping",
+      description: "You have ₹100 for holiday gifts. What's the smartest choice?",
+      budget: 100,
+      options: [
+        { 
+          id: "thoughtful", 
+          text: "Thoughtful gifts within budget", 
+          emoji: "💝", 
+          isCorrect: true
+        },
+        { 
+          id: "expensive", 
+          text: "Most expensive gifts possible", 
+          emoji: "💎", 
+          isCorrect: false
+        },
+        { 
+          id: "cheap", 
+          text: "Cheapest gifts to save money", 
+          emoji: "🏷️", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "Emergency Clothing Needs",
+      description: "You need new clothes after an accident. How do you prioritize?",
+      budget: 110,
+      options: [
+        
+        { 
+          id: "brand-new", 
+          text: "All brand new designer clothes", 
+          emoji: "👗", 
+          isCorrect: false
+        },
+        { 
+          id: "essentials-first", 
+          text: "Essential items first, then extras", 
+          emoji: "👕", 
+          isCorrect: true
+        },
+        { 
+          id: "secondhand", 
+          text: "All secondhand to save money", 
+          emoji: "📦", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "Entertainment and Socializing",
+      description: "You have ₹60 for entertainment. How do you balance fun and finances?",
+      budget: 60,
+      options: [
+        
+        { 
+          id: "all-fun", 
+          text: "Spend all on entertainment", 
+          emoji: "🎉", 
+          isCorrect: false
+        },
+        { 
+          id: "no-fun", 
+          text: "Save all, no entertainment", 
+          emoji: "📵", 
+          is,
+          { 
+          id: "balanced-fun", 
+          text: "Some fun, some savings", 
+          emoji: "🎬", 
+          isCorrect: true
+        },Correct: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Balanced Shopping Day",
+      description: "You have ₹200 for various needs. What's the best allocation?",
+      budget: 200,
+      options: [
+        { 
+          id: "smart-mix", 
+          text: "Mix of needs, some wants, save rest", 
+          emoji: "🛒", 
+          isCorrect: true
+        },
+        { 
+          id: "all-needs", 
+          text: "All needs, no wants or savings", 
+          emoji: "🧾", 
+          isCorrect: false
+        },
+        { 
+          id: "impulse", 
+          text: "Impulse buying whatever I like", 
+          emoji: "🛒", 
+          isCorrect: false
+        }
+      ]
     }
-  }, [currentScenario]);
+  ];
 
-  const addToCart = (item) => {
-    if (answered) return;
-    if (budget >= item.price) {
-      setCart([...cart, item]);
-      setBudget(budget - item.price);
-    }
-  };
-
-  const removeFromCart = (itemId) => {
-    if (answered) return;
-    const itemToRemove = cart.find(item => item.id === itemId);
-    if (itemToRemove) {
-      setCart(cart.filter(item => item.id !== itemId));
-      setBudget(budget + itemToRemove.price);
-    }
-  };
-
-  const handleSubmit = () => {
+  const handleAnswer = (optionId) => {
     if (answered) return;
     
-    resetFeedback();
     setAnswered(true);
+    resetFeedback();
     
     const scenario = scenarios[currentScenario];
-    let scenarioScore = 0;
-    
-    // Check if required items are purchased
-    const requiredItems = scenario.required;
-    const purchasedItems = cart.map(item => item.name);
-    const allRequiredPurchased = requiredItems.length === 0 || requiredItems.every(item => 
-      purchasedItems.includes(item)
-    );
-    
-    // Check if within budget
-    const withinBudget = budget >= 0;
-    
-    // Award points
-    if (allRequiredPurchased && withinBudget) {
-      scenarioScore = 1;
-    }
-    
-    if (scenarioScore > 0) {
+    const selectedOption = scenario.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption?.isCorrect;
+
+    if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-    
-    const isLastScenario = currentScenario >= scenarios.length - 1;
+
+    const isLastScenario = currentScenario === scenarios.length - 1;
     
     setTimeout(() => {
       if (isLastScenario) {
         setShowResult(true);
       } else {
         setCurrentScenario(prev => prev + 1);
+        setAnswered(false);
       }
-    }, 1500);
+    }, 500);
   };
 
-  const currentScenarioData = scenarios[currentScenario];
-  const cartTotal = cart.reduce((sum, item) => sum + item.price, 0);
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentScenario(0);
+    setScore(0);
+    setAnswered(false);
+    resetFeedback();
+  };
+
+  const current = scenarios[currentScenario];
 
   return (
     <GameShell
       title="Simulation: Shopping Mall"
       subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Simulation Complete!"}
-      gameId={gameId}
-      gameType="finance"
-      totalLevels={scenarios.length}
-      currentLevel={currentScenario + 1}
-      coinsPerLevel={coinsPerLevel}
       score={score}
+      currentLevel={currentScenario + 1}
+      totalLevels={scenarios.length}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
       maxScore={scenarios.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      showConfetti={showResult && score === scenarios.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="finance"
     >
-      <div className="text-center text-white space-y-4">
-        {!showResult && currentScenarioData && (
-          <div className="space-y-4 max-w-6xl mx-auto">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="text-lg font-bold text-white">{currentScenarioData.title}</h3>
-                <div className="text-right">
-                  <div className="text-base font-bold text-yellow-400">Budget: ₹{budget}</div>
-                  <div className="text-xs text-white/70">Remaining</div>
+      <div className="space-y-8">
+        {!showResult && current ? (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Scenario {currentScenario + 1}/{scenarios.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{scenarios.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{current.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {current.description}
+              </p>
+              
+              <div className="bg-white/5 rounded-lg p-4 mb-6">
+                <div className="text-center">
+                  <span className="text-white font-semibold text-lg">Budget: </span>
+                  <span className="text-green-400 font-bold text-2xl">₹{current.budget}</span>
                 </div>
               </div>
               
-              <div className="bg-blue-500/20 border border-blue-400/50 rounded-lg p-3 mb-3">
-                <h5 className="font-medium text-blue-300 mb-1 text-sm">Goal:</h5>
-                <p className="text-white/90 text-xs">{currentScenarioData.goal}</p>
-                {currentScenarioData.required.length > 0 && (
-                  <p className="mt-1 text-white/80 text-xs">
-                    <span className="font-medium">Required:</span> {currentScenarioData.required.join(", ")}
-                  </p>
-                )}
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mb-3">
-                {items.map((item) => {
-                  const inCart = cart.some(cartItem => cartItem.id === item.id);
-                  const canAfford = budget >= item.price;
-                  
-                  return (
-                    <div 
-                      key={item.id} 
-                      className={`border rounded-lg p-2 transition duration-200 ${
-                        inCart 
-                          ? 'bg-green-500/30 border-green-400' 
-                          : 'bg-white/5 border-white/20 hover:bg-white/10'
-                      }`}
-                    >
-                      <h5 className="font-medium text-white text-xs mb-1">{item.name}</h5>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-yellow-400 font-bold text-xs">₹{item.price}</span>
-                        <span className={`text-xs px-1.5 py-0.5 rounded ${
-                          item.necessity === 'need' 
-                            ? 'bg-green-500/50 text-green-200' 
-                            : 'bg-yellow-500/50 text-yellow-200'
-                        }`}>
-                          {item.necessity}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => inCart ? removeFromCart(item.id) : addToCart(item)}
-                        disabled={!canAfford && !inCart || answered}
-                        className={`w-full py-1.5 rounded-lg text-xs font-medium transition duration-200 ${
-                          inCart
-                            ? 'bg-red-500 hover:bg-red-600 text-white'
-                            : canAfford && !answered
-                            ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                            : 'bg-gray-500 text-gray-300 cursor-not-allowed'
-                        }`}
-                      >
-                        {inCart ? 'Remove' : 'Add to Cart'}
-                      </button>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {current.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.id)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
                     </div>
-                  );
-                })}
+                  </button>
+                ))}
               </div>
-              
-              {cart.length > 0 && (
-                <div className="border-t border-white/20 pt-3">
-                  <h5 className="font-medium text-white mb-2 text-sm">Shopping Cart ({cart.length} items):</h5>
-                  <div className="space-y-1 mb-2 max-h-24 overflow-y-auto">
-                    {cart.map((item) => (
-                      <div key={item.id} className="flex justify-between items-center bg-white/10 p-1.5 rounded-lg">
-                        <span className="text-white text-xs">{item.name} - ₹{item.price}</span>
-                        <button
-                          onClick={() => removeFromCart(item.id)}
-                          disabled={answered}
-                          className="text-red-400 hover:text-red-300 text-xs font-medium disabled:opacity-50"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="text-right text-white/80 text-xs">
-                    Total: ₹{cartTotal} | Remaining: ₹{budget}
-                  </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Financial Decisions!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {scenarios.length} scenarios correct!
+                  You understand smart shopping decisions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
-              )}
-              
-              <button
-                onClick={handleSubmit}
-                disabled={answered || cart.length === 0}
-                className={`mt-3 w-full py-2 rounded-full text-sm font-semibold transition-transform ${
-                  !answered && cart.length > 0
-                    ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
-                    : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
-                }`}
-              >
-                {currentScenario === scenarios.length - 1 ? 'Submit Final Cart' : 'Submit & Continue'}
-              </button>
-            </div>
-            
-            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-2 border border-white/20">
-              <span className="text-white/80 text-xs">
-                Scenario {currentScenario + 1} of {scenarios.length}
-              </span>
-              <span className="font-medium text-yellow-400 text-xs">
-                Score: {score}/{scenarios.length}
-              </span>
-            </div>
+                <p className="text-white/80">
+                  Lesson: Balancing needs, wants, and savings leads to smart financial choices!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {scenarios.length} scenarios correct.
+                  Remember to balance needs, wants, and savings!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Always prioritize needs first, then some wants, and save the rest!
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

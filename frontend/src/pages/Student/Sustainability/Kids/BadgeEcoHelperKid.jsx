@@ -19,6 +19,7 @@ const BadgeEcoHelperKid = () => {
   const [answered, setAnswered] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showResult, setShowResult] = useState(false);
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
 
   // Find next game path and ID if not provided in location.state
   const { nextGamePath, nextGameId } = useMemo(() => {

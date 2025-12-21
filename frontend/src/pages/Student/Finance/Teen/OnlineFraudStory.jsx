@@ -92,6 +92,14 @@ const OnlineFraudStory = () => {
           description: "Could be phishing", 
           isCorrect: false 
         },
+        
+        { 
+          id: "forward", 
+          text: "Forward to friends", 
+          emoji: "📤", 
+          description: "Spreads risk", 
+          isCorrect: false 
+        },
         { 
           id: "ignore", 
           text: "Ignore and delete", 
@@ -99,13 +107,6 @@ const OnlineFraudStory = () => {
           description: "Safe approach", 
           isCorrect: true 
         },
-        { 
-          id: "forward", 
-          text: "Forward to friends", 
-          emoji: "📤", 
-          description: "Spreads risk", 
-          isCorrect: false 
-        }
       ]
     },
     {
@@ -140,19 +141,20 @@ const OnlineFraudStory = () => {
       text: "You get a message saying you won a prize and need to pay a fee to claim it. What do you do?",
       options: [
         { 
-          id: "pay", 
-          text: "Pay the fee", 
-          emoji: "💸", 
-          description: "Likely a scam", 
-          isCorrect: false 
-        },
-        { 
           id: "ignore", 
           text: "Ignore it - it's a scam", 
           emoji: "🚫", 
           description: "Legitimate prizes are free", 
           isCorrect: true 
         },
+        { 
+          id: "pay", 
+          text: "Pay the fee", 
+          emoji: "💸", 
+          description: "Likely a scam", 
+          isCorrect: false 
+        },
+        
         { 
           id: "check", 
           text: "Check with friends first", 

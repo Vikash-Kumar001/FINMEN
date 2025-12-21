@@ -28,11 +28,7 @@ const BadgeSmartSaver = () => {
       title: "Emergency Situation",
       question: "Your bike needs urgent repairs costing ₹500. You have ₹300 saved. What do you do?",
       options: [
-        { 
-          text: "Use savings + earn more", 
-          emoji: "🛠️", 
-          isCorrect: true
-        },
+        
         { 
           text: "Borrow from friends", 
           emoji: "👥", 
@@ -42,6 +38,11 @@ const BadgeSmartSaver = () => {
           text: "Use credit card", 
           emoji: "💳", 
           isCorrect: false
+        },
+        { 
+          text: "Use savings + earn more", 
+          emoji: "🛠️", 
+          isCorrect: true
         },
         { 
           text: "Ignore the repair", 
@@ -59,15 +60,16 @@ const BadgeSmartSaver = () => {
       title: "Investment Opportunity",
       question: "A friend offers 50% return on ₹1000 investment in 1 month. What's your choice?",
       options: [
-        { 
-          text: "Decline risky offer", 
-          emoji: "🛡️", 
-          isCorrect: true
-        },
+       
         { 
           text: "Invest the money", 
           emoji: "🎰", 
           isCorrect: false
+        },
+         { 
+          text: "Decline risky offer", 
+          emoji: "🛡️", 
+          isCorrect: true
         },
         { 
           text: "Invest half", 
@@ -121,11 +123,7 @@ const BadgeSmartSaver = () => {
       title: "Bonus Dilemma",
       question: "You receive ₹1000 bonus. Should you save it all or spend some?",
       options: [
-        { 
-          text: "Save 80%, spend 20%", 
-          emoji: "💰", 
-          isCorrect: true
-        },
+        
         { 
           text: "Spend 50% on fun", 
           emoji: "🎉", 
@@ -135,6 +133,11 @@ const BadgeSmartSaver = () => {
           text: "Spend it all", 
           emoji: "🛍️", 
           isCorrect: false
+        },
+        { 
+          text: "Save 80%, spend 20%", 
+          emoji: "💰", 
+          isCorrect: true
         },
         { 
           text: "Save it all", 

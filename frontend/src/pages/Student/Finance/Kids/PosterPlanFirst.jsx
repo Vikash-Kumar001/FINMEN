@@ -22,69 +22,86 @@ const PosterPlanFirst = () => {
   const [currentStage, setCurrentStage] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const stages = [
     {
-      question: 'Choose a poster: "Budget Saves Money."',
+      question: "What is the first step in creating a budget?",
       choices: [
-        { text: "Spend Without Plan 🛍️", correct: false },
-        { text: "Buy Now, Think Later 🛒", correct: false },
-        { text: "Budget Saves Money 💰", correct: true },
+        { text: "Buy what you want immediately 🛍️", correct: false },
+        { text: "List your income and expenses 📋", correct: true },
+        { text: "Spend all your money 🎉", correct: false },
+        { text: "Hide your money 🏺", correct: false }
       ],
     },
     {
-      question: 'Choose a poster: "Plan First, Buy Later."',
+      question: "What should you do if your expenses are higher than your income?",
       choices: [
-        { text: "Plan First, Buy Later 🎯", correct: true },
-        { text: "Spend All Now 🎉", correct: false },
-        { text: "Hide Money 🏺", correct: false },
+        { text: "Ignore the problem 🙈", correct: false },
+        { text: "Spend more money 🤑", correct: false },
+        { text: "Find ways to reduce expenses or increase income 💡", correct: true },
+        { text: "Give up on budgeting 🏃", correct: false }
       ],
     },
     {
-      question: 'Choose a poster: "Smart Budget, Big Wins."',
+      question: "Why is it important to track your spending?",
       choices: [
-        { text: "Buy Toys Fast 🧸", correct: false },
-        { text: "Smart Budget, Big Wins 📈", correct: true },
-        { text: "Give Money Away 🎁", correct: false },
+        { text: "To understand where your money goes 🔍", correct: true },
+        { text: "To spend more freely 💳", correct: false },
+        { text: "To avoid paying bills 📉", correct: false },
+        { text: "To make budgeting more difficult 🤯", correct: false }
       ],
     },
     {
-      question: 'Choose a poster: "Plan Today, Thrive Tomorrow."',
+      question: "What is a good strategy for sticking to a budget?",
       choices: [
-        { text: "Spend Without Care 🛍️", correct: false },
-        { text: "Plan Today, Thrive Tomorrow 🌟", correct: true },
-        { text: "Keep Cash in Pocket 🎒", correct: false },
+        { text: "Spend whenever you feel like it 🔄", correct: false },
+        { text: "Avoid checking your bank account 🙅", correct: false },
+        { text: "Set spending limits and review regularly 📊", correct: true },
+        { text: "Use all your credit cards 🎴", correct: false }
       ],
     },
     {
-      question: 'Why do budgeting posters help kids?',
+      question: "What is the benefit of saving money before buying non-essential items?",
       choices: [
-        { text: "Teach smart planning 📚", correct: true },
-        { text: "Encourage spending 🛒", correct: false },
-        { text: "Make budgeting fun 🎉", correct: false },
+        { text: "You can spend more money overall 💸", correct: false },
+        { text: "You will never enjoy anything 🙁", correct: false },
+        { text: "You will become rich instantly 💰", correct: false },
+        { text: "You can make thoughtful purchases without guilt ✅", correct: true },
       ],
-    },
+    }
   ];
 
   const handleSelect = (isCorrect) => {
+    if (answered) return; // Prevent multiple clicks
+    
+    setAnswered(true);
     resetFeedback();
+    
     if (isCorrect) {
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
-    } else {
-      setTimeout(() => setShowResult(true), 800);
-    }
+    
+    const isLastQuestion = currentStage === stages.length - 1;
+    
+    // Move to next question or show results after a short delay
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentStage((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const finalScore = score;
 
   return (
     <GameShell
-      title="Poster: Plan First"
-      subtitle={`Question ${currentStage + 1} of ${stages.length}: Choose posters that promote budgeting!`}
+      title="Budgeting Basics"
+      subtitle={`Question ${currentStage + 1} of ${stages.length}: Test your budgeting knowledge!`}
       coins={score}
       currentLevel={currentStage + 1}
       totalLevels={5}
@@ -93,7 +110,7 @@ const PosterPlanFirst = () => {
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       score={finalScore}
-      gameId="finance-kids-26"
+      gameId={gameId}
       gameType="finance"
       maxScore={5}
       totalCoins={totalCoins}
@@ -109,8 +126,8 @@ const PosterPlanFirst = () => {
               <button
                 key={idx}
                 onClick={() => handleSelect(choice.correct)}
-                className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-green-600 transition-transform hover:scale-105"
-                disabled={showResult}
+                className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-green-600 transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={answered || showResult}
               >
                 <div className="text-lg font-semibold">{choice.text}</div>
               </button>

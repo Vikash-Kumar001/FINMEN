@@ -30,30 +30,25 @@ const SimulationMiniStartup = () => {
     {
       id: 1,
       title: "Mini Startup: Snack Stall",
-      description: "You have ₹500 to start a snack stall. Buy ingredients (₹300), profit ₹200. Smart?",
-      capital: 500,
-      cost: 300,
-      profit: 200,
+      description: "You have ₹500. What's the best approach?",
+      amount: 500,
       options: [
         { 
           id: "yes", 
           text: "Yes, smart investment", 
           emoji: "💡", 
-          description: "40% profit is good",
           isCorrect: true
         },
         { 
           id: "maybe", 
           text: "Maybe, depends", 
           emoji: "🤔", 
-          description: "Need more info",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No, too risky", 
           emoji: "⚠️", 
-          description: "Business is risky",
           isCorrect: false
         }
       ]
@@ -61,30 +56,25 @@ const SimulationMiniStartup = () => {
     {
       id: 2,
       title: "Mini Startup: Craft Business",
-      description: "You have ₹400. Spend ₹250 on materials, sell for ₹400. Good?",
-      capital: 400,
-      cost: 250,
-      profit: 150,
+      description: "You have ₹400. What should you do?",
+      amount: 400,
       options: [
         { 
           id: "no2", 
           text: "No, not worth it", 
           emoji: "😕", 
-          description: "Too small profit",
           isCorrect: false
         },
         { 
           id: "yes2", 
           text: "Yes, 60% profit", 
           emoji: "💡", 
-          description: "Excellent return",
           isCorrect: true
         },
         { 
           id: "maybe2", 
           text: "Maybe, if repeatable", 
           emoji: "🤷", 
-          description: "Only if consistent",
           isCorrect: false
         }
       ]
@@ -92,30 +82,25 @@ const SimulationMiniStartup = () => {
     {
       id: 3,
       title: "Mini Startup: Lemonade Stand",
-      description: "You have ₹300. Spend ₹150 on supplies, earn ₹250. Smart?",
-      capital: 300,
-      cost: 150,
-      profit: 100,
+      description: "You have ₹300. What's the smart choice?",
+      amount: 300,
       options: [
         { 
           id: "no3", 
           text: "No, too small", 
           emoji: "😕", 
-          description: "Not enough money",
           isCorrect: false
         },
         { 
           id: "maybe3", 
           text: "Maybe, if fun", 
           emoji: "😊", 
-          description: "Only for enjoyment",
           isCorrect: false
         },
         { 
           id: "yes3", 
           text: "Yes, 67% profit", 
           emoji: "💡", 
-          description: "Great return",
           isCorrect: true
         }
       ]
@@ -123,30 +108,25 @@ const SimulationMiniStartup = () => {
     {
       id: 4,
       title: "Mini Startup: Book Resale",
-      description: "You have ₹600. Buy books for ₹400, sell for ₹600. Good?",
-      capital: 600,
-      cost: 400,
-      profit: 200,
+      description: "You have ₹600. What's the right decision?",
+      amount: 600,
       options: [
         { 
           id: "yes4", 
           text: "Yes, 50% profit", 
           emoji: "💡", 
-          description: "Good return",
           isCorrect: true
         },
         { 
           id: "no4", 
           text: "No, too slow", 
           emoji: "⏳", 
-          description: "Takes too long",
           isCorrect: false
         },
         { 
           id: "maybe4", 
           text: "Maybe, if easy", 
           emoji: "🤷", 
-          description: "Only if simple",
           isCorrect: false
         }
       ]
@@ -154,30 +134,25 @@ const SimulationMiniStartup = () => {
     {
       id: 5,
       title: "Mini Startup: Tutoring Service",
-      description: "You have ₹500. Spend ₹200 on materials, charge ₹500. Smart?",
-      capital: 500,
-      cost: 200,
-      profit: 300,
+      description: "You have ₹500. What should you choose?",
+      amount: 500,
       options: [
         { 
           id: "no5", 
           text: "No, too much work", 
           emoji: "😴", 
-          description: "Requires effort",
           isCorrect: false
         },
         { 
           id: "yes5", 
           text: "Yes, 150% profit", 
           emoji: "💡", 
-          description: "Excellent return",
           isCorrect: true
         },
         { 
           id: "maybe5", 
           text: "Maybe, if skilled", 
           emoji: "🎓", 
-          description: "Only if good at teaching",
           isCorrect: false
         }
       ]
@@ -256,19 +231,9 @@ const SimulationMiniStartup = () => {
               </p>
               
               <div className="bg-white/5 rounded-lg p-4 mb-6">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-white font-semibold">Capital:</span>
-                    <span className="text-green-400 font-bold">₹{current.capital}</span>
-                  </div>
-                  <div className="flex justify-between items-center border-t border-white/10 pt-3">
-                    <span className="text-white font-semibold">Cost:</span>
-                    <span className="text-red-400 font-bold">₹{current.cost}</span>
-                  </div>
-                  <div className="flex justify-between items-center border-t border-white/10 pt-3">
-                    <span className="text-white font-semibold">Profit:</span>
-                    <span className="text-yellow-400 font-bold">₹{current.profit}</span>
-                  </div>
+                <div className="text-center">
+                  <span className="text-white font-semibold text-lg">Amount: </span>
+                  <span className="text-green-400 font-bold text-2xl">₹{current.amount}</span>
                 </div>
               </div>
               
@@ -289,7 +254,6 @@ const SimulationMiniStartup = () => {
                     <div className="flex flex-col items-center justify-center gap-3">
                       <span className="text-4xl">{option.emoji}</span>
                       <span className="font-semibold text-lg">{option.text}</span>
-                      <p className="text-sm opacity-90">{option.description}</p>
                     </div>
                   </button>
                 ))}

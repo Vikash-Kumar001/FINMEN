@@ -30,21 +30,18 @@ const BudgetQuiz = () => {
           id: "60", 
           text: "60%", 
           emoji: "📊", 
-          description: "Incorrect calculation", 
           isCorrect: false 
         },
         { 
           id: "40", 
           text: "40%", 
           emoji: "🍽️", 
-          description: "Correct calculation: (400/1000) × 100 = 40%", 
           isCorrect: true 
         },
         { 
           id: "35", 
           text: "35%", 
           emoji: "📈", 
-          description: "Incorrect calculation", 
           isCorrect: false 
         }
       ]
@@ -57,21 +54,18 @@ const BudgetQuiz = () => {
           id: "50", 
           text: "50%", 
           emoji: "🏦", 
-          description: "Correct: (300/600) × 100 = 50%", 
           isCorrect: true 
         },
         { 
           id: "25", 
           text: "25%", 
           emoji: "💵", 
-          description: "Incorrect calculation", 
           isCorrect: false 
         },
         { 
           id: "40", 
           text: "40%", 
           emoji: "💰", 
-          description: "Incorrect calculation", 
           isCorrect: false 
         }
       ]
@@ -84,21 +78,18 @@ const BudgetQuiz = () => {
           id: "20", 
           text: "20%", 
           emoji: "🚗", 
-          description: "Incorrect calculation", 
           isCorrect: false 
         },
         { 
           id: "35", 
           text: "35%", 
           emoji: "🚲", 
-          description: "Incorrect calculation", 
           isCorrect: false 
         },
         { 
           id: "30", 
           text: "30%", 
           emoji: "🚍", 
-          description: "Correct: (150/500) × 100 = 30%", 
           isCorrect: true 
         }
       ]
@@ -111,21 +102,18 @@ const BudgetQuiz = () => {
           id: "30", 
           text: "30%", 
           emoji: "💳", 
-          description: "Incorrect calculation", 
           isCorrect: false 
         },
         { 
           id: "25", 
           text: "25%", 
           emoji: "💰", 
-          description: "Correct: (200/800) × 100 = 25%", 
           isCorrect: true 
         },
         { 
           id: "50", 
           text: "50%", 
           emoji: "💸", 
-          description: "Incorrect calculation", 
           isCorrect: false 
         }
       ]
@@ -138,21 +126,18 @@ const BudgetQuiz = () => {
           id: "35", 
           text: "35%", 
           emoji: "👔", 
-          description: "Incorrect calculation", 
           isCorrect: false 
         },
         { 
           id: "45", 
           text: "45%", 
           emoji: "🛍️", 
-          description: "Incorrect calculation", 
           isCorrect: false 
         },
         { 
           id: "40", 
           text: "40%", 
           emoji: "👗", 
-          description: "Correct: (240/600) × 100 = 40%", 
           isCorrect: true 
         }
       ]
@@ -231,7 +216,6 @@ const BudgetQuiz = () => {
                   >
                     <div className="text-3xl mb-3">{option.emoji}</div>
                     <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
                   </button>
                 ))}
               </div>

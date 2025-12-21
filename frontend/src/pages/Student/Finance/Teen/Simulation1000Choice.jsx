@@ -37,21 +37,18 @@ const Simulation1000Choice = () => {
           id: "fd", 
           text: "Fixed Deposit", 
           emoji: "🏦", 
-          description: "Safe, 5% return",
           isCorrect: false
         },
         { 
           id: "stocks", 
           text: "Stocks", 
           emoji: "📈", 
-          description: "Risky, 15% return",
           isCorrect: false
         },
         { 
           id: "mix", 
           text: "Mix FD + Stocks", 
           emoji: "⚖️", 
-          description: "Balance safety and growth",
           isCorrect: true
         }
       ]
@@ -66,21 +63,18 @@ const Simulation1000Choice = () => {
           id: "spend", 
           text: "Spend all", 
           emoji: "💸", 
-          description: "Use it immediately",
           isCorrect: false
         },
         { 
           id: "mix2", 
           text: "Mix FD + Stocks", 
           emoji: "📊", 
-          description: "Diversify investments",
           isCorrect: true
         },
         { 
           id: "save", 
           text: "Save only", 
           emoji: "💰", 
-          description: "Keep in savings",
           isCorrect: false
         }
       ]
@@ -95,21 +89,18 @@ const Simulation1000Choice = () => {
           id: "mix3", 
           text: "Mix FD + Stocks", 
           emoji: "⚖️", 
-          description: "Best balance",
           isCorrect: true
         },
         { 
           id: "all-stocks", 
           text: "All in stocks", 
           emoji: "📈", 
-          description: "Maximum risk",
           isCorrect: false
         },
         { 
           id: "all-fd", 
           text: "All in FD", 
           emoji: "🛡️", 
-          description: "Maximum safety",
           isCorrect: false
         }
       ]
@@ -124,21 +115,18 @@ const Simulation1000Choice = () => {
           id: "waste", 
           text: "Spend on wants", 
           emoji: "🛍️", 
-          description: "Buy things you want",
           isCorrect: false
         },
         { 
           id: "mix4", 
           text: "Mix FD + Stocks", 
           emoji: "📊", 
-          description: "Smart diversification",
           isCorrect: true
         },
         { 
           id: "hide", 
           text: "Hide at home", 
           emoji: "🏠", 
-          description: "Keep cash at home",
           isCorrect: false
         }
       ]
@@ -153,21 +141,18 @@ const Simulation1000Choice = () => {
           id: "mix5", 
           text: "Mix FD + Stocks", 
           emoji: "⚖️", 
-          description: "Best strategy",
           isCorrect: true
         },
         { 
           id: "gamble", 
           text: "Gamble it", 
           emoji: "🎲", 
-          description: "Take big risks",
           isCorrect: false
         },
         { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "😴", 
-          description: "Do nothing",
           isCorrect: false
         }
       ]
@@ -269,7 +254,6 @@ const Simulation1000Choice = () => {
                     <div className="flex flex-col items-center justify-center gap-3">
                       <span className="text-4xl">{option.emoji}</span>
                       <span className="font-semibold text-lg">{option.text}</span>
-                      <p className="text-sm opacity-90">{option.description}</p>
                     </div>
                   </button>
                 ))}

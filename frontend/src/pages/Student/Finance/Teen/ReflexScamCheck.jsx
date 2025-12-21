@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const ReflexScamCheck = () => {
   const location = useLocation();
@@ -21,277 +24,292 @@ const ReflexScamCheck = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [answered, setAnswered] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(10);
   const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
-  const rounds = [
+  const questions = [
     {
       id: 1,
-      question: "Tap for 'Report Scam' or 'Ignore Fraud.'",
+      question: "What should you do when you receive a suspicious email?",
+      correctAnswer: "Report Scam",
       options: [
-        { 
-          id: "report", 
-          text: "Report Scam", 
-          emoji: "🚨", 
-          isCorrect: true
-        },
-        { 
-          id: "ignore", 
-          text: "Ignore Fraud", 
-          emoji: "😴", 
-          isCorrect: false
-        },
-        { 
-          id: "maybe", 
-          text: "Wait and see", 
-          emoji: "🤔", 
-          isCorrect: false
-        }
+        { text: "Report Scam", isCorrect: true, emoji: "🚨" },
+        { text: "Ignore Fraud", isCorrect: false, emoji: "😴" },
+        { text: "Wait and see", isCorrect: false, emoji: "🤔" },
+        { text: "Forward to friends", isCorrect: false, emoji: "📤" }
       ]
     },
     {
       id: 2,
-      question: "Tap for 'Verify First' or 'Trust Immediately.'",
+      question: "What is the safest approach when someone claims to be from your bank?",
+      correctAnswer: "Verify First",
       options: [
-        { 
-          id: "trust", 
-          text: "Trust Immediately", 
-          emoji: "😊", 
-          isCorrect: false
-        },
-        { 
-          id: "verify", 
-          text: "Verify First", 
-          emoji: "🔍", 
-          isCorrect: true
-        },
-        { 
-          id: "ignore2", 
-          text: "Ignore completely", 
-          emoji: "🚫", 
-          isCorrect: false
-        }
+        { text: "Trust Immediately", isCorrect: false, emoji: "😊" },
+        { text: "Verify First", isCorrect: true, emoji: "🔍" },
+        { text: "Ignore completely", isCorrect: false, emoji: "🚫" },
+        { text: "Provide information", isCorrect: false, emoji: "📝" }
       ]
     },
     {
       id: 3,
-      question: "Tap for 'Delete Suspicious' or 'Click Link.'",
+      question: "What should you do with suspicious messages or emails?",
+      correctAnswer: "Delete Suspicious",
       options: [
-        { 
-          id: "delete", 
-          text: "Delete Suspicious", 
-          emoji: "🗑️", 
-          isCorrect: true
-        },
-        { 
-          id: "click", 
-          text: "Click Link", 
-          emoji: "🔗", 
-          isCorrect: false
-        },
-        { 
-          id: "forward", 
-          text: "Forward to others", 
-          emoji: "📤", 
-          isCorrect: false
-        }
+        { text: "Delete Suspicious", isCorrect: true, emoji: "🗑️" },
+        { text: "Click Link", isCorrect: false, emoji: "🔗" },
+        { text: "Forward to others", isCorrect: false, emoji: "📤" },
+        { text: "Save for later", isCorrect: false, emoji: "💾" }
       ]
     },
     {
       id: 4,
-      question: "Tap for 'Never Share OTP' or 'Share OTP.'",
+      question: "What should you do if someone asks for your OTP?",
+      correctAnswer: "Never Share OTP",
       options: [
-        { 
-          id: "never-share", 
-          text: "Never Share OTP", 
-          emoji: "🔒", 
-          isCorrect: true
-        },
-        { 
-          id: "share-otp", 
-          text: "Share OTP", 
-          emoji: "🔢", 
-          isCorrect: false
-        },
-        { 
-          id: "maybe-otp", 
-          text: "Share if asked nicely", 
-          emoji: "🤷", 
-          isCorrect: false
-        }
+        { text: "Never Share OTP", isCorrect: true, emoji: "🔒" },
+        { text: "Share OTP", isCorrect: false, emoji: "🔢" },
+        { text: "Share if asked nicely", isCorrect: false, emoji: "🤷" },
+        { text: "Give partial code", isCorrect: false, emoji: "🔢" }
       ]
     },
     {
       id: 5,
-      question: "Tap for 'Hang Up Safely' or 'Continue Call.'",
+      question: "What should you do if you suspect a phone scam?",
+      correctAnswer: "Hang Up Safely",
       options: [
-        { 
-          id: "continue", 
-          text: "Continue Call", 
-          emoji: "📞", 
-          isCorrect: false
-        },
-        { 
-          id: "hang-up", 
-          text: "Hang Up Safely", 
-          emoji: "📴", 
-          isCorrect: true
-        },
-        { 
-          id: "give-info", 
-          text: "Give some information", 
-          emoji: "📝", 
-          isCorrect: false
-        }
+        { text: "Continue Call", isCorrect: false, emoji: "📞" },
+        { text: "Hang Up Safely", isCorrect: true, emoji: "📴" },
+        { text: "Give some information", isCorrect: false, emoji: "📝" },
+        { text: "Ask for credentials", isCorrect: false, emoji: "🔐" }
       ]
     }
   ];
 
+  // Update ref when currentRound changes
   useEffect(() => {
-    if (!showResult && !answered) {
-      setTimeLeft(10);
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current);
-            handleTimeUp();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  // Reset timer when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
+  }, [currentRound, gameState]);
+
+  // Handle time up - move to next question or show results
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
+    resetFeedback();
+
+    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
+
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 1000);
+  }, [resetFeedback]);
+
+  // Timer effect - countdown from 10 seconds for each question
+  useEffect(() => {
+    if (gameState !== "playing") {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+
+    // Check if game should be finished
+    if (currentRoundRef.current > TOTAL_ROUNDS) {
+      setGameState("finished");
+      return;
+    }
+
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // Start countdown timer
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          // Time's up for this round
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          handleTimeUp();
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
 
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
+        timerRef.current = null;
       }
     };
-  }, [currentRound, showResult, answered]);
+  }, [gameState, handleTimeUp]);
 
-  const handleTimeUp = () => {
-    if (answered) return;
-    setAnswered(true);
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
     resetFeedback();
-    showCorrectAnswerFeedback(0, false);
-    
-    const isLastRound = currentRound === rounds.length - 1;
-    setTimeout(() => {
-      if (isLastRound) {
-        setShowResult(true);
-      } else {
-        setCurrentRound(prev => prev + 1);
-        setAnswered(false);
-      }
-    }, 1500);
   };
 
-  const handleAnswer = (optionId) => {
-    if (answered) return;
-    
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
+
+    // Clear the timer immediately when user answers
     if (timerRef.current) {
       clearInterval(timerRef.current);
+      timerRef.current = null;
     }
-    
+
     setAnswered(true);
     resetFeedback();
-    
-    const round = rounds[currentRound];
-    const selectedOption = round.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isCorrect;
+
+    const isCorrect = option.isCorrect;
+    const isLastQuestion = currentRound === questions.length;
 
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
 
-    const isLastRound = currentRound === rounds.length - 1;
-    
+    // Move to next round or show results after a short delay
     setTimeout(() => {
-      if (isLastRound) {
-        setShowResult(true);
+      if (isLastQuestion) {
+        setGameState("finished");
       } else {
-        setCurrentRound(prev => prev + 1);
+        setCurrentRound((prev) => prev + 1);
         setAnswered(false);
       }
-    }, 1500);
+    }, 500);
   };
 
-  const current = rounds[currentRound];
+  const finalScore = score;
+
+  const handleTryAgain = () => {
+    setGameState("ready");
+    setCurrentRound(0);
+    setScore(0);
+    setTimeLeft(ROUND_TIME);
+    setAnswered(false);
+    resetFeedback();
+  };
+
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Scam Check"
-      subtitle={!showResult ? `Round ${currentRound + 1} of ${rounds.length}` : "Game Complete!"}
-      score={score}
-      currentLevel={currentRound + 1}
-      totalLevels={rounds.length}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your scam detection reflexes!` : "Test your scam detection reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      showGameOver={showResult}
-      maxScore={rounds.length}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showConfetti={showResult && score >= 3}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
       gameId={gameId}
       gameType="finance"
-    >
-      <div className="space-y-8">
-        {!showResult && current ? (
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Round {currentRound + 1}/{rounds.length}</span>
-                <div className="flex items-center gap-4">
-                  <span className="text-yellow-400 font-bold">Score: {score}/{rounds.length}</span>
-                  <div className="bg-red-500/20 px-4 py-2 rounded-full">
-                    <span className="text-white font-bold">{timeLeft}s</span>
-                  </div>
-                </div>
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">🚨</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Ready to Test Your Scam Detection Skills?</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Answer questions about identifying and responding to scams.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
-              
-              <div className="w-full bg-gray-700 rounded-full h-2 mb-6">
-                <div 
-                  className="bg-gradient-to-r from-red-500 to-orange-500 h-2 rounded-full transition-all duration-1000"
-                  style={{ width: `${(timeLeft / 10) * 100}%` }}
-                />
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
               </div>
-              
-              <h3 className="text-xl font-bold text-white mb-6 text-center">
-                {current.question}
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
               </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {current.options.map((option) => (
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleAnswer(option.id)}
+                    key={index}
+                    onClick={() => handleAnswer(option)}
                     disabled={answered}
-                    className={`p-6 rounded-2xl text-center transition-all transform ${
-                      answered
-                        ? option.isCorrect
-                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
-                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                    } ${answered ? "cursor-not-allowed" : ""}`}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <div className="flex flex-col items-center justify-center gap-3">
-                      <span className="text-4xl">{option.emoji}</span>
-                      <span className="font-semibold text-lg">{option.text}</span>
-                    </div>
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
                 ))}
               </div>
             </div>
           </div>
-        ) : null}
+        )}
+
+        {gameState === "finished" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">🚨</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              You scored {finalScore} out of {TOTAL_ROUNDS}!
+            </p>
+            <p className="text-white/80 mb-6">
+              You're developing strong scam detection skills!
+            </p>
+            <button
+              onClick={handleTryAgain}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+            >
+              Play Again
+            </button>
+          </div>
+        )}
       </div>
     </GameShell>
   );

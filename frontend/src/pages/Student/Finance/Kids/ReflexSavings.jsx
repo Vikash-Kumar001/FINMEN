@@ -5,18 +5,7 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const TOTAL_ROUNDS = 5;
-const ROUND_TIME = 5;
-
-const words = [
-  { word: "SAVE", isCorrect: true },
-  { word: "WASTE", isCorrect: false },
-  { word: "SECURE", isCorrect: true },
-  { word: "SPEND", isCorrect: false },
-  { word: "SAFE", isCorrect: true },
-  { word: "LOSE", isCorrect: false },
-  { word: "PRESERVE", isCorrect: true },
-  { word: "THROW", isCorrect: false }
-];
+const ROUND_TIME = 10;
 
 const ReflexSavings = () => {
   const navigate = useNavigate();
@@ -30,76 +19,105 @@ const ReflexSavings = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
   const [gameState, setGameState] = useState("ready"); // ready, playing, finished
   const [score, setScore] = useState(0);
   const [currentRound, setCurrentRound] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(5);
-  const [currentWord, setCurrentWord] = useState(null);
-  const startTimeRef = useRef(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
   const timerRef = useRef(null);
   const currentRoundRef = useRef(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Shuffle array function
-  const shuffleArray = useCallback((array) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  const questions = [
+    {
+      id: 1,
+      question: "What is the best way to save money?",
+      correctAnswer: "Set a Savings Goal",
+      options: [
+        { text: "Spend Randomly", isCorrect: false, emoji: "💸" },
+        { text: "Set a Savings Goal", isCorrect: true, emoji: "🎯" },
+        { text: "Borrow Money", isCorrect: false, emoji: "💳" },
+        { text: "Ignore Savings", isCorrect: false, emoji: "🙈" }
+      ]
+    },
+    {
+      id: 2,
+      question: "What should you do with extra money?",
+      correctAnswer: "Save It",
+      options: [
+        { text: "Save It", isCorrect: true, emoji: "💰" },
+        { text: "Spend It All", isCorrect: false, emoji: "🛍️" },
+        { text: "Lose It", isCorrect: false, emoji: "📉" },
+        { text: "Forget About It", isCorrect: false, emoji: "😴" }
+      ]
+    },
+    {
+      id: 3,
+      question: "What helps you save consistently?",
+      correctAnswer: "Automatic Transfers",
+      options: [
+        { text: "Spend Impulsively", isCorrect: false, emoji: "🛒" },
+        { text: "Automatic Transfers", isCorrect: true, emoji: "🔄" },
+        { text: "No Plan", isCorrect: false, emoji: "📋" },
+        { text: "Wait for Motivation", isCorrect: false, emoji: "⏳" }
+      ]
+    },
+    {
+      id: 4,
+      question: "What is a good savings habit?",
+      correctAnswer: "Save First, Spend Later",
+      options: [
+        { text: "Spend First, Save Later", isCorrect: false, emoji: "💸" },
+        { text: "Never Save", isCorrect: false, emoji: "🚫" },
+        { text: "Save First, Spend Later", isCorrect: true, emoji: "🏦" },
+        { text: "Save Sometimes", isCorrect: false, emoji: "⏰" }
+      ]
+    },
+    {
+      id: 5,
+      question: "Why is saving money important?",
+      correctAnswer: "Emergency Preparedness",
+      options: [
+        { text: "Show Off", isCorrect: false, emoji: "🏆" },
+        { text: "Impulse Buying", isCorrect: false, emoji: "🛒" },
+        { text: "No Reason", isCorrect: false, emoji: "❓" },
+        { text: "Emergency Preparedness", isCorrect: true, emoji: "🚑" },
+      ]
     }
-    return shuffled;
-  }, []);
-
-  const showNextWord = useCallback(() => {
-    try {
-      if (gameState !== "playing") return;
-      if (!words || words.length === 0) return;
-      
-      // Separate words into correct (SAVE) and incorrect (WASTE) arrays
-      const correctWords = words.filter(w => w.isCorrect === true);
-      const incorrectWords = words.filter(w => w.isCorrect === false);
-      
-      // Shuffle both arrays
-      const shuffledCorrect = shuffleArray(correctWords);
-      const shuffledIncorrect = shuffleArray(incorrectWords);
-      
-      // Determine which type of word to show based on round number
-      // Round 1, 3, 5 = correct (SAVE words)
-      // Round 2, 4 = incorrect (WASTE words)
-      let selectedWord;
-      if (currentRound % 2 === 1) {
-        // Odd rounds (1, 3, 5) - show SAVE words
-        const roundIndex = Math.floor((currentRound - 1) / 2);
-        selectedWord = shuffledCorrect[roundIndex % shuffledCorrect.length];
-      } else {
-        // Even rounds (2, 4) - show WASTE words
-        const roundIndex = Math.floor((currentRound - 2) / 2);
-        selectedWord = shuffledIncorrect[roundIndex % shuffledIncorrect.length];
-      }
-      
-      if (selectedWord) {
-        setCurrentWord(selectedWord);
-        startTimeRef.current = Date.now();
-      }
-    } catch (error) {
-      console.error("Error in showNextWord:", error);
-    }
-  }, [gameState, currentRound, shuffleArray]);
+  ];
 
   // Update ref when currentRound changes
   useEffect(() => {
     currentRoundRef.current = currentRound;
   }, [currentRound]);
 
-  // Reset timer and show word when round changes
+  // Reset timer when round changes
   useEffect(() => {
     if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
       setTimeLeft(ROUND_TIME);
-      showNextWord();
+      setAnswered(false);
     }
-  }, [currentRound, gameState, showNextWord]);
+  }, [currentRound, gameState]);
 
-  // Timer effect - only depends on gameState
+  // Handle time up - move to next question or show results
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
+    resetFeedback();
+    
+    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 1000);
+  }, [resetFeedback]);
+
+  // Timer effect - countdown from 10 seconds for each question
   useEffect(() => {
     if (gameState !== "playing") {
       if (timerRef.current) {
@@ -115,27 +133,24 @@ const ReflexSavings = () => {
       return;
     }
 
-    // Start timer for current round
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // Start countdown timer
     timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
+      setTimeLeft((prev) => {
         const newTime = prev - 1;
         if (newTime <= 0) {
           // Time's up for this round
-          if (currentRoundRef.current >= TOTAL_ROUNDS) {
-            setGameState("finished");
-            return 0;
-          } else {
-            // Move to next round automatically
-            setCurrentRound(prevRound => {
-              const nextRound = prevRound + 1;
-              if (nextRound > TOTAL_ROUNDS) {
-                setGameState("finished");
-                return prevRound;
-              }
-              return nextRound;
-            });
-            return ROUND_TIME;
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
           }
+          handleTimeUp();
+          return 0;
         }
         return newTime;
       });
@@ -147,69 +162,79 @@ const ReflexSavings = () => {
         timerRef.current = null;
       }
     };
-  }, [gameState]);
+  }, [gameState, handleTimeUp]);
 
   const startGame = () => {
     setGameState("playing");
     setTimeLeft(ROUND_TIME);
     setScore(0);
     setCurrentRound(1);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleTap = (isSave) => {
-    try {
-      if (gameState !== "playing" || !currentWord || currentRound > TOTAL_ROUNDS) return;
-      
-      if (isSave === currentWord.isCorrect) {
-        setScore(prev => prev + 1);
-        showCorrectAnswerFeedback(1, true);
-      }
-      
-      // Move to next round after a short delay
-      setTimeout(() => {
-        if (currentRound >= TOTAL_ROUNDS) {
-          // Game finished after this click
-          setGameState("finished");
-        } else {
-          // Move to next round (timer will reset automatically via useEffect)
-          setCurrentRound(prev => prev + 1);
-        }
-      }, 500);
-    } catch (error) {
-      console.error("Error in handleTap:", error);
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
+
+    // Clear the timer immediately when user answers
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
+
+    setAnswered(true);
+    resetFeedback();
+
+    const isCorrect = option.isCorrect;
+    const isLastQuestion = currentRound === questions.length;
+
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    // Move to next round or show results after a short delay
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
+  const finalScore = score;
+
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Savings"
-      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Tap quickly for 'Save' words, avoid 'Waste' words!` : "Tap quickly for 'Save' words, avoid 'Waste' words!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your savings knowledge!` : "Test your savings knowledge!"}
       currentLevel={currentRound}
       coinsPerLevel={coinsPerLevel}
       showGameOver={gameState === "finished"}
-      score={score}
+      score={finalScore}
       gameId="finance-kids-3"
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       totalLevels={5}
       maxScore={5}
-      showConfetti={gameState === "finished" && score === 5}
+      showConfetti={gameState === "finished" && finalScore === 5}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
+      <div className="text-center text-white space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-5xl mb-6">⚡</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <div className="text-5xl mb-6">💰</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Ready to Test Your Savings Skills?</h3>
             <p className="text-white/90 text-lg mb-6">
-              Tap the "SAVE" button when you see "SAVE" words.<br />
-              Don't tap when you see "WASTE" words.
+              Answer questions about smart savings strategies.
             </p>
             <p className="text-white/80 mb-6">
-              You have {TOTAL_ROUNDS} rounds with {ROUND_TIME} seconds each!
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
             </p>
             <button
               onClick={startGame}
@@ -220,46 +245,40 @@ const ReflexSavings = () => {
           </div>
         )}
 
-        {gameState === "playing" && (
+        {gameState === "playing" && currentQuestion && (
           <div className="space-y-8">
             <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <div className="text-white">
                 <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
-              <div className="text-white">
-                <span className="font-bold">Time:</span> {timeLeft}s
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
               </div>
               <div className="text-white">
                 <span className="font-bold">Score:</span> {score}
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-12 border border-white/20 text-center">
-              <div className="text-6xl font-bold text-white mb-8">
-                {currentWord?.word || "..."}
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <button
-                  onClick={() => handleTap(true)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
-                >
-                  <div className="text-3xl mb-2">💰</div>
-                  <h3 className="font-bold text-xl mb-2">SAVE</h3>
-                </button>
-                
-                <button
-                  onClick={() => handleTap(false)}
-                  className="bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
-                >
-                  <div className="text-3xl mb-2">🗑️</div>
-                  <h3 className="font-bold text-xl mb-2">WASTE</h3>
-                </button>
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         )}
-
       </div>
     </GameShell>
   );

@@ -1,121 +1,267 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleBankUses = () => {
-  const location = useLocation();
+  const navigate = useNavigate();
 
-  // Get game data from game category folder (source of truth)
-  const gameId = "finance-kids-44";
-  const gameData = getGameDataById(gameId);
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
 
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
   const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
+  const [matches, setMatches] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedUse, setSelectedUse] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stages = [
-    {
-      question: 'What happens when you put money in a bank?',
-      choices: [
-        { text: "It's given to other people to spend freely 💸", correct: false },
-        { text: "It's converted into gold bars and stored in a vault 🪙", correct: false },
-        { text: "It's kept safe and can earn interest over time 💰", correct: true }
-      ],
-    },
-    {
-      question: 'When you take a loan from a bank, what are you doing?',
-      choices: [
-        { text: "Borrowing money you'll need to pay back with interest 📝", correct: true },
-        { text: "Getting free money as a gift from the bank 🎁", correct: false },
-        { text: "Trading your future earnings for cash today ⏳", correct: false },
-      ],
-    },
-    {
-      question: 'What can you do at an ATM besides withdraw cash?',
-      choices: [
-        { text: "Apply for a mortgage or car loan 🏠", correct: false },
-        { text: "Check your balance and deposit checks/cash 📄", correct: true },
-        { text: "Exchange foreign currency 🌍", correct: false },
-      ],
-    },
-    {
-      question: 'How does a savings account help your money grow?',
-      choices: [
-        { text: "By earning interest on your balance over time 📈", correct: true },
-        { text: "By automatically investing in stocks and bonds 📊", correct: false },
-        { text: "By giving you cashback on purchases 🛍️", correct: false },
-      ],
-    },
-    {
-      question: 'What is the main purpose of learning about banking?',
-      choices: [
-        { text: "To impress friends with banking knowledge 🎩", correct: false },
-        { text: "To get rich quickly without working 💶", correct: false },
-        { text: "To make smart money decisions and build a secure future 🧠", correct: true },
-      ],
-    },
+  // Banking items (left side) - 5 items
+  const items = [
+    { id: 1, name: "Savings Account", emoji: "💰", hint: "Store money safely" },
+    { id: 2, name: "Loan", emoji: "📝", hint: "Borrow money" },
+    { id: 3, name: "ATM", emoji: "🏧", hint: "Cash machine" },
+    { id: 4, name: "Interest", emoji: "📈", hint: "Money growth" },
+    { id: 5, name: "Financial Education", emoji: "📚", hint: "Learn money skills" }
   ];
 
-  const handleSelect = (isCorrect) => {
-    resetFeedback();
-    if (isCorrect) {
-      setScore((prev) => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
-    } else {
-      setTimeout(() => setShowResult(true), 800);
-    }
+  // Banking uses (right side) - 5 items
+  const uses = [
+    { id: 6, name: "Store Money", emoji: "🔒", description: "Keep funds secure" },
+    { id: 7, name: "Borrow Funds", emoji: "💸", description: "Get temporary cash" },
+    { id: 8, name: "Access Cash", emoji: "💵", description: "Withdraw anytime" },
+    { id: 9, name: "Earn Returns", emoji: "🪙", description: "Grow your money" },
+    { id: 10, name: "Build Knowledge", emoji: "🧠", description: "Learn finance" }
+  ];
+
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedUses = [
+    uses[2], // Access Cash (id: 8)
+    uses[4], // Build Knowledge (id: 10)
+    uses[1], // Borrow Funds (id: 7)
+    uses[0], // Store Money (id: 6)
+    uses[3]  // Earn Returns (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each item has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { itemId: 1, useId: 6 }, // Savings Account → Store Money
+    { itemId: 2, useId: 7 }, // Loan → Borrow Funds
+    { itemId: 3, useId: 8 }, // ATM → Access Cash
+    { itemId: 4, useId: 9 }, // Interest → Earn Returns
+    { itemId: 5, useId: 10 } // Financial Education → Build Knowledge
+  ];
+
+  const handleItemSelect = (item) => {
+    if (gameFinished) return;
+    setSelectedItem(item);
   };
 
-  const finalScore = score;
+  const handleUseSelect = (use) => {
+    if (gameFinished) return;
+    setSelectedUse(use);
+  };
+
+  const handleMatch = () => {
+    if (!selectedItem || !selectedUse || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      itemId: selectedItem.id,
+      useId: selectedUse.id,
+      isCorrect: correctMatches.some(
+        match => match.itemId === selectedItem.id && match.useId === selectedUse.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    // Check if all items are matched
+    if (newMatches.length === items.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedItem(null);
+    setSelectedUse(null);
+  };
+
+  // Check if an item is already matched
+  const isItemMatched = (itemId) => {
+    return matches.some(match => match.itemId === itemId);
+  };
+
+  // Check if a use is already matched
+  const isUseMatched = (useId) => {
+    return matches.some(match => match.useId === useId);
+  };
+
+  // Get match result for an item
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.itemId === itemId);
+    return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/finance/kids");
+  };
 
   return (
     <GameShell
       title="Puzzle: Bank Uses"
-      subtitle={`Question ${currentStage + 1} of ${stages.length}: Match banking actions to their uses!`}
-      coins={score}
-      currentLevel={currentStage + 1}
-      totalLevels={5}
-      coinsPerLevel={coinsPerLevel}
-      showGameOver={showResult}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Banking Items with Uses (${matches.length}/${items.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="finance-kids-44"
+      gameType="finance"
+      totalLevels={items.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === items.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={finalScore}
-      gameId={gameId}
-      gameType="finance"
-      maxScore={5}
+      backPath="/games/finance/kids"
+      maxScore={items.length}
+      coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && finalScore === 5}>
-      <div className="text-center text-white space-y-6">
-        <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-          <Trophy className="mx-auto w-10 h-10 text-yellow-400 mb-4" />
-          <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-          <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {stages[currentStage].choices.map((choice, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSelect(choice.correct)}
-                className="bg-blue-500 px-8 py-4 rounded-full text-white font-bold hover:scale-105 transition-transform"
-                disabled={showResult}
-              >
-                {choice.text}
-              </button>
-            ))}
+    >
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Banking Items */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Banking Items</h3>
+              <div className="space-y-4">
+                {items.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleItemSelect(item)}
+                    disabled={isItemMatched(item.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isItemMatched(item.id)
+                        ? getMatchResult(item.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedItem?.id === item.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{item.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {item.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedItem 
+                    ? `Selected: ${selectedItem.name}` 
+                    : "Select a Banking Item"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedItem || !selectedUse}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedItem && selectedUse
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{items.length}</p>
+                  <p>Matched: {matches.length}/{items.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Uses */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Uses</h3>
+              <div className="space-y-4">
+                {rearrangedUses.map(use => (
+                  <button
+                    key={use.id}
+                    onClick={() => handleUseSelect(use)}
+                    disabled={isUseMatched(use.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isUseMatched(use.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedUse?.id === use.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{use.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{use.name}</h4>
+                        <p className="text-white/80 text-sm">{use.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {items.length} banking items with their uses!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding banking helps you make smart financial decisions!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {items.length} banking items correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each banking item is primarily used for!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

@@ -29,135 +29,275 @@ const SavingsSaga = () => {
   const questions = [
     {
       id: 1,
-      text: "You get ₹500 monthly. How should you manage it?",
+      text: "You receive ₹1000 as monthly allowance. How should you allocate it for optimal financial health?",
       options: [
+        
         { 
-          id: "divide", 
-          text: "Divide into needs/wants/savings", 
-          emoji: "💰", 
-          description: "Smart budgeting: allocate for essentials, fun, and future",
-          isCorrect: true
-        },
-        { 
-          id: "spend", 
-          text: "Spend all on food", 
-          emoji: "🍕", 
-          description: "Use entire amount for food expenses",
+          id: "equal", 
+          text: "Equal parts: 33% each", 
+          emoji: "⚖️", 
+          description: "Simple approach: divide equally among all three categories",
           isCorrect: false
         },
         { 
-          id: "save", 
-          text: "Save everything", 
-          emoji: "🏦", 
-          description: "Don't spend anything at all",
+          id: "70-20-10", 
+          text: "70% needs, 20% wants, 10% savings", 
+          emoji: "📈", 
+          description: "Prioritize needs with modest savings allocation",
+          isCorrect: false
+        },
+        { 
+          id: "50-30-20", 
+          text: "50% needs, 30% wants, 20% savings", 
+          emoji: "💰", 
+          description: "Follow the proven 50/30/20 rule for balanced budgeting",
+          isCorrect: true
+        },
+        { 
+          id: "40-40-20", 
+          text: "40% needs, 40% wants, 20% savings", 
+          emoji: "📊", 
+          description: "Focus on wants while maintaining standard savings rate",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "You have ₹300. What's the best allocation?",
+      text: "You save ₹500 monthly for 2 years at 6% annual interest, compounded monthly. How much will you have?",
       options: [
+        
         { 
-          id: "spend", 
-          text: "Spend all on snacks", 
-          emoji: "🍫", 
-          description: "Use all money for immediate treats",
+          id: "12000", 
+          text: "Exactly ₹12,000", 
+          emoji: "💵", 
+          description: "Only the principal amount without interest",
           isCorrect: false
         },
         { 
-          id: "divide", 
-          text: "Divide: needs, wants, savings", 
-          emoji: "⚖️", 
-          description: "Balance essentials, enjoyment, and future security",
+          id: "12600", 
+          text: "Approx. ₹12,600", 
+          emoji: "🏦", 
+          description: "Includes both principal (₹12,000) and compound interest",
           isCorrect: true
         },
         { 
-          id: "save", 
-          text: "Save everything", 
-          emoji: "💰", 
-          description: "Don't spend anything",
+          id: "13000", 
+          text: "Around ₹13,000", 
+          emoji: "📈", 
+          description: "Overestimates the compound interest effect",
+          isCorrect: false
+        },
+        { 
+          id: "11500", 
+          text: "About ₹11,500", 
+          emoji: "📉", 
+          description: "Underestimates the power of compound interest",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "You receive ₹400. How should you handle it?",
+      text: "You have ₹2000 saved. Which option preserves your purchasing power against 8% inflation?",
       options: [
         { 
-          id: "divide", 
-          text: "Split: needs, wants, savings", 
-          emoji: "📊", 
-          description: "Plan for essentials, fun, and future goals",
+          id: "invest", 
+          text: "Invest in instrument earning 9% annually", 
+          emoji: "💹", 
+          description: "Returns beat inflation, preserving purchasing power",
           isCorrect: true
         },
         { 
-          id: "spend", 
-          text: "Spend all on entertainment", 
-          emoji: "🎬", 
-          description: "Use entire amount for movies and fun",
+          id: "fd", 
+          text: "Put in fixed deposit earning 7% annually", 
+          emoji: "🏦", 
+          description: "Safe but loses value to inflation",
           isCorrect: false
         },
         { 
-          id: "save", 
-          text: "Save everything", 
-          emoji: "🏦", 
-          description: "Don't spend anything",
+          id: "cash", 
+          text: "Keep as cash at home", 
+          emoji: "💵", 
+          description: "Zero return, significant loss to inflation",
+          isCorrect: false
+        },
+        { 
+          id: "spend", 
+          text: "Spend on immediate wants", 
+          emoji: "🛍️", 
+          description: "Eliminates inflation risk but loses future potential",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "You have ₹600. What's the smart choice?",
+      text: "You need ₹50,000 for college in 3 years. How much should you save monthly at 5% interest?",
       options: [
+        
         { 
-          id: "spend", 
-          text: "Spend all on clothes", 
-          emoji: "👕", 
-          description: "Use all money for new clothes",
+          id: "1100", 
+          text: "About ₹1,100 per month", 
+          emoji: "📉", 
+          description: "Underestimates required savings, will fall short",
           isCorrect: false
         },
         { 
-          id: "save", 
-          text: "Save everything", 
-          emoji: "💰", 
-          description: "Don't spend anything",
+          id: "1500", 
+          text: "Around ₹1,500 per month", 
+          emoji: "📈", 
+          description: "Overestimates required amount, saves unnecessarily",
           isCorrect: false
         },
         { 
-          id: "divide", 
-          text: "Divide: needs, wants, savings", 
-          emoji: "⚖️", 
-          description: "Balance essentials, enjoyment, and savings",
+          id: "1700", 
+          text: "Approx. ₹1,700 per month", 
+          emoji: "⚠️", 
+          description: "Significantly overestimates, creates undue burden",
+          isCorrect: false
+        },
+        { 
+          id: "1300", 
+          text: "Approx. ₹1,300 per month", 
+          emoji: "🎯", 
+          description: "Realistic savings target considering compound interest",
           isCorrect: true
-        }
+        },
       ]
     },
     {
       id: 5,
-      text: "You get ₹800 monthly. How should you allocate it?",
+      text: "You have ₹10,000. Which is the wisest allocation for a teen's financial future?",
       options: [
         { 
-          id: "divide", 
-          text: "Split: needs, wants, savings", 
-          emoji: "📈", 
-          description: "Plan for essentials, fun, and future security",
+          id: "emergency", 
+          text: "30% emergency fund, 50% FD, 20% stocks", 
+          emoji: "🛡️", 
+          description: "Balanced approach with safety, growth, and liquidity",
           isCorrect: true
         },
         { 
-          id: "spend", 
-          text: "Spend all on gadgets", 
-          emoji: "📱", 
-          description: "Use entire amount for new gadgets",
+          id: "allstocks", 
+          text: "Invest all in high-risk stocks", 
+          emoji: "🚀", 
+          description: "Maximum growth potential but extremely risky",
           isCorrect: false
         },
         { 
-          id: "save", 
-          text: "Save everything", 
+          id: "allfd", 
+          text: "Put all in fixed deposits", 
           emoji: "🏦", 
-          description: "Don't spend anything",
+          description: "Safe but minimal returns, poor long-term strategy",
+          isCorrect: false
+        },
+        { 
+          id: "spend", 
+          text: "Spend on gadgets and experiences", 
+          emoji: "🎮", 
+          description: "Instant gratification but no financial foundation",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 6,
+      text: "Which expense should be prioritized in your monthly budget as a teen?",
+      options: [
+        { 
+          id: "insurance", 
+          text: "Health insurance premium", 
+          emoji: "🏥", 
+          description: "Protects against unexpected medical costs",
+          isCorrect: true
+        },
+        { 
+          id: "gaming", 
+          text: "Latest video game subscription", 
+          emoji: "🎮", 
+          description: "Entertainment but not essential",
+          isCorrect: false
+        },
+        { 
+          id: "clothes", 
+          text: "Designer clothing", 
+          emoji: "👕", 
+          description: "Wants rather than needs",
+          isCorrect: false
+        },
+        { 
+          id: "snacks", 
+          text: "Daily snack purchases", 
+          emoji: "🍫", 
+          description: "Small recurring expense, not a priority",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 7,
+      text: "If you earn ₹2000/month and spend ₹2200, what's the likely financial outcome in 6 months?",
+      options: [
+        { 
+          id: "debt", 
+          text: "Accumulate ₹1200 in debt", 
+          emoji: "💳", 
+          description: "Overspending leads to mounting liabilities",
+          isCorrect: true
+        },
+        { 
+          id: "stable", 
+          text: "Financially stable with savings", 
+          emoji: "💰", 
+          description: "Incorrect - spending exceeds income",
+          isCorrect: false
+        },
+        { 
+          id: "breakeven", 
+          text: "Break-even with no surplus", 
+          emoji: "📊", 
+          description: "Incorrect - ignoring the monthly deficit",
+          isCorrect: false
+        },
+        { 
+          id: "growth", 
+          text: "Grow wealth through investments", 
+          emoji: "📈", 
+          description: "Impossible with negative cash flow",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 8,
+      text: "What's the opportunity cost of buying a ₹5000 phone instead of investing that amount?",
+      options: [
+        { 
+          id: "returns", 
+          text: "Potential investment returns over time", 
+          emoji: "💹", 
+          description: "Lost compound growth from foregone investment",
+          isCorrect: true
+        },
+        { 
+          id: "phone", 
+          text: "The phone's utility and satisfaction", 
+          emoji: "📱", 
+          description: "Benefit gained, not sacrificed",
+          isCorrect: false
+        },
+        { 
+          id: "taxes", 
+          text: "Tax benefits from purchase", 
+          emoji: "📋", 
+          description: "Consumer purchases don't offer tax advantages",
+          isCorrect: false
+        },
+        { 
+          id: "maintenance", 
+          text: "Phone maintenance and repair costs", 
+          emoji: "🔧", 
+          description: "Additional cost, not opportunity cost",
           isCorrect: false
         }
       ]
@@ -211,7 +351,7 @@ const SavingsSaga = () => {
       totalLevels={questions.length}
       currentLevel={currentQuestion + 1}
       maxScore={questions.length}
-      showConfetti={showResult && score >= 3}
+      showConfetti={showResult && score >= 6}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
     >
@@ -248,28 +388,28 @@ const SavingsSaga = () => {
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {score >= 3 ? (
+            {score >= 6 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Financial Wizard!</h3>
                 <p className="text-white/90 text-lg mb-4">
                   You got {score} out of {questions.length} questions correct!
-                  You understand the importance of dividing money wisely!
+                  You've mastered advanced saving concepts!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Always divide your money into needs, wants, and savings for a balanced financial life!
+                  Lesson: Smart financial decisions today shape your secure tomorrow!
                 </p>
               </div>
             ) : (
               <div>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <div className="text-5xl mb-4">📚</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Study Up!</h3>
                 <p className="text-white/90 text-lg mb-4">
                   You got {score} out of {questions.length} questions correct.
-                  Remember to divide your money into needs, wants, and savings!
+                  Review advanced saving concepts and try again!
                 </p>
                 <button
                   onClick={handleTryAgain}
@@ -278,7 +418,7 @@ const SavingsSaga = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Tip: The smart approach is to divide your money: some for needs (essentials), some for wants (fun), and some for savings (future).
+                  Tip: Master compound interest, inflation effects, and strategic allocation for financial success!
                 </p>
               </div>
             )}

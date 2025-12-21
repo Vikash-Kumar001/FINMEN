@@ -1,297 +1,302 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
+
 const ReflexEthicalChoice = () => {
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("finance-teens-93");
-  const gameId = gameData?.id || "finance-teens-93";
-  
-  // Ensure gameId is always set correctly
-  if (!gameData || !gameData.id) {
-    console.warn("Game data not found for ReflexEthicalChoice, using fallback ID");
-  }
-  
+  const gameId = "finance-teens-93";
+  const gameData = getGameDataById(gameId);
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentRound, setCurrentRound] = useState(0);
-  const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(10);
-  const timerRef = useRef(null);
 
-  const rounds = [
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
+
+  const questions = [
     {
       id: 1,
-      question: "Tap for 'Fair Pay' or 'Cheat Pay.'",
+      question: "What should you do if you find a wallet full of cash on the street?",
+      correctAnswer: "Try to find the owner or turn it in",
       options: [
-        { 
-          id: "fair", 
-          text: "Fair Pay", 
-          emoji: "✅", 
-          isCorrect: true
-        },
-        { 
-          id: "cheat", 
-          text: "Cheat Pay", 
-          emoji: "❌", 
-          isCorrect: false
-        },
-        { 
-          id: "maybe", 
-          text: "Maybe", 
-          emoji: "🤔", 
-          isCorrect: false
-        }
+        { text: "Keep it since you found it", isCorrect: false, emoji: "💰" },
+        { text: "Try to find the owner or turn it in", isCorrect: true, emoji: "🔍" },
+        { text: "Leave it where it is", isCorrect: false, emoji: "🚶" },
+        { text: "Split it with friends", isCorrect: false, emoji: "🤝" }
       ]
     },
     {
       id: 2,
-      question: "Tap for 'Honest Deal' or 'Trick Deal.'",
+      question: "Your friend is cheating on a test. What's the ethical response?",
+      correctAnswer: "Encourage them to stop and be honest",
       options: [
-        { 
-          id: "trick", 
-          text: "Trick Deal", 
-          emoji: "🎭", 
-          isCorrect: false
-        },
-        { 
-          id: "honest", 
-          text: "Honest Deal", 
-          emoji: "🤝", 
-          isCorrect: true
-        },
-        { 
-          id: "skip", 
-          text: "Skip", 
-          emoji: "⏭️", 
-          isCorrect: false
-        }
+        { text: "Ignore it to avoid conflict", isCorrect: false, emoji: "🙈" },
+        { text: "Join in to not be left out", isCorrect: false, emoji: "👥" },
+        { text: "Encourage them to stop and be honest", isCorrect: true, emoji: "💬" },
+        { text: "Tell everyone to get revenge", isCorrect: false, emoji: "📢" }
       ]
     },
     {
       id: 3,
-      question: "Tap for 'Ethical Choice' or 'Unfair Choice.'",
+      question: "How should you treat a classmate who is different from you?",
+      correctAnswer: "With respect and kindness",
       options: [
-        { 
-          id: "unfair", 
-          text: "Unfair Choice", 
-          emoji: "😈", 
-          isCorrect: false
-        },
-        { 
-          id: "wait", 
-          text: "Wait", 
-          emoji: "⏳", 
-          isCorrect: false
-        },
-        { 
-          id: "ethical", 
-          text: "Ethical Choice", 
-          emoji: "✨", 
-          isCorrect: true
-        }
+        { text: "With respect and kindness", isCorrect: true, emoji: "😊" },
+        { text: "Exclude them from activities", isCorrect: false, emoji: "🚫" },
+        { text: "Make fun of their differences", isCorrect: false, emoji: "😆" },
+        { text: "Avoid them completely", isCorrect: false, emoji: "😶" }
       ]
     },
     {
       id: 4,
-      question: "Tap for 'Be Truthful' or 'Lie for Gain.'",
+      question: "What should you do if you witness someone being bullied?",
+      correctAnswer: "Support the victim and report the bullying",
       options: [
-        { 
-          id: "truthful", 
-          text: "Be Truthful", 
-          emoji: "💎", 
-          isCorrect: true
-        },
-        { 
-          id: "lie", 
-          text: "Lie for Gain", 
-          emoji: "🎭", 
-          isCorrect: false
-        },
-        { 
-          id: "maybe2", 
-          text: "Maybe", 
-          emoji: "🤷", 
-          isCorrect: false
-        }
+        { text: "Stay silent to avoid getting involved", isCorrect: false, emoji: "🤫" },
+        { text: "Support the victim and report the bullying", isCorrect: true, emoji: "🦸" },
+        { text: "Join in to fit in with the crowd", isCorrect: false, emoji: "👥" },
+        { text: "Laugh along to seem cool", isCorrect: false, emoji: "😂" }
       ]
     },
     {
       id: 5,
-      question: "Tap for 'Fair Trade' or 'Cheat Trade.'",
+      question: "A store clerk gives you too much change by mistake. What should you do?",
+      correctAnswer: "Return the extra money",
       options: [
-        { 
-          id: "cheat2", 
-          text: "Cheat Trade", 
-          emoji: "😈", 
-          isCorrect: false
-        },
-        { 
-          id: "fair2", 
-          text: "Fair Trade", 
-          emoji: "⚖️", 
-          isCorrect: true
-        },
-        { 
-          id: "avoid", 
-          text: "Avoid", 
-          emoji: "🚫", 
-          isCorrect: false
-        }
+        { text: "Keep the extra money", isCorrect: false, emoji: "🤑" },
+        { text: "Say nothing and spend it", isCorrect: false, emoji: "🛍️" },
+        { text: "Ask for even more money", isCorrect: false, emoji: "💵" },
+        { text: "Return the extra money", isCorrect: true, emoji: "💸" },
       ]
     }
   ];
 
+  // Update ref when currentRound changes
   useEffect(() => {
-    if (!showResult && !answered) {
-      setTimeLeft(10);
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current);
-            handleTimeUp();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  // Reset timer when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
+  }, [currentRound, gameState]);
+
+  // Handle time up - move to next question or show results
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
+    resetFeedback();
+
+    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
+
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 1000);
+  }, [resetFeedback]);
+
+  // Timer effect - countdown from 10 seconds for each question
+  useEffect(() => {
+    if (gameState !== "playing") {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+
+    // Check if game should be finished
+    if (currentRoundRef.current > TOTAL_ROUNDS) {
+      setGameState("finished");
+      return;
+    }
+
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // Start countdown timer
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          // Time's up for this round
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          handleTimeUp();
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
 
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
+        timerRef.current = null;
       }
     };
-  }, [currentRound, showResult, answered]);
+  }, [gameState, handleTimeUp]);
 
-  const handleTimeUp = () => {
-    if (answered) return;
-    setAnswered(true);
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
     resetFeedback();
-    showCorrectAnswerFeedback(0, false);
-    
-    const isLastRound = currentRound === rounds.length - 1;
-    setTimeout(() => {
-      if (isLastRound) {
-        setShowResult(true);
-      } else {
-        setCurrentRound(prev => prev + 1);
-        setAnswered(false);
-      }
-    }, 1500);
   };
 
-  const handleAnswer = (optionId) => {
-    if (answered) return;
-    
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
+
+    // Clear the timer immediately when user answers
     if (timerRef.current) {
       clearInterval(timerRef.current);
+      timerRef.current = null;
     }
-    
+
     setAnswered(true);
     resetFeedback();
-    
-    const round = rounds[currentRound];
-    const selectedOption = round.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isCorrect;
+
+    const isCorrect = option.isCorrect;
+    const isLastQuestion = currentRound === questions.length;
 
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
 
-    const isLastRound = currentRound === rounds.length - 1;
-    
+    // Move to next round or show results after a short delay
     setTimeout(() => {
-      if (isLastRound) {
-        setShowResult(true);
+      if (isLastQuestion) {
+        setGameState("finished");
       } else {
-        setCurrentRound(prev => prev + 1);
+        setCurrentRound((prev) => prev + 1);
         setAnswered(false);
       }
-    }, 1500);
+    }, 500);
   };
 
-  const current = rounds[currentRound];
+  const finalScore = score;
+
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Ethical Choice"
-      subtitle={!showResult ? `Round ${currentRound + 1} of ${rounds.length}` : "Game Complete!"}
-      score={score}
-      currentLevel={currentRound + 1}
-      totalLevels={rounds.length}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your ethical decision-making reflexes!` : "Test your ethical decision-making reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      showGameOver={showResult}
-      maxScore={rounds.length}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showConfetti={showResult && score >= 3}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
       gameId={gameId}
       gameType="finance"
-    >
-      <div className="space-y-8">
-        {!showResult && current ? (
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Round {currentRound + 1}/{rounds.length}</span>
-                <div className="flex items-center gap-4">
-                  <span className="text-yellow-400 font-bold">Score: {score}/{rounds.length}</span>
-                  <div className="bg-red-500/20 px-4 py-2 rounded-full">
-                    <span className="text-white font-bold">{timeLeft}s</span>
-                  </div>
-                </div>
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">✨</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Ready to Test Your Ethical Decision-Making Reflexes?</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Answer questions about moral dilemmas and ethical choices.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
-              
-              <div className="w-full bg-gray-700 rounded-full h-2 mb-6">
-                <div 
-                  className="bg-gradient-to-r from-red-500 to-orange-500 h-2 rounded-full transition-all duration-1000"
-                  style={{ width: `${(timeLeft / 10) * 100}%` }}
-                />
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
               </div>
-              
-              <h3 className="text-xl font-bold text-white mb-6 text-center">
-                {current.question}
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
               </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {current.options.map((option) => (
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleAnswer(option.id)}
+                    key={index}
+                    onClick={() => handleAnswer(option)}
                     disabled={answered}
-                    className={`p-6 rounded-2xl text-center transition-all transform ${
-                      answered
-                        ? option.isCorrect
-                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
-                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                    } ${answered ? "cursor-not-allowed" : ""}`}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <div className="flex flex-col items-center justify-center gap-3">
-                      <span className="text-4xl">{option.emoji}</span>
-                      <span className="font-semibold text-lg">{option.text}</span>
-                    </div>
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
                 ))}
               </div>
             </div>
           </div>
-        ) : null}
+        )}
+
+        {gameState === "finished" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">✨</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              You scored {finalScore} out of {TOTAL_ROUNDS}!
+            </p>
+            <p className="text-white/80 mb-6">
+              You're developing strong ethical decision-making skills!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+            >
+              Play Again
+            </button>
+          </div>
+        )}
       </div>
     </GameShell>
   );

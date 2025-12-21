@@ -35,7 +35,7 @@ const BadgeDebtSmart = () => {
       options: [
         { 
           text: "Plan repayment and borrow responsibly", 
-          emoji: "✅", 
+          emoji: "📚", 
           isCorrect: true
         },
         { 
@@ -153,7 +153,7 @@ const BadgeDebtSmart = () => {
         },
         { 
           text: "Borrow only when necessary and always repay on time", 
-          emoji: "✅", 
+          emoji: "⏰", 
           isCorrect: true
         },
         { 

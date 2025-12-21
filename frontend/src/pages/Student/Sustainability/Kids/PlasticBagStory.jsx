@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -7,6 +7,7 @@ import { getSustainabilityKidsGames } from "../../../../pages/Games/GameCategori
 
 const PlasticBagStory = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   
   // Get game data from game category folder (source of truth)
   const gameData = getGameDataById("sustainability-kids-8");
@@ -17,15 +18,18 @@ const PlasticBagStory = () => {
     console.warn("Game data not found for PlasticBagStory, using fallback ID");
   }
   
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [score, setScore] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   // Find next game path and ID if not provided in location.state
   const { nextGamePath, nextGameId } = useMemo(() => {
@@ -54,7 +58,7 @@ const PlasticBagStory = () => {
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
     if (showResult) {
-      console.log(`🎮 Plastic Bag Story game completed! Score: ${score}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      console.log(`🎮 Plastic Bag Story game completed! Score: ${finalScore}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       if (nextGameId && window.history && window.history.replaceState) {
         const currentState = window.history.state || {};
         window.history.replaceState({
@@ -63,76 +67,113 @@ const PlasticBagStory = () => {
         }, '');
       }
     }
-  }, [showResult, score, gameId, nextGamePath, nextGameId]);
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId]);
 
   const questions = [
     {
       id: 1,
       text: "The shop gives you a plastic bag. What do you do?",
       options: [
-        { id: "own", text: "Use your own bag", emoji: "🛍️", description: "Bring a reusable bag", isCorrect: true },
-        { id: "take", text: "Take the plastic bag", emoji: "📦", description: "Accept the plastic bag", isCorrect: false },
-        { id: "refuse", text: "Refuse politely", emoji: "🙅", description: "Say no thank you", isCorrect: true }
+        { id: "own", text: "Use your own bag", emoji: "🛍️", isCorrect: true },
+        { id: "take", text: "Take the plastic bag", emoji: "📦", isCorrect: false },
+        { id: "refuse", text: "Refuse politely", emoji: "🙅", isCorrect: false }
       ]
     },
     {
       id: 2,
       text: "Why should we avoid plastic bags?",
       options: [
-        { id: "nothing", text: "They don't matter", emoji: "😐", description: "Plastic bags are harmful", isCorrect: false },
-        { id: "harm", text: "They harm animals", emoji: "🐾", description: "Animals can get hurt", isCorrect: true },
-        { id: "pretty", text: "They're not pretty", emoji: "👎", description: "It's about the environment", isCorrect: false }
+        { id: "nothing", text: "They don't matter", emoji: "😐", isCorrect: false },
+        { id: "harm", text: "They harm animals", emoji: "🐾", isCorrect: true },
+        { id: "pretty", text: "They're not pretty", emoji: "👎", isCorrect: false }
       ]
     },
     {
       id: 3,
       text: "What's a better alternative to plastic bags?",
       options: [
-        { id: "more", text: "More plastic bags", emoji: "📦", description: "Not a good solution", isCorrect: false },
-        { id: "paper", text: "Paper bags", emoji: "📄", description: "Better but reusable is best", isCorrect: true },
-        { id: "reusable", text: "Reusable cloth bag", emoji: "👜", description: "Can use many times", isCorrect: true }
+        { id: "more", text: "More plastic bags", emoji: "📦", isCorrect: false },
+        { id: "paper", text: "Paper bags", emoji: "📄", isCorrect: false },
+        { id: "reusable", text: "Reusable cloth bag", emoji: "👜", isCorrect: true }
+      ]
+    },
+    {
+      id: 4,
+      text: "How long does a plastic bag last in the environment?",
+      options: [
+        { id: "month", text: "About a month", emoji: "📅", isCorrect: false },
+        { id: "years", text: "Hundreds of years", emoji: "⏳", isCorrect: true },
+        { id: "week", text: "About a week", emoji: "📆", isCorrect: false }
+      ]
+    },
+    {
+      id: 5,
+      text: "What can you do with old plastic bags?",
+      options: [
+        { id: "litter", text: "Leave them as litter", emoji: "🗑️", isCorrect: false },
+        { id: "reuse", text: "Reuse them for trash", emoji: "♻️", isCorrect: true },
+        { id: "burn", text: "Burn them outside", emoji: "🔥", isCorrect: false }
       ]
     }
   ];
 
-  const handleChoice = (isCorrect) => {
-    if (answered) return;
+  const handleChoice = (optionId) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: optionId,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect
+    }];
     
-    setAnswered(true);
-    resetFeedback();
+    setChoices(newChoices);
     
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === optionId)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
     
-    const isLastQuestion = currentQuestion === questions.length - 1;
-    
-    setTimeout(() => {
-      if (isLastQuestion) {
-        setShowResult(true);
-      } else {
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-        setAnswered(false);
-      }
-    }, 500);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
     setCurrentQuestion(0);
-    setScore(0);
-    setAnswered(false);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
 
-  const currentQuestionData = questions[currentQuestion];
+  const handleNext = () => {
+    if (nextGamePath) {
+      navigate(nextGamePath);
+    } else {
+      navigate("/games/sustainability/kids");
+    }
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Plastic Bag Story"
-      score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -142,42 +183,80 @@ const PlasticBagStory = () => {
       totalLevels={questions.length}
       currentLevel={currentQuestion + 1}
       maxScore={questions.length}
-      showConfetti={showResult && score >= 2}
+      showConfetti={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
+      onNext={handleNext}
+      nextEnabled={showResult}
+      backPath="/games/sustainability/kids"
     >
-      <div className="space-y-8">
-        {!showResult && currentQuestionData ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
               </div>
               
-              <p className="text-white text-lg mb-6">
-                {currentQuestionData.text}
-              </p>
+              <h2 className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map((option) => (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
                   <button
                     key={option.id}
-                    onClick={() => handleChoice(option.isCorrect)}
-                    disabled={answered}
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    <div className="text-3xl mb-3">{option.emoji}</div>
-                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
                   </button>
                 ))}
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🛍️</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Eco-Friendly Shopper!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand how to reduce plastic waste!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  Great job! You know how to make eco-friendly choices when shopping!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, reducing plastic bag use helps protect our environment!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows eco-friendly shopping habits.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

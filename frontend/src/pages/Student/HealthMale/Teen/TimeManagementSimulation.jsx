@@ -5,9 +5,10 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const TimeManagementSimulation = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [score, setScore] = useState(0);
+  const [currentScenario, setCurrentScenario] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   // Hardcode rewards
@@ -21,24 +22,27 @@ const TimeManagementSimulation = () => {
       text: "Teen has exams + sports practice. ",
       options: [
         {
-          id: "b",
-          text: "Balance time",
-          emoji: "⚖️",
-          description: "Managing time effectively allows for both responsibilities",
-          isCorrect: true
-        },
-        {
           id: "a",
           text: "Waste time",
           emoji: "⏳",
-          description: "Time management is crucial for success",
           isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Balance time",
+          emoji: "⚖️",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Skip everything",
           emoji: "🏃",
-          description: "Facing responsibilities builds character",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Prioritize tasks",
+          emoji: "📋",
           isCorrect: false
         }
       ]
@@ -47,28 +51,30 @@ const TimeManagementSimulation = () => {
       id: 2,
       text: "How should you prioritize when overwhelmed with tasks?",
       options: [
-        
+        {
+          id: "a",
+          text: "Make a schedule",
+          emoji: "📅",
+          isCorrect: false
+        },
         {
           id: "b",
           text: "Do everything at once",
           emoji: "💥",
-          description: "Organization prevents feeling overwhelmed",
           isCorrect: false
         },
         {
           id: "c",
           text: "Procrastinate",
           emoji: "😴",
-          description: "Planning ahead reduces stress",
           isCorrect: false
         },
         {
-          id: "a",
+          id: "d",
           text: "Make a schedule",
           emoji: "📅",
-          description: "Planning helps manage multiple responsibilities",
           isCorrect: true
-        },
+        }
       ]
     },
     {
@@ -76,25 +82,28 @@ const TimeManagementSimulation = () => {
       text: "What helps with time management for schoolwork?",
       options: [
         {
-          id: "c",
-          text: "Study only before tests",
-          emoji: "📚",
-          description: "Consistent study habits are more effective",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Daily study routine",
           emoji: "📖",
-          description: "Regular study prevents last-minute stress",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "b",
           text: "Copy from friends",
           emoji: "👥",
-          description: "Personal effort leads to real learning",
           isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Study only before tests",
+          emoji: "📚",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Daily study routine",
+          emoji: "📖",
+          isCorrect: true
         }
       ]
     },
@@ -106,22 +115,25 @@ const TimeManagementSimulation = () => {
           id: "a",
           text: "Prioritize important tasks",
           emoji: "⭐",
-          description: "Setting priorities helps manage time effectively",
-          isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Try to do everything",
-          emoji: "🤹",
-          description: "Quality over quantity in activities",
           isCorrect: false
         },
         {
           id: "b",
           text: "Cancel all plans",
           emoji: "❌",
-          description: "Balance is possible with good planning",
           isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Try to do everything",
+          emoji: "🤹",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Prioritize important tasks",
+          emoji: "⭐",
+          isCorrect: true
         }
       ]
     },
@@ -130,51 +142,52 @@ const TimeManagementSimulation = () => {
       text: "What is the key to successful time management?",
       options: [
         {
+          id: "a",
+          text: "Avoiding schedules",
+          emoji: "🎲",
+          isCorrect: false
+        },
+        {
           id: "b",
           text: "Consistency and planning",
           emoji: "📋",
-          description: "Regular routines and planning lead to success",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "c",
           text: "Working all the time",
           emoji: "💼",
-          description: "Balance includes rest and recreation",
           isCorrect: false
         },
         {
-          id: "a",
-          text: "Avoiding schedules",
-          emoji: "🎲",
-          description: "Structure helps achieve goals",
-          isCorrect: false
+          id: "d",
+          text: "Consistency and planning",
+          emoji: "📋",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    if (gameFinished) return;
-
-    const selectedOption = getCurrentScenario().options.find(opt => opt.id === optionId);
+    const selectedOption = scenarios[currentScenario].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
-      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
+    setChoices([...choices, { scenario: currentScenario, optionId, isCorrect }]);
+
     setTimeout(() => {
-      if (currentStep < scenarios.length - 1) {
-        setCurrentStep(prev => prev + 1);
+      if (currentScenario < scenarios.length - 1) {
+        setCurrentScenario(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
     }, 1500);
   };
-
-  const getCurrentScenario = () => scenarios[currentStep];
 
   const handleNext = () => {
     navigate("/student/health-male/teens/reflex-teen-alert");
@@ -183,50 +196,46 @@ const TimeManagementSimulation = () => {
   return (
     <GameShell
       title="Simulation: Time Management"
-      subtitle={`Step ${currentStep + 1} of ${scenarios.length}`}
+      subtitle={`Scenario ${currentScenario + 1} of ${scenarios.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={score}
+      score={coins}
       gameId="health-male-teen-98"
       gameType="health-male"
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       maxScore={scenarios.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
-      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Step {currentStep + 1}/{scenarios.length}</span>
-            <span className="text-yellow-400 font-bold">Score: {score}</span>
+            <span className="text-white/80">Scenario {currentScenario + 1}/{scenarios.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
 
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">📱</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Time Management Simulator</h3>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentScenario().text}
+          <h2 className="text-xl font-semibold text-white mb-4">
+            Time Management Simulation
+          </h2>
+          
+          <p className="text-white/90 mb-6">
+            {scenarios[currentScenario].text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentScenario().options.map(option => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {scenarios[currentScenario].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>
@@ -234,6 +243,23 @@ const TimeManagementSimulation = () => {
           </div>
         </div>
       </div>
+      {gameFinished && (
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+          <h3 className="text-3xl font-bold text-white mb-4">Simulation Complete!</h3>
+          <p className="text-xl text-white/90 mb-6">
+            You earned {coins} coins!
+          </p>
+          <p className="text-white/80 mb-8">
+            Good time management skills will help you succeed in life!
+          </p>
+          <button
+            onClick={handleNext}
+            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all transform hover:scale-105"
+          >
+            Next Challenge
+          </button>
+        </div>
+      )}
     </GameShell>
   );
 };

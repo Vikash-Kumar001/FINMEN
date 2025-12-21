@@ -17,38 +17,37 @@ const QuizHygieneAdvanced = () => {
   const totalCoins = 5;
   const totalXp = 10;
 
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Which prevents body odor?",
       options: [
+       
         {
           id: "b",
           text: "Wearing same shirt",
           emoji: "👕",
-          description: "Wearing clean clothes prevents body odor",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Bathing daily",
-          emoji: "🧼",
-          description: "Regular bathing removes sweat and bacteria",
-          isCorrect: true
         },
         {
           id: "c",
           text: "Using lots of perfume",
           emoji: "🌸",
-          description: "Clean body prevents odor better than perfume",
           isCorrect: false
-        }
+        },
+         {
+          id: "a",
+          text: "Bathing daily",
+          emoji: "🧼",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -56,24 +55,21 @@ const QuizHygieneAdvanced = () => {
       text: "How often should you change your clothes?",
       options: [
         {
-          id: "c",
-          text: "Once a week",
-          emoji: "📅",
-          description: "Change clothes when they're dirty or sweaty",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "When they're dirty",
           emoji: "🧺",
-          description: "Clean clothes keep you fresh and healthy",
           isCorrect: true
         },
         {
           id: "b",
           text: "Only on special days",
           emoji: "🎉",
-          description: "Daily hygiene includes clean clothes",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Once a week",
+          emoji: "📅",
           isCorrect: false
         }
       ]
@@ -86,21 +82,18 @@ const QuizHygieneAdvanced = () => {
           id: "a",
           text: "Wash them regularly",
           emoji: "🧽",
-          description: "Clean clothes prevent bacteria and odor",
           isCorrect: true
         },
         {
           id: "b",
           text: "Keep wearing them",
           emoji: "♻️",
-          description: "Fresh clothes help you feel confident",
           isCorrect: false
         },
         {
           id: "c",
           text: "Spray with air freshener",
           emoji: "🌬️",
-          description: "Proper washing is best for hygiene",
           isCorrect: false
         }
       ]
@@ -109,26 +102,24 @@ const QuizHygieneAdvanced = () => {
       id: 4,
       text: "When should you wash your face?",
       options: [
+       
         {
           id: "b",
           text: "Only when it looks dirty",
           emoji: "👀",
-          description: "Wash face twice daily for healthy skin",
           isCorrect: false
+        },
+         {
+          id: "a",
+          text: "Morning and night",
+          emoji: "🌅",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Never, it cleans itself",
           emoji: "🤷",
-          description: "Regular face washing prevents acne",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Morning and night",
-          emoji: "🌅",
-          description: "Daily face washing keeps skin healthy",
-          isCorrect: true
         }
       ]
     },
@@ -136,52 +127,59 @@ const QuizHygieneAdvanced = () => {
       id: 5,
       text: "Why is deodorant important for growing kids?",
       options: [
+        
         {
           id: "b",
           text: "It makes you popular",
           emoji: "👑",
-          description: "Deodorant helps with body odor from sweating",
           isCorrect: false
         },
         {
           id: "a",
           text: "Controls body odor",
           emoji: "🌸",
-          description: "As you grow, deodorant helps manage natural odors",
           isCorrect: true
         },
         {
           id: "c",
           text: "Changes your height",
           emoji: "📏",
-          description: "Deodorant helps with hygiene, not growth",
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
+    
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
+    setShowFeedback(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, isCorrect ? 1000 : 800);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/games/health-male/kids");
@@ -190,60 +188,80 @@ const QuizHygieneAdvanced = () => {
   return (
     <GameShell
       title="Quiz on Hygiene"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
       gameId={gameId}
       gameType="health-male"
       totalLevels={5}
       currentLevel={42}
       showConfetti={gameFinished}
-      flashPoints={flashPoints}
       backPath="/games/health-male/kids"
-      showAnswerConfetti={showAnswerConfetti}
-      maxScore={5}
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🧠</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Advanced Hygiene Quiz</h3>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className={`bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${choices.some(c => c.question === currentQuestion) ? 'opacity-75 cursor-not-allowed' : ''
-                  }`}
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+      maxScore={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && questions[currentQuestion] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">🧼</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
                 </div>
-              </button>
-            ))}
+              )}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

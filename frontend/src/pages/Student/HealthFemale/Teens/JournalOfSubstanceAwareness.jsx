@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { PenSquare } from 'lucide-react';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from '../../../../utils/getGameData';
 
-const BodyChangesJournal = () => {
+const JournalOfSubstanceAwareness = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "health-female-kids-27";
+  const gameId = "health-female-teen-87";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
@@ -25,23 +26,23 @@ const BodyChangesJournal = () => {
   
   const stages = [
     {
-      question: 'Write: "I am growing taller like a ___.',
+      question: 'Write: "Substances I will avoid include ___.',
       minLength: 10,
     },
     {
-      question: 'Write: "My favorite healthy food is ___.',
+      question: 'Write: "I will make healthy choices instead of using ___.',
       minLength: 10,
     },
     {
-      question: 'Write: "I like my body because ___.',
+      question: 'Write: "People who support my healthy choices are ___.',
       minLength: 10,
     },
     {
-      question: 'Write: "When I have questions, I ask ___.',
+      question: 'Write: "If offered substances, I will respond by ___.',
       minLength: 10,
     },
     {
-      question: 'Write: "Being a girl is ___.',
+      question: 'Write: "My goals that staying substance-free helps me achieve are ___.',
       minLength: 10,
     },
   ];
@@ -74,14 +75,18 @@ const BodyChangesJournal = () => {
   // Log when game completes
   useEffect(() => {
     if (showResult) {
-      console.log(`🎮 Body Changes Journal game completed! Score: ${finalScore}/${stages.length}, gameId: ${gameId}`);
+      console.log(`🎮 Journal of Substance Awareness game completed! Score: ${finalScore}/${stages.length}, gameId: ${gameId}`);
     }
   }, [showResult, finalScore, gameId, stages.length]);
 
+  const handleNext = () => {
+    navigate("/student/health-female/teens/simulation-peer-test-substance");
+  };
+
   return (
     <GameShell
-      title="Body Changes Journal"
-      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: My Growing Body` : "Journal Complete!"}
+      title="Journal of Substance Awareness"
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on your commitment to staying substance-free!` : "Journal Complete!"}
       currentLevel={currentStage + 1}
       totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
@@ -94,12 +99,14 @@ const BodyChangesJournal = () => {
       maxScore={stages.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      onNext={handleNext}
+      nextEnabled={showResult}
       showConfetti={showResult && finalScore === stages.length}
-      backPath="/games/health-female/kids">
+      backPath="/games/health-female/teens">
       <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center text-center text-white space-y-6 md:space-y-8 max-w-4xl mx-auto px-4 py-4">
         {!showResult && stages[currentStage] && (
           <div className="bg-white/10 backdrop-blur-md p-6 md:p-8 rounded-xl md:rounded-2xl border border-white/20">
-            <PenSquare className="mx-auto mb-4 w-8 h-8 md:w-10 md:h-10 text-green-300" />
+            <PenSquare className="mx-auto mb-4 w-8 h-8 md:w-10 md:h-10 text-purple-300" />
             <h3 className="text-xl md:text-2xl font-bold mb-4 text-white">{stages[currentStage].question}</h3>
             <p className="text-white/70 mb-4 text-sm md:text-base">Score: {score}/{stages.length}</p>
             <p className="text-white/60 text-xs md:text-sm mb-4">
@@ -119,7 +126,7 @@ const BodyChangesJournal = () => {
               onClick={handleSubmit}
               className={`mt-4 px-6 md:px-8 py-3 md:py-4 rounded-full text-base md:text-lg font-semibold transition-transform ${
                 entry.trim().length >= stages[currentStage].minLength && !showResult
-                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  ? 'bg-purple-500 hover:bg-purple-600 hover:scale-105 text-white cursor-pointer'
                   : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
               }`}
               disabled={entry.trim().length < stages[currentStage].minLength || showResult}
@@ -128,9 +135,43 @@ const BodyChangesJournal = () => {
             </button>
           </div>
         )}
+        
+        {showResult && (
+          <div className="bg-white/10 backdrop-blur-md p-6 md:p-8 rounded-xl md:rounded-2xl border border-white/20 text-center">
+            <div className="text-4xl mb-4">🧠</div>
+            <h2 className="text-2xl font-bold text-white mb-6">Substance Awareness Journal Complete!</h2>
+            
+            <div className="bg-gradient-to-r from-purple-500/20 to-indigo-500/20 rounded-xl p-4 border border-purple-400/30 mb-6">
+              <p className="text-purple-300 font-bold">
+                🎉 Great job! You've completed your substance awareness journal!
+              </p>
+              <p className="text-purple-300 mt-2">
+                Recording your thoughts about staying substance-free helps you make better choices!
+              </p>
+            </div>
+            
+            <div className="bg-white/5 rounded-xl p-6 border border-white/10 mb-6 text-left">
+              <h3 className="text-lg font-semibold text-white mb-3">Your Entries:</h3>
+              <div className="space-y-3">
+                {stages.map((stage, index) => (
+                  <div key={index} className="text-white/90 text-sm">
+                    <span className="font-medium">Q{index + 1}:</span> {stage.question}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <button
+              onClick={handleNext}
+              className="mt-6 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold rounded-full transition-transform hover:scale-105"
+            >
+              Continue to Next Activity
+            </button>
+          </div>
+        )}
       </div>
     </GameShell>
   );
 };
 
-export default BodyChangesJournal;
+export default JournalOfSubstanceAwareness;

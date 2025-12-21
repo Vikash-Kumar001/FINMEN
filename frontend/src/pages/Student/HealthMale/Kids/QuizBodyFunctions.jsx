@@ -18,10 +18,11 @@ const QuizBodyFunctions = () => {
   const totalXp = 10;
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -29,24 +30,21 @@ const QuizBodyFunctions = () => {
       text: "Which organ helps pump blood?",
       options: [
         {
-          id: "b",
+          id: "a",
           text: "Brain",
           emoji: "🧠",
-          description: "Brain thinks and controls body",
           isCorrect: false
         },
         {
-          id: "a",
+          id: "b",
           text: "Heart",
           emoji: "❤️",
-          description: "Heart pumps blood throughout the body",
           isCorrect: true
         },
         {
           id: "c",
           text: "Lungs",
           emoji: "🫁",
-          description: "Lungs help us breathe",
           isCorrect: false
         }
       ]
@@ -56,25 +54,22 @@ const QuizBodyFunctions = () => {
       text: "What do lungs help us do?",
       options: [
         {
-          id: "c",
+          id: "a",
           text: "Digest food",
           emoji: "🍎",
-          description: "Stomach digests, lungs breathe",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Breathe oxygen",
-          emoji: "💨",
-          description: "Lungs bring oxygen into our blood",
-          isCorrect: true
         },
         {
           id: "b",
           text: "Think thoughts",
           emoji: "💭",
-          description: "Brain thinks, lungs breathe",
           isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Breathe oxygen",
+          emoji: "💨",
+          isCorrect: true
         }
       ]
     },
@@ -84,23 +79,20 @@ const QuizBodyFunctions = () => {
       options: [
         {
           id: "a",
-          text: "Stomach",
-          emoji: "🫄",
-          description: "Stomach breaks down food for energy",
-          isCorrect: true
+          text: "Heart",
+          emoji: "❤️",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Heart",
-          emoji: "❤️",
-          description: "Heart pumps blood, stomach digests",
-          isCorrect: false
+          text: "Stomach",
+          emoji: "🫄",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Brain",
           emoji: "🧠",
-          description: "Brain controls body, stomach processes food",
           isCorrect: false
         }
       ]
@@ -110,25 +102,22 @@ const QuizBodyFunctions = () => {
       text: "What does the brain help us do?",
       options: [
         {
+          id: "a",
+          text: "Think and learn",
+          emoji: "🎓",
+          isCorrect: true
+        },
+        {
           id: "b",
           text: "Pump blood",
           emoji: "💉",
-          description: "Heart pumps blood, brain controls thinking",
           isCorrect: false
         },
         {
           id: "c",
           text: "Breathe air",
           emoji: "🌬️",
-          description: "Lungs breathe, brain thinks and controls",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Think and learn",
-          emoji: "🎓",
-          description: "Brain is the control center of the body",
-          isCorrect: true
         }
       ]
     },
@@ -137,113 +126,142 @@ const QuizBodyFunctions = () => {
       text: "How do all organs work together?",
       options: [
         {
-          id: "b",
-          text: "They work separately",
-          emoji: "🔄",
-          description: "Organs work as a team for body health",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "As a team",
           emoji: "🤝",
-          description: "All body systems cooperate for health",
           isCorrect: true
+        },
+        {
+          id: "b",
+          text: "They work separately",
+          emoji: "🔄",
+          isCorrect: false
         },
         {
           id: "c",
           text: "Against each other",
           emoji: "⚔️",
-          description: "Organs help each other stay healthy",
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
+    
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
+    setShowFeedback(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, isCorrect ? 1000 : 800);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/games/health-male/kids");
   };
 
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = coins;
+
   return (
     <GameShell
       title="Quiz on Body Functions"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
+      score={finalScore}
       gameId={gameId}
       gameType="health-male"
       totalLevels={5}
       currentLevel={32}
       showConfetti={gameFinished}
-      flashPoints={flashPoints}
       backPath="/games/health-male/kids"
-      showAnswerConfetti={showAnswerConfetti}
-      maxScore={5}
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🧠</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Body Functions Quiz</h3>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className={`bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${choices.some(c => c.question === currentQuestion) ? 'opacity-75 cursor-not-allowed' : ''
-                  }`}
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+      maxScore={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">🧠</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
                 </div>
-              </button>
-            ))}
+              )}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

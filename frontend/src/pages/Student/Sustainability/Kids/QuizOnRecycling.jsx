@@ -22,7 +22,9 @@ const QuizOnRecycling = () => {
   const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   // Find next game path and ID if not provided in location.state
   const { nextGamePath, nextGameId } = useMemo(() => {
@@ -77,21 +79,18 @@ const QuizOnRecycling = () => {
           id: "a", 
           text: "Plastic bottle", 
           emoji: "🥤", 
-          description: "Can be recycled into new products",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Banana peel", 
           emoji: "🍌", 
-          description: "Goes in compost, not recycling",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Broken toy", 
           emoji: "🧸", 
-          description: "Usually goes in trash",
           isCorrect: false
         }
       ]
@@ -101,24 +100,21 @@ const QuizOnRecycling = () => {
       text: "Which item can be recycled?",
       options: [
         { 
-          id: "b", 
-          text: "Food scraps", 
-          emoji: "🍎", 
-          description: "Food goes in compost",
-          isCorrect: false
-        },
-        { 
           id: "a", 
           text: "Glass bottle", 
           emoji: "🍾", 
-          description: "Glass can be recycled many times",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Food scraps", 
+          emoji: "🍎", 
+          isCorrect: false
         },
         { 
           id: "c", 
           text: "Used tissue", 
           emoji: "🧻", 
-          description: "Cannot be recycled",
           isCorrect: false
         }
       ]
@@ -128,25 +124,22 @@ const QuizOnRecycling = () => {
       text: "What does recycling help?",
       options: [
         { 
+          id: "a", 
+          text: "Saves our planet", 
+          emoji: "🌍", 
+          isCorrect: true
+        },
+        { 
           id: "b", 
           text: "Makes more trash", 
           emoji: "🗑️", 
-          description: "Recycling reduces trash",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Does nothing", 
           emoji: "😐", 
-          description: "Recycling helps a lot!",
           isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "Saves our planet", 
-          emoji: "🌍", 
-          description: "Reduces waste and pollution",
-          isCorrect: true
         }
       ]
     },
@@ -155,25 +148,22 @@ const QuizOnRecycling = () => {
       text: "Which can be recycled?",
       options: [
         { 
+          id: "a", 
+          text: "Aluminum can", 
+          emoji: "🥫", 
+          isCorrect: true
+        },
+        { 
           id: "b", 
           text: "Dirty pizza box", 
           emoji: "🍕", 
-          description: "Too dirty to recycle",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Plastic bag", 
           emoji: "🛍️", 
-          description: "Usually not recyclable in regular bins",
           isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "Aluminum can", 
-          emoji: "🥫", 
-          description: "Metal cans are recyclable",
-          isCorrect: true
         }
       ]
     },
@@ -182,32 +172,32 @@ const QuizOnRecycling = () => {
       text: "Why should we recycle?",
       options: [
         { 
+          id: "a", 
+          text: "To protect animals", 
+          emoji: "🐾", 
+          isCorrect: true
+        },
+        { 
           id: "b", 
           text: "To make more trash", 
           emoji: "🗑️", 
-          description: "Recycling reduces trash",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "It doesn't matter", 
           emoji: "😕", 
-          description: "Recycling matters a lot!",
           isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "To protect animals", 
-          emoji: "🐾", 
-          description: "Recycling helps wildlife",
-          isCorrect: true
         }
       ]
     }
   ];
 
   const handleAnswer = (option) => {
-    if (showResult) return;
+    if (showResult || showFeedback) return;
+    
+    setSelectedOption(option.id);
+    resetFeedback();
     
     const newChoices = [...choices, option];
     setChoices(newChoices);
@@ -215,11 +205,18 @@ const QuizOnRecycling = () => {
     if (option.isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setShowFeedback(true);
     
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       } else {
         setFinalScore(newChoices.filter(c => c.isCorrect).length);
         setShowResult(true);
@@ -227,13 +224,13 @@ const QuizOnRecycling = () => {
           showAnswerConfetti();
         }
       }
-    }, 1500);
+    }, option.isCorrect ? 1000 : 800);
   };
 
   return (
     <GameShell
       title="Quiz on Recycling"
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}: Test your recycling knowledge!` : "Quiz Complete!"}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
@@ -252,30 +249,64 @@ const QuizOnRecycling = () => {
     >
       {flashPoints}
       {!showResult ? (
+        <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         <div className="space-y-6">
-          <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-2xl p-6 border border-blue-400/30">
-            <h3 className="text-xl font-bold text-white mb-4 text-center">
-              {questions[currentQuestion].text}
-            </h3>
-            <div className="grid grid-cols-1 gap-4">
-              {questions[currentQuestion].options.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => handleAnswer(option)}
-                  className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl p-4 border border-white/20 transition-all transform hover:scale-105 text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl">{option.emoji}</span>
-                    <div className="flex-1">
-                      <div className="font-semibold text-white text-lg">{option.text}</div>
-                      <div className="text-sm text-gray-300">{option.description}</div>
-                    </div>
-                  </div>
-                </button>
-              ))}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+              <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
             </div>
+            
+            <div className="text-6xl mb-4 text-center">♻️</div>
+            
+            <p className="text-white text-lg md:text-xl mb-6 text-center">
+              {questions[currentQuestion].text}
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {questions[currentQuestion].options.map(option => {
+                const isSelected = selectedOption === option.id;
+                const showCorrect = showFeedback && option.isCorrect;
+                const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option)}
+                    disabled={showFeedback}
+                    className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                      showCorrect
+                        ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                        : showIncorrect
+                        ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : isSelected
+                        ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                  </button>
+                );
+              })}
+            </div>
+            
+            {showFeedback && (
+              <div className={`rounded-lg p-5 mt-6 ${
+                questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                  ? "bg-green-500/20"
+                  : "bg-red-500/20"
+              }`}>
+                <p className="text-white whitespace-pre-line">
+                  {questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "Great job! That's exactly right! 🎉"
+                    : "Not quite right. Try again next time!"}
+                </p>
+              </div>
+            )}
           </div>
         </div>
+      </div>
       ) : (
         <div className="text-center space-y-6">
           <div className="text-6xl mb-4">♻️</div>

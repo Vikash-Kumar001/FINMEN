@@ -63,18 +63,18 @@ const HealthyPlatePoster = () => {
           isCorrect: false
         },
         {
-          id: 2,
-          title: "Water is Best",
-          description: "A poster showing a refreshing glass of water",
-          emoji: "💧💙",
-          isCorrect: true
-        },
-        {
           id: 3,
           title: "Juice Only",
           description: "A poster suggesting only fruit juice instead of water",
           emoji: "🧃🧃",
           isCorrect: false
+        },
+        {
+          id: 2,
+          title: "Water is Best",
+          description: "A poster showing a refreshing glass of water",
+          emoji: "💧💙",
+          isCorrect: true
         }
       ],
       correctFeedback: "Water is Best is the right message!",
@@ -84,18 +84,18 @@ const HealthyPlatePoster = () => {
       question: "Which poster shows healthy snacking habits?",
       posters: [
         {
-          id: 1,
-          title: "Smart Snacks",
-          description: "A poster showing carrots, apples, and nuts",
-          emoji: "🥕🍎",
-          isCorrect: true
-        },
-        {
           id: 2,
           title: "Candy Mountain",
           description: "A poster showing a pile of candy and lollipops",
           emoji: "🍬🍭",
           isCorrect: false
+        },
+        {
+          id: 1,
+          title: "Smart Snacks",
+          description: "A poster showing carrots, apples, and nuts",
+          emoji: "🥕🍎",
+          isCorrect: true
         },
         {
           id: 3,
@@ -112,25 +112,25 @@ const HealthyPlatePoster = () => {
       question: "Which poster teaches about a good breakfast?",
       posters: [
         {
-          id: 1,
-          title: "Skip Breakfast",
-          description: "A poster saying breakfast is not important",
-          emoji: "🚫🍳",
-          isCorrect: false
-        },
-        {
-          id: 2,
+          id: 3,
           title: "Donut Delight",
           description: "A poster showing only donuts for breakfast",
           emoji: "🍩🍩",
           isCorrect: false
         },
         {
-          id: 3,
+          id: 2,
           title: "Power Breakfast",
           description: "A poster showing eggs, toast, and milk",
           emoji: "🍳🥛",
           isCorrect: true
+        },
+        {
+          id: 1,
+          title: "Skip Breakfast",
+          description: "A poster saying breakfast is not important",
+          emoji: "🚫🍳",
+          isCorrect: false
         }
       ],
       correctFeedback: "Power Breakfast starts the day right!",
@@ -140,18 +140,18 @@ const HealthyPlatePoster = () => {
       question: "Which poster promotes trying new foods?",
       posters: [
         {
-          id: 1,
-          title: "Eat Same Food",
-          description: "A poster saying to only eat what you know",
-          emoji: "🔁🍕",
-          isCorrect: false
-        },
-        {
           id: 2,
           title: "Taste the Rainbow",
           description: "A poster encouraging trying colorful new fruits and veggies",
           emoji: "🌈🥗",
           isCorrect: true
+        },
+        {
+          id: 1,
+          title: "Eat Same Food",
+          description: "A poster saying to only eat what you know",
+          emoji: "🔁🍕",
+          isCorrect: false
         },
         {
           id: 3,
@@ -192,8 +192,26 @@ const HealthyPlatePoster = () => {
         }, 1500);
       }
     } else {
-      // Show result immediately for incorrect
-      setShowResult(true);
+      // Show feedback for incorrect answer and move to next question
+      showCorrectAnswerFeedback(0, false);
+      
+      // Check if this is the last stage
+      const isLastStage = currentStage === stages.length - 1;
+      
+      if (isLastStage) {
+        // Last stage - show result and game over modal
+        setTimeout(() => {
+          setShowResult(true);
+        }, 1500);
+      } else {
+        // Move to next question after showing feedback
+        setTimeout(() => {
+          setCurrentStage(currentStage + 1);
+          setSelectedPoster(null);
+          setShowResult(false);
+          resetFeedback();
+        }, 1500);
+      }
     }
   };
 
@@ -285,12 +303,7 @@ const HealthyPlatePoster = () => {
                 <p className="text-white/90 text-lg mb-4">
                   {currentStageData?.correctFeedback || "That's not quite right. Try again!"}
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
+                {/* Removed Try Again button to standardize behavior */}
                 <p className="text-white/80 text-sm">
                   {currentStageData?.explanation || "Look for the poster that promotes healthy eating habits."}
                 </p>

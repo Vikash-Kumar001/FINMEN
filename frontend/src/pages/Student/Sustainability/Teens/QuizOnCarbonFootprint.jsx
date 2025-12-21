@@ -22,6 +22,8 @@ const QuizOnCarbonFootprint = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   // Find next game path and ID if not provided in location.state
@@ -67,59 +69,64 @@ const QuizOnCarbonFootprint = () => {
       id: 1,
       text: "What is a carbon footprint?",
       options: [
-        { id: "a", text: "The size of your shoe", emoji: "👟", description: "Not related to shoes", isCorrect: false },
-        { id: "b", text: "Total greenhouse gases you produce", emoji: "🌍", description: "Measures your environmental impact", isCorrect: true },
-        { id: "c", text: "The weather forecast", emoji: "🌤️", description: "Not about weather", isCorrect: false }
+        { id: "a", text: "The size of your shoe", emoji: "👟", isCorrect: false },
+        { id: "b", text: "Total greenhouse gases you produce", emoji: "🌍", isCorrect: true },
+        { id: "c", text: "The weather forecast", emoji: "🌤️", isCorrect: false }
       ]
     },
     {
       id: 2,
       text: "Which activity has the highest carbon footprint?",
       options: [
-        { id: "a", text: "Riding a bicycle", emoji: "🚲", description: "Bikes have zero emissions", isCorrect: false },
-        { id: "b", text: "Walking", emoji: "🚶", description: "Walking has no emissions", isCorrect: false },
-        { id: "c", text: "Flying in a plane", emoji: "✈️", description: "Air travel emits a lot of CO2", isCorrect: true }
+        { id: "a", text: "Riding a bicycle", emoji: "🚲", isCorrect: false },
+        { id: "b", text: "Walking", emoji: "🚶", isCorrect: false },
+        { id: "c", text: "Flying in a plane", emoji: "✈️", isCorrect: true }
       ]
     },
     {
       id: 3,
       text: "How can you reduce your carbon footprint?",
       options: [
-        { id: "a", text: "Use public transport", emoji: "🚌", description: "Reduces individual emissions", isCorrect: true },
-        { id: "b", text: "Eat more meat", emoji: "🥩", description: "Meat production has high emissions", isCorrect: false },
-        { id: "c", text: "Drive alone everywhere", emoji: "🚗", description: "Increases emissions", isCorrect: false }
+        { id: "a", text: "Use public transport", emoji: "🚌", isCorrect: false },
+        { id: "b", text: "Eat more meat", emoji: "🥩", isCorrect: false },
+        { id: "c", text: "Drive alone everywhere", emoji: "🚗", isCorrect: true }
       ]
     },
     {
       id: 4,
       text: "What is the main greenhouse gas?",
       options: [
-        { id: "a", text: "Carbon dioxide (CO2)", emoji: "🌫️", description: "CO2 is the primary greenhouse gas", isCorrect: true },
-        { id: "b", text: "Oxygen", emoji: "💨", description: "Oxygen is not a greenhouse gas", isCorrect: false },
-        { id: "c", text: "Nitrogen", emoji: "💨", description: "Nitrogen is not a greenhouse gas", isCorrect: false }
+        { id: "a", text: "Carbon dioxide (CO2)", emoji: "🌫️", isCorrect: true },
+        { id: "b", text: "Oxygen", emoji: "💨", isCorrect: false },
+        { id: "c", text: "Nitrogen", emoji: "💨", isCorrect: false }
       ]
     },
     {
       id: 5,
       text: "Which energy source has the lowest carbon footprint?",
       options: [
-        { id: "a", text: "Coal", emoji: "⛽", description: "Coal has very high emissions", isCorrect: false },
-        { id: "b", text: "Natural gas", emoji: "🔥", description: "Still produces emissions", isCorrect: false },
-        { id: "c", text: "Solar power", emoji: "☀️", description: "Renewable energy has low emissions", isCorrect: true }
+        { id: "a", text: "Coal", emoji: "⛽", isCorrect: false },
+        { id: "b", text: "Natural gas", emoji: "🔥", isCorrect: false },
+        { id: "c", text: "Solar power", emoji: "☀️", isCorrect: true }
       ]
     }
   ];
 
-  const handleChoice = (isCorrect) => {
-    if (answered) return;
+  const handleChoice = (option) => {
+    if (answered || showFeedback) return;
     
-    setAnswered(true);
+    setSelectedOption(option.id);
     resetFeedback();
     
-    if (isCorrect) {
+    if (option.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setAnswered(true);
+    setShowFeedback(true);
     
     const isLastQuestion = currentQuestion === questions.length - 1;
     
@@ -129,8 +136,10 @@ const QuizOnCarbonFootprint = () => {
       } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
+        setSelectedOption(null);
+        setShowFeedback(false);
       }
-    }, 500);
+    }, option.isCorrect ? 1000 : 800);
   };
 
   const handleTryAgain = () => {
@@ -165,6 +174,7 @@ const QuizOnCarbonFootprint = () => {
     >
       <div className="space-y-8">
         {!showResult && currentQuestionData ? (
+          <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
@@ -172,26 +182,56 @@ const QuizOnCarbonFootprint = () => {
                 <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
               
-              <p className="text-white text-lg mb-6">
+              <div className="text-6xl mb-4 text-center">🌍</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
                 {currentQuestionData.text}
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.isCorrect)}
-                    disabled={answered}
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                  >
-                    <div className="text-3xl mb-3">{option.emoji}</div>
-                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
-                  </button>
-                ))}
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleChoice(option)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
               </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
+        </div>
         ) : null}
       </div>
     </GameShell>

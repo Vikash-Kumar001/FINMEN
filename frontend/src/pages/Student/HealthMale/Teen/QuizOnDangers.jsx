@@ -5,15 +5,18 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const QuizOnDangers = () => {
   const navigate = useNavigate();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [score, setScore] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   // Hardcode rewards
   const coinsPerLevel = 1;
   const totalCoins = 5;
   const totalXp = 10;
+
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -22,26 +25,22 @@ const QuizOnDangers = () => {
       options: [
         {
           id: "a",
+          text: "Cancer",
+          emoji: "🦠",
+          isCorrect: true
+        },
+        {
+          id: "b",
           text: "Stronger lungs",
           emoji: "🫁",
-          description: "Smoking actually damages lungs severely",
           isCorrect: false
         },
-      
         {
           id: "c",
           text: "Healthy teeth",
           emoji: "🦷",
-          description: "Smoking stains teeth and causes gum disease",
           isCorrect: false
-        },
-          {
-          id: "b",
-          text: "Cancer",
-          emoji: "🦠",
-          description: "Smoking is a leading cause of various cancers",
-          isCorrect: true
-        },
+        }
       ]
     },
     {
@@ -49,24 +48,21 @@ const QuizOnDangers = () => {
       text: "What happens to your heart when you smoke?",
       options: [
         {
-          id: "c",
-          text: "Gets stronger",
-          emoji: "❤️",
-          description: "Smoking weakens heart and increases disease risk",
+          id: "a",
+          text: "No effect",
+          emoji: "😐",
           isCorrect: false
         },
         {
-          id: "a",
+          id: "b",
           text: "Higher risk of heart disease",
           emoji: "💔",
-          description: "Smoking damages blood vessels and heart",
           isCorrect: true
         },
         {
-          id: "b",
-          text: "No effect",
-          emoji: "😐",
-          description: "Smoking has many negative heart effects",
+          id: "c",
+          text: "Gets stronger",
+          emoji: "❤️",
           isCorrect: false
         }
       ]
@@ -79,22 +75,19 @@ const QuizOnDangers = () => {
           id: "a",
           text: "Makes it healthier",
           emoji: "🫀",
-          description: "Alcohol causes liver damage and disease",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Causes liver damage",
-          emoji: "🩹",
-          description: "Heavy drinking leads to liver cirrhosis",
-          isCorrect: true
+          text: "No effect on liver",
+          emoji: "✅",
+          isCorrect: false
         },
         {
           id: "c",
-          text: "No effect on liver",
-          emoji: "✅",
-          description: "Alcohol is processed by the liver",
-          isCorrect: false
+          text: "Causes liver damage",
+          emoji: "🩹",
+          isCorrect: true
         }
       ]
     },
@@ -102,28 +95,25 @@ const QuizOnDangers = () => {
       id: 4,
       text: "What does drug use do to the brain?",
       options: [
-         {
-          id: "a",
+        {
+          id: "c",
           text: "Changes brain chemistry",
           emoji: "⚗️",
-          description: "Drugs can cause permanent brain damage",
           isCorrect: true
         },
         {
-          id: "b",
+          id: "a",
           text: "Improves brain function",
           emoji: "🧠",
-          description: "Drugs alter brain chemistry negatively",
           isCorrect: false
         },
-       
         {
-          id: "c",
+          id: "b",
           text: "No brain effects",
           emoji: "🤷",
-          description: "All drugs affect brain function",
           isCorrect: false
-        }
+        },
+        
       ]
     },
     {
@@ -131,105 +121,128 @@ const QuizOnDangers = () => {
       text: "Why should teens avoid substance use?",
       options: [
         {
-          id: "c",
-          text: "Only adults can handle it",
-          emoji: "👨‍🦳",
-          description: "Substances harm developing teen bodies more",
-          isCorrect: false
-        },
-        
-        {
-          id: "b",
+          id: "a",
           text: "It's not cool",
           emoji: "😎",
-          description: "Health risks are the main concern",
           isCorrect: false
         },
         {
-          id: "a",
+          id: "b",
+          text: "Only adults can handle it",
+          emoji: "👨‍🦳",
+          isCorrect: false
+        },
+        {
+          id: "c",
           text: "Affects brain development",
           emoji: "🧠",
-          description: "Teen brains are still developing and vulnerable",
           isCorrect: true
-        },
+        }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (gameFinished) return;
-
-    const currentQ = questions[currentQuestion];
-    const selectedOption = currentQ.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
+    
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
+    
+    setShowFeedback(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 1000);
+    }, isCorrect ? 1000 : 800);
   };
 
   const handleNext = () => {
     navigate("/student/health-male/teens/reflex-teen-choice");
   };
 
-  const currentQ = questions[currentQuestion];
-
   return (
     <GameShell
       title="Quiz on Dangers"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={score}
+      score={coins}
       gameId="health-male-teen-82"
       gameType="health-male"
+      showConfetti={gameFinished}
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
-      showAnswerConfetti={showAnswerConfetti}
     >
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Score: {score}</span>
+            <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
           </div>
 
           <p className="text-white text-lg mb-6">
-            {currentQ.text}
+            {questions[currentQuestion].text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
-            {currentQ.options.map(option => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                onClick={() => handleAnswer(option.id)}
+                disabled={showFeedback}
+                className={`p-6 rounded-2xl shadow-lg transition-all transform text-left ${
+                  showFeedback && option.isCorrect
+                    ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                    : showFeedback && selectedOption === option.id && !option.isCorrect
+                    ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                    : selectedOption === option.id
+                    ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                    : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                } ${showFeedback ? "cursor-not-allowed" : ""}`}
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>
             ))}
           </div>
+          
+          {showFeedback && (
+            <div className={`rounded-lg p-5 mt-6 ${
+              questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                ? "bg-green-500/20"
+                : "bg-red-500/20"
+            }`}>
+              <p className="text-white whitespace-pre-line">
+                {questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                  ? "Great job! That's exactly right! 🎉"
+                  : "Not quite right. Try again next time!"}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </GameShell>

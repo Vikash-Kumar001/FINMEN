@@ -19,8 +19,10 @@ const QuizSafety = () => {
 
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -31,14 +33,12 @@ const QuizSafety = () => {
           id: "a",
           text: "A helmet",
           emoji: "⛑️",
-          description: "Helmets protect your brain if you fall",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "b",
           text: "A cool hat",
           emoji: "🧢",
-          description: "Hats don't protect your head from falls",
           isCorrect: false
         },
         
@@ -46,8 +46,7 @@ const QuizSafety = () => {
           id: "c",
           text: "Sunglasses",
           emoji: "🕶️",
-          description: "Sunglasses protect eyes, but not your head",
-          isCorrect: false
+          isCorrect: true
         }
       ]
     },
@@ -56,24 +55,21 @@ const QuizSafety = () => {
       text: "What do you do before crossing the street?",
       options: [
         {
-          id: "c",
-          text: "Run fast",
-          emoji: "🏃",
-          description: "Running into the street is dangerous",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Look left, right, then left again",
           emoji: "👀",
-          description: "Always check for cars before crossing",
           isCorrect: true
         },
         {
           id: "b",
           text: "Close your eyes",
           emoji: "🙈",
-          description: "You need to see where you are going",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Run fast",
+          emoji: "🏃",
           isCorrect: false
         }
       ]
@@ -82,11 +78,11 @@ const QuizSafety = () => {
       id: 3,
       text: "What should you do if you find matches?",
       options: [
+       
         {
           id: "b",
           text: "Play with them",
           emoji: "🔥",
-          description: "Matches are dangerous and can start fires",
           isCorrect: false
         },
        
@@ -94,14 +90,12 @@ const QuizSafety = () => {
           id: "c",
           text: "Hide them",
           emoji: "📦",
-          description: "Don't hide them, tell a grown-up",
           isCorrect: false
         },
          {
           id: "a",
           text: "Tell an adult immediately",
           emoji: "👨‍👩‍👧",
-          description: "Adults know how to handle dangerous items",
           isCorrect: true
         },
       ]
@@ -111,24 +105,21 @@ const QuizSafety = () => {
       text: "Is it safe to talk to strangers?",
       options: [
         {
-          id: "c",
-          text: "Yes, if they have candy",
-          emoji: "🍬",
-          description: "Never take candy from strangers",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "No, stay with your parents",
           emoji: "🚫",
-          description: "Strangers can be dangerous - stay close to family",
           isCorrect: true
         },
         {
           id: "b",
           text: "Yes, if they look nice",
           emoji: "😊",
-          description: "You can't tell if someone is safe just by looking",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Yes, if they have candy",
+          emoji: "🍬",
           isCorrect: false
         }
       ]
@@ -137,47 +128,58 @@ const QuizSafety = () => {
       id: 5,
       text: "What do you do in a car?",
       options: [
+        
         {
           id: "b",
           text: "Jump around",
           emoji: "🤾",
-          description: "Moving around in a car is unsafe",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Stick head out window",
-          emoji: "🌬️",
-          description: "Keep all body parts inside the car",
           isCorrect: false
         },
         {
           id: "a",
           text: "Wear your seatbelt",
           emoji: "🚗",
-          description: "Seatbelts keep you safe in case of a stop",
           isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Stick head out window",
+          emoji: "🌬️",
+          isCorrect: false
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
+    
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
+    
+    setShowFeedback(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, isCorrect ? 1000 : 800);
   };
 
   const handleNext = () => {
@@ -187,49 +189,80 @@ const QuizSafety = () => {
   return (
     <GameShell
       title="Safety Quiz"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
       gameId={gameId}
       gameType="health-male"
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
+      totalLevels={5}
+      currentLevel={72}
+      showConfetti={gameFinished}
+      backPath="/games/health-male/kids"
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {questions[currentQuestion].text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {questions[currentQuestion].options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && questions[currentQuestion] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">🛡️</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
                 </div>
-              </button>
-            ))}
+              )}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

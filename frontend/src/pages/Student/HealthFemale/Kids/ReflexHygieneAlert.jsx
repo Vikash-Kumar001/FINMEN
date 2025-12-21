@@ -4,10 +4,10 @@ import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const TOTAL_ROUNDS = 5;
-const ROUND_TIME = 5; // 5 seconds per round
+const ROUND_TIME = 10; // 10 seconds per round
 
 const ReflexHygieneAlert = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
 
   // Hardcoded Game Rewards & Configuration
   const coinsPerLevel = 1;

@@ -63,18 +63,18 @@ const PowerOfNoPoster = () => {
           isCorrect: false
         },
         {
-          id: 2,
-          title: "Hide Away",
-          description: "A poster showing hiding from problems",
-          emoji: "🙈",
-          isCorrect: false
-        },
-        {
           id: 3,
           title: "Stand Tall",
           description: "A poster showing standing confident and firm",
           emoji: "🦁",
           isCorrect: true
+        },
+        {
+          id: 2,
+          title: "Hide Away",
+          description: "A poster showing hiding from problems",
+          emoji: "🙈",
+          isCorrect: false
         }
       ],
       correctFeedback: "Stand Tall and be confident!",
@@ -84,18 +84,18 @@ const PowerOfNoPoster = () => {
       question: "Which poster shows a healthy boundary?",
       posters: [
         {
-          id: 1,
-          title: "My Space",
-          description: "A poster showing personal space and rules",
-          emoji: "🚧",
-          isCorrect: true
-        },
-        {
           id: 2,
           title: "No Rules",
           description: "A poster showing chaos and no limits",
           emoji: "🌀",
           isCorrect: false
+        },
+        {
+          id: 1,
+          title: "My Space",
+          description: "A poster showing personal space and rules",
+          emoji: "🚧",
+          isCorrect: true
         },
         {
           id: 3,
@@ -112,10 +112,10 @@ const PowerOfNoPoster = () => {
       question: "Which poster shows asking for help?",
       posters: [
         {
-          id: 1,
-          title: "Keep Secrets",
-          description: "A poster showing keeping problems inside",
-          emoji: "🤫",
+          id: 3,
+          title: "Solve Alone",
+          description: "A poster showing struggling alone",
+          emoji: "😓",
           isCorrect: false
         },
         {
@@ -126,10 +126,10 @@ const PowerOfNoPoster = () => {
           isCorrect: true
         },
         {
-          id: 3,
-          title: "Solve Alone",
-          description: "A poster showing struggling alone",
-          emoji: "😓",
+          id: 1,
+          title: "Keep Secrets",
+          description: "A poster showing keeping problems inside",
+          emoji: "🤫",
           isCorrect: false
         }
       ],
@@ -140,18 +140,18 @@ const PowerOfNoPoster = () => {
       question: "Which poster shows true friendship?",
       posters: [
         {
-          id: 1,
-          title: "Bossy Friend",
-          description: "A poster showing one friend controlling another",
-          emoji: "👉",
-          isCorrect: false
-        },
-        {
           id: 2,
           title: "Respectful Friend",
           description: "A poster showing friends listening to each other",
           emoji: "🤝",
           isCorrect: true
+        },
+        {
+          id: 1,
+          title: "Bossy Friend",
+          description: "A poster showing one friend controlling another",
+          emoji: "👉",
+          isCorrect: false
         },
         {
           id: 3,
@@ -192,8 +192,26 @@ const PowerOfNoPoster = () => {
         }, 1500);
       }
     } else {
-      // Show result immediately for incorrect
-      setShowResult(true);
+      // Show feedback for incorrect answer and move to next question
+      showCorrectAnswerFeedback(0, false);
+      
+      // Check if this is the last stage
+      const isLastStage = currentStage === stages.length - 1;
+      
+      if (isLastStage) {
+        // Last stage - show result and game over modal
+        setTimeout(() => {
+          setShowResult(true);
+        }, 1500);
+      } else {
+        // Move to next question after showing feedback
+        setTimeout(() => {
+          setCurrentStage(currentStage + 1);
+          setSelectedPoster(null);
+          setShowResult(false);
+          resetFeedback();
+        }, 1500);
+      }
     }
   };
 
@@ -285,12 +303,7 @@ const PowerOfNoPoster = () => {
                 <p className="text-white/90 text-lg mb-4">
                   {currentStageData?.correctFeedback || "That's not quite right. Try again!"}
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
+                {/* Removed Try Again button to standardize behavior */}
                 <p className="text-white/80 text-sm">
                   {currentStageData?.explanation || "Look for the poster that shows strength in saying no."}
                 </p>

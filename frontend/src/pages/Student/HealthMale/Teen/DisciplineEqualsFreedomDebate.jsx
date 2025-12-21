@@ -7,8 +7,10 @@ const DisciplineEqualsFreedomDebate = () => {
   const navigate = useNavigate();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   // Hardcode rewards
   const coinsPerLevel = 1;
@@ -23,25 +25,21 @@ const DisciplineEqualsFreedomDebate = () => {
         {
           id: "a",
           text: "Restricts life",
-          emoji: "🔒",
-          description: "Discipline creates structure that enables freedom",
-          isCorrect: false
+          emoji: "🔒"
         },
         {
           id: "b",
           text: "Limits choices",
-          emoji: "🚫",
-          description: "Discipline expands possibilities through good habits",
-          isCorrect: false
+          emoji: "🚫"
         },
         {
           id: "c",
           text: "Gives freedom",
-          emoji: "🕊️",
-          description: "Self-discipline leads to greater personal freedom",
-          isCorrect: true
+          emoji: "🕊️"
         }
-      ]
+      ],
+      correctAnswer: "c",
+      explanation: "Self-discipline leads to greater personal freedom. Discipline creates structure that enables freedom rather than restricting it."
     },
     {
       id: 2,
@@ -50,25 +48,21 @@ const DisciplineEqualsFreedomDebate = () => {
         {
           id: "b",
           text: "Creates more work",
-          emoji: "📚",
-          description: "Discipline makes achieving goals easier",
-          isCorrect: false
+          emoji: "📚"
         },
         {
           id: "a",
           text: "Builds self-control",
-          emoji: "💪",
-          description: "Self-control is key to personal freedom",
-          isCorrect: true
+          emoji: "💪"
         },
         {
           id: "c",
           text: "Removes fun",
-          emoji: "😔",
-          description: "Discipline enables more enjoyable experiences",
-          isCorrect: false
+          emoji: "😔"
         }
-      ]
+      ],
+      correctAnswer: "a",
+      explanation: "Self-control is key to personal freedom. Discipline makes achieving goals easier and enables more enjoyable experiences."
     },
     {
       id: 3,
@@ -77,26 +71,22 @@ const DisciplineEqualsFreedomDebate = () => {
          {
           id: "c",
           text: "Rules enable responsible freedom",
-          emoji: "⚖️",
-          description: "Following rules responsibly leads to more freedom",
-          isCorrect: true
+          emoji: "⚖️"
         },
         {
           id: "a",
           text: "Rules prevent freedom",
-          emoji: "🚫",
-          description: "Rules provide the structure for true freedom",
-          isCorrect: false
+          emoji: "🚫"
         },
-       
+          
         {
           id: "b",
           text: "No relationship",
-          emoji: "🤷",
-          description: "Rules and freedom are connected",
-          isCorrect: false
+          emoji: "🤷"
         }
-      ]
+      ],
+      correctAnswer: "b",
+      explanation: "Rules and freedom are connected. Following rules responsibly leads to more freedom, as rules provide the structure for true freedom."
     },
     {
       id: 4,
@@ -105,25 +95,21 @@ const DisciplineEqualsFreedomDebate = () => {
         {
           id: "b",
           text: "Limits opportunities",
-          emoji: "🚪",
-          description: "Discipline opens doors to more opportunities",
-          isCorrect: false
+          emoji: "🚪"
         },
         {
           id: "a",
           text: "Creates more opportunities",
-          emoji: "🚀",
-          description: "Self-discipline leads to success and choices",
-          isCorrect: true
+          emoji: "🚀"
         },
         {
           id: "c",
           text: "No effect",
-          emoji: "😐",
-          description: "Discipline directly affects future success",
-          isCorrect: false
+          emoji: "😐"
         }
-      ]
+      ],
+      correctAnswer: "a",
+      explanation: "Self-discipline leads to success and choices. Discipline directly affects future success by opening doors to more opportunities."
     },
     {
       id: 5,
@@ -132,50 +118,51 @@ const DisciplineEqualsFreedomDebate = () => {
         {
           id: "a",
           text: "Boredom and restriction",
-          emoji: "😴",
-          description: "Discipline leads to achievement and fulfillment",
-          isCorrect: false
+          emoji: "😴"
         },
         {
           id: "c",
           text: "Personal mastery and freedom",
-          emoji: "👑",
-          description: "Mastering discipline gives true personal freedom",
-          isCorrect: true
+          emoji: "👑"
         },
         {
           id: "b",
           text: "Constant struggle",
-          emoji: "😩",
-          description: "Discipline becomes easier with practice",
-          isCorrect: false
+          emoji: "😩"
         }
-      ]
+      ],
+      correctAnswer: "c",
+      explanation: "Mastering discipline gives true personal freedom. Discipline leads to achievement and fulfillment, and becomes easier with practice."
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (gameFinished) return;
-
-    const currentQ = questions[currentQuestion];
-    const selectedOption = currentQ.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleOptionSelect = (optionId) => {
+    if (selectedOption || showFeedback) return;
+    
+    resetFeedback(); // Reset any existing feedback
+    
+    setSelectedOption(optionId);
+    const isCorrect = optionId === questions[currentQuestion].correctAnswer;
+    
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setScore(prev => prev + 1); // 1 point per correct answer
       showCorrectAnswerFeedback(1, true);
     }
-
+    
+    setShowFeedback(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
       } else {
         setGameFinished(true);
       }
-    }, 1000);
+    }, 2000);
   };
 
-  const currentQ = questions[currentQuestion];
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-male/teens/journal-of-teen-habits");
@@ -213,26 +200,63 @@ const DisciplineEqualsFreedomDebate = () => {
           </div>
 
           <p className="text-white text-lg mb-6">
-            {currentQ.text}
+            {getCurrentQuestion().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
-            {currentQ.options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {getCurrentQuestion().options.map(option => {
+              const isSelected = selectedOption === option.id;
+              const isCorrect = option.id === getCurrentQuestion().correctAnswer;
+              const showCorrect = showFeedback && isCorrect;
+              const showIncorrect = showFeedback && isSelected && !isCorrect;
+              
+              // Add emojis for each option like in the reference game
+              const optionEmojis = {
+                a: "✅",
+                b: "❌",
+                c: "⚠️"
+              };
+              
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleOptionSelect(option.id)}
+                  disabled={showFeedback}
+                  className={`bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${
+                    showFeedback ? (isCorrect ? 'ring-4 ring-green-500' : isSelected ? 'ring-4 ring-red-500' : '') : ''
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-2xl mr-4">{optionEmojis[option.id] || '❓'}</div>
+                    <div>
+                      <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
+
+          {showFeedback && (
+            <div className={`mt-6 p-4 rounded-xl ${
+              selectedOption === getCurrentQuestion().correctAnswer
+                ? 'bg-green-500/20 border border-green-500/30'
+                : 'bg-red-500/20 border border-red-500/30'
+            }`}>
+              <p className={`font-semibold ${
+                selectedOption === getCurrentQuestion().correctAnswer
+                  ? 'text-green-300'
+                  : 'text-red-300'
+              }`}>
+                {selectedOption === getCurrentQuestion().correctAnswer
+                  ? 'Correct! 🎉'
+                  : 'Not quite right!'}
+              </p>
+              <p className="text-white/90 mt-2">
+                {getCurrentQuestion().explanation}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </GameShell>

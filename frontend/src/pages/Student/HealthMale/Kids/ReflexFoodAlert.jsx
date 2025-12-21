@@ -16,7 +16,7 @@ const ReflexFoodAlert = () => {
   const coinsPerLevel = 1;
   const totalCoins = 5;
   const totalXp = 10;
-  const ROUND_TIME = 5;
+  const ROUND_TIME = 10;
   const TOTAL_ROUNDS = 5;
 
   const [currentRound, setCurrentRound] = useState(1);
@@ -34,50 +34,50 @@ const ReflexFoodAlert = () => {
       id: 1,
       question: "Which drink is healthy?",
       options: [
-        { text: "Soda", emoji: "🥤", isCorrect: false },
-        { text: "Water", emoji: "💧", isCorrect: true },
-        { text: "Juice", emoji: "🧃", isCorrect: false },
-        { text: "Energy Drink", emoji: "⚡", isCorrect: false }
+        { id: 'a', text: "Soda", emoji: "🥤", isCorrect: false },
+        { id: 'b', text: "Water", emoji: "💧", isCorrect: true },
+        { id: 'c', text: "Juice", emoji: "🧃", isCorrect: false },
+        { id: 'd', text: "Energy Drink", emoji: "⚡", isCorrect: false }
       ]
     },
     {
       id: 2,
       question: "Pick the healthy snack!",
       options: [
-        { text: "Chips", emoji: "🍟", isCorrect: false },
-        { text: "Candy", emoji: "🍬", isCorrect: false },
-        { text: "Apple", emoji: "🍎", isCorrect: true },
-        { text: "Cookie", emoji: "🍪", isCorrect: false }
+        { id: 'a', text: "Chips", emoji: "🍟", isCorrect: false },
+        { id: 'b', text: "Candy", emoji: "🍬", isCorrect: false },
+        { id: 'c', text: "Cookie", emoji: "🍪", isCorrect: false },
+        { id: 'd', text: "Apple", emoji: "🍎", isCorrect: true }
       ]
     },
     {
       id: 3,
       question: "Choose the best lunch!",
       options: [
-        { text: "Pizza", emoji: "🍕", isCorrect: false },
-        { text: "Salad", emoji: "🥗", isCorrect: true },
-        { text: "Burger", emoji: "🍔", isCorrect: false },
-        { text: "Fries", emoji: "🍟", isCorrect: false }
+        { id: 'a', text: "Pizza", emoji: "🍕", isCorrect: false },
+        { id: 'b', text: "Burger", emoji: "🍔", isCorrect: false },
+        { id: 'c', text: "Salad", emoji: "🥗", isCorrect: true },
+        { id: 'd', text: "Sandwich", emoji: "🥪", isCorrect: false }
       ]
     },
     {
       id: 4,
       question: "What gives you energy?",
       options: [
-        { text: "Sugar", emoji: "🍭", isCorrect: false },
-        { text: "Banana", emoji: "🍌", isCorrect: true },
-        { text: "Cake", emoji: "🍰", isCorrect: false },
-        { text: "Donut", emoji: "🍩", isCorrect: false }
+        { id: 'a', text: "Oatmeal", emoji: "🥣", isCorrect: true },
+        { id: 'b', text: "Sugar", emoji: "🍭", isCorrect: false },
+        { id: 'c', text: "Cake", emoji: "🍰", isCorrect: false },
+        { id: 'd', text: "Donut", emoji: "🍩", isCorrect: false }
       ]
     },
     {
       id: 5,
       question: "Best for strong bones?",
       options: [
-        { text: "Soda", emoji: "🥤", isCorrect: false },
-        { text: "Milk", emoji: "🥛", isCorrect: true },
-        { text: "Tea", emoji: "🍵", isCorrect: false },
-        { text: "Coffee", emoji: "☕", isCorrect: false }
+        { id: 'a', text: "Soda", emoji: "🥤", isCorrect: false },
+        { id: 'b', text: "Milk", emoji: "🥛", isCorrect: true },
+        { id: 'c', text: "Tea", emoji: "🍵", isCorrect: false },
+        { id: 'd', text: "Coffee", emoji: "☕", isCorrect: false }
       ]
     }
   ];
@@ -189,6 +189,7 @@ const ReflexFoodAlert = () => {
         setGameState("finished");
       } else {
         setCurrentRound((prev) => prev + 1);
+        setAnswered(false); // Reset answered state for next round
       }
     }, 500);
   };

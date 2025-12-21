@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -16,78 +16,147 @@ const ReflexEmotionCheck = () => {
   const coinsPerLevel = 1;
   const totalCoins = 5;
   const totalXp = 10;
-  const ROUND_TIME = 5;
+  const ROUND_TIME = 10;
   const TOTAL_ROUNDS = 5;
 
+  const [currentRound, setCurrentRound] = useState(1);
+  const [gameState, setGameState] = useState('ready'); // ready, playing, finished
   const [score, setScore] = useState(0);
-  const [currentRound, setCurrentRound] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
-  const [isActive, setIsActive] = useState(false);
-  const [showResult, setShowResult] = useState(false);
-  const [lastResult, setLastResult] = useState(null); // 'correct', 'wrong', 'timeout'
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(1);
 
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const timerRef = useRef(null);
 
   const scenarios = [
     {
       id: 1,
       question: "Tap the emoji that shows HAPPY!",
       options: [
-        { text: "Happy", emoji: "😊", isCorrect: true },
-        { text: "Angry", emoji: "😠", isCorrect: false }
+        { id: 'a', text: "Happy", emoji: "😊", isCorrect: true },
+        { id: 'b', text: "Sad", emoji: "😢", isCorrect: false },
+        { id: 'c', text: "Angry", emoji: "😠", isCorrect: false },
+        { id: 'd', text: "Scared", emoji: "😨", isCorrect: false }
       ]
     },
     {
       id: 2,
       question: "Tap the emoji that shows SAD!",
       options: [
-        { text: "Happy", emoji: "😄", isCorrect: false },
-        { text: "Sad", emoji: "😢", isCorrect: true }
+        { id: 'a', text: "Happy", emoji: "😄", isCorrect: false },
+        { id: 'b', text: "Sad", emoji: "😢", isCorrect: true },
+        { id: 'c', text: "Excited", emoji: "🤩", isCorrect: false },
+        { id: 'd', text: "Bored", emoji: "😐", isCorrect: false }
       ]
     },
     {
       id: 3,
       question: "Tap the emoji that shows ANGRY!",
       options: [
-        { text: "Angry", emoji: "😠", isCorrect: true },
-        { text: "Happy", emoji: "😊", isCorrect: false }
+        { id: 'a', text: "Scared", emoji: "😨", isCorrect: false },
+        { id: 'b', text: "Bored", emoji: "😐", isCorrect: false },
+        { id: 'c', text: "Angry", emoji: "😠", isCorrect: true },
+        { id: 'd', text: "Happy", emoji: "😊", isCorrect: false }
       ]
     },
     {
       id: 4,
       question: "Tap the emoji that shows SCARED!",
       options: [
-        { text: "Sad", emoji: "😢", isCorrect: false },
-        { text: "Scared", emoji: "😨", isCorrect: true }
+        { id: 'a', text: "Excited", emoji: "🤩", isCorrect: false },
+        { id: 'b', text: "Happy", emoji: "😄", isCorrect: false },
+        { id: 'c', text: "Sad", emoji: "😢", isCorrect: false },
+        { id: 'd', text: "Scared", emoji: "😨", isCorrect: true }
       ]
     },
     {
       id: 5,
       question: "Tap the emoji that shows EXCITED!",
       options: [
-        { text: "Excited", emoji: "🤩", isCorrect: true },
-        { text: "Bored", emoji: "😐", isCorrect: false }
+        { id: 'a', text: "Bored", emoji: "😐", isCorrect: false },
+        { id: 'b', text: "Scared", emoji: "😨", isCorrect: false },
+        { id: 'c', text: "Sad", emoji: "😢", isCorrect: false },
+        { id: 'd', text: "Excited", emoji: "🤩", isCorrect: true }
       ]
     }
   ];
 
   const startGame = () => {
-    setIsActive(true);
+    setGameState("playing");
     setTimeLeft(ROUND_TIME);
-    setShowResult(false);
-    setLastResult(null);
+    setScore(0);
+    setCurrentRound(1);
+    resetFeedback();
   };
 
+  // Update ref when currentRound changes
   useEffect(() => {
-    if (isActive && timeLeft > 0) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && isActive) {
-      handleAnswer(false, 'timeout');
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  // Reset timer when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
+  }, [currentRound, gameState]);
+
+  // Handle time up - move to next question or show results
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
+    resetFeedback();
+
+    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
+
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+      }
+    }, 1000);
+  }, []);
+
+  // Timer effect - countdown from 10 seconds for each question
+  useEffect(() => {
+    if (gameState !== "playing") {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+
+    // Check if game should be finished
+    if (currentRoundRef.current > TOTAL_ROUNDS) {
+      setGameState("finished");
+      return;
+    }
+
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // Start countdown timer
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          // Time's up for this round
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          handleTimeUp();
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
 
     return () => {
       if (timerRef.current) {
@@ -95,38 +164,34 @@ const ReflexEmotionCheck = () => {
         timerRef.current = null;
       }
     };
-  }, [isActive, timeLeft]);
+  }, [gameState, handleTimeUp, currentRound]);
 
-  // Reset timer when round changes
-  useEffect(() => {
-    if (currentRound < TOTAL_ROUNDS && !gameFinished) {
-      startGame();
-    }
-  }, [currentRound]);
+  const handleAnswer = (option) => {
+    if (gameState !== "playing" || answered || currentRound > TOTAL_ROUNDS) return;
 
-  const handleAnswer = (isCorrect, type = 'answer') => {
+    // Clear the timer immediately when user answers
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    setIsActive(false);
+
+    setAnswered(true);
     resetFeedback();
 
+    const isCorrect = option.isCorrect;
+    
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setLastResult('correct');
-    } else {
-      setLastResult(type === 'timeout' ? 'timeout' : 'wrong');
     }
 
-    setShowResult(true);
-
+    // Move to next round or show results
     setTimeout(() => {
-      if (currentRound < TOTAL_ROUNDS - 1) {
-        setCurrentRound(prev => prev + 1);
+      if (currentRound >= TOTAL_ROUNDS) {
+        setGameState("finished");
       } else {
-        setGameFinished(true);
+        setCurrentRound((prev) => prev + 1);
+        setAnswered(false); // Reset answered state for next round
       }
     }, 500);
   };
@@ -135,78 +200,74 @@ const ReflexEmotionCheck = () => {
     navigate("/games/health-male/kids");
   };
 
-  const currentScenario = scenarios[currentRound];
+  const currentScenario = scenarios[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Emotion Check"
-      subtitle={gameFinished ? "Game Complete!" : `Round ${currentRound + 1} of ${TOTAL_ROUNDS}`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
+      subtitle={gameState === "playing" ? `Round ${currentRound} of ${TOTAL_ROUNDS}` : gameState === "finished" ? "Game Complete!" : "Act fast!"}
+      currentLevel={currentRound}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={gameState === "finished"}
       score={score}
       gameId={gameId}
       gameType="health-male"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      totalLevels={TOTAL_ROUNDS}
       maxScore={TOTAL_ROUNDS}
-      coinsPerLevel={coinsPerLevel}
+      showConfetti={gameState === "finished" && score >= 3}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      totalLevels={TOTAL_ROUNDS}
-      currentLevel={currentRound + 1}
-      showConfetti={gameFinished && score >= 3}
+      onNext={handleNext}
     >
       <div className="space-y-8">
-        {!gameFinished && currentScenario && (
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/80 mb-6 text-lg">Identify the emotion quickly! You have {ROUND_TIME} seconds per round</p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+            <p className="text-white/60 mt-4">You'll have {ROUND_TIME} seconds per round</p>
+          </div>
+        )}
+
+        {gameState === "playing" && currentScenario && (
           <div className="space-y-6">
-            {!showResult && (
-              <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
-                <div className="text-white">
-                  <span className="font-bold">Round:</span> {currentRound + 1}/{TOTAL_ROUNDS}
-                </div>
-                <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
-                  <span className="text-white">Time:</span> {timeLeft}s
-                </div>
-                <div className="text-white">
-                  <span className="font-bold">Score:</span> {score}/{TOTAL_ROUNDS}
-                </div>
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
-            )}
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}/{TOTAL_ROUNDS}
+              </div>
+            </div>
 
             <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
-              {!showResult ? (
-                <>
-                  <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
-                    {currentScenario.question}
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {currentScenario.options.map((option, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleAnswer(option.isCorrect)}
-                        className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                      >
-                        <div className="text-4xl mb-3">{option.emoji}</div>
-                        <h3 className="font-bold text-xl">{option.text}</h3>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div className="py-12">
-                  <div className="text-8xl mb-6">
-                    {lastResult === 'correct' ? '🎉' : lastResult === 'timeout' ? '⏰' : '❌'}
-                  </div>
-                  <h2 className="text-4xl font-bold text-white mb-4">
-                    {lastResult === 'correct' ? 'Great Job!' : lastResult === 'timeout' ? 'Time\'s Up!' : 'Oops!'}
-                  </h2>
-                  <p className="text-xl text-white/80">
-                    {lastResult === 'correct' ? '+1 Point' : 'Keep trying!'}
-                  </p>
-                </div>
-              )}
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentScenario.question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentScenario.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-4xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

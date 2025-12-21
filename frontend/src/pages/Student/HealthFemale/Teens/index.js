@@ -78,7 +78,7 @@ import BadgeConfidentTeenGirl from "./BadgeConfidentTeenGirl.jsx";
 // New preventive care games (levels 71-80)
 import HealthCheckStory from "./HealthCheckStory.jsx";
 import QuizOnPreventiveHealth from "./QuizOnPreventiveHealth.jsx";
-import ReflexPreventiveCare from "./ReflexTeenHealth.jsx";
+import ReflexPreventiveCare from "./ReflexPreventiveCare.jsx";
 import PuzzleDoctorTools from "./PuzzleDoctorTools.jsx";
 import SpecialistStory from "./SpecialistStory.jsx";
 import DebateDoctorFear from "./DebateDoctorFear.jsx";
@@ -94,7 +94,7 @@ import ReflexTeenChoice from "./ReflexTeenChoice.jsx";
 import PuzzleSubstanceEffects from "./PuzzleSubstanceEffects.jsx";
 import PartyStory from "./PartyStory.jsx";
 import DebateSmokingCool from "./DebateSmokingCool.jsx";
-import JournalOfSubstanceAwareness from "./JournalOfAwareness.jsx";
+import JournalOfSubstanceAwareness from "./JournalOfSubstanceAwareness.jsx";
 import SimulationPeerTestSubstance from "./SimulationPeerTestSubstance.jsx";
 import ReflexTeenSafety from "./ReflexTeenSafety.jsx";
 import DrugFreeTeenGirlBadge from "./DrugFreeTeenGirlBadge.jsx";

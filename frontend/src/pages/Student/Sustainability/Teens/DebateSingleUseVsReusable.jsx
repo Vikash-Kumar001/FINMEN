@@ -9,14 +9,17 @@ const DebateSingleUseVsReusable = () => {
   const location = useLocation();
   const gameData = getGameDataById("sustainability-teens-16");
   const gameId = gameData?.id || "sustainability-teens-16";
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const [coins, setCoins] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   // Find next game path and ID if not provided in location.state
   const { nextGamePath, nextGameId } = useMemo(() => {
@@ -44,7 +47,7 @@ const DebateSingleUseVsReusable = () => {
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
-    if (showResult) {
+    if (gameFinished) {
       console.log(`🎮 Debate: Single-Use vs Reusable game completed! Score: ${score}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       if (nextGameId && window.history && window.history.replaceState) {
         const currentState = window.history.state || {};
@@ -54,103 +57,214 @@ const DebateSingleUseVsReusable = () => {
         }, '');
       }
     }
-  }, [showResult, score, gameId, nextGamePath, nextGameId]);
+  }, [gameFinished, score, gameId, nextGamePath, nextGameId]);
 
   const questions = [
     {
       id: 1,
       text: "Should we ban single-use plastics?",
       options: [
-        { id: "yes", text: "Yes, completely", emoji: "✅", description: "Reduces plastic waste", isCorrect: true },
-        { id: "gradual", text: "Gradually phase out", emoji: "⏳", description: "Balance is important", isCorrect: true },
-        { id: "no", text: "No, keep them", emoji: "❌", description: "Single-use plastics harm environment", isCorrect: false }
-      ]
+        {
+          id: "a",
+          text: "Yes, completely",
+          emoji: "✅"
+        },
+        {
+          id: "b",
+          text: "Gradually phase out",
+          emoji: "⏳"
+        },
+        {
+          id: "c",
+          text: "No, keep them",
+          emoji: "❌"
+        }
+      ],
+      correctAnswer: "b",
+      explanation: "Gradually phase out. Reduces plastic waste, but balance is important. Single-use plastics harm environment."
     },
     {
       id: 2,
       text: "What's better: single-use or reusable?",
       options: [
-        { id: "single", text: "Single-use items", emoji: "🥤", description: "Creates more waste", isCorrect: false },
-        { id: "reusable", text: "Reusable items", emoji: "🔄", description: "Reduces waste", isCorrect: true },
-        { id: "same", text: "Same impact", emoji: "⚖️", description: "Reusable is better", isCorrect: false }
-      ]
+        {
+          id: "a",
+          text: "Single-use items",
+          emoji: "🥤"
+        },
+        {
+          id: "b",
+          text: "Reusable items",
+          emoji: "🔄"
+        },
+        {
+          id: "c",
+          text: "Same impact",
+          emoji: "⚖️"
+        }
+      ],
+      correctAnswer: "c",
+      explanation: "Same impact. Creates more waste, but reusable items reduce waste. Reusable is better."
     },
     {
       id: 3,
       text: "How can we reduce single-use plastic?",
       options: [
-        { id: "more", text: "Use more plastic", emoji: "🥤", description: "Increases waste", isCorrect: false },
-        { id: "nothing", text: "Do nothing", emoji: "🤷", description: "Action is needed", isCorrect: false },
-        { id: "alternatives", text: "Use alternatives", emoji: "🌱", description: "Find reusable options", isCorrect: true }
-      ]
+        {
+          id: "a",
+          text: "Use more plastic",
+          emoji: "🥤"
+        },
+        {
+          id: "b",
+          text: "Do nothing",
+          emoji: "🤷"
+        },
+        {
+          id: "c",
+          text: "Use alternatives",
+          emoji: "🌱"
+        }
+      ],
+      correctAnswer: "a",
+      explanation: "Use more plastic. Increases waste, but action is needed. Find reusable options."
+    },
+    {
+      id: 4,
+      text: "What's the environmental impact of single-use plastics?",
+      options: [
+        {
+          id: "a",
+          text: "Minimal impact",
+          emoji: "🍃"
+        },
+        {
+          id: "b",
+          text: "Moderate impact",
+          emoji: "⚠️"
+        },
+        {
+          id: "c",
+          text: "Severe impact",
+          emoji: "🔥"
+        }
+      ],
+      correctAnswer: "c",
+      explanation: "Severe impact. Actually harmful, and significant harm. Major environmental threat."
+    },
+    {
+      id: 5,
+      text: "What's the best approach to reduce plastic waste?",
+      options: [
+        {
+          id: "a",
+          text: "Individual action",
+          emoji: "👤"
+        },
+        {
+          id: "b",
+          text: "Government regulation",
+          emoji: "🏛️"
+        },
+        {
+          id: "c",
+          text: "Corporate responsibility",
+          emoji: "🏢"
+        }
+      ],
+      correctAnswer: "b",
+      explanation: "Government regulation. Important but not sufficient, and essential for widespread change. Helpful but not enough alone."
     }
   ];
 
-  const handleChoice = (isCorrect) => {
-    if (answered) return;
-    setAnswered(true);
-    resetFeedback();
+  const handleOptionSelect = (optionId) => {
+    const currentQuestion = questions[currentQuestionIndex];
+    const isCorrect = optionId === currentQuestion.correctAnswer;
+    
+    setSelectedOption(optionId);
+    setShowFeedback(true);
+    
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    // Move to next question after delay
     setTimeout(() => {
-      if (currentQuestion === questions.length - 1) {
-        setShowResult(true);
+      setShowFeedback(false);
+      setSelectedOption(null);
+      
+      if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex(prev => prev + 1);
       } else {
-        setCurrentQuestion(prev => prev + 1);
-        setAnswered(false);
+        setGameFinished(true);
       }
-    }, 500);
+    }, 1500);
   };
 
-  const currentQuestionData = questions[currentQuestion];
+  const currentQuestionData = questions[currentQuestionIndex];
 
   return (
     <GameShell
       title="Debate: Single-Use vs Reusable"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Debate Complete!"}
+      subtitle={`Question ${currentQuestionIndex + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
+      showGameOver={gameFinished}
       gameId={gameId}
       gameType="sustainability"
-      totalLevels={questions.length}
-      currentLevel={currentQuestion + 1}
+
+
       maxScore={questions.length}
-      showConfetti={showResult && score >= 2}
+
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
+
+
     >
       <div className="space-y-8">
-        {!showResult && currentQuestionData && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-              <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-white mb-4">Debate: Single-Use vs Reusable</h3>
+              <p className="text-white/90 text-lg">{currentQuestionData.text}</p>
             </div>
-            <p className="text-white text-lg mb-6">{currentQuestionData.text}</p>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {currentQuestionData.options.map((option) => (
                 <button
                   key={option.id}
-                  onClick={() => handleChoice(option.isCorrect)}
-                  disabled={answered}
-                  className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  onClick={() => !showFeedback && handleOptionSelect(option.id)}
+                  disabled={showFeedback}
+                  className={`bg-white/10 p-4 rounded-xl border-2 transition-all transform hover:scale-105 flex flex-col items-center gap-3 group ${selectedOption === option.id ? (showFeedback ? (option.id === currentQuestionData.correctAnswer ? 'border-green-400 bg-green-400/20' : 'border-red-400 bg-red-400/20') : 'border-yellow-400 bg-yellow-400/20') : 'border-white/20 hover:bg-white/20'} ${showFeedback && option.id === currentQuestionData.correctAnswer ? 'border-green-400 bg-green-400/20' : ''}`}
                 >
-                  <div className="text-3xl mb-3">{option.emoji}</div>
-                  <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                  <p className="text-white/90 text-sm">{option.description}</p>
+                  <div className="text-5xl transition-transform">
+                    {option.emoji}
+                  </div>
+                  <div className="text-white font-bold text-lg text-center">
+                    {option.text}
+                  </div>
+                  {showFeedback && selectedOption === option.id && option.id !== currentQuestionData.correctAnswer && (
+                    <div className="text-red-400 font-bold">Incorrect</div>
+                  )}
+                  {showFeedback && option.id === currentQuestionData.correctAnswer && (
+                    <div className="text-green-400 font-bold">Correct!</div>
+                  )}
                 </button>
               ))}
             </div>
+            
+            {showFeedback && (
+              <div className="mt-6 p-4 bg-white/10 rounded-lg border border-white/20">
+                <p className="text-white/90 text-center">{currentQuestionData.explanation}</p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
     </GameShell>
   );
 };

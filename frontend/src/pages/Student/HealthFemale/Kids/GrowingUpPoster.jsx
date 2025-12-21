@@ -99,7 +99,7 @@ const GrowingUpPoster = () => {
       showGameOver={showResult}
       onNext={handleNext}
       nextButtonText="Back to Games"
-      gameId="health-female-kids-85"
+      gameId="health-female-kids-26"
       gameType="health-female"
       totalLevels={stages.length}
       currentLevel={currentStage + 1}

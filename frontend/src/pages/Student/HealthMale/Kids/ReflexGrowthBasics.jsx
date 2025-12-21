@@ -16,7 +16,7 @@ const ReflexGrowthBasics = () => {
   const coinsPerLevel = 1;
   const totalCoins = 5;
   const totalXp = 10;
-  const ROUND_TIME = 5;
+  const ROUND_TIME = 10;
   const TOTAL_ROUNDS = 5;
 
   const [currentRound, setCurrentRound] = useState(1);
@@ -34,50 +34,50 @@ const ReflexGrowthBasics = () => {
       id: 1,
       question: "What helps you grow?",
       options: [
-        { text: "Stay Awake", emoji: "🌙", isCorrect: false },
-        { text: "Healthy Sleep", emoji: "🛌", isCorrect: true },
-        { text: "Watch TV", emoji: "📺", isCorrect: false },
-        { text: "Eat Candy", emoji: "🍬", isCorrect: false }
+        { id: 'a', text: "Healthy Sleep", emoji: "🛌", isCorrect: true },
+        { id: 'b', text: "Stay Awake", emoji: "🌙", isCorrect: false },
+        { id: 'c', text: "Watch TV", emoji: "📺", isCorrect: false },
+        { id: 'd', text: "Eat Candy", emoji: "🍬", isCorrect: false }
       ]
     },
     {
       id: 2,
       question: "Best drink for bones?",
       options: [
-        { text: "Soda", emoji: "🥤", isCorrect: false },
-        { text: "Juice", emoji: "🧃", isCorrect: false },
-        { text: "Milk", emoji: "🥛", isCorrect: true },
-        { text: "Coffee", emoji: "☕", isCorrect: false }
+        { id: 'a', text: "Soda", emoji: "🥤", isCorrect: false },
+        { id: 'b', text: "Milk", emoji: "🥛", isCorrect: true },
+        { id: 'c', text: "Juice", emoji: "🧃", isCorrect: false },
+        { id: 'd', text: "Coffee", emoji: "☕", isCorrect: false }
       ]
     },
     {
       id: 3,
       question: "What makes muscles strong?",
       options: [
-        { text: "Sitting", emoji: "🪑", isCorrect: false },
-        { text: "Exercise", emoji: "🏃", isCorrect: true },
-        { text: "Sleeping", emoji: "😴", isCorrect: false },
-        { text: "Gaming", emoji: "🎮", isCorrect: false }
+        { id: 'a', text: "Sitting", emoji: "🪑", isCorrect: false },
+        { id: 'b', text: "Sleeping", emoji: "😴", isCorrect: false },
+        { id: 'c', text: "Gaming", emoji: "🎮", isCorrect: false },
+        { id: 'd', text: "Exercise", emoji: "🏃", isCorrect: true }
       ]
     },
     {
       id: 4,
       question: "Healthy food choice?",
       options: [
-        { text: "Cookies", emoji: "🍪", isCorrect: false },
-        { text: "Chips", emoji: "🍟", isCorrect: false },
-        { text: "Veggies", emoji: "🥕", isCorrect: true },
-        { text: "Cake", emoji: "🍰", isCorrect: false }
+        { id: 'a', text: "Cookies", emoji: "🍪", isCorrect: false },
+        { id: 'b', text: "Chips", emoji: "🍟", isCorrect: false },
+        { id: 'c', text: "Veggies", emoji: "🥕", isCorrect: true },
+        { id: 'd', text: "Cake", emoji: "🍰", isCorrect: false }
       ]
     },
     {
       id: 5,
       question: "Good habit for growth?",
       options: [
-        { text: "Skip Meals", emoji: "🚫", isCorrect: false },
-        { text: "Eat Breakfast", emoji: "🍳", isCorrect: true },
-        { text: "Sleep Late", emoji: "⏰", isCorrect: false },
-        { text: "No Water", emoji: "🏜️", isCorrect: false }
+        { id: 'a', text: "Skip Meals", emoji: "🚫", isCorrect: false },
+        { id: 'b', text: "Sleep Late", emoji: "⏰", isCorrect: false },
+        { id: 'c', text: "Eat Breakfast", emoji: "🍳", isCorrect: true },
+        { id: 'd', text: "No Water", emoji: "🏜️", isCorrect: false }
       ]
     }
   ];
@@ -189,6 +189,7 @@ const ReflexGrowthBasics = () => {
         setGameState("finished");
       } else {
         setCurrentRound((prev) => prev + 1);
+        setAnswered(false); // Reset answered state for next round
       }
     }, 500);
   };

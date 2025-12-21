@@ -5,30 +5,27 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const HealthyManTeenBadge = () => {
   const navigate = useNavigate();
-
-  // Hardcode rewards
+  
+  // Hardcoded Game Rewards & Configuration
   const coinsPerLevel = 1;
   const totalCoins = 5;
   const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-male-teen-70";
 
-  const [challenge, setChallenge] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
   const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const challenges = [
+  const questions = [
     {
       id: 1,
       title: "Myth Busting",
-      question: "Which statement about masculinity is a myth?",
+      text: "Which statement about masculinity is a myth?",
       options: [
-        {
-          text: "Men should never cry or show weakness",
-          emoji: "🚫",
-          isCorrect: true
-        },
         {
           text: "It's okay for men to ask for help",
           emoji: "✅",
@@ -40,22 +37,26 @@ const HealthyManTeenBadge = () => {
           isCorrect: false
         },
         {
+          text: "Men should never cry or show weakness",
+          emoji: "🚫",
+          isCorrect: true
+        },
+        {
           text: "Strength includes emotional intelligence",
           emoji: "🧠",
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Exactly! Men should never suppress their emotions. Expressing feelings is a sign of strength, not weakness.",
+        wrong: "Real strength includes emotional intelligence and the ability to express feelings healthily."
+      }
     },
     {
       id: 2,
       title: "Emotional Health",
-      question: "What is a healthy way to deal with anger?",
+      text: "What is a healthy way to deal with anger?",
       options: [
-        {
-          text: "Punching a wall",
-          emoji: "👊",
-          isCorrect: false
-        },
         {
           text: "Yelling at friends",
           emoji: "🗣️",
@@ -67,26 +68,35 @@ const HealthyManTeenBadge = () => {
           isCorrect: true
         },
         {
+          text: "Punching a wall",
+          emoji: "👊",
+          isCorrect: false
+        },
+        {
           text: "Bottling it up inside",
           emoji: "🤐",
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Great choice! Talking about your feelings or channeling energy into physical activity are healthy outlets for anger.",
+        wrong: "Healthy anger management involves expressing emotions constructively rather than suppressing or exploding."
+      }
     },
     {
       id: 3,
       title: "Respect",
-      question: "How do you show respect in a relationship?",
+      text: "How do you show respect in a relationship?",
       options: [
-        {
-          text: "Controlling who they see",
-          emoji: "📱",
-          isCorrect: false
-        },
         {
           text: "Listening and valuing their opinion",
           emoji: "👂",
           isCorrect: true
+        },
+        {
+          text: "Controlling who they see",
+          emoji: "📱",
+          isCorrect: false
         },
         {
           text: "Making all the decisions",
@@ -98,18 +108,17 @@ const HealthyManTeenBadge = () => {
           emoji: "🚫",
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Perfect! Respect in relationships means listening, valuing opinions, and honoring boundaries.",
+        wrong: "Respect involves mutual consideration, open communication, and recognizing each other's autonomy."
+      }
     },
     {
       id: 4,
       title: "Non-Violence",
-      question: "What does it mean to choose non-violence?",
+      text: "What does it mean to choose non-violence?",
       options: [
-        {
-          text: "Solving conflicts with words, not fists",
-          emoji: "🤝",
-          isCorrect: true
-        },
         {
           text: "Only fighting if someone starts it",
           emoji: "🥊",
@@ -121,22 +130,26 @@ const HealthyManTeenBadge = () => {
           isCorrect: false
         },
         {
+          text: "Solving conflicts with words, not fists",
+          emoji: "🤝",
+          isCorrect: true
+        },
+        {
           text: "Intimidating others",
           emoji: "😤",
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Exactly! Non-violence means resolving conflicts through communication and understanding rather than aggression.",
+        wrong: "Choosing non-violence demonstrates strength of character and commitment to peaceful conflict resolution."
+      }
     },
     {
       id: 5,
       title: "Healthy Relationships",
-      question: "What is a sign of a healthy friendship?",
+      text: "What is a sign of a healthy friendship?",
       options: [
-        {
-          text: "Peer pressure to do bad things",
-          emoji: "😈",
-          isCorrect: false
-        },
         {
           text: "Teasing that hurts feelings",
           emoji: "😢",
@@ -148,46 +161,57 @@ const HealthyManTeenBadge = () => {
           isCorrect: true
         },
         {
+          text: "Peer pressure to do bad things",
+          emoji: "😈",
+          isCorrect: false
+        },
+        {
           text: "Competition to be better",
           emoji: "🏆",
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Absolutely! Healthy friendships are built on support, trust, and genuine care for each other's wellbeing.",
+        wrong: "Healthy friendships encourage positive growth, mutual respect, and emotional support without pressure or competition."
+      }
     }
   ];
 
-  const handleAnswer = (isCorrect) => {
+  const handleChoice = (optionIndex) => {
     if (answered) return;
 
     setAnswered(true);
+    setSelectedOptionIndex(optionIndex);
     resetFeedback();
+
+    const selectedOption = questions[currentQuestion].options[optionIndex];
+    const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
 
-    const isLastChallenge = challenge === challenges.length - 1;
+    const isLastQuestion = currentQuestion === questions.length - 1;
 
     setTimeout(() => {
-      if (isLastChallenge) {
-        setShowResult(true);
+      if (isLastQuestion) {
+        setGameFinished(true);
       } else {
-        setChallenge(prev => prev + 1);
+        setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
-        setSelectedAnswer(null);
+        setSelectedOptionIndex(null);
       }
     }, 2000);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setChallenge(0);
+  const handleRetry = () => {
+    setCurrentQuestion(0);
+    setGameFinished(false);
+    setSelectedOptionIndex(null);
     setScore(0);
     setAnswered(false);
-    setSelectedAnswer(null);
     resetFeedback();
   };
 
@@ -195,101 +219,144 @@ const HealthyManTeenBadge = () => {
     navigate("/games/health-male/teens");
   };
 
+  const currentQ = questions[currentQuestion];
+
   return (
     <GameShell
-      title="Badge: Healthy Man Teen"
-      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
-      score={score}
-      currentLevel={challenge + 1}
-      totalLevels={challenges.length}
-      coinsPerLevel={coinsPerLevel}
-      showGameOver={showResult}
-      maxScore={challenges.length}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showConfetti={showResult && score >= 3}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      gameId="health-male-teen-70"
-      gameType="health-male"
+      title="Healthy Man Teen Badge"
+      subtitle={gameFinished ? "Game Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showResult}
-    >
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId={gameId}
+      gameType="health-male"
+      totalLevels={5}
+      currentLevel={70}
+      showConfetti={gameFinished && score >= 4}
+      flashPoints={flashPoints}
+      backPath="/games/health-male/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={maxScore}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="space-y-8">
-        {!showResult && challenges[challenge] ? (
+        {!gameFinished ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{maxScore}</span>
               </div>
 
-              <h3 className="text-xl font-bold text-white mb-2">{challenges[challenge].title}</h3>
-              <p className="text-white text-lg mb-6">
-                {challenges[challenge].question}
+              <h2 className="text-2xl font-bold text-white mb-2 text-center">
+                {currentQ.title}
+              </h2>
+              
+              <p className="text-xl text-white mb-8 text-center">
+                {currentQ.text}
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {challenges[challenge].options.map((option, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setSelectedAnswer(idx);
-                      handleAnswer(option.isCorrect);
-                    }}
-                    disabled={answered}
-                    className={`p-6 rounded-2xl text-left transition-all transform ${answered
-                        ? option.isCorrect
-                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : selectedAnswer === idx
-                            ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
-                            : "bg-white/5 border-2 border-white/20 opacity-50"
-                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                  >
-                    <div className="flex items-center gap-3">
+                {currentQ.options.map((option, idx) => {
+                  const isSelected = selectedOptionIndex === idx;
+                  const showFeedback = answered;
+
+                  let buttonClass = "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3";
+
+                  if (showFeedback) {
+                    if (isSelected) {
+                      buttonClass = option.isCorrect
+                        ? "bg-green-500 ring-4 ring-green-300 text-white p-6 rounded-2xl shadow-lg min-h-[60px] flex items-center justify-center gap-3"
+                        : "bg-red-500 ring-4 ring-red-300 text-white p-6 rounded-2xl shadow-lg min-h-[60px] flex items-center justify-center gap-3";
+                    } else {
+                      buttonClass = "bg-white/10 opacity-50 text-white p-6 rounded-2xl shadow-lg min-h-[60px] flex items-center justify-center gap-3";
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleChoice(idx)}
+                      disabled={showFeedback}
+                      className={buttonClass}
+                    >
                       <span className="text-2xl">{option.emoji}</span>
-                      <span className="text-white font-semibold">{option.text}</span>
-                    </div>
-                  </button>
-                ))}
+                      <span className="font-bold text-lg">{option.text}</span>
+                    </button>
+                  );
+                })}
               </div>
+
+              {answered && (
+                <div className={`mt-4 p-4 rounded-xl ${
+                  currentQ.options[selectedOptionIndex]?.isCorrect
+                    ? "bg-green-500/20 border border-green-500/30"
+                    : "bg-red-500/20 border border-red-500/30"
+                }`}>
+                  <p className="text-white font-semibold">
+                    {currentQ.options[selectedOptionIndex]?.isCorrect
+                      ? currentQ.feedback.correct
+                      : currentQ.feedback.wrong}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {score >= 3 ? (
+            {score >= 4 ? (
               <div>
-                <div className="text-5xl mb-4">🏆</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Healthy Man Teen Badge Earned!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You got {score} out of {challenges.length} challenges correct!
-                  You're a true Healthy Man!
+                <div className="text-6xl mb-4">🏆</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Healthy Man Teen Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-6">
+                  You demonstrated excellent knowledge about healthy masculinity with {score} correct answers out of {questions.length}!
                 </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{score} Coins</span>
+                
+                <div className="bg-gradient-to-br from-purple-500 to-pink-600 text-white p-6 rounded-2xl mb-6">
+                  <h4 className="text-2xl font-bold mb-2">🎉 Achievement Unlocked!</h4>
+                  <p className="text-xl">Badge: Healthy Man Teen</p>
                 </div>
-                <p className="text-white/80">
-                  Lesson: Being a healthy man means respecting yourself and others, managing emotions, and breaking harmful myths!
-                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-green-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-green-300 mb-2">Emotional Intelligence</h4>
+                    <p className="text-white/90 text-sm">
+                      You understand how to express emotions healthily and manage challenging feelings constructively.
+                    </p>
+                  </div>
+                  <div className="bg-blue-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-blue-300 mb-2">Respectful Relationships</h4>
+                    <p className="text-white/90 text-sm">
+                      You know how to build and maintain healthy relationships based on mutual respect and trust.
+                    </p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={handleNext}
+                  className="bg-gradient-to-br from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all mb-4"
+                >
+                  Continue Learning
+                </button>
               </div>
             ) : (
               <div>
                 <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning About Healthy Masculinity!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You got {score} out of {challenges.length} challenges correct.
-                  Practice makes perfect!
+                  You answered {score} questions correctly out of {questions.length}.
+                </p>
+                <p className="text-white/90 mb-6">
+                  Review concepts of healthy masculinity to strengthen your knowledge and earn your badge.
                 </p>
                 <button
-                  onClick={handleTryAgain}
+                  onClick={handleRetry}
                   className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-                <p className="text-white/80 text-sm">
-                  Tip: Remember to challenge myths, express emotions healthily, and respect everyone!
-                </p>
               </div>
             )}
           </div>

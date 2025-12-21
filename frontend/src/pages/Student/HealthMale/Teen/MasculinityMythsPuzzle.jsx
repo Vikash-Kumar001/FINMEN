@@ -5,86 +5,105 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const MasculinityMythsPuzzle = () => {
   const navigate = useNavigate();
-  const [coins, setCoins] = useState(0);
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(null);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedMyth, setSelectedMyth] = useState(null);
+  const [selectedReality, setSelectedReality] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   // Hardcode rewards
   const coinsPerLevel = 1;
   const totalCoins = 5;
   const totalXp = 10;
 
-  const puzzles = [
-    {
-      id: 1,
-      item: "Real Men Help",
-      emoji: "🤝",
-      matches: [
-        { id: "true", text: "True", emoji: "✅", correct: true },
-        { id: "false", text: "False", emoji: "❌", correct: false }
-      ]
-    },
-    {
-      id: 2,
-      item: "Men Can't Cry",
-      emoji: "😢",
-      matches: [
-        { id: "true", text: "True", emoji: "✅", correct: false },
-        { id: "false", text: "False", emoji: "❌", correct: true }
-      ]
-    },
-    {
-      id: 3,
-      item: "Men Respect Women",
-      emoji: "🙏",
-      matches: [
-        { id: "false", text: "False", emoji: "❌", correct: false },
-        { id: "true", text: "True", emoji: "✅", correct: true }
-      ]
-    },
-    {
-      id: 4,
-      item: "Real Men Fight",
-      emoji: "👊",
-      matches: [
-        { id: "true", text: "True", emoji: "✅", correct: false },
-        { id: "false", text: "False", emoji: "❌", correct: true }
-      ]
-    },
-    {
-      id: 5,
-      item: "Men Show Emotions",
-      emoji: "💬",
-      matches: [
-        { id: "false", text: "False", emoji: "❌", correct: false },
-        { id: "true", text: "True", emoji: "✅", correct: true }
-      ]
-    }
+  // Masculinity Myths (left side) - 5 items
+  const myths = [
+    { id: 1, name: "Real Men Help", emoji: "🤝", description: "Assistance behavior" },
+    { id: 2, name: "Men Can't Cry", emoji: "😢", description: "Emotional suppression" },
+    { id: 3, name: "Men Respect Women", emoji: "🙏", description: "Gender relations" },
+    { id: 4, name: "Real Men Fight", emoji: "👊", description: "Conflict resolution" },
+    { id: 5, name: "Men Show Emotions", emoji: "💬", description: "Expression openness" }
   ];
 
-  const handleMatch = (matchId) => {
-    const currentPuzzleData = puzzles[currentPuzzle];
-    const match = currentPuzzleData.matches.find(m => m.id === matchId);
-    setSelectedMatch(matchId);
+  // Reality Checks (right side) - 5 items
+  const realities = [
+    { id: 3, name: "Mutual Respect", emoji: "✨", description: "Healthy interaction" },
+    { id: 5, name: "Emotional Honesty", emoji: "💖", description: "Authentic feelings" },
+    { id: 1, name: "Community Support", emoji: "🏘️", description: "Social cooperation" },
+    { id: 4, name: "Peaceful Solutions", emoji: "🕊️", description: "Non-violent approach" },
+    { id: 2, name: "Emotional Release", emoji: "😊", description: "Healthy expression" }
+  ];
 
-    if (match.correct) {
-      setCoins(prev => prev + 1);
+  // Correct matches
+  const correctMatches = [
+    { mythId: 1, realityId: 1 }, // Real Men Help → Community Support
+    { mythId: 2, realityId: 2 }, // Men Can't Cry → Emotional Release
+    { mythId: 3, realityId: 3 }, // Men Respect Women → Mutual Respect
+    { mythId: 4, realityId: 4 }, // Real Men Fight → Peaceful Solutions
+    { mythId: 5, realityId: 5 }  // Men Show Emotions → Emotional Honesty
+  ];
+
+  const handleMythSelect = (myth) => {
+    if (gameFinished) return;
+    setSelectedMyth(myth);
+  };
+
+  const handleRealitySelect = (reality) => {
+    if (gameFinished) return;
+    setSelectedReality(reality);
+  };
+
+  const handleMatch = () => {
+    if (!selectedMyth || !selectedReality || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      mythId: selectedMyth.id,
+      realityId: selectedReality.id,
+      isCorrect: correctMatches.some(
+        match => match.mythId === selectedMyth.id && match.realityId === selectedReality.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setShowCoinFeedback(currentPuzzleData.id);
-      setTimeout(() => setShowCoinFeedback(null), 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    };
+
+    // Check if all items are matched
+    if (newMatches.length === myths.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
     }
 
-    setTimeout(() => {
-      if (currentPuzzle < puzzles.length - 1) {
-        setCurrentPuzzle(prev => prev + 1);
-        setSelectedMatch(null);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
+    // Reset selections
+    setSelectedMyth(null);
+    setSelectedReality(null);
+  };
+
+  // Check if a myth is already matched
+  const isMythMatched = (mythId) => {
+    return matches.some(match => match.mythId === mythId);
+  };
+
+  // Check if a reality is already matched
+  const isRealityMatched = (realityId) => {
+    return matches.some(match => match.realityId === realityId);
+  };
+
+  // Get match result for a myth
+  const getMatchResult = (mythId) => {
+    const match = matches.find(m => m.mythId === mythId);
+    return match ? match.isCorrect : null;
   };
 
   const handleNext = () => {
@@ -93,85 +112,144 @@ const MasculinityMythsPuzzle = () => {
 
   return (
     <GameShell
-      title="Puzzle: Masculinity Myths"
-      subtitle={`Puzzle ${currentPuzzle + 1}/5: ${puzzles[currentPuzzle].item}`}
+      title="Masculinity Myths Puzzle"
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Myths with Realities (${matches.length}/${myths.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="health-male-teen-64"
       gameType="health-male"
-      totalLevels={70}
-      currentLevel={64}
-      showConfetti={gameFinished}
+      totalLevels={myths.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === myths.length}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
-      maxScore={puzzles.length}
+      backPath="/games/health-male/teens"
+      maxScore={myths.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/5: {puzzles[currentPuzzle].item}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6 text-center">
-            Is this statement about masculinity true or false?
-          </p>
-
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-              {showCoinFeedback === puzzles[currentPuzzle].id && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                    +1
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-4xl mr-3">{puzzles[currentPuzzle].emoji}</div>
-                <div className="text-white text-xl font-bold">{puzzles[currentPuzzle].item}</div>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Masculinity Myths */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Masculinity Myths</h3>
+              <div className="space-y-4">
+                {myths.map(myth => (
+                  <button
+                    key={myth.id}
+                    onClick={() => handleMythSelect(myth)}
+                    disabled={isMythMatched(myth.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isMythMatched(myth.id)
+                        ? getMatchResult(myth.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedMyth?.id === myth.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{myth.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{myth.name}</h4>
+                        <p className="text-white/80 text-sm">{myth.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                {puzzles[currentPuzzle].matches.map((match) => {
-                  const isSelected = selectedMatch === match.id;
-                  const isCorrect = selectedMatch === match.id && match.correct;
-                  const isWrong = selectedMatch === match.id && !match.correct;
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedMyth 
+                    ? `Selected: ${selectedMyth.name}` 
+                    : "Select a Myth"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedMyth || !selectedReality}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedMyth && selectedReality
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{myths.length}</p>
+                  <p>Matched: {matches.length}/{myths.length}</p>
+                </div>
+              </div>
+            </div>
 
-                  return (
-                    <button
-                      key={match.id}
-                      onClick={() => handleMatch(match.id)}
-                      disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${!selectedMatch
-                          ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                          : isCorrect
-                            ? 'bg-green-100/20 border-green-500 text-white'
-                            : isWrong
-                              ? 'bg-red-100/20 border-red-500 text-white'
-                              : 'bg-gray-100/20 border-gray-500 text-white'
-                        }`}
-                    >
-                      {isCorrect && (
-                        <div className="absolute -top-2 -right-2 text-2xl">✅</div>
-                      )}
-                      {isWrong && (
-                        <div className="absolute -top-2 -right-2 text-2xl">❌</div>
-                      )}
-                      <div className="text-2xl mb-1">{match.emoji}</div>
-                      <div className="font-medium text-sm">{match.text}</div>
-                    </button>
-                  );
-                })}
+            {/* Right column - Reality Checks */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Reality Checks</h3>
+              <div className="space-y-4">
+                {realities.map(reality => (
+                  <button
+                    key={reality.id}
+                    onClick={() => handleRealitySelect(reality)}
+                    disabled={isRealityMatched(reality.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isRealityMatched(reality.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedReality?.id === reality.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{reality.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{reality.name}</h4>
+                        <p className="text-white/80 text-sm">{reality.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {myths.length} masculinity myths with their realities!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Healthy masculinity involves respect, emotional honesty, and peaceful conflict resolution!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {myths.length} myths correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what healthy behaviors really look like!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

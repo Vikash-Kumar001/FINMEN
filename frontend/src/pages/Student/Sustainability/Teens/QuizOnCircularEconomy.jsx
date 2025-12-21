@@ -61,47 +61,80 @@ const QuizOnCircularEconomy = () => {
       id: 1,
       text: "What is a circular economy?",
       options: [
-        { id: "a", text: "Reusing and recycling resources", emoji: "♻️", description: "Keeps materials in use", isCorrect: true },
-        { id: "b", text: "Using resources once", emoji: "🗑️", description: "That's linear economy", isCorrect: false },
-        { id: "c", text: "Throwing everything away", emoji: "❌", description: "Not sustainable", isCorrect: false }
+        { id: "a", text: "Using resources once", emoji: "🗑️", isCorrect: false },
+        { id: "b", text: "Reusing and recycling resources", emoji: "♻️", isCorrect: true },
+        { id: "c", text: "Throwing everything away", emoji: "❌", isCorrect: false }
       ]
     },
     {
       id: 2,
       text: "What's the first step in circular economy?",
       options: [
-        { id: "a", text: "Recycle everything", emoji: "♻️", description: "Reducing comes first", isCorrect: false },
-        { id: "b", text: "Reduce consumption", emoji: "📉", description: "Prevent waste first", isCorrect: true },
-        { id: "c", text: "Buy more", emoji: "🛍️", description: "Increases waste", isCorrect: false }
+        { id: "a", text: "Recycle everything", emoji: "♻️", isCorrect: false },
+        { id: "b", text: "Buy more", emoji: "🛍️", isCorrect: false },
+        { id: "c", text: "Reduce consumption", emoji: "📉", isCorrect: true }
       ]
     },
     {
       id: 3,
       text: "How does circular economy help the environment?",
       options: [
-        { id: "a", text: "Increases waste", emoji: "🗑️", description: "Opposite effect", isCorrect: false },
-        { id: "b", text: "Doesn't help", emoji: "😐", description: "It does help", isCorrect: false },
-        { id: "c", text: "Reduces waste and pollution", emoji: "🌱", description: "More sustainable", isCorrect: true }
+        { id: "a", text: "Increases waste", emoji: "🗑️", isCorrect: false },
+        { id: "b", text: "Reduces waste and pollution", emoji: "🌱", isCorrect: true },
+        { id: "c", text: "Doesn't help", emoji: "😐", isCorrect: false }
+      ]
+    },
+    {
+      id: 4,
+      text: "Which is a principle of circular economy?",
+      options: [
+        { id: "a", text: "Design out waste", emoji: "♻️", isCorrect: true },
+        { id: "b", text: "Produce as much as possible", emoji: "🏭", isCorrect: false },
+        { id: "c", text: "Use and dispose quickly", emoji: "🗑️", isCorrect: false }
+      ]
+    },
+    {
+      id: 5,
+      text: "What is an example of circular economy?",
+      options: [
+        { id: "a", text: "Borrowing and sharing items", emoji: "🤝", isCorrect: true },
+        { id: "b", text: "Buying single-use products", emoji: "🛒", isCorrect: false },
+        { id: "c", text: "Throwing away electronics", emoji: "📱", isCorrect: false }
       ]
     }
   ];
 
-  const handleChoice = (isCorrect) => {
-    if (answered) return;
-    setAnswered(true);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+
+  const handleChoice = (option) => {
+    if (answered || showFeedback) return;
+    
+    setSelectedOption(option.id);
     resetFeedback();
-    if (isCorrect) {
+    
+    if (option.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setAnswered(true);
+    setShowFeedback(true);
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion === questions.length - 1) {
+      if (isLastQuestion) {
         setShowResult(true);
       } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
+        setSelectedOption(null);
+        setShowFeedback(false);
       }
-    }, 500);
+    }, option.isCorrect ? 1000 : 800);
   };
 
   const currentQuestionData = questions[currentQuestion];
@@ -135,18 +168,31 @@ const QuizOnCircularEconomy = () => {
             </div>
             <p className="text-white text-lg mb-6">{currentQuestionData.text}</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {currentQuestionData.options.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.isCorrect)}
-                  disabled={answered}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                >
-                  <div className="text-3xl mb-3">{option.emoji}</div>
-                  <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                  <p className="text-white/90 text-sm">{option.description}</p>
-                </button>
-              ))}
+              {currentQuestionData.options.map((option) => {
+                const isSelected = selectedOption === option.id;
+                const showCorrect = showFeedback && option.isCorrect;
+                const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option)}
+                    disabled={showFeedback}
+                    className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                      showCorrect
+                        ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                        : showIncorrect
+                        ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : isSelected
+                        ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

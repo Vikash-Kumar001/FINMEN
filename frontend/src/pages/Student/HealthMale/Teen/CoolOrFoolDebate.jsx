@@ -7,8 +7,10 @@ const CoolOrFoolDebate = () => {
   const navigate = useNavigate();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   // Hardcode rewards
   const coinsPerLevel = 1;
@@ -23,25 +25,21 @@ const CoolOrFoolDebate = () => {
         {
           id: "a",
           text: "Cool",
-          emoji: "😎",
-          description: "Substance use causes serious health problems",
-          isCorrect: false
+          emoji: "😎"
         },
         {
           id: "b",
           text: "Makes you popular",
-          emoji: "⭐",
-          description: "Real friends respect healthy choices",
-          isCorrect: false
+          emoji: "⭐"
         },
         {
           id: "c",
           text: "Harmful",
-          emoji: "⚠️",
-          description: "Substance use damages health and future opportunities",
-          isCorrect: true
+          emoji: "⚠️"
         }
-      ]
+      ],
+      correctAnswer: "a",
+      explanation: "Real friends respect healthy choices. Making healthy decisions shows real strength and leads to more genuine friendships."
     },
     {
       id: 2,
@@ -50,25 +48,21 @@ const CoolOrFoolDebate = () => {
         {
           id: "b",
           text: "Gains real respect",
-          emoji: "🏆",
-          description: "Substance use often leads to loss of respect",
-          isCorrect: false
+          emoji: "🏆"
         },
         {
           id: "a",
           text: "Impresses everyone",
-          emoji: "👏",
-          description: "Most people respect healthy, responsible choices",
-          isCorrect: false
+          emoji: "👏"
         },
         {
           id: "c",
           text: "Creates health problems",
-          emoji: "🏥",
-          description: "Substance use harms developing teen bodies",
-          isCorrect: true
+          emoji: "🏥"
         }
-      ]
+      ],
+      correctAnswer: "c",
+      explanation: "Most people respect healthy, responsible choices. True confidence comes from making good decisions, not from impressing others with risky behaviors."
     },
     {
       id: 3,
@@ -77,25 +71,21 @@ const CoolOrFoolDebate = () => {
         {
           id: "a",
           text: "Join them to fit in",
-          emoji: "👥",
-          description: "Healthy choices are more important than fitting in",
-          isCorrect: false
+          emoji: "👥"
         },
         {
           id: "c",
           text: "Encourage healthy alternatives",
-          emoji: "💪",
-          description: "Supporting positive activities helps everyone",
-          isCorrect: true
+          emoji: "💪"
         },
         {
           id: "b",
           text: "Judge and criticize",
-          emoji: "👎",
-          description: "Understanding and support are more effective",
-          isCorrect: false
+          emoji: "👎"
         }
-      ]
+      ],
+      correctAnswer: "b",
+      explanation: "Healthy choices are more important than fitting in. Being true to your values is more important than peer pressure."
     },
     {
       id: 4,
@@ -104,25 +94,21 @@ const CoolOrFoolDebate = () => {
         {
           id: "b",
           text: "Being different",
-          emoji: "🦄",
-          description: "Making healthy choices shows real strength",
-          isCorrect: false
+          emoji: "🦄"
         },
         {
           id: "a",
           text: "Protecting your future",
-          emoji: "🚀",
-          description: "Substance-free life leads to more opportunities",
-          isCorrect: true
+          emoji: "🚀"
         },
         {
           id: "c",
           text: "Following rules",
-          emoji: "📋",
-          description: "Health choices benefit your own well-being",
-          isCorrect: false
+          emoji: "📋"
         }
-      ]
+      ],
+      correctAnswer: "a",
+      explanation: "Substance-free life leads to more opportunities. Protecting your health and future opens doors to achievements and experiences."
     },
     {
       id: 5,
@@ -131,54 +117,55 @@ const CoolOrFoolDebate = () => {
         {
           id: "a",
           text: "As a rite of passage",
-          emoji: "🎭",
-          description: "Society increasingly discourages teen substance use",
-          isCorrect: false
+          emoji: "🎭"
         },
         {
           id: "b",
           text: "As normal teen behavior",
-          emoji: "😊",
-          description: "Most teens choose healthy lifestyles",
-          isCorrect: false
+          emoji: "😊"
         },
         {
           id: "c",
           text: "As a serious health risk",
-          emoji: "⚠️",
-          description: "Substance use is recognized as harmful to teens",
-          isCorrect: true
+          emoji: "⚠️"
         }
-      ]
+      ],
+      correctAnswer: "c",
+      explanation: "Substance use is recognized as harmful to teens. Society increasingly understands the dangers of teen substance use and supports prevention efforts."
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (gameFinished) return;
-
-    const currentQ = questions[currentQuestion];
-    const selectedOption = currentQ.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleOptionSelect = (optionId) => {
+    if (selectedOption || showFeedback) return;
+    
+    resetFeedback(); // Reset any existing feedback
+    
+    setSelectedOption(optionId);
+    const isCorrect = optionId === questions[currentQuestion].correctAnswer;
+    
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setScore(prev => prev + 1); // 1 point per correct answer
       showCorrectAnswerFeedback(1, true);
     }
-
+    
+    setShowFeedback(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
       } else {
         setGameFinished(true);
       }
-    }, 1000);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/student/health-male/teens/journal-of-awareness");
   };
 
-  const currentQ = questions[currentQuestion];
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -212,26 +199,63 @@ const CoolOrFoolDebate = () => {
           </div>
 
           <p className="text-white text-lg mb-6">
-            {currentQ.text}
+            {getCurrentQuestion().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
-            {currentQ.options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {getCurrentQuestion().options.map(option => {
+              const isSelected = selectedOption === option.id;
+              const isCorrect = option.id === getCurrentQuestion().correctAnswer;
+              const showCorrect = showFeedback && isCorrect;
+              const showIncorrect = showFeedback && isSelected && !isCorrect;
+              
+              // Add emojis for each option like in the reference game
+              const optionEmojis = {
+                a: "✅",
+                b: "❌",
+                c: "⚠️"
+              };
+              
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleOptionSelect(option.id)}
+                  disabled={showFeedback}
+                  className={`bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${
+                    showFeedback ? (isCorrect ? 'ring-4 ring-green-500' : isSelected ? 'ring-4 ring-red-500' : '') : ''
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-2xl mr-4">{optionEmojis[option.id] || '❓'}</div>
+                    <div>
+                      <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
+
+          {showFeedback && (
+            <div className={`mt-6 p-4 rounded-xl ${
+              selectedOption === getCurrentQuestion().correctAnswer
+                ? 'bg-green-500/20 border border-green-500/30'
+                : 'bg-red-500/20 border border-red-500/30'
+            }`}>
+              <p className={`font-semibold ${
+                selectedOption === getCurrentQuestion().correctAnswer
+                  ? 'text-green-300'
+                  : 'text-red-300'
+              }`}>
+                {selectedOption === getCurrentQuestion().correctAnswer
+                  ? 'Correct! 🎉'
+                  : 'Not quite right!'}
+              </p>
+              <p className="text-white/90 mt-2">
+                {getCurrentQuestion().explanation}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </GameShell>

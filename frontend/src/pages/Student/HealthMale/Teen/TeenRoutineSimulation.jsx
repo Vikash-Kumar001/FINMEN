@@ -29,22 +29,24 @@ const TeenRoutineSimulation = () => {
           id: "a",
           text: "Quick shower",
           emoji: "🚿",
-          description: "Essential for hygiene.",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "b",
           text: "Skip shower",
           emoji: "🏃",
-          description: "You might smell later.",
-          isCorrect: false
+          isCorrect: true
         },
-       
         {
           id: "c",
           text: "Just wash hair",
           emoji: "💇",
-          description: "Body needs cleaning too.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Take a quick rinse",
+          emoji: "💧",
           isCorrect: false
         }
       ]
@@ -55,28 +57,29 @@ const TeenRoutineSimulation = () => {
       situation: "Your favorite shirt is dirty.",
       options: [
         {
-          id: "c",
-          text: "Wear it anyway",
-          emoji: "👕",
-          description: "Hygiene first!",
+          id: "a",
+          text: "Wear a clean one",
+          emoji: "👔",
           isCorrect: false
         },
-        
         {
           id: "b",
           text: "Spray perfume on dirty shirt",
           emoji: "💨",
-          description: "Doesn't hide the smell.",
           isCorrect: false
         },
         {
-          id: "a",
-          text: "Wear a clean one",
-          emoji: "👔",
-          description: "Always choose clean clothes.",
+          id: "c",
+          text: "Wear it anyway",
+          emoji: "👕",
           isCorrect: true
         },
-
+        {
+          id: "d",
+          text: "Choose a different clean shirt",
+          emoji: "👕",
+          isCorrect: false
+        }
       ]
     },
     {
@@ -85,24 +88,27 @@ const TeenRoutineSimulation = () => {
       situation: "You played sports and are sweaty.",
       options: [
         {
-          id: "b",
-          text: "Sit on sofa",
-          emoji: "🛋️",
-          description: "You'll make it dirty.",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Wash face and change",
           emoji: "🧼",
-          description: "Remove sweat and dirt.",
-          isCorrect: true
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Sit on sofa",
+          emoji: "🛋️",
+          isCorrect: false
         },
         {
           id: "c",
           text: "Go to sleep",
           emoji: "😴",
-          description: "Clean up first.",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Take a shower",
+          emoji: "🚿",
           isCorrect: false
         }
       ]
@@ -113,25 +119,28 @@ const TeenRoutineSimulation = () => {
       situation: "You see some facial hair.",
       options: [
         {
-          id: "c",
-          text: "Shave dry",
-          emoji: "🌵",
-          description: "Causes razor burn.",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Use shaving cream",
           emoji: "🪒",
-          description: "Protects your skin.",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "b",
           text: "Use soap only",
           emoji: "🧼",
-          description: "Cream is better.",
           isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Shave dry",
+          emoji: "🌵",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Use gel and razor",
+          emoji: "🧴",
+          isCorrect: true
         }
       ]
     },
@@ -144,22 +153,24 @@ const TeenRoutineSimulation = () => {
           id: "a",
           text: "Brush for 2 mins",
           emoji: "🪥",
-          description: "Keep that smile healthy.",
           isCorrect: true
         },
         {
           id: "b",
           text: "Skip tonight",
           emoji: "😴",
-          description: "Cavities don't sleep.",
           isCorrect: false
         },
-       
         {
           id: "c",
           text: "Chew gum",
           emoji: "🍬",
-          description: "Not a substitute.",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Brush and floss",
+          emoji: "🦷",
           isCorrect: false
         }
       ]
@@ -191,7 +202,7 @@ const TeenRoutineSimulation = () => {
   return (
     <GameShell
       title="Teen Routine Simulation"
-      subtitle={`Time: ${scenarios[currentScenario].time}`}
+      subtitle={`Scenario ${currentScenario + 1} of ${scenarios.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
@@ -208,27 +219,29 @@ const TeenRoutineSimulation = () => {
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Step {currentScenario + 1}/{scenarios.length}</span>
+            <span className="text-white/80">Scenario {currentScenario + 1}/{scenarios.length}</span>
             <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
 
-          <h3 className="text-2xl font-bold text-white mb-2">{scenarios[currentScenario].time}</h3>
-          <p className="text-white text-lg mb-6">
+          <h2 className="text-xl font-semibold text-white mb-4">
+            {scenarios[currentScenario].time}
+          </h2>
+          
+          <p className="text-white/90 mb-6">
             {scenarios[currentScenario].situation}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {scenarios[currentScenario].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

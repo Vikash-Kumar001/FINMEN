@@ -56,13 +56,6 @@ const FeelingsNormalPoster = () => {
       question: "Which poster shows handling anger?",
       posters: [
         {
-          id: 2,
-          title: "Take a Breath",
-          description: "A poster showing deep breathing to calm down",
-          emoji: "🧘",
-          isCorrect: true
-        },
-        {
           id: 1,
           title: "Hit Something",
           description: "A poster showing hitting when mad",
@@ -75,6 +68,13 @@ const FeelingsNormalPoster = () => {
           description: "A poster showing yelling at friends",
           emoji: "🗣️",
           isCorrect: false
+        },
+        {
+          id: 2,
+          title: "Take a Breath",
+          description: "A poster showing deep breathing to calm down",
+          emoji: "🧘",
+          isCorrect: true
         }
       ],
       correctFeedback: "Take a Breath is the best way!",
@@ -84,18 +84,18 @@ const FeelingsNormalPoster = () => {
       question: "Which poster shows sharing happiness?",
       posters: [
         {
-          id: 1,
-          title: "Keep it Secret",
-          description: "A poster showing hiding a smile",
-          emoji: "🤐",
-          isCorrect: false
-        },
-        {
           id: 2,
           title: "Share the Joy",
           description: "A poster showing laughing with friends",
           emoji: "😄",
           isCorrect: true
+        },
+        {
+          id: 1,
+          title: "Keep it Secret",
+          description: "A poster showing hiding a smile",
+          emoji: "🤐",
+          isCorrect: false
         },
         {
           id: 3,
@@ -112,13 +112,6 @@ const FeelingsNormalPoster = () => {
       question: "Which poster shows dealing with fear?",
       posters: [
         {
-          id: 1,
-          title: "Run Away",
-          description: "A poster showing running from problems",
-          emoji: "🏃",
-          isCorrect: false
-        },
-        {
           id: 3,
           title: "Pretend",
           description: "A poster showing pretending not to be scared",
@@ -132,6 +125,13 @@ const FeelingsNormalPoster = () => {
           emoji: "🤝",
           isCorrect: true
         },
+        {
+          id: 1,
+          title: "Run Away",
+          description: "A poster showing running from problems",
+          emoji: "🏃",
+          isCorrect: false
+        }
       ],
       correctFeedback: "Ask for Help is smart!",
       explanation: "Everyone gets scared sometimes. Asking for help is brave!"
@@ -139,6 +139,13 @@ const FeelingsNormalPoster = () => {
     {
       question: "Which poster shows all feelings are normal?",
       posters: [
+        {
+          id: 3,
+          title: "No Feelings",
+          description: "A poster showing a robot with no feelings",
+          emoji: "🤖",
+          isCorrect: false
+        },
         {
           id: 1,
           title: "Only Happy",
@@ -152,13 +159,6 @@ const FeelingsNormalPoster = () => {
           description: "A poster showing many different feelings are okay",
           emoji: "🌈",
           isCorrect: true
-        },
-        {
-          id: 3,
-          title: "No Feelings",
-          description: "A poster showing a robot with no feelings",
-          emoji: "🤖",
-          isCorrect: false
         }
       ],
       correctFeedback: "Feelings Wheel is perfect!",
@@ -192,8 +192,26 @@ const FeelingsNormalPoster = () => {
         }, 1500);
       }
     } else {
-      // Show result immediately for incorrect
-      setShowResult(true);
+      // Show feedback for incorrect answer and move to next question
+      showCorrectAnswerFeedback(0, false);
+      
+      // Check if this is the last stage
+      const isLastStage = currentStage === stages.length - 1;
+      
+      if (isLastStage) {
+        // Last stage - show result and game over modal
+        setTimeout(() => {
+          setShowResult(true);
+        }, 1500);
+      } else {
+        // Move to next question after showing feedback
+        setTimeout(() => {
+          setCurrentStage(currentStage + 1);
+          setSelectedPoster(null);
+          setShowResult(false);
+          resetFeedback();
+        }, 1500);
+      }
     }
   };
 
@@ -286,12 +304,7 @@ const FeelingsNormalPoster = () => {
                 <p className="text-white/90 text-lg mb-4">
                   {currentStageData?.correctFeedback || "That's not quite right. Try again!"}
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
+                {/* Removed Try Again button to standardize behavior */}
                 <p className="text-white/80 text-sm">
                   {currentStageData?.explanation || "Look for the poster that shows healthy feelings."}
                 </p>

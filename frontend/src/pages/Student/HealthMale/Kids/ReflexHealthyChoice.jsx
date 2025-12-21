@@ -16,7 +16,7 @@ const ReflexHealthyChoice = () => {
   const coinsPerLevel = 1;
   const totalCoins = 5;
   const totalXp = 10;
-  const ROUND_TIME = 5;
+  const ROUND_TIME = 10;
   const TOTAL_ROUNDS = 5;
 
   const [currentRound, setCurrentRound] = useState(1);
@@ -34,50 +34,50 @@ const ReflexHealthyChoice = () => {
       id: 1,
       question: "Which one is healthy?",
       options: [
-        { text: "Vegetables", emoji: "🥦", isCorrect: true },
-        { text: "Chips", emoji: "🍟", isCorrect: false },
-        { text: "Candy", emoji: "🍬", isCorrect: false },
-        { text: "Soda", emoji: "🥤", isCorrect: false }
+        { id: 'a', text: "Vegetables", emoji: "🥦", isCorrect: true },
+        { id: 'b', text: "Chips", emoji: "🍟", isCorrect: false },
+        { id: 'c', text: "Candy", emoji: "🍬", isCorrect: false },
+        { id: 'd', text: "Soda", emoji: "🥤", isCorrect: false }
       ]
     },
     {
       id: 2,
       question: "Pick the healthy snack!",
       options: [
-        { text: "Cookie", emoji: "🍪", isCorrect: false },
-        { text: "Apple", emoji: "🍎", isCorrect: true },
-        { text: "Cake", emoji: "🍰", isCorrect: false },
-        { text: "Donut", emoji: "🍩", isCorrect: false }
+        { id: 'a', text: "Cookie", emoji: "🍪", isCorrect: false },
+        { id: 'b', text: "Apple", emoji: "🍎", isCorrect: true },
+        { id: 'c', text: "Cake", emoji: "🍰", isCorrect: false },
+        { id: 'd', text: "Donut", emoji: "🍩", isCorrect: false }
       ]
     },
     {
       id: 3,
       question: "Choose the best drink!",
       options: [
-        { text: "Soda", emoji: "🥤", isCorrect: false },
-        { text: "Juice Box", emoji: "🧃", isCorrect: false },
-        { text: "Milk", emoji: "🥛", isCorrect: true },
-        { text: "Energy Drink", emoji: "⚡", isCorrect: false }
+        { id: 'a', text: "Soda", emoji: "🥤", isCorrect: false },
+        { id: 'b', text: "Juice Box", emoji: "🧃", isCorrect: false },
+        { id: 'c', text: "Milk", emoji: "🥛", isCorrect: true },
+        { id: 'd', text: "Energy Drink", emoji: "⚡", isCorrect: false }
       ]
     },
     {
       id: 4,
       question: "What makes you strong?",
       options: [
-        { text: "Candy", emoji: "🍬", isCorrect: false },
-        { text: "Chips", emoji: "🍟", isCorrect: false },
-        { text: "Carrot", emoji: "🥕", isCorrect: true },
-        { text: "Chocolate", emoji: "🍫", isCorrect: false }
+        { id: 'a', text: "Candy", emoji: "🍬", isCorrect: false },
+        { id: 'b', text: "Chips", emoji: "🍟", isCorrect: false },
+        { id: 'c', text: "Carrot", emoji: "🥕", isCorrect: true },
+        { id: 'd', text: "Chocolate", emoji: "🍫", isCorrect: false }
       ]
     },
     {
       id: 5,
       question: "Best breakfast choice?",
       options: [
-        { text: "Ice Cream", emoji: "🍦", isCorrect: false },
-        { text: "Pizza", emoji: "🍕", isCorrect: false },
-        { text: "Burger", emoji: "🍔", isCorrect: false },
-        { text: "Eggs", emoji: "🍳", isCorrect: true }
+        { id: 'a', text: "Ice Cream", emoji: "🍦", isCorrect: false },
+        { id: 'b', text: "Pizza", emoji: "🍕", isCorrect: false },
+        { id: 'c', text: "Burger", emoji: "🍔", isCorrect: false },
+        { id: 'd', text: "Eggs", emoji: "🍳", isCorrect: true }
       ]
     }
   ];

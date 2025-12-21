@@ -10,7 +10,7 @@ const JournalOfAwareness = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "health-female-teen-87";
+  const gameId = "health-female-teen-37";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults

@@ -25,14 +25,14 @@ const PreventiveHealthTeenBadge = () => {
       question: "Why should you schedule regular health checkups?",
       options: [
         {
-          text: "To catch health issues early",
-          emoji: "📅",
-          isCorrect: true
-        },
-        {
           text: "Only when you are very sick",
           emoji: "🤒",
           isCorrect: false
+        },
+        {
+          text: "To catch health issues early",
+          emoji: "📅",
+          isCorrect: true
         },
         {
           text: "To waste time",
@@ -57,14 +57,14 @@ const PreventiveHealthTeenBadge = () => {
           isCorrect: false
         },
         {
-          text: "To protect you from serious diseases",
-          emoji: "💉",
-          isCorrect: true
-        },
-        {
           text: "They are not important",
           emoji: "🤷",
           isCorrect: false
+        },
+        {
+          text: "To protect you from serious diseases",
+          emoji: "💉",
+          isCorrect: true
         },
         {
           text: "Only mainly for babies",
@@ -84,11 +84,6 @@ const PreventiveHealthTeenBadge = () => {
           isCorrect: false
         },
         {
-          text: "It strengthens your body and immunity",
-          emoji: "💪",
-          isCorrect: true
-        },
-        {
           text: "It's only for athletes",
           emoji: "🏆",
           isCorrect: false
@@ -97,6 +92,11 @@ const PreventiveHealthTeenBadge = () => {
           text: "It causes injuries",
           emoji: "🤕",
           isCorrect: false
+        },
+        {
+          text: "It strengthens your body and immunity",
+          emoji: "💪",
+          isCorrect: true
         }
       ]
     },
@@ -111,11 +111,6 @@ const PreventiveHealthTeenBadge = () => {
           isCorrect: false
         },
         {
-          text: "It prevents lifestyle diseases",
-          emoji: "🥗",
-          isCorrect: true
-        },
-        {
           text: "You can eat whatever you want",
           emoji: "🍔",
           isCorrect: false
@@ -124,6 +119,11 @@ const PreventiveHealthTeenBadge = () => {
           text: "It's too expensive",
           emoji: "💰",
           isCorrect: false
+        },
+        {
+          text: "It prevents lifestyle diseases",
+          emoji: "🥗",
+          isCorrect: true
         }
       ]
     },
@@ -143,14 +143,14 @@ const PreventiveHealthTeenBadge = () => {
           isCorrect: false
         },
         {
-          text: "Mental well-being affects physical health",
-          emoji: "🧘",
-          isCorrect: true
-        },
-        {
           text: "You should ignore feelings",
           emoji: "😐",
           isCorrect: false
+        },
+        {
+          text: "Mental well-being affects physical health",
+          emoji: "🧘",
+          isCorrect: true
         }
       ]
     }

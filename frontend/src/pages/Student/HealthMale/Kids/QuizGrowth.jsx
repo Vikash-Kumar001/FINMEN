@@ -18,10 +18,11 @@ const QuizGrowth = () => {
   const totalXp = 10;
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -29,24 +30,21 @@ const QuizGrowth = () => {
       text: "What helps boys grow stronger?",
       options: [
         {
-          id: "b",
+          id: "a",
           text: "Only junk food",
           emoji: "🍟",
-          description: "Junk food doesn't help you grow strong",
           isCorrect: false
         },
         {
-          id: "a",
+          id: "b",
           text: "Exercise + nutrition",
-          emoji: "💪",
-          description: "Exercise and healthy food help build strong bodies",
+          emoji: "🏋️",
           isCorrect: true
         },
         {
           id: "c",
           text: "Watching TV",
           emoji: "📺",
-          description: "Exercise and nutrition are key for growth",
           isCorrect: false
         }
       ]
@@ -56,24 +54,21 @@ const QuizGrowth = () => {
       text: "How many hours of sleep do growing kids need?",
       options: [
         {
-          id: "c",
-          text: "4 hours",
-          emoji: "😴",
-          description: "Growing kids need more sleep for development",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "8-10 hours",
-          emoji: "🛌",
-          description: "8-10 hours of sleep helps growth and energy",
+          emoji: "⏰",
           isCorrect: true
         },
         {
           id: "b",
+          text: "4 hours",
+          emoji: "😴",
+          isCorrect: false
+        },
+        {
+          id: "c",
           text: "12 hours",
           emoji: "😪",
-          description: "8-10 hours is the right amount for kids",
           isCorrect: false
         }
       ]
@@ -86,21 +81,18 @@ const QuizGrowth = () => {
           id: "a",
           text: "Milk and dairy",
           emoji: "🥛",
-          description: "Calcium in milk helps build strong bones",
           isCorrect: true
         },
         {
           id: "b",
           text: "Candy",
           emoji: "🍬",
-          description: "Candy has sugar but no bone-building nutrients",
           isCorrect: false
         },
         {
           id: "c",
           text: "Chips",
           emoji: "🥔",
-          description: "Chips don't help build strong bones",
           isCorrect: false
         }
       ]
@@ -110,25 +102,22 @@ const QuizGrowth = () => {
       text: "What activity helps you grow taller?",
       options: [
         {
-          id: "b",
+          id: "a",
           text: "Playing video games",
           emoji: "🎮",
-          description: "Physical activity helps with growth",
           isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Running and jumping",
+          emoji: "🏃",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Reading books",
           emoji: "📚",
-          description: "While reading is good, exercise is better for growth",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Running and jumping",
-          emoji: "🏃",
-          description: "Physical activities help strengthen bones and muscles",
-          isCorrect: true
         }
       ]
     },
@@ -137,48 +126,56 @@ const QuizGrowth = () => {
       text: "Why is drinking water important for growth?",
       options: [
         {
-          id: "c",
-          text: "It makes you taller instantly",
-          emoji: "📏",
-          description: "Water doesn't make you taller instantly",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "It's not important",
-          emoji: "🤷",
-          description: "Water is essential for all body functions",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Keeps body working properly",
           emoji: "💧",
-          description: "Water helps all body processes including growth",
           isCorrect: true
+        },
+        {
+          id: "b",
+          text: "It makes you taller instantly",
+          emoji: "📏",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "It's not important",
+          emoji: "🤷",
+          isCorrect: false
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
+    
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
+    setShowFeedback(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, isCorrect ? 1000 : 800);
   };
 
   const getCurrentQuestion = () => questions[currentQuestion];
@@ -212,7 +209,7 @@ const QuizGrowth = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
           </div>
 
           <div className="text-center mb-6">
@@ -224,20 +221,26 @@ const QuizGrowth = () => {
             {getCurrentQuestion().text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {getCurrentQuestion().options.map(option => (
               <button
                 key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className={`bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${choices.some(c => c.question === currentQuestion) ? 'opacity-75 cursor-not-allowed' : ''
-                  }`}
+                onClick={() => handleAnswer(option.id)}
+                disabled={showFeedback}
+                className={`p-6 rounded-2xl shadow-lg transition-all transform text-left ${
+                  showFeedback && option.isCorrect
+                    ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                    : showFeedback && selectedOption === option.id && !option.isCorrect
+                    ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                    : selectedOption === option.id
+                    ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                    : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                } ${showFeedback ? "cursor-not-allowed" : ""}`}
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

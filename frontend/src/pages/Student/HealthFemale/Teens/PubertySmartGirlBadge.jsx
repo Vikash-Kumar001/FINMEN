@@ -236,7 +236,7 @@ const PubertySmartGirlBadge = () => {
       currentLevel={challenge + 1}
       showConfetti={showResult && score >= 4}
       flashPoints={flashPoints}
-      backPath="/student/health-female/teens"
+      backPath="/games/health-female/teens"
       showAnswerConfetti={showAnswerConfetti}
       maxScore={challenges.length}
       coinsPerLevel={coinsPerLevel}

@@ -15,180 +15,169 @@ const ShavingDebateTeen = () => {
     const totalXp = 10;
 
     const [coins, setCoins] = useState(0);
-    const [currentStage, setCurrentStage] = useState(0);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [selectedOption, setSelectedOption] = useState(null);
+    const [showFeedback, setShowFeedback] = useState(false);
+    const [score, setScore] = useState(0);
     const [gameFinished, setGameFinished] = useState(false);
     const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-    const stages = [
+    const questions = [
         {
             id: 1,
-            title: "To Shave or Not?",
-            question: "Is it mandatory to shave?",
+            text: "Is it mandatory to shave?",
             options: [
                 {
                     id: "a",
                     text: "It's your choice",
-                    emoji: "🤷",
-                    description: "Do what feels right for you.",
-                    isCorrect: true
+                    emoji: "🤷"
                 },
                 {
                     id: "b",
                     text: "Yes, always",
-                    emoji: "🪒",
-                    description: "Not a rule.",
-                    isCorrect: false
+                    emoji: "🪒"
                 },
                 {
                     id: "c",
                     text: "No, never",
-                    emoji: "🧔",
-                    description: "Some prefer clean shaven.",
-                    isCorrect: false
+                    emoji: "🧔"
                 }
-            ]
+            ],
+            correctAnswer: "b",
+            explanation: "Some prefer clean shaven. Do what feels right for you, and not a rule."
         },
         {
             id: 2,
-            title: "Razor Sharing",
-            question: "Can I use my friend's razor?",
+            text: "Can I use my friend's razor?",
             options: [
                 {
                     id: "b",
                     text: "Yes, save money",
-                    emoji: "💰",
-                    description: "Unsanitary.",
-                    isCorrect: false
+                    emoji: "💰"
                 },
                 {
                     id: "a",
                     text: "No, never share",
-                    emoji: "🚫",
-                    description: "Spreads bacteria and blood.",
-                    isCorrect: true
+                    emoji: "🚫"
                 },
                 {
                     id: "c",
                     text: "Only if washed",
-                    emoji: "🚿",
-                    description: "Still risky.",
-                    isCorrect: false
+                    emoji: "🚿"
                 }
-            ]
+            ],
+            correctAnswer: "a",
+            explanation: "Spreads bacteria and blood. Unsanitary, and still risky."
         },
         {
             id: 3,
-            title: "Electric vs Manual",
-            question: "Which razor is better?",
+            text: "Which razor is better?",
             options: [
                 {
                     id: "c",
                     text: "Knife",
-                    emoji: "🔪",
-                    description: "Dangerous!",
-                    isCorrect: false
+                    emoji: "🔪"
                 },
                 {
                     id: "b",
                     text: "Only Electric",
-                    emoji: "⚡",
-                    description: "Both have pros and cons.",
-                    isCorrect: false
+                    emoji: "⚡"
                 },
                 {
                     id: "a",
                     text: "Whichever you prefer",
-                    emoji: "✅",
-                    description: "It's personal preference.",
-                    isCorrect: true
+                    emoji: "✅"
                 }
-            ]
+            ],
+            correctAnswer: "a",
+            explanation: "It's personal preference. Both have pros and cons, and dangerous!"
         },
         {
             id: 4,
-            title: "Aftershave",
-            question: "Does aftershave sting?",
+            text: "Does aftershave sting?",
             options: [
                 {
                     id: "b",
                     text: "It burns skin off",
-                    emoji: "🔥",
-                    description: "Exaggeration.",
-                    isCorrect: false
+                    emoji: "🔥"
                 },
                 {
                     id: "a",
                     text: "Some do (alcohol)",
-                    emoji: "🧴",
-                    description: "Alcohol-free ones are gentler.",
-                    isCorrect: true
+                    emoji: "🧴"
                 },
                 {
                     id: "c",
                     text: "It feels like ice",
-                    emoji: "❄️",
-                    description: "Not usually.",
-                    isCorrect: false
+                    emoji: "❄️"
                 }
-            ]
+            ],
+            correctAnswer: "a",
+            explanation: "Alcohol-free ones are gentler. Exaggeration, and not usually."
         },
         {
             id: 5,
-            title: "Frequency",
-            question: "How often should I shave?",
+            text: "How often should I shave?",
             options: [
                 {
                     id: "c",
                     text: "Every hour",
-                    emoji: "⏰",
-                    description: "Impossible.",
-                    isCorrect: false
+                    emoji: "⏰"
                 },
                 {
                     id: "b",
                     text: "Once a year",
-                    emoji: "🗓️",
-                    description: "You'll have a long beard.",
-                    isCorrect: false
+                    emoji: "🗓️"
                 },
                 {
                     id: "a",
                     text: "When needed",
-                    emoji: "📅",
-                    description: "Depends on hair growth.",
-                    isCorrect: true
+                    emoji: "📅"
                 }
-            ]
+            ],
+            correctAnswer: "a",
+            explanation: "Depends on hair growth. Impossible, and you'll have a long beard."
         }
     ];
 
-    const handleOptionSelect = (option) => {
-        if (option.isCorrect) {
+    const handleOptionSelect = (optionId) => {
+        const currentQuestion = questions[currentQuestionIndex];
+        const isCorrect = optionId === currentQuestion.correctAnswer;
+        
+        setSelectedOption(optionId);
+        setShowFeedback(true);
+        
+        if (isCorrect) {
             setCoins(prev => prev + 1);
+            setScore(prev => prev + 1);
             showCorrectAnswerFeedback(1, true);
-
-            setTimeout(() => {
-                if (currentStage < stages.length - 1) {
-                    setCurrentStage(prev => prev + 1);
-                } else {
-                    setGameFinished(true);
-                }
-            }, 1500);
         } else {
             showCorrectAnswerFeedback(0, false);
         }
+        
+        // Move to next question after delay
+        setTimeout(() => {
+            setShowFeedback(false);
+            setSelectedOption(null);
+            
+            if (currentQuestionIndex < questions.length - 1) {
+                setCurrentQuestionIndex(prev => prev + 1);
+            } else {
+                setGameFinished(true);
+            }
+        }, 1500);
     };
 
     const handleNext = () => {
         navigate("/student/health-male/teens/teen-hygiene-journal");
     };
 
-    const currentS = stages[currentStage];
+    const currentQuestion = questions[currentQuestionIndex];
 
     return (
         <GameShell
             title="Shaving Debate"
-            subtitle={`Topic ${currentStage + 1} of ${stages.length}`}
+            subtitle={`Question ${currentQuestionIndex + 1} of ${questions.length}`}
             onNext={handleNext}
             nextEnabled={gameFinished}
             showGameOver={gameFinished}
@@ -197,7 +186,7 @@ const ShavingDebateTeen = () => {
             gameType="health-male"
             flashPoints={flashPoints}
             showAnswerConfetti={showAnswerConfetti}
-            maxScore={stages.length}
+            maxScore={questions.length}
             coinsPerLevel={coinsPerLevel}
             totalCoins={totalCoins}
             totalXp={totalXp}
@@ -205,27 +194,39 @@ const ShavingDebateTeen = () => {
             <div className="space-y-8">
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
                     <div className="text-center mb-8">
-                        <h3 className="text-2xl font-bold text-white mb-2">{currentS.title}</h3>
-                        <p className="text-white/90 text-lg">{currentS.question}</p>
+                        <h3 className="text-2xl font-bold text-white mb-4">Shaving Debate</h3>
+                        <p className="text-white/90 text-lg">{currentQuestion.text}</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {currentS.options.map((option) => (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {currentQuestion.options.map((option) => (
                             <button
                                 key={option.id}
-                                onClick={() => handleOptionSelect(option)}
-                                className="bg-white/10 hover:bg-white/20 p-6 rounded-xl border border-white/20 transition-all transform hover:scale-105 flex flex-col items-center gap-4 group"
+                                onClick={() => !showFeedback && handleOptionSelect(option.id)}
+                                disabled={showFeedback}
+                                className={`bg-white/10 p-4 rounded-xl border-2 transition-all transform hover:scale-105 flex flex-col items-center gap-3 group ${selectedOption === option.id ? (showFeedback ? (option.id === currentQuestion.correctAnswer ? 'border-green-400 bg-green-400/20' : 'border-red-400 bg-red-400/20') : 'border-yellow-400 bg-yellow-400/20') : 'border-white/20 hover:bg-white/20'} ${showFeedback && option.id === currentQuestion.correctAnswer ? 'border-green-400 bg-green-400/20' : ''}`}
                             >
-                                <div className="text-6xl group-hover:scale-110 transition-transform">
+                                <div className="text-5xl transition-transform">
                                     {option.emoji}
                                 </div>
-                                <div className="text-white font-bold text-xl text-center">
+                                <div className="text-white font-bold text-lg text-center">
                                     {option.text}
                                 </div>
-                                <p className="text-white/70 text-sm text-center">{option.description}</p>
+                                {showFeedback && selectedOption === option.id && option.id !== currentQuestion.correctAnswer && (
+                                    <div className="text-red-400 font-bold">Incorrect</div>
+                                )}
+                                {showFeedback && option.id === currentQuestion.correctAnswer && (
+                                    <div className="text-green-400 font-bold">Correct!</div>
+                                )}
                             </button>
                         ))}
                     </div>
+                    
+                    {showFeedback && (
+                        <div className="mt-6 p-4 bg-white/10 rounded-lg border border-white/20">
+                            <p className="text-white/90 text-center">{currentQuestion.explanation}</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </GameShell>

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
+import { PenSquare } from 'lucide-react';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
@@ -18,7 +19,7 @@ const TeenGrowthJournal = () => {
   const [journalEntry, setJournalEntry] = useState("");
   const [coins, setCoins] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const journalPrompts = [
     "One change I noticed in my body is...",
@@ -29,33 +30,48 @@ const TeenGrowthJournal = () => {
   ];
 
   const handleJournalSubmit = () => {
-    if (journalEntry.trim().length >= 5) {
+    if (gameFinished) return; // Prevent multiple submissions
+    
+    resetFeedback();
+    const entryText = journalEntry.trim();
+    
+    if (entryText.length >= 10) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setJournalEntry(""); // Clear for next prompt
-
+      
+      const isLastQuestion = currentPromptIndex === journalPrompts.length - 1;
+      
       setTimeout(() => {
-        if (currentPromptIndex < journalPrompts.length - 1) {
-          setCurrentPromptIndex(prev => prev + 1);
-        } else {
+        if (isLastQuestion) {
           setGameFinished(true);
+        } else {
+          setJournalEntry("");
+          setCurrentPromptIndex(prev => prev + 1);
         }
       }, 1500);
     }
   };
+
+  // Log when game completes
+  useEffect(() => {
+    if (gameFinished) {
+      console.log(`🎮 Teen Growth Journal game completed! Score: ${coins}/${journalPrompts.length}, gameId: ${gameId}`);
+    }
+  }, [gameFinished, coins, gameId, journalPrompts.length]);
+
+  const characterCount = journalEntry.trim().length;
+  const isLongEnough = characterCount >= 10;
 
   const handleNext = () => {
     navigate("/student/health-male/teens/teen-routine-simulation");
   };
 
   const currentPrompt = journalPrompts[currentPromptIndex];
-  const wordCount = journalEntry.trim().split(/\s+/).filter(word => word.length > 0).length;
-  const isLongEnough = wordCount >= 5;
 
   return (
     <GameShell
       title="Journal of Growth"
-      subtitle={`Entry ${currentPromptIndex + 1} of ${journalPrompts.length}`}
+      subtitle={!gameFinished ? `Entry ${currentPromptIndex + 1} of ${journalPrompts.length}` : "Journal Complete!"}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
@@ -68,83 +84,41 @@ const TeenGrowthJournal = () => {
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      currentLevel={currentPromptIndex + 1}
+      totalLevels={journalPrompts.length}
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">📓</div>
-            <h3 className="text-2xl font-bold text-white mb-2">My Growth Journal</h3>
-            <p className="text-white/90 mb-4">
-              Reflect on your journey through puberty.
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center text-center text-white space-y-6 md:space-y-8 max-w-4xl mx-auto px-4 py-4">
+        {!gameFinished && journalPrompts[currentPromptIndex] && (
+          <div className="bg-white/10 backdrop-blur-md p-6 md:p-8 rounded-xl md:rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-8 h-8 md:w-10 md:h-10 text-yellow-300" />
+            <h3 className="text-xl md:text-2xl font-bold mb-4 text-white">{currentPrompt}</h3>
+            <p className="text-white/70 mb-4 text-sm md:text-base">Score: {coins}/{journalPrompts.length}</p>
+            <p className="text-white/60 text-xs md:text-sm mb-4">
+              Write at least 10 characters
             </p>
-          </div>
-
-          {!gameFinished ? (
-            <>
-              <div className="bg-white/10 rounded-xl p-4 mb-6">
-                <div className="text-center mb-4">
-                  <div className="text-2xl mb-2">🌱</div>
-                  <p className="text-white font-medium text-lg">{currentPrompt}</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="relative">
-                  <textarea
-                    value={journalEntry}
-                    onChange={(e) => setJournalEntry(e.target.value)}
-                    placeholder="Type your thoughts here..."
-                    className="w-full h-48 bg-white/10 border border-white/30 rounded-xl p-4 text-white placeholder-white/50 resize-none focus:outline-none focus:border-white/50 transition-all"
-                    maxLength={500}
-                  />
-                  <div className="absolute bottom-3 right-3 text-white/60 text-sm">
-                    {wordCount}/5 words
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <div className="text-white/80">
-                    {isLongEnough ? (
-                      <span className="flex items-center text-green-400">
-                        <span className="text-xl mr-2">✅</span>
-                        Ready to submit.
-                      </span>
-                    ) : (
-                      <span className="flex items-center">
-                        <span className="text-xl mr-2">📝</span>
-                        Write at least 5 words...
-                      </span>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={handleJournalSubmit}
-                    disabled={!isLongEnough}
-                    className={`px-6 py-3 rounded-xl font-bold transition-all transform hover:scale-105 ${isLongEnough
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white'
-                      : 'bg-gray-500 text-gray-300 cursor-not-allowed'
-                      }`}
-                  >
-                    Submit Entry ✨
-                  </button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-8xl mb-4">🌟</div>
-                <h3 className="text-3xl font-bold text-white mb-2">Journal Complete!</h3>
-                <p className="text-white/90 mb-4 text-lg">
-                  Growing up is a journey. Keep writing!
-                </p>
-                <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-full p-4 inline-block mb-4">
-                  <div className="text-white font-bold text-xl">GROWTH MINDSET</div>
-                </div>
-              </div>
+            <textarea
+              value={journalEntry}
+              onChange={(e) => setJournalEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-base md:text-lg bg-white/90 min-h-[120px] md:min-h-[150px]"
+              disabled={gameFinished}
+            />
+            <div className="mt-2 text-white/50 text-xs md:text-sm">
+              {characterCount}/10 characters
             </div>
-          )}
-        </div>
+            <button
+              onClick={handleJournalSubmit}
+              className={`mt-4 px-6 md:px-8 py-3 md:py-4 rounded-full text-base md:text-lg font-semibold transition-transform ${
+                isLongEnough && !gameFinished
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={!isLongEnough || gameFinished}
+            >
+              {currentPromptIndex === journalPrompts.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
+            </button>
+          </div>
+        )}
       </div>
     </GameShell>
   );

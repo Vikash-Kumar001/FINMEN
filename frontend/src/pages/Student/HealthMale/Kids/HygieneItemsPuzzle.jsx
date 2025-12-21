@@ -1,15 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const HygieneItemsPuzzle = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Get game data from game category folder (source of truth)
-  const gameId = "health-male-kids-4";
 
   // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
   const coinsPerLevel = 1;
@@ -17,178 +12,245 @@ const HygieneItemsPuzzle = () => {
   const totalXp = 10;
 
   const [score, setScore] = useState(0);
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [matches, setMatches] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedUse, setSelectedUse] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      item: "Toothbrush",
-      emoji: "🪥",
-      matches: [
-        { id: "hair", text: "Hair", emoji: "💇", correct: false },
-        { id: "teeth", text: "Teeth", emoji: "🦷", correct: true },
-        { id: "nails", text: "Nails", emoji: "💅", correct: false }
-      ]
-    },
-    {
-      id: 2,
-      item: "Soap",
-      emoji: "🧼",
-      matches: [
-        { id: "dishes", text: "Dishes", emoji: "🍽️", correct: false },
-        { id: "clothes", text: "Clothes", emoji: "👕", correct: false },
-        { id: "bath", text: "Bath", emoji: "🛁", correct: true }
-      ]
-    },
-    {
-      id: 3,
-      item: "Nail Cutter",
-      emoji: "✂️",
-      matches: [
-        { id: "nails", text: "Nails", emoji: "💅", correct: true },
-        { id: "hair", text: "Hair", emoji: "💇", correct: false },
-        { id: "teeth", text: "Teeth", emoji: "🦷", correct: false }
-      ]
-    },
-    {
-      id: 4,
-      item: "Towel",
-      emoji: "🧺",
-      matches: [
-        { id: "eat", text: "Eat", emoji: "🍽️", correct: false },
-        { id: "dry", text: "Dry Body", emoji: "💨", correct: true },
-        { id: "sleep", text: "Sleep", emoji: "😴", correct: false }
-      ]
-    },
-    {
-      id: 5,
-      item: "Comb",
-      emoji: "💇",
-      matches: [
-        { id: "teeth", text: "Teeth", emoji: "🦷", correct: false },
-        { id: "nails", text: "Nails", emoji: "💅", correct: false },
-        { id: "hair", text: "Hair", emoji: "💇", correct: true }
-      ]
-    }
+  // Hygiene Items (left side) - 5 items
+  const items = [
+    { id: 1, name: "Toothbrush", emoji: "🪥", description: "Dental tool" },
+    { id: 2, name: "Soap", emoji: "🧼", description: "Cleaning bar" },
+    { id: 3, name: "Nail Cutter", emoji: "✂️", description: "Sharp tool" },
+    { id: 4, name: "Towel", emoji: "🧺", description: "Fabric sheet" },
+    { id: 5, name: "Comb", emoji: "💇", description: "Hair tool" }
   ];
 
-  const handleMatch = (matchId) => {
-    if (currentPuzzle >= puzzles.length) return;
+  // Uses (right side) - 5 items
+  const uses = [
+    { id: 3, name: "Trim Nails", emoji: "💅", description: "Cut fingers" },
+    { id: 5, name: "Style Hair", emoji: "💇", description: "Arrange strands" },
+    { id: 1, name: "Clean Teeth", emoji: "🦷", description: "Oral hygiene" },
+    { id: 4, name: "Dry Body", emoji: "💨", description: "Remove moisture" },
+    { id: 2, name: "Wash Skin", emoji: "🛁", description: "Body cleansing" }
+  ];
 
-    const currentPuzzleData = puzzles[currentPuzzle];
-    const match = currentPuzzleData.matches.find(m => m.id === matchId);
-    setSelectedMatch(matchId);
+  // Correct matches
+  const correctMatches = [
+    { itemId: 1, useId: 1 }, // Toothbrush → Clean Teeth
+    { itemId: 2, useId: 2 }, // Soap → Wash Skin
+    { itemId: 3, useId: 3 }, // Nail Cutter → Trim Nails
+    { itemId: 4, useId: 4 }, // Towel → Dry Body
+    { itemId: 5, useId: 5 }  // Comb → Style Hair
+  ];
+
+  const handleItemSelect = (item) => {
+    if (gameFinished) return;
+    setSelectedItem(item);
+  };
+
+  const handleUseSelect = (use) => {
+    if (gameFinished) return;
+    setSelectedUse(use);
+  };
+
+  const handleMatch = () => {
+    if (!selectedItem || !selectedUse || gameFinished) return;
+
     resetFeedback();
 
-    if (match.correct) {
+    const newMatch = {
+      itemId: selectedItem.id,
+      useId: selectedUse.id,
+      isCorrect: correctMatches.some(
+        match => match.itemId === selectedItem.id && match.useId === selectedUse.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
 
-    setTimeout(() => {
-      if (currentPuzzle < puzzles.length - 1) {
-        setCurrentPuzzle(prev => prev + 1);
-        setSelectedMatch(null);
-      } else {
-        setShowResult(true);
-      }
-    }, 1500);
+    // Check if all items are matched
+    if (newMatches.length === items.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedItem(null);
+    setSelectedUse(null);
+  };
+
+  // Check if an item is already matched
+  const isItemMatched = (itemId) => {
+    return matches.some(match => match.itemId === itemId);
+  };
+
+  // Check if a use is already matched
+  const isUseMatched = (useId) => {
+    return matches.some(match => match.useId === useId);
+  };
+
+  // Get match result for an item
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.itemId === itemId);
+    return match ? match.isCorrect : null;
   };
 
   const handleNext = () => {
     navigate("/games/health-male/kids");
   };
 
-  const currentPuzzleData = puzzles[currentPuzzle];
-
   return (
     <GameShell
       title="Hygiene Items Puzzle"
-      subtitle={showResult ? "Puzzle Complete!" : `Match hygiene items with their uses (${currentPuzzle + 1}/${puzzles.length} completed)`}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Items with Their Uses (${matches.length}/${items.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={score}
+      gameId="health-male-kids-4"
+      gameType="health-male"
+      totalLevels={items.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === items.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/health-male/kids"
+      maxScore={items.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      gameId="health-male-kids-4"
-      gameType="health-male"
-      totalLevels={puzzles.length}
-      currentLevel={currentPuzzle + 1}
-      maxScore={puzzles.length}
-      showConfetti={showResult && score === puzzles.length}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      onNext={handleNext}
-      nextEnabled={showResult}
     >
-      <div className="space-y-8 max-w-5xl mx-auto">
-        {!showResult && currentPuzzleData ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Hygiene Items */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Puzzles: {currentPuzzle + 1}/{puzzles.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}/{puzzles.length}</span>
-              </div>
-
-              <p className="text-white/90 text-center mb-6">
-                Match the hygiene item to what it cleans!
-              </p>
-
-              <div className="grid grid-cols-1 gap-6">
-                <div className="bg-white/10 rounded-xl p-4 border border-white/20 relative">
-                  <div className="flex items-center justify-center mb-4">
-                    <span className="text-2xl mr-3">{currentPuzzleData.emoji}</span>
-                    <div className="text-left flex-1">
-                      <div className="font-semibold text-white text-lg">{currentPuzzleData.item}</div>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Hygiene Items</h3>
+              <div className="space-y-4">
+                {items.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleItemSelect(item)}
+                    disabled={isItemMatched(item.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isItemMatched(item.id)
+                        ? getMatchResult(item.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedItem?.id === item.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{item.name}</h4>
+                        <p className="text-white/80 text-sm">{item.description}</p>
+                      </div>
                     </div>
-                  </div>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {currentPuzzleData.matches.map((match) => {
-                      const isSelected = selectedMatch === match.id;
-                      const isCorrect = isSelected && match.correct;
-                      const isWrong = isSelected && !match.correct;
-
-                      return (
-                        <button
-                          key={match.id}
-                          onClick={() => handleMatch(match.id)}
-                          disabled={selectedMatch !== null}
-                          className={`w-full p-4 rounded-xl transition-all border-2 ${
-                            !selectedMatch
-                              ? 'bg-white/10 hover:bg-white/20 border-white/30 cursor-pointer'
-                              : isCorrect
-                                ? 'bg-green-500/20 border-green-400 opacity-70 cursor-not-allowed'
-                                : isWrong
-                                  ? 'bg-red-500/20 border-red-400 opacity-70 cursor-not-allowed'
-                                  : 'bg-white/10 border-white/30 cursor-not-allowed'
-                          }`}
-                        >
-                          <div className="flex items-center">
-                            <span className="text-2xl mr-3">{match.emoji}</span>
-                            <div className="text-left flex-1">
-                              <div className="font-semibold text-white">{match.text}</div>
-                            </div>
-                            {isSelected && (
-                              <span className={`text-xl ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
-                                {isCorrect ? '✓' : '✗'}
-                              </span>
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedItem 
+                    ? `Selected: ${selectedItem.name}` 
+                    : "Select an Item"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedItem || !selectedUse}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedItem && selectedUse
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{items.length}</p>
+                  <p>Matched: {matches.length}/{items.length}</p>
                 </div>
               </div>
             </div>
+
+            {/* Right column - Uses */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Uses</h3>
+              <div className="space-y-4">
+                {uses.map(use => (
+                  <button
+                    key={use.id}
+                    onClick={() => handleUseSelect(use)}
+                    disabled={isUseMatched(use.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isUseMatched(use.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedUse?.id === use.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{use.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{use.name}</h4>
+                        <p className="text-white/80 text-sm">{use.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {items.length} hygiene items with their uses!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Using the right hygiene items keeps your body clean and healthy!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {items.length} items correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each item is designed to clean!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

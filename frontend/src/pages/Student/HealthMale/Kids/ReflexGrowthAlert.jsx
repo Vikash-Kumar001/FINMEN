@@ -16,7 +16,7 @@ const ReflexGrowthAlert = () => {
   const coinsPerLevel = 1;
   const totalCoins = 5;
   const totalXp = 10;
-  const ROUND_TIME = 5;
+  const ROUND_TIME = 10;
   const TOTAL_ROUNDS = 5;
 
   const [currentRound, setCurrentRound] = useState(1);
@@ -34,50 +34,50 @@ const ReflexGrowthAlert = () => {
       id: 1,
       question: "What helps you grow?",
       options: [
-        { text: "No Exercise", emoji: "❌", isCorrect: false },
-        { text: "Exercise Daily", emoji: "🏃", isCorrect: true },
-        { text: "Sit All Day", emoji: "🪑", isCorrect: false },
-        { text: "Sleep Less", emoji: "😴", isCorrect: false }
+        { id: 'a', text: "Exercise Daily", emoji: "🏃", isCorrect: true },
+        { id: 'b', text: "No Exercise", emoji: "❌", isCorrect: false },
+        { id: 'c', text: "Sit All Day", emoji: "🪑", isCorrect: false },
+        { id: 'd', text: "Sleep Less", emoji: "😴", isCorrect: false }
       ]
     },
     {
       id: 2,
       question: "Best drink for growth?",
       options: [
-        { text: "Soda", emoji: "🥤", isCorrect: false },
-        { text: "Energy Drink", emoji: "⚡", isCorrect: false },
-        { text: "Milk", emoji: "🥛", isCorrect: true },
-        { text: "Coffee", emoji: "☕", isCorrect: false }
+        { id: 'a', text: "Soda", emoji: "🥤", isCorrect: false },
+        { id: 'b', text: "Milk", emoji: "🥛", isCorrect: true },
+        { id: 'c', text: "Energy Drink", emoji: "⚡", isCorrect: false },
+        { id: 'd', text: "Coffee", emoji: "☕", isCorrect: false }
       ]
     },
     {
       id: 3,
       question: "Important for recovery?",
       options: [
-        { text: "Good Sleep", emoji: "🛌", isCorrect: true },
-        { text: "No Sleep", emoji: "📱", isCorrect: false },
-        { text: "Late Night", emoji: "🌙", isCorrect: false },
-        { text: "Gaming", emoji: "🎮", isCorrect: false }
+        { id: 'a', text: "No Sleep", emoji: "📱", isCorrect: false },
+        { id: 'b', text: "Late Night", emoji: "🌙", isCorrect: false },
+        { id: 'c', text: "Gaming", emoji: "🎮", isCorrect: false },
+        { id: 'd', text: "Good Sleep", emoji: "🛌", isCorrect: true }
       ]
     },
     {
       id: 4,
       question: "Healthy food choice?",
       options: [
-        { text: "Junk Food", emoji: "🍔", isCorrect: false },
-        { text: "Candy", emoji: "🍬", isCorrect: false },
-        { text: "Chips", emoji: "🍟", isCorrect: false },
-        { text: "Healthy Food", emoji: "🥕", isCorrect: true },
+        { id: 'a', text: "Junk Food", emoji: "🍔", isCorrect: false },
+        { id: 'b', text: "Candy", emoji: "🍬", isCorrect: false },
+        { id: 'c', text: "Healthy Food", emoji: "🥕", isCorrect: true },
+        { id: 'd', text: "Chips", emoji: "🍟", isCorrect: false },
       ]
     },
     {
       id: 5,
       question: "Good habit?",
       options: [
-        { text: "Skip Breakfast", emoji: "🚫", isCorrect: false },
-        { text: "Eat Breakfast", emoji: "🍳", isCorrect: true },
-        { text: "No Water", emoji: "🌵", isCorrect: false },
-        { text: "Stay Inside", emoji: "🏠", isCorrect: false }
+        { id: 'a', text: "Eat Breakfast", emoji: "🍳", isCorrect: true },
+        { id: 'b', text: "Skip Breakfast", emoji: "🚫", isCorrect: false },
+        { id: 'c', text: "No Water", emoji: "🌵", isCorrect: false },
+        { id: 'd', text: "Stay Inside", emoji: "🏠", isCorrect: false }
       ]
     }
   ];
@@ -189,6 +189,7 @@ const ReflexGrowthAlert = () => {
         setGameState("finished");
       } else {
         setCurrentRound((prev) => prev + 1);
+        setAnswered(false); // Reset answered state for next round
       }
     }, 500);
   };

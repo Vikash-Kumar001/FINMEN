@@ -12,7 +12,7 @@ const ReflexSafeTeen = () => {
   const totalCoins = 5;
   const totalXp = 10;
   const TOTAL_ROUNDS = 5;
-  const ROUND_TIME = 5; // 5 seconds per question
+  const ROUND_TIME = 10; // 10 seconds per question
 
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 

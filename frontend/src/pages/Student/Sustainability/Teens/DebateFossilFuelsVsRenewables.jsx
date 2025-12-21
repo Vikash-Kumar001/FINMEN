@@ -9,14 +9,17 @@ const DebateFossilFuelsVsRenewables = () => {
   const location = useLocation();
   const gameData = getGameDataById("sustainability-teens-6");
   const gameId = gameData?.id || "sustainability-teens-6";
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const [coins, setCoins] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   // Find next game path and ID if not provided in location.state
   const { nextGamePath, nextGameId } = useMemo(() => {
@@ -44,7 +47,7 @@ const DebateFossilFuelsVsRenewables = () => {
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
-    if (showResult) {
+    if (gameFinished) {
       console.log(`🎮 Debate: Fossil Fuels vs Renewables game completed! Score: ${score}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       if (nextGameId && window.history && window.history.replaceState) {
         const currentState = window.history.state || {};
@@ -54,103 +57,214 @@ const DebateFossilFuelsVsRenewables = () => {
         }, '');
       }
     }
-  }, [showResult, score, gameId, nextGamePath, nextGameId]);
+  }, [gameFinished, score, gameId, nextGamePath, nextGameId]);
 
   const questions = [
     {
       id: 1,
       text: "Should we transition from fossil fuels to renewable energy?",
       options: [
-        { id: "yes", text: "Yes, immediately", emoji: "✅", description: "Urgent action needed for climate", isCorrect: true },
-        { id: "gradual", text: "Gradually over time", emoji: "⏳", description: "Balance is important", isCorrect: true },
-        { id: "no", text: "No, keep fossil fuels", emoji: "❌", description: "Fossil fuels harm the environment", isCorrect: false }
-      ]
+        {
+          id: "a",
+          text: "Yes, immediately",
+          emoji: "✅"
+        },
+        {
+          id: "b",
+          text: "Gradually over time",
+          emoji: "⏳"
+        },
+        {
+          id: "c",
+          text: "No, keep fossil fuels",
+          emoji: "❌"
+        }
+      ],
+      correctAnswer: "b",
+      explanation: "Gradually over time. Urgent action needed for climate, but balance is important. Fossil fuels harm the environment."
     },
     {
       id: 2,
       text: "What's the main advantage of renewable energy?",
       options: [
-        { id: "cheap", text: "Always cheaper", emoji: "💰", description: "Costs vary", isCorrect: false },
-        { id: "clean", text: "Clean and sustainable", emoji: "🌱", description: "Reduces pollution", isCorrect: true },
-        { id: "reliable", text: "Always available", emoji: "⚡", description: "Depends on conditions", isCorrect: false }
-      ]
+        {
+          id: "a",
+          text: "Always cheaper",
+          emoji: "💰"
+        },
+        {
+          id: "b",
+          text: "Clean and sustainable",
+          emoji: "🌱"
+        },
+        {
+          id: "c",
+          text: "Always available",
+          emoji: "⚡"
+        }
+      ],
+      correctAnswer: "c",
+      explanation: "Always available. Costs vary, and depends on conditions. Reduces pollution."
     },
     {
       id: 3,
       text: "What's a challenge with renewable energy?",
       options: [
-        { id: "cost", text: "Too expensive", emoji: "💸", description: "Costs are decreasing", isCorrect: false },
-        { id: "ineffective", text: "Doesn't work", emoji: "❌", description: "Renewable energy is effective", isCorrect: false },
-        { id: "storage", text: "Energy storage", emoji: "🔋", description: "Need better battery technology", isCorrect: true }
-      ]
+        {
+          id: "a",
+          text: "Too expensive",
+          emoji: "💸"
+        },
+        {
+          id: "b",
+          text: "Doesn't work",
+          emoji: "❌"
+        },
+        {
+          id: "c",
+          text: "Energy storage",
+          emoji: "🔋"
+        }
+      ],
+      correctAnswer: "a",
+      explanation: "Too expensive. Costs are decreasing, but still a challenge. Renewable energy is effective. Need better battery technology."
+    },
+    {
+      id: 4,
+      text: "Which energy source produces the most carbon emissions?",
+      options: [
+        {
+          id: "a",
+          text: "Solar power",
+          emoji: "☀️"
+        },
+        {
+          id: "b",
+          text: "Wind power",
+          emoji: "🌬️"
+        },
+        {
+          id: "c",
+          text: "Coal power",
+          emoji: "🏭"
+        }
+      ],
+      correctAnswer: "c",
+      explanation: "Coal power. Clean energy source, but highest carbon emissions."
+    },
+    {
+      id: 5,
+      text: "What's the best approach for energy transition?",
+      options: [
+        {
+          id: "a",
+          text: "Immediate shift",
+          emoji: "⚡"
+        },
+        {
+          id: "b",
+          text: "Government investment",
+          emoji: "🏛️"
+        },
+        {
+          id: "c",
+          text: "Individual action",
+          emoji: "👤"
+        }
+      ],
+      correctAnswer: "b",
+      explanation: "Government investment. May cause disruptions, but supports innovation. Individual action is important but not sufficient."
     }
   ];
 
-  const handleChoice = (isCorrect) => {
-    if (answered) return;
-    setAnswered(true);
-    resetFeedback();
+  const handleOptionSelect = (optionId) => {
+    const currentQuestion = questions[currentQuestionIndex];
+    const isCorrect = optionId === currentQuestion.correctAnswer;
+    
+    setSelectedOption(optionId);
+    setShowFeedback(true);
+    
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    // Move to next question after delay
     setTimeout(() => {
-      if (currentQuestion === questions.length - 1) {
-        setShowResult(true);
+      setShowFeedback(false);
+      setSelectedOption(null);
+      
+      if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex(prev => prev + 1);
       } else {
-        setCurrentQuestion(prev => prev + 1);
-        setAnswered(false);
+        setGameFinished(true);
       }
-    }, 500);
+    }, 1500);
   };
 
-  const currentQuestionData = questions[currentQuestion];
+  const currentQuestionData = questions[currentQuestionIndex];
 
   return (
     <GameShell
       title="Debate: Fossil Fuels vs Renewables"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Debate Complete!"}
+      subtitle={`Question ${currentQuestionIndex + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
+      showGameOver={gameFinished}
       gameId={gameId}
       gameType="sustainability"
-      totalLevels={questions.length}
-      currentLevel={currentQuestion + 1}
+
+
       maxScore={questions.length}
-      showConfetti={showResult && score >= 2}
+
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
+
+
     >
       <div className="space-y-8">
-        {!showResult && currentQuestionData && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-              <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-white mb-4">Debate: Fossil Fuels vs Renewables</h3>
+              <p className="text-white/90 text-lg">{currentQuestionData.text}</p>
             </div>
-            <p className="text-white text-lg mb-6">{currentQuestionData.text}</p>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {currentQuestionData.options.map((option) => (
                 <button
                   key={option.id}
-                  onClick={() => handleChoice(option.isCorrect)}
-                  disabled={answered}
-                  className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  onClick={() => !showFeedback && handleOptionSelect(option.id)}
+                  disabled={showFeedback}
+                  className={`bg-white/10 p-4 rounded-xl border-2 transition-all transform hover:scale-105 flex flex-col items-center gap-3 group ${selectedOption === option.id ? (showFeedback ? (option.id === currentQuestionData.correctAnswer ? 'border-green-400 bg-green-400/20' : 'border-red-400 bg-red-400/20') : 'border-yellow-400 bg-yellow-400/20') : 'border-white/20 hover:bg-white/20'} ${showFeedback && option.id === currentQuestionData.correctAnswer ? 'border-green-400 bg-green-400/20' : ''}`}
                 >
-                  <div className="text-3xl mb-3">{option.emoji}</div>
-                  <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                  <p className="text-white/90 text-sm">{option.description}</p>
+                  <div className="text-5xl transition-transform">
+                    {option.emoji}
+                  </div>
+                  <div className="text-white font-bold text-lg text-center">
+                    {option.text}
+                  </div>
+                  {showFeedback && selectedOption === option.id && option.id !== currentQuestionData.correctAnswer && (
+                    <div className="text-red-400 font-bold">Incorrect</div>
+                  )}
+                  {showFeedback && option.id === currentQuestionData.correctAnswer && (
+                    <div className="text-green-400 font-bold">Correct!</div>
+                  )}
                 </button>
               ))}
             </div>
+            
+            {showFeedback && (
+              <div className="mt-6 p-4 bg-white/10 rounded-lg border border-white/20">
+                <p className="text-white/90 text-center">{currentQuestionData.explanation}</p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
     </GameShell>
   );
 };

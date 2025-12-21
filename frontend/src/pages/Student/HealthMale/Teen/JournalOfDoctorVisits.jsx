@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { PenSquare } from 'lucide-react';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
@@ -9,7 +10,7 @@ const JournalOfDoctorVisits = () => {
   const [currentPrompt, setCurrentPrompt] = useState(0);
   const [responses, setResponses] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   // Hardcode rewards
   const coinsPerLevel = 1;
@@ -46,18 +47,37 @@ const JournalOfDoctorVisits = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (answer.trim()) {
+    if (gameFinished) return; // Prevent multiple submissions
+    
+    resetFeedback();
+    const answerText = answer.trim();
+    
+    if (answerText.length >= 10) {
       setResponses([...responses, { prompt: currentPrompt, answer }]);
-      setAnswer("");
       showCorrectAnswerFeedback(1, true);
-
-      if (currentPrompt < prompts.length - 1) {
-        setCurrentPrompt(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
+      
+      const isLastQuestion = currentPrompt === prompts.length - 1;
+      
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setGameFinished(true);
+        } else {
+          setAnswer("");
+          setCurrentPrompt(prev => prev + 1);
+        }
+      }, 1500);
     }
   };
+
+  // Log when game completes
+  useEffect(() => {
+    if (gameFinished) {
+      console.log(`🎮 Journal of Doctor Visits game completed! Score: ${responses.length}/${prompts.length}, gameId: health-male-teen-77`);
+    }
+  }, [gameFinished, responses.length, prompts.length]);
+
+  const characterCount = answer.trim().length;
+  const isLongEnough = characterCount >= 10;
 
   const handleNext = () => {
     navigate("/student/health-male/teens/clinic-visit-simulation");
@@ -66,7 +86,7 @@ const JournalOfDoctorVisits = () => {
   return (
     <GameShell
       title="Journal of Doctor Visits"
-      subtitle={`Prompt ${currentPrompt + 1} of ${prompts.length}`}
+      subtitle={!gameFinished ? `Prompt ${currentPrompt + 1} of ${prompts.length}` : "Journal Complete!"}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
@@ -81,81 +101,43 @@ const JournalOfDoctorVisits = () => {
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      currentLevel={currentPrompt + 1}
+      totalLevels={prompts.length}
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">📖</div>
-            <h3 className="text-2xl font-bold text-white mb-2">{prompts[currentPrompt].title}</h3>
-            <p className="text-white/90 mb-4">
-              {prompts[currentPrompt].text}
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center text-center text-white space-y-6 md:space-y-8 max-w-4xl mx-auto px-4 py-4">
+        {!gameFinished && prompts[currentPrompt] && (
+          <div className="bg-white/10 backdrop-blur-md p-6 md:p-8 rounded-xl md:rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-8 h-8 md:w-10 md:h-10 text-yellow-300" />
+            <h3 className="text-xl md:text-2xl font-bold mb-4 text-white">{prompts[currentPrompt].text}</h3>
+            <p className="text-white/70 mb-4 text-sm md:text-base">Score: {responses.length}/{prompts.length}</p>
+            <p className="text-white/60 text-xs md:text-sm mb-4">
+              Write at least 10 characters
             </p>
-            <div className="flex justify-center gap-2 mb-4">
-              {prompts.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-3 h-3 rounded-full ${index <= currentPrompt ? 'bg-green-500' : 'bg-white/30'
-                    }`}
-                />
-              ))}
+            <textarea
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-base md:text-lg bg-white/90 min-h-[120px] md:min-h-[150px]"
+              disabled={gameFinished}
+            />
+            <div className="mt-2 text-white/50 text-xs md:text-sm">
+              {characterCount}/10 characters
             </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-white font-medium mb-2">
-                Your response:
-              </label>
-              <textarea
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder="Write your thoughts here..."
-                className="w-full p-4 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:border-white/50 resize-none"
-                rows={4}
-                maxLength={200}
-              />
-              <div className="text-right text-white/60 text-sm mt-1">
-                {answer.length}/200 characters
-              </div>
-            </div>
-
             <button
-              type="submit"
-              disabled={!answer.trim()}
-              className={`w-full py-3 px-6 rounded-xl font-bold transition-all ${answer.trim()
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white'
-                  : 'bg-gray-500 text-gray-300 cursor-not-allowed'
-                }`}
+              onClick={handleSubmit}
+              className={`mt-4 px-6 md:px-8 py-3 md:py-4 rounded-full text-base md:text-lg font-semibold transition-transform ${
+                isLongEnough && !gameFinished
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={!isLongEnough || gameFinished}
             >
-              {currentPrompt < prompts.length - 1 ? 'Next Prompt' : 'Complete Journal'}
+              {currentPrompt === prompts.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
             </button>
-          </form>
+          </div>
+        )}
 
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-6xl mb-2">📝</div>
-                <h3 className="text-2xl font-bold text-white mb-2">Journal Complete!</h3>
-                <p className="text-white/90 mb-4">
-                  Excellent reflection! You've completed all journal prompts about doctor visits and healthcare experiences.
-                </p>
 
-                <div className="space-y-3 mb-4">
-                  {responses.map((response, index) => (
-                    <div key={index} className="bg-white/10 rounded-xl p-3 text-left">
-                      <p className="text-white font-medium mb-1">{prompts[index].title}</p>
-                      <p className="text-white/80 italic">"{response.answer}"</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex justify-center gap-2">
-                  <span className="text-yellow-500 text-2xl">+{responses.length}</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </GameShell>
   );

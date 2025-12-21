@@ -19,8 +19,10 @@ const QuizPeerPressure = () => {
 
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -28,24 +30,21 @@ const QuizPeerPressure = () => {
       text: "What does 'peer pressure' mean?",
       options: [
         {
-          id: "b",
-          text: "When friends try to make you do something",
-          emoji: "👥",
-          description: "Peer pressure is when friends push you to do things",
-          isCorrect: true
-        },
-        {
           id: "a",
           text: "When a teacher teaches you",
           emoji: "👨‍🏫",
-          description: "That's teaching, not peer pressure",
           isCorrect: false
+        },
+        {
+          id: "b",
+          text: "When friends try to make you do something",
+          emoji: "👥",
+          isCorrect: true
         },
         {
           id: "c",
           text: "When family gives advice",
           emoji: "👨‍👩‍👧",
-          description: "Family advice is different from peer pressure",
           isCorrect: false
         }
       ]
@@ -55,24 +54,21 @@ const QuizPeerPressure = () => {
       text: "Why do friends sometimes pressure you?",
       options: [
         {
-          id: "c",
-          text: "They want to be mean to you",
-          emoji: "😈",
-          description: "Friends might pressure you because they want you to fit in",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "They want you to fit in with the group",
           emoji: "🤝",
-          description: "Sometimes friends think fitting in means doing the same things",
           isCorrect: true
         },
         {
           id: "b",
           text: "They don't really care about you",
           emoji: "😔",
-          description: "Real friends care about you, even if they make mistakes",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "They want to be mean to you",
+          emoji: "😈",
           isCorrect: false
         }
       ]
@@ -82,25 +78,22 @@ const QuizPeerPressure = () => {
       text: "What's a healthy way to handle peer pressure?",
       options: [
         {
+          id: "a",
+          text: "Say no when it doesn't feel right",
+          emoji: "🙅",
+          isCorrect: true
+        },
+        {
           id: "b",
           text: "Always do what friends want",
           emoji: "👌",
-          description: "It's okay to say no when something doesn't feel right",
           isCorrect: false
         },
         {
           id: "c",
           text: "Never talk to those friends again",
           emoji: "🚫",
-          description: "You can say no while still being friends",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Say no when it doesn't feel right",
-          emoji: "🙅",
-          description: "It's brave and healthy to say no to bad ideas",
-          isCorrect: true
         }
       ]
     },
@@ -112,22 +105,19 @@ const QuizPeerPressure = () => {
           id: "a",
           text: "Go along with it to fit in",
           emoji: "😅",
-          description: "Safety is more important than fitting in",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Ignore it and hope it goes away",
+          emoji: "🙈",
           isCorrect: false
         },
         {
           id: "c",
           text: "Tell a trusted adult",
           emoji: "🆘",
-          description: "Adults can help you handle dangerous situations",
           isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Ignore it and hope it goes away",
-          emoji: "🙈",
-          description: "It's better to speak up than ignore dangerous situations",
-          isCorrect: false
         }
       ]
     },
@@ -136,46 +126,56 @@ const QuizPeerPressure = () => {
       text: "How can you be a good friend when others face peer pressure?",
       options: [
         {
+          id: "a",
+          text: "Help them say no and make good choices",
+          emoji: "🤝",
+          isCorrect: true
+        },
+        {
           id: "b",
           text: "Pressure them even more",
           emoji: "👊",
-          description: "Good friends support each other in making good choices",
           isCorrect: false
         },
         {
           id: "c",
           text: "Don't get involved",
           emoji: "🤷",
-          description: "Supporting friends in saying no is being a good friend",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Help them say no and make good choices",
-          emoji: "🤝",
-          description: "True friends help each other do the right thing",
-          isCorrect: true
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
+    
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
+    
+    setShowFeedback(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, isCorrect ? 1000 : 800);
   };
 
   const handleNext = () => {
@@ -185,49 +185,80 @@ const QuizPeerPressure = () => {
   return (
     <GameShell
       title="Quiz on Peer Pressure"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
       gameId={gameId}
       gameType="health-male"
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
+      totalLevels={5}
+      currentLevel={62}
+      showConfetti={gameFinished}
+      backPath="/games/health-male/kids"
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {questions[currentQuestion].text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {questions[currentQuestion].options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && questions[currentQuestion] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">👥</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
                 </div>
-              </button>
-            ))}
+              )}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

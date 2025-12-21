@@ -17,7 +17,7 @@ const HairGrowthStory = () => {
   const totalCoins = 5;
   const totalXp = 10;
   const maxScore = 5;
-  const gameId = "health-female-kids-84";
+  const gameId = "health-female-kids-25";
 
   const questions = [
     {

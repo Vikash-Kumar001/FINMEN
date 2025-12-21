@@ -6,161 +6,369 @@ import { Award, Shield, Heart, ThumbsUp, Star } from "lucide-react";
 
 const DrugFreeTeenBadge = () => {
   const navigate = useNavigate();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [score, setScore] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
-
-  // Hardcode rewards
+  
+  // Hardcoded Game Rewards & Configuration
   const coinsPerLevel = 1;
   const totalCoins = 5;
   const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-male-teen-90";
+
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
+  const [score, setScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       icon: <Shield className="w-12 h-12 text-blue-400" />,
       title: "Refusal Skills",
-      question: "What is the best way to say no to drugs?",
+      text: "What is the best way to say no to drugs?",
       options: [
-        { id: "a", text: "Say 'No' confidently", isCorrect: true },
-        { id: "b", text: "Say 'Maybe later'", isCorrect: false },
-        { id: "c", text: "Take it and hide it", isCorrect: false }
-      ]
+        {
+          text: "Say 'Maybe later'",
+          emoji: "⏰",
+          isCorrect: false
+        },
+        {
+          text: "Take it and hide it",
+          emoji: "🤥",
+          isCorrect: false
+        },
+        {
+          text: "Say 'No' confidently",
+          emoji: "✋",
+          isCorrect: true
+        },
+        {
+          text: "Ignore the person",
+          emoji: "🤐",
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Exactly! Being clear and confident shows you mean what you say.",
+        wrong: "Saying 'no' clearly and confidently is the most effective way to refuse drugs."
+      }
     },
     {
       id: 2,
       icon: <Heart className="w-12 h-12 text-red-400" />,
       title: "Health Impact",
-      question: "Why are drugs dangerous for teens?",
+      text: "Why are drugs dangerous for teens?",
       options: [
-        { id: "a", text: "They taste bad", isCorrect: false },
-        { id: "b", text: "They affect brain development", isCorrect: true },
-        { id: "c", text: "They are expensive", isCorrect: false }
-      ]
+        {
+          text: "They taste bad",
+          emoji: "🤢",
+          isCorrect: false
+        },
+        {
+          text: "They are expensive",
+          emoji: "💸",
+          isCorrect: false
+        },
+        {
+          text: "They affect brain development",
+          emoji: "🧠",
+          isCorrect: true
+        },
+        {
+          text: "They make you sleepy",
+          emoji: "😴",
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "That's right! During adolescence, your brain is still developing and drugs can cause lasting damage.",
+        wrong: "Drugs are particularly dangerous for teens because they can interfere with critical brain development."
+      }
     },
     {
       id: 3,
       icon: <ThumbsUp className="w-12 h-12 text-green-400" />,
       title: "Positive Choices",
-      question: "What is a healthy alternative to substance use?",
+      text: "What is a healthy alternative to substance use?",
       options: [
-        { id: "a", text: "Sports and hobbies", isCorrect: true },
-        { id: "b", text: "Sleeping all day", isCorrect: false },
-        { id: "c", text: "Skipping school", isCorrect: false }
-      ]
+        {
+          text: "Sports and hobbies",
+          emoji: "⚽",
+          isCorrect: true
+        },
+        {
+          text: "Sleeping all day",
+          emoji: "🛌",
+          isCorrect: false
+        },
+        {
+          text: "Skipping school",
+          emoji: "🚫",
+          isCorrect: false
+        },
+        {
+          text: "Spending money recklessly",
+          emoji: "💰",
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Great choice! Engaging in positive activities helps build a fulfilling life.",
+        wrong: "Healthy alternatives like sports, arts, and hobbies provide natural rewards and help develop skills."
+      }
     },
     {
       id: 4,
       icon: <Star className="w-12 h-12 text-yellow-400" />,
       title: "Future Goals",
-      question: "How does staying drug-free help your future?",
+      text: "How does staying drug-free help your future?",
       options: [
-        { id: "a", text: "It doesn't matter", isCorrect: false },
-        { id: "b", text: "Protects health and opportunities", isCorrect: true },
-        { id: "c", text: "Makes life boring", isCorrect: false }
-      ]
+        {
+          text: "It doesn't matter",
+          emoji: "🤷",
+          isCorrect: false
+        },
+        {
+          text: "Protects health and opportunities",
+          emoji: "🛡️",
+          isCorrect: true
+        },
+        {
+          text: "Makes life boring",
+          emoji: "😴",
+          isCorrect: false
+        },
+        {
+          text: "Nobody cares anyway",
+          emoji: "😑",
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Absolutely! Staying drug-free protects your health, relationships, and opens doors to opportunities.",
+        wrong: "Being drug-free preserves your physical and mental health, academic performance, and career prospects."
+      }
     },
     {
       id: 5,
       icon: <Award className="w-12 h-12 text-purple-400" />,
       title: "Support System",
-      question: "Who can you talk to if you feel pressured?",
+      text: "Who can you talk to if you feel pressured?",
       options: [
-        { id: "a", text: "Strangers online", isCorrect: false },
-        { id: "b", text: "Parents or trusted adults", isCorrect: true },
-        { id: "c", text: "Nobody", isCorrect: false }
-      ]
+        {
+          text: "Strangers online",
+          emoji: "🖥️",
+          isCorrect: false
+        },
+        {
+          text: "Nobody",
+          emoji: "😶",
+          isCorrect: false
+        },
+        {
+          text: "Parents or trusted adults",
+          emoji: "👨‍👩‍👧‍👦",
+          isCorrect: true
+        },
+        {
+          text: "Other teens using substances",
+          emoji: "👥",
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "That's right! Trusted adults can provide guidance and support when facing challenges.",
+        wrong: "Talking to parents, counselors, or other trusted adults is crucial for getting help when facing peer pressure."
+      }
     }
   ];
 
-  const handleAnswer = (isCorrect) => {
-    if (gameFinished) return;
+  const handleChoice = (optionIndex) => {
+    if (answered) return;
+
+    setAnswered(true);
+    setSelectedOptionIndex(optionIndex);
+    resetFeedback();
+
+    const selectedOption = questions[currentQuestion].options[optionIndex];
+    const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
+    const isLastQuestion = currentQuestion === questions.length - 1;
+
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-      } else {
+      if (isLastQuestion) {
         setGameFinished(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+        setSelectedOptionIndex(null);
       }
-    }, 1000);
+    }, 2000);
   };
 
-  const currentQ = questions[currentQuestion];
+  const handleRetry = () => {
+    setCurrentQuestion(0);
+    setGameFinished(false);
+    setSelectedOptionIndex(null);
+    setScore(0);
+    setAnswered(false);
+    resetFeedback();
+  };
 
   const handleNext = () => {
     navigate("/games/health-male/teens");
   };
 
+  const currentQ = questions[currentQuestion];
+
   return (
     <GameShell
-      title="Badge: Drug-Free Teen"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      title="Drug-Free Teen Badge"
+      subtitle={gameFinished ? "Game Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={score}
-      gameId="health-male-teen-90"
+      gameId={gameId}
       gameType="health-male"
-      maxScore={questions.length}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showConfetti={gameFinished}
+      totalLevels={5}
+      currentLevel={90}
+      showConfetti={gameFinished && score >= 4}
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
-    >
+      maxScore={maxScore}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Score: {score}</span>
-          </div>
+        {!gameFinished ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{maxScore}</span>
+              </div>
 
-          <div className="flex flex-col items-center mb-8">
-            <div className="mb-4 p-4 bg-white/10 rounded-full">
-              {currentQ.icon}
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-2">{currentQ.title}</h3>
-            <p className="text-white/90 text-lg text-center max-w-lg">
-              {currentQ.question}
-            </p>
-          </div>
+              <div className="flex justify-center mb-4">
+                {currentQ.icon}
+              </div>
 
-          <div className="grid grid-cols-1 gap-4 max-w-2xl mx-auto">
-            {currentQ.options.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => handleAnswer(option.isCorrect)}
-                className="group relative bg-white/5 hover:bg-white/10 border border-white/10 p-6 rounded-xl transition-all hover:scale-102 flex items-center"
-              >
-                <div className="flex-1 text-left">
-                  <span className="text-lg font-medium text-white group-hover:text-blue-300 transition-colors">
-                    {option.text}
-                  </span>
+              <h2 className="text-2xl font-bold text-white mb-2 text-center">
+                {currentQ.title}
+              </h2>
+              
+              <p className="text-xl text-white mb-8 text-center">
+                {currentQ.text}
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQ.options.map((option, idx) => {
+                  const isSelected = selectedOptionIndex === idx;
+                  const showFeedback = answered;
+
+                  let buttonClass = "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3";
+
+                  if (showFeedback) {
+                    if (isSelected) {
+                      buttonClass = option.isCorrect
+                        ? "bg-green-500 ring-4 ring-green-300 text-white p-6 rounded-2xl shadow-lg min-h-[60px] flex items-center justify-center gap-3"
+                        : "bg-red-500 ring-4 ring-red-300 text-white p-6 rounded-2xl shadow-lg min-h-[60px] flex items-center justify-center gap-3";
+                    } else {
+                      buttonClass = "bg-white/10 opacity-50 text-white p-6 rounded-2xl shadow-lg min-h-[60px] flex items-center justify-center gap-3";
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleChoice(idx)}
+                      disabled={showFeedback}
+                      className={buttonClass}
+                    >
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="font-bold text-lg">{option.text}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {answered && (
+                <div className={`mt-4 p-4 rounded-xl ${
+                  currentQ.options[selectedOptionIndex]?.isCorrect
+                    ? "bg-green-500/20 border border-green-500/30"
+                    : "bg-red-500/20 border border-red-500/30"
+                }`}>
+                  <p className="text-white font-semibold">
+                    {currentQ.options[selectedOptionIndex]?.isCorrect
+                      ? currentQ.feedback.correct
+                      : currentQ.feedback.wrong}
+                  </p>
                 </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {gameFinished && (
-          <div className="text-center mt-8 space-y-4">
-            <div className="inline-block p-4 bg-yellow-500/20 rounded-full mb-4">
-              <Award className="w-16 h-16 text-yellow-400" />
+              )}
             </div>
-            <h2 className="text-3xl font-bold text-white">
-              Badge Earned!
-            </h2>
-            <p className="text-blue-200 text-lg">
-              You've proven your commitment to a drug-free life!
-            </p>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 4 ? (
+              <div>
+                <div className="text-6xl mb-4">🏆</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Drug-Free Teen Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-6">
+                  You demonstrated excellent knowledge about staying drug-free with {score} correct answers out of {questions.length}!
+                </p>
+                
+                <div className="bg-gradient-to-br from-purple-500 to-pink-600 text-white p-6 rounded-2xl mb-6">
+                  <h4 className="text-2xl font-bold mb-2">🎉 Achievement Unlocked!</h4>
+                  <p className="text-xl">Badge: Drug-Free Teen</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-green-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-green-300 mb-2">Decision Making</h4>
+                    <p className="text-white/90 text-sm">
+                      You understand how to make healthy choices and resist peer pressure effectively.
+                    </p>
+                  </div>
+                  <div className="bg-blue-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-blue-300 mb-2">Future Planning</h4>
+                    <p className="text-white/90 text-sm">
+                      You recognize how staying drug-free protects your health and opens opportunities.
+                    </p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={handleNext}
+                  className="bg-gradient-to-br from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all mb-4"
+                >
+                  Continue Learning
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning About Drug Prevention!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {score} questions correctly out of {questions.length}.
+                </p>
+                <p className="text-white/90 mb-6">
+                  Review strategies for staying drug-free to strengthen your knowledge and earn your badge.
+                </p>
+                <button
+                  onClick={handleRetry}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

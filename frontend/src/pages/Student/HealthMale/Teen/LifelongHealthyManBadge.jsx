@@ -25,13 +25,13 @@ const LifelongHealthyManBadge = () => {
       question: "What is a key part of a lifelong healthy routine?",
       options: [
         {
-          text: "Consistent personal hygiene",
-          emoji: "🚿",
-          isCorrect: true
-        },
-        {
           text: "Ignoring grooming",
           emoji: "🙅",
+          isCorrect: false
+        },
+        {
+          text: "Consistent personal hygiene",
+          emoji: "🚿",
           isCorrect: false
         },
         {
@@ -42,7 +42,7 @@ const LifelongHealthyManBadge = () => {
         {
           text: "Using only deodorant",
           emoji: "💨",
-          isCorrect: false
+          isCorrect: true
         }
       ]
     },
@@ -57,11 +57,6 @@ const LifelongHealthyManBadge = () => {
           isCorrect: false
         },
         {
-          text: "Balanced diet & regular exercise",
-          emoji: "🥗",
-          isCorrect: true
-        },
-        {
           text: "Sit on the couch all day",
           emoji: "📺",
           isCorrect: false
@@ -70,6 +65,11 @@ const LifelongHealthyManBadge = () => {
           text: "Skip all meals",
           emoji: "❌",
           isCorrect: false
+        },
+        {
+          text: "Balanced diet & regular exercise",
+          emoji: "🥗",
+          isCorrect: true
         }
       ]
     },
@@ -111,11 +111,6 @@ const LifelongHealthyManBadge = () => {
           isCorrect: false
         },
         {
-          text: "Weighing pros & cons before acting",
-          emoji: "⚖️",
-          isCorrect: true
-        },
-        {
           text: "Impulsive choices",
           emoji: "⚡",
           isCorrect: false
@@ -124,6 +119,11 @@ const LifelongHealthyManBadge = () => {
           text: "Ignoring consequences",
           emoji: "🤷",
           isCorrect: false
+        },
+        {
+          text: "Weighing pros & cons before acting",
+          emoji: "⚖️",
+          isCorrect: true
         }
       ]
     },

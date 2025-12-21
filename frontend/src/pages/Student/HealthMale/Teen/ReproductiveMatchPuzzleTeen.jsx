@@ -1,94 +1,114 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const ReproductiveMatchPuzzleTeen = () => {
   const navigate = useNavigate();
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [matchedPairs, setMatchedPairs] = useState([]);
-  const [selectedOrgan, setSelectedOrgan] = useState(null);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      organ: "Testes",
-      correctFunction: "Sperm",
-      options: ["Sperm", "Urine", "Blood"],
-      description: "Testes produce sperm for reproduction"
-    },
-    {
-      id: 2,
-      organ: "Penis",
-      correctFunction: "Transfer",
-      options: ["Transfer", "Produce", "Store"],
-      description: "Penis transfers sperm during reproduction"
-    },
-    {
-      id: 3,
-      organ: "Hormones",
-      correctFunction: "Changes",
-      options: ["Changes", "Storage", "Movement"],
-      description: "Hormones cause puberty changes in teens"
-    },
-    {
-      id: 4,
-      organ: "Scrotum",
-      correctFunction: "Protection",
-      options: ["Protection", "Production", "Transfer"],
-      description: "Scrotum protects the testes"
-    },
-    {
-      id: 5,
-      organ: "Prostate",
-      correctFunction: "Fluid",
-      options: ["Fluid", "Storage", "Movement"],
-      description: "Prostate produces fluid for sperm"
-    }
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-34";
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedOrgan, setSelectedOrgan] = useState(null);
+  const [selectedFunction, setSelectedFunction] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  // Reproductive Organs (left side) - 5 items
+  const organs = [
+    { id: 1, name: "Testes", emoji: "🫐", description: "Male glands" },
+    { id: 2, name: "Penis", emoji: "🍌", description: "External organ" },
+    { id: 3, name: "Hormones", emoji: "🧪", description: "Chemical messengers" },
+    { id: 4, name: "Scrotum", emoji: "🥚", description: "Sac-like structure" },
+    { id: 5, name: "Prostate", emoji: "🥜", description: "Walnut-sized gland" }
   ];
 
-  const handleOrganClick = (organ) => {
-    if (selectedOrgan === organ) {
-      setSelectedOrgan(null);
-    } else {
-      setSelectedOrgan(organ);
-    }
+  // Functions (right side) - 5 items
+  const functions = [
+    { id: 3, name: "Body Changes", emoji: "🔄", description: "Developmental process" },
+    { id: 5, name: "Sperm Fluid", emoji: "💧", description: "Liquid nourishment" },
+    { id: 1, name: "Sperm Production", emoji: "🫧", description: "Cell creation" },
+    { id: 4, name: "Organ Protection", emoji: "🛡️", description: "Safety mechanism" },
+    { id: 2, name: "Sperm Transfer", emoji: "➡️", description: "Transport process" }
+  ];
+
+  // Correct matches
+  const correctMatches = [
+    { organId: 1, functionId: 1 }, // Testes → Sperm Production
+    { organId: 2, functionId: 2 }, // Penis → Sperm Transfer
+    { organId: 3, functionId: 3 }, // Hormones → Body Changes
+    { organId: 4, functionId: 4 }, // Scrotum → Organ Protection
+    { organId: 5, functionId: 5 }  // Prostate → Sperm Fluid
+  ];
+
+  const handleOrganSelect = (organ) => {
+    if (gameFinished) return;
+    setSelectedOrgan(organ);
   };
 
-  const handleFunctionClick = (func) => {
-    if (!selectedOrgan) return;
+  const handleFunctionSelect = (func) => {
+    if (gameFinished) return;
+    setSelectedFunction(func);
+  };
 
-    const currentPuzzleData = puzzles[currentPuzzle];
-    const isCorrect = currentPuzzleData.correctFunction === func;
+  const handleMatch = () => {
+    if (!selectedOrgan || !selectedFunction || gameFinished) return;
 
-    if (isCorrect) {
+    resetFeedback();
+
+    const newMatch = {
+      organId: selectedOrgan.id,
+      functionId: selectedFunction.id,
+      isCorrect: correctMatches.some(
+        match => match.organId === selectedOrgan.id && match.functionId === selectedFunction.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setMatchedPairs([...matchedPairs, { puzzle: currentPuzzle, organ: selectedOrgan, func }]);
-      setShowSuccess(true);
-
-      setTimeout(() => {
-        setShowSuccess(false);
-        setChoices([...choices, { puzzle: currentPuzzle, func, isCorrect: true }]);
-
-        if (currentPuzzle < puzzles.length - 1) {
-          setCurrentPuzzle(prev => prev + 1);
-          setSelectedOrgan(null);
-        } else {
-          setGameFinished(true);
-        }
-      }, 1500);
     } else {
-      setChoices([...choices, { puzzle: currentPuzzle, func, isCorrect: false }]);
-      setSelectedOrgan(null);
+      showCorrectAnswerFeedback(0, false);
+    };
+
+    // Check if all items are matched
+    if (newMatches.length === organs.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
     }
+
+    // Reset selections
+    setSelectedOrgan(null);
+    setSelectedFunction(null);
   };
 
-  const getCurrentPuzzle = () => puzzles[currentPuzzle];
-  const correctMatches = choices.filter(c => c.isCorrect).length;
+  // Check if an organ is already matched
+  const isOrganMatched = (organId) => {
+    return matches.some(match => match.organId === organId);
+  };
+
+  // Check if a function is already matched
+  const isFunctionMatched = (functionId) => {
+    return matches.some(match => match.functionId === functionId);
+  };
+
+  // Get match result for an organ
+  const getMatchResult = (organId) => {
+    const match = matches.find(m => m.organId === organId);
+    return match ? match.isCorrect : null;
+  };
 
   const handleNext = () => {
     navigate("/student/health-male/teens/nocturnal-emission-story-teen");
@@ -96,95 +116,144 @@ const ReproductiveMatchPuzzleTeen = () => {
 
   return (
     <GameShell
-      title="Puzzle: Reproductive Match (Teen)"
-      subtitle={`Puzzle ${currentPuzzle + 1} of ${puzzles.length}`}
+      title="Reproductive Match Puzzle"
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Organs with Functions (${matches.length}/${organs.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={correctMatches * 5}
-      gameId="health-male-teen-34"
+      score={score}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={34}
-      showConfetti={gameFinished}
+      totalLevels={organs.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === organs.length}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/health-male/teens"
+      maxScore={organs.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 34/100</span>
-            <span className="text-yellow-400 font-bold">Coins: {correctMatches * 5}</span>
-          </div>
-
-          {showSuccess && (
-            <div className="text-center mb-4 p-4 bg-green-500/20 rounded-lg">
-              <p className="text-green-400 font-bold">Perfect Match! 🎉</p>
-            </div>
-          )}
-
-          <div className="text-center mb-6">
-            <h3 className="text-white text-xl font-bold mb-2">
-              Match: {getCurrentPuzzle().organ}
-            </h3>
-            <p className="text-white/80">{getCurrentPuzzle().description}</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Organs Column */}
-            <div className="space-y-4">
-              <h4 className="text-white font-bold text-center">Reproductive Parts</h4>
-              <div className="space-y-3">
-                <button
-                  onClick={() => handleOrganClick(getCurrentPuzzle().organ)}
-                  className={`w-full p-4 rounded-xl text-center transition-all ${
-                    selectedOrgan === getCurrentPuzzle().organ
-                      ? 'bg-blue-500 text-white shadow-lg transform scale-105'
-                      : 'bg-gray-600 text-white hover:bg-gray-500'
-                  }`}
-                >
-                  <div className="text-2xl mb-1">🫐</div>
-                  <div className="font-bold">{getCurrentPuzzle().organ}</div>
-                </button>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Reproductive Organs */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Organs</h3>
+              <div className="space-y-4">
+                {organs.map(organ => (
+                  <button
+                    key={organ.id}
+                    onClick={() => handleOrganSelect(organ)}
+                    disabled={isOrganMatched(organ.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isOrganMatched(organ.id)
+                        ? getMatchResult(organ.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedOrgan?.id === organ.id
+                          ? "bg-blue-500/50 border-2 border-blue-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{organ.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{organ.name}</h4>
+                        <p className="text-white/80 text-sm">{organ.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Functions Column */}
-            <div className="space-y-4">
-              <h4 className="text-white font-bold text-center">What It Does</h4>
-              <div className="space-y-3">
-                {getCurrentPuzzle().options.map(func => (
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedOrgan 
+                    ? `Selected: ${selectedOrgan.name}` 
+                    : "Select an Organ"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedOrgan || !selectedFunction}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedOrgan && selectedFunction
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{organs.length}</p>
+                  <p>Matched: {matches.length}/{organs.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Functions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Functions</h3>
+              <div className="space-y-4">
+                {functions.map(func => (
                   <button
-                    key={func}
-                    onClick={() => handleFunctionClick(func)}
-                    className="w-full p-4 rounded-xl text-center transition-all bg-gray-600 text-white hover:bg-gray-500"
+                    key={func.id}
+                    onClick={() => handleFunctionSelect(func)}
+                    disabled={isFunctionMatched(func.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isFunctionMatched(func.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedFunction?.id === func.id
+                          ? "bg-purple-500/50 border-2 border-purple-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
                   >
-                    <div className="text-2xl mb-1">
-                      {func === "Sperm" ? "🫧" :
-                       func === "Transfer" ? "🔄" :
-                       func === "Changes" ? "🔄" :
-                       func === "Protection" ? "🛡️" :
-                       func === "Fluid" ? "💧" :
-                       func === "Urine" ? "💧" :
-                       func === "Blood" ? "🩸" :
-                       func === "Produce" ? "🏭" :
-                       func === "Store" ? "📦" :
-                       func === "Movement" ? "🏃" : "❓"}
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{func.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{func.name}</h4>
+                        <p className="text-white/80 text-sm">{func.description}</p>
+                      </div>
                     </div>
-                    <div className="font-bold">{func}</div>
                   </button>
                 ))}
               </div>
             </div>
           </div>
-
-          <div className="mt-6 text-center">
-            <p className="text-white/80">
-              Click a reproductive part, then click what it does!
-            </p>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {organs.length} reproductive organs with their functions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding your body helps you take better care of your health!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {organs.length} organs correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each organ does in the reproductive system!
+                </p>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </GameShell>
   );

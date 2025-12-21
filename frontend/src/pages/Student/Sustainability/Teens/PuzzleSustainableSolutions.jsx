@@ -1,175 +1,260 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getSustainabilityTeenGames } from "../../../../pages/Games/GameCategories/Sustainability/teenGamesData";
 
 const PuzzleSustainableSolutions = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   
-  const gameData = getGameDataById("sustainability-teens-4");
-  const gameId = gameData?.id || "sustainability-teens-4";
+  // Get game data from game category folder (source of truth)
+  const gameId = "sustainability-teens-4";
+  const gameData = getGameDataById(gameId);
   
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [score, setScore] = useState(0);
-  const [draggedItem, setDraggedItem] = useState(null);
   const [matches, setMatches] = useState([]);
-  const [showResult, setShowResult] = useState(false);
+  const [selectedProblem, setSelectedProblem] = useState(null);
+  const [selectedSolution, setSelectedSolution] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Find next game path and ID if not provided in location.state
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getSustainabilityTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  // Log when game completes and update location state with nextGameId
-  useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Puzzle: Sustainable Solutions game completed! Score: ${score}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
-      if (nextGameId && window.history && window.history.replaceState) {
-        const currentState = window.history.state || {};
-        window.history.replaceState({
-          ...currentState,
-          nextGameId: nextGameId
-        }, '');
-      }
-    }
-  }, [showResult, score, gameId, nextGamePath, nextGameId]);
-
+  // Environmental Problems (left side) - 5 items
   const problems = [
-    { id: 1, name: "High Carbon Emissions", solution: "Renewable Energy", emoji: "🌫️" },
-    { id: 2, name: "Plastic Pollution", solution: "Reduce Single-Use", emoji: "🥤" },
-    { id: 3, name: "Water Waste", solution: "Water Conservation", emoji: "💧" },
-    { id: 4, name: "Deforestation", solution: "Reforestation", emoji: "🌳" }
+    { id: 1, name: "High Carbon Emissions", emoji: "🌫️", description: "Greenhouse gas release" },
+    { id: 2, name: "Plastic Pollution", emoji: "🥤", description: "Non-biodegradable waste" },
+    { id: 3, name: "Water Waste", emoji: "💧", description: "Excessive consumption" },
+    { id: 4, name: "Deforestation", emoji: "🌳", description: "Forest clearing" },
+    { id: 5, name: "Energy Waste", emoji: "💡", description: "Inefficient usage" }
   ];
 
+  // Sustainable Solutions (right side) - 5 items
   const solutions = [
-    { id: "renewable", name: "Renewable Energy", emoji: "☀️" },
-    { id: "reduce", name: "Reduce Single-Use", emoji: "♻️" },
-    { id: "conservation", name: "Water Conservation", emoji: "💧" },
-    { id: "reforestation", name: "Reforestation", emoji: "🌱" }
+    { id: 3, name: "Water Efficiency", emoji: "🚿", description: "Conservation methods" },
+    { id: 5, name: "Energy Saving", emoji: "🔋", description: "Efficiency measures" },
+    { id: 1, name: "Clean Power", emoji: "☀️", description: "Renewable sources" },
+    { id: 4, name: "Tree Planting", emoji: "🌲", description: "Reforestation efforts" },
+    { id: 2, name: "Plastic Reduction", emoji: "♻️", description: "Minimizing usage" }
   ];
 
-  const handleDragStart = (e, problem) => {
-    setDraggedItem(problem);
+  // Correct matches
+  const correctMatches = [
+    { problemId: 1, solutionId: 1 }, // High Carbon Emissions → Clean Power
+    { problemId: 2, solutionId: 2 }, // Plastic Pollution → Plastic Reduction
+    { problemId: 3, solutionId: 3 }, // Water Waste → Water Efficiency
+    { problemId: 4, solutionId: 4 }, // Deforestation → Tree Planting
+    { problemId: 5, solutionId: 5 }  // Energy Waste → Energy Saving
+  ];
+
+  const handleProblemSelect = (problem) => {
+    if (gameFinished) return;
+    setSelectedProblem(problem);
   };
 
-  const handleDrop = (e, solution) => {
-    e.preventDefault();
-    if (draggedItem && draggedItem.solution === solution.name) {
-      setMatches(prev => [...prev, { problem: draggedItem.id, solution: solution.id }]);
+  const handleSolutionSelect = (solution) => {
+    if (gameFinished) return;
+    setSelectedSolution(solution);
+  };
+
+  const handleMatch = () => {
+    if (!selectedProblem || !selectedSolution || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      problemId: selectedProblem.id,
+      solutionId: selectedSolution.id,
+      isCorrect: correctMatches.some(
+        match => match.problemId === selectedProblem.id && match.solutionId === selectedSolution.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    };
+
+    // Check if all items are matched
+    if (newMatches.length === problems.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
     }
-    setDraggedItem(null);
+
+    // Reset selections
+    setSelectedProblem(null);
+    setSelectedSolution(null);
   };
 
-  const checkAnswers = () => {
-    if (matches.length === problems.length) {
-      setShowResult(true);
-    }
+  // Check if a problem is already matched
+  const isProblemMatched = (problemId) => {
+    return matches.some(match => match.problemId === problemId);
   };
 
-  const resetGame = () => {
-    setMatches([]);
-    setScore(0);
-    setShowResult(false);
-    resetFeedback();
+  // Check if a solution is already matched
+  const isSolutionMatched = (solutionId) => {
+    return matches.some(match => match.solutionId === solutionId);
   };
 
-  const isMatched = (problemId) => matches.some(m => m.problem === problemId);
+  // Get match result for a problem
+  const getMatchResult = (problemId) => {
+    const match = matches.find(m => m.problemId === problemId);
+    return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/student/sustainability/teens/climate-change-story");
+  };
 
   return (
     <GameShell
-      title="Puzzle: Sustainable Solutions"
+      title="Sustainable Solutions Puzzle"
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Problems with Solutions (${matches.length}/${problems.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={score}
-      subtitle="Match problems with sustainable solutions!"
+      gameId={gameId}
+      gameType="sustainability"
+      totalLevels={problems.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === problems.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/sustainability/teens"
+      maxScore={problems.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      gameId={gameId}
-      gameType="sustainability"
-      totalLevels={1}
-      currentLevel={1}
-      maxScore={problems.length}
-      showConfetti={showResult && score === problems.length}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="space-y-8">
-        {!showResult ? (
-          <>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Environmental Problems */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4">Problems:</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Environmental Problems</h3>
+              <div className="space-y-4">
                 {problems.map(problem => (
-                  !isMatched(problem.id) && (
-                    <div
-                      key={problem.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, problem)}
-                      className="bg-red-500/20 p-4 rounded-lg cursor-move border border-red-400"
-                    >
-                      <span className="text-2xl mr-2">{problem.emoji}</span>
-                      <span className="text-white">{problem.name}</span>
-                    </div>
-                  )
-                ))}
-              </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4">Solutions:</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {solutions.map(solution => (
-                  <div
-                    key={solution.id}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => handleDrop(e, solution)}
-                    className="bg-green-500/20 p-4 rounded-lg border border-green-400 min-h-[80px]"
+                  <button
+                    key={problem.id}
+                    onClick={() => handleProblemSelect(problem)}
+                    disabled={isProblemMatched(problem.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isProblemMatched(problem.id)
+                        ? getMatchResult(problem.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedProblem?.id === problem.id
+                          ? "bg-blue-500/50 border-2 border-blue-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
                   >
-                    <span className="text-2xl mr-2">{solution.emoji}</span>
-                    <span className="text-white">{solution.name}</span>
-                  </div>
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{problem.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{problem.name}</h4>
+                        <p className="text-white/80 text-sm">{problem.description}</p>
+                      </div>
+                    </div>
+                  </button>
                 ))}
               </div>
             </div>
-            <button
-              onClick={checkAnswers}
-              disabled={matches.length !== problems.length}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg disabled:opacity-50"
-            >
-              Check Answers
-            </button>
-          </>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedProblem 
+                    ? `Selected: ${selectedProblem.name}` 
+                    : "Select a Problem"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedProblem || !selectedSolution}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedProblem && selectedSolution
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{problems.length}</p>
+                  <p>Matched: {matches.length}/{problems.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Sustainable Solutions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Sustainable Solutions</h3>
+              <div className="space-y-4">
+                {solutions.map(solution => (
+                  <button
+                    key={solution.id}
+                    onClick={() => handleSolutionSelect(solution)}
+                    disabled={isSolutionMatched(solution.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isSolutionMatched(solution.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedSolution?.id === solution.id
+                          ? "bg-purple-500/50 border-2 border-purple-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{solution.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{solution.name}</h4>
+                        <p className="text-white/80 text-sm">{solution.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         ) : (
-          <div className="text-center text-white">
-            <h3 className="text-2xl font-bold mb-4">Great job!</h3>
-            <p>You matched {score} out of {problems.length} correctly!</p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {problems.length} environmental problems with sustainable solutions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Every environmental problem has a sustainable solution that we can implement!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {problems.length} problems correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about how each solution directly addresses its corresponding problem!
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -178,4 +263,3 @@ const PuzzleSustainableSolutions = () => {
 };
 
 export default PuzzleSustainableSolutions;
-

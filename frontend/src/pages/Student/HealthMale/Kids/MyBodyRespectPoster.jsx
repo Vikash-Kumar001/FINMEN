@@ -63,18 +63,18 @@ const MyBodyRespectPoster = () => {
           isCorrect: false
         },
         {
-          id: 2,
-          title: "Private Time",
-          description: "A poster showing closing the door for privacy",
-          emoji: "🔒",
-          isCorrect: true
-        },
-        {
           id: 3,
           title: "Look at Me",
           description: "A poster asking for attention in private",
           emoji: "📢",
           isCorrect: false
+        },
+        {
+          id: 2,
+          title: "Private Time",
+          description: "A poster showing closing the door for privacy",
+          emoji: "🔒",
+          isCorrect: true
         }
       ],
       correctFeedback: "Private Time is the right choice!",
@@ -84,18 +84,18 @@ const MyBodyRespectPoster = () => {
       question: "Which poster shows respect for others?",
       posters: [
         {
-          id: 1,
-          title: "Look Away",
-          description: "A poster showing looking away to give privacy",
-          emoji: "🙈",
-          isCorrect: true
-        },
-        {
           id: 2,
           title: "Point and Laugh",
           description: "A poster showing making fun of others",
           emoji: "😂",
           isCorrect: false
+        },
+        {
+          id: 1,
+          title: "Look Away",
+          description: "A poster showing looking away to give privacy",
+          emoji: "🙈",
+          isCorrect: true
         },
         {
           id: 3,
@@ -112,10 +112,10 @@ const MyBodyRespectPoster = () => {
       question: "Which poster shows safe touches?",
       posters: [
         {
-          id: 1,
-          title: "Secret Touches",
-          description: "A poster about keeping bad secrets",
-          emoji: "🤫",
+          id: 3,
+          title: "Hurting",
+          description: "A poster showing hitting",
+          emoji: "👊",
           isCorrect: false
         },
         {
@@ -126,10 +126,10 @@ const MyBodyRespectPoster = () => {
           isCorrect: true
         },
         {
-          id: 3,
-          title: "Hurting",
-          description: "A poster showing hitting",
-          emoji: "👊",
+          id: 1,
+          title: "Secret Touches",
+          description: "A poster about keeping bad secrets",
+          emoji: "🤫",
           isCorrect: false
         }
       ],
@@ -140,18 +140,18 @@ const MyBodyRespectPoster = () => {
       question: "Which poster shows speaking up?",
       posters: [
         {
-          id: 1,
-          title: "Stay Silent",
-          description: "A poster about not talking",
-          emoji: "🤐",
-          isCorrect: false
-        },
-        {
           id: 2,
           title: "Say NO",
           description: "A poster showing how to say NO to unsafe touches",
           emoji: "🗣️",
           isCorrect: true
+        },
+        {
+          id: 1,
+          title: "Stay Silent",
+          description: "A poster about not talking",
+          emoji: "🤐",
+          isCorrect: false
         },
         {
           id: 3,
@@ -192,8 +192,26 @@ const MyBodyRespectPoster = () => {
         }, 1500);
       }
     } else {
-      // Show result immediately for incorrect
-      setShowResult(true);
+      // Show feedback for incorrect answer and move to next question
+      showCorrectAnswerFeedback(0, false);
+      
+      // Check if this is the last stage
+      const isLastStage = currentStage === stages.length - 1;
+      
+      if (isLastStage) {
+        // Last stage - show result and game over modal
+        setTimeout(() => {
+          setShowResult(true);
+        }, 1500);
+      } else {
+        // Move to next question after showing feedback
+        setTimeout(() => {
+          setCurrentStage(currentStage + 1);
+          setSelectedPoster(null);
+          setShowResult(false);
+          resetFeedback();
+        }, 1500);
+      }
     }
   };
 
@@ -285,12 +303,7 @@ const MyBodyRespectPoster = () => {
                 <p className="text-white/90 text-lg mb-4">
                   {currentStageData?.correctFeedback || "That's not quite right. Try again!"}
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
+                {/* Removed Try Again button to standardize behavior */}
                 <p className="text-white/80 text-sm">
                   {currentStageData?.explanation || "Look for the poster that shows respect and safety."}
                 </p>

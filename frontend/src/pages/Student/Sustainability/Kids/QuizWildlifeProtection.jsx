@@ -20,7 +20,9 @@ const QuizWildlifeProtection = () => {
   const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const { nextGamePath, nextGameId } = useMemo(() => {
     if (location.state?.nextGamePath) {
@@ -63,60 +65,90 @@ const QuizWildlifeProtection = () => {
       id: 1,
       text: "What helps protect animals?",
       options: [
-        { id: "a", text: "Protecting habitats", emoji: "🌳", description: "Keeps animals safe", isCorrect: true },
-        { id: "b", text: "Littering", emoji: "🗑️", description: "Harms animals", isCorrect: false },
-        { id: "c", text: "Cutting trees", emoji: "🪓", description: "Destroys homes", isCorrect: false }
+        { id: "a", text: "Protecting habitats", emoji: "🌳", isCorrect: true },
+        { id: "b", text: "Littering", emoji: "🗑️", isCorrect: false },
+        { id: "c", text: "Cutting trees", emoji: "🪓", isCorrect: false }
       ]
     },
     {
       id: 2,
       text: "How can you help wildlife?",
       options: [
-        { id: "b", text: "Chase animals", emoji: "🏃", description: "Scares them", isCorrect: false },
-        { id: "a", text: "Feed animals properly", emoji: "🍎", description: "Helps them stay healthy", isCorrect: true },
-        { id: "c", text: "Leave trash in nature", emoji: "🗑️", description: "Harms animals", isCorrect: false }
+        { id: "b", text: "Chase animals", emoji: "🏃", isCorrect: false },
+        { id: "a", text: "Feed animals properly", emoji: "🍎", isCorrect: true },
+        { id: "c", text: "Leave trash in nature", emoji: "🗑️", isCorrect: false }
       ]
     },
     {
       id: 3,
       text: "What protects animal homes?",
       options: [
-        { id: "b", text: "Cutting forests", emoji: "🪓", description: "Destroys homes", isCorrect: false },
-        { id: "c", text: "Polluting water", emoji: "💧", description: "Harms animals", isCorrect: false },
-        { id: "a", text: "Planting trees", emoji: "🌲", description: "Creates homes", isCorrect: true }
+        { id: "a", text: "Planting trees", emoji: "🌲", isCorrect: true },
+        { id: "b", text: "Cutting forests", emoji: "🪓", isCorrect: false },
+        { id: "c", text: "Polluting water", emoji: "💧", isCorrect: false }
+      ]
+    },
+    {
+      id: 4,
+      text: "Which animal needs protection?",
+      options: [
+        { id: "a", text: "Endangered pandas", emoji: "🐼", isCorrect: false },
+        { id: "b", text: "Threatened elephants", emoji: "🐘", isCorrect: true },
+        { id: "c", text: "Common pigeons", emoji: "🐦", isCorrect: false }
+      ]
+    },
+    {
+      id: 5,
+      text: "What's a wildlife-friendly action?",
+      options: [
+        { id: "a", text: "Use harmful pesticides", emoji: "🧪", isCorrect: false },
+        { id: "b", text: "Create bird feeders", emoji: "🦆", isCorrect: false },
+        { id: "c", text: "Build animal shelters", emoji: "🏠", isCorrect: true }
       ]
     }
   ];
 
-  const handleAnswer = (optionId, isCorrect) => {
-    if (choices.find(c => c.questionId === questions[currentQuestion].id)) return;
+  const handleAnswer = (option) => {
+    if (showResult || showFeedback) return;
     
-    const newChoice = { questionId: questions[currentQuestion].id, optionId, isCorrect };
-    setChoices([...choices, newChoice]);
+    setSelectedOption(option.id);
+    resetFeedback();
     
-    if (isCorrect) {
+    const newChoices = [...choices, option];
+    setChoices(newChoices);
+    
+    if (option.isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setShowFeedback(true);
     
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       } else {
-        setFinalScore(coins + (isCorrect ? 1 : 0));
+        setFinalScore(newChoices.filter(c => c.isCorrect).length);
         setShowResult(true);
+        if (newChoices.filter(c => c.isCorrect).length === questions.length) {
+          showAnswerConfetti();
+        }
       }
-    }, 1000);
+    }, option.isCorrect ? 1000 : 800);
   };
 
   const currentQuestionData = questions[currentQuestion];
-  const selectedChoice = choices.find(c => c.questionId === currentQuestionData?.id);
 
   return (
     <GameShell
       title="Quiz on Wildlife Protection"
       score={coins}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -134,27 +166,62 @@ const QuizWildlifeProtection = () => {
     >
       <div className="space-y-8">
         {!showResult && currentQuestionData && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <p className="text-white text-lg mb-6">{currentQuestionData.text}</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {currentQuestionData.options.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => handleAnswer(option.id, option.isCorrect)}
-                  disabled={!!selectedChoice}
-                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    selectedChoice?.optionId === option.id
-                      ? option.isCorrect
-                        ? "bg-gradient-to-r from-green-500 to-emerald-600"
-                        : "bg-gradient-to-r from-red-500 to-pink-600"
-                      : "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
-                  } text-white`}
-                >
-                  <div className="text-3xl mb-3">{option.emoji}</div>
-                  <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                  <p className="text-white/90 text-sm">{option.description}</p>
-                </button>
-              ))}
+          <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+            <div className="space-y-6">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                  <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+                </div>
+                
+                <div className="text-6xl mb-4 text-center">🐾</div>
+                
+                <p className="text-white text-lg md:text-xl mb-6 text-center">
+                  {currentQuestionData.text}
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {currentQuestionData.options.map(option => {
+                    const isSelected = selectedOption === option.id;
+                    const showCorrect = showFeedback && option.isCorrect;
+                    const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                    
+                    return (
+                      <button
+                        key={option.id}
+                        onClick={() => handleAnswer(option)}
+                        disabled={showFeedback}
+                        className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                          showCorrect
+                            ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                            : showIncorrect
+                            ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                            : isSelected
+                            ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                            : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                        } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                      >
+                        <div className="text-2xl mb-2">{option.emoji}</div>
+                        <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                {showFeedback && (
+                  <div className={`rounded-lg p-5 mt-6 ${
+                    questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "bg-green-500/20"
+                      : "bg-red-500/20"
+                  }`}>
+                    <p className="text-white whitespace-pre-line">
+                      {questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                        ? "Great job! That's exactly right! 🎉"
+                        : "Not quite right. Try again next time!"}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

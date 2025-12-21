@@ -29,14 +29,12 @@ const WeeklyMealsSimulation = () => {
           id: "a",
           text: "Eggs & Toast",
           emoji: "🍳",
-          description: "Protein and carbs.",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "b",
           text: "Skip it",
           emoji: "🏃",
-          description: "Bad start.",
           isCorrect: false
         },
         
@@ -44,8 +42,13 @@ const WeeklyMealsSimulation = () => {
           id: "c",
           text: "Just coffee",
           emoji: "☕",
-          description: "Not enough fuel.",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Oatmeal with fruits",
+          emoji: "🥣",
+          isCorrect: true
         }
       ]
     },
@@ -55,25 +58,28 @@ const WeeklyMealsSimulation = () => {
       situation: "School cafeteria choices.",
       options: [
         {
-          id: "c",
-          text: "Vending machine snacks",
-          emoji: "🍫",
-          description: "Not a meal.",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Sandwich & Fruit",
           emoji: "🥪",
-          description: "Balanced and tasty.",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "b",
           text: "Fried Chicken only",
           emoji: "🍗",
-          description: "Too greasy.",
           isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Vending machine snacks",
+          emoji: "🍫",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Sandwich & Fruit",
+          emoji: "🥪",
+          isCorrect: true
         }
       ]
     },
@@ -83,25 +89,28 @@ const WeeklyMealsSimulation = () => {
       situation: "Mid-day hunger.",
       options: [
         {
-          id: "b",
-          text: "Cookies",
-          emoji: "🍪",
-          description: "Sugar rush.",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Yogurt",
           emoji: "🥣",
-          description: "Calcium and protein.",
-          isCorrect: true
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Cookies",
+          emoji: "🍪",
+          isCorrect: false
         },
         {
           id: "c",
           text: "Soda",
           emoji: "🥤",
-          description: "Empty calories.",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Yogurt",
+          emoji: "🥣",
+          isCorrect: true
         }
       ]
     },
@@ -111,27 +120,29 @@ const WeeklyMealsSimulation = () => {
       situation: "Family meal time.",
       options: [
         {
-          id: "c",
-          text: "Eat in room alone",
-          emoji: "🚪",
-          description: "Social eating is better.",
+          id: "a",
+          text: "Grilled Fish & Veggies",
+          emoji: "🐟",
           isCorrect: false
         },
-       
         {
           id: "b",
           text: "Order Pizza",
           emoji: "🍕",
-          description: "Not the healthiest habit.",
           isCorrect: false
         },
-         {
-          id: "a",
+        {
+          id: "c",
+          text: "Eat in room alone",
+          emoji: "🚪",
+          isCorrect: false
+        },
+        {
+          id: "d",
           text: "Grilled Fish & Veggies",
           emoji: "🐟",
-          description: "Perfect dinner.",
           isCorrect: true
-        },
+        }
       ]
     },
     {
@@ -143,14 +154,12 @@ const WeeklyMealsSimulation = () => {
           id: "a",
           text: "Small Ice Cream",
           emoji: "🍦",
-          description: "Moderation is key!",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "b",
           text: "Binge eat everything",
           emoji: "🤢",
-          description: "Don't overdo it.",
           isCorrect: false
         },
         
@@ -158,8 +167,13 @@ const WeeklyMealsSimulation = () => {
           id: "c",
           text: "Starve to save calories",
           emoji: "🤐",
-          description: "Never starve yourself.",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Fruit salad",
+          emoji: "🍎",
+          isCorrect: true
         }
       ]
     }
@@ -190,7 +204,7 @@ const WeeklyMealsSimulation = () => {
   return (
     <GameShell
       title="Weekly Meals Simulation"
-      subtitle={`Day: ${scenarios[currentScenario].day}`}
+      subtitle={`Scenario ${currentScenario + 1} of ${scenarios.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
@@ -207,27 +221,29 @@ const WeeklyMealsSimulation = () => {
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Step {currentScenario + 1}/{scenarios.length}</span>
+            <span className="text-white/80">Scenario {currentScenario + 1}/{scenarios.length}</span>
             <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
 
-          <h3 className="text-2xl font-bold text-white mb-2">{scenarios[currentScenario].day}</h3>
-          <p className="text-white text-lg mb-6">
+          <h2 className="text-xl font-semibold text-white mb-4">
+            {scenarios[currentScenario].day}
+          </h2>
+          
+          <p className="text-white/90 mb-6">
             {scenarios[currentScenario].situation}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {scenarios[currentScenario].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>
@@ -235,6 +251,23 @@ const WeeklyMealsSimulation = () => {
           </div>
         </div>
       </div>
+      {gameFinished && (
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+          <h3 className="text-3xl font-bold text-white mb-4">Simulation Complete!</h3>
+          <p className="text-xl text-white/90 mb-6">
+            You earned {coins} coins!
+          </p>
+          <p className="text-white/80 mb-8">
+            Healthy eating habits will help you grow strong!
+          </p>
+          <button
+            onClick={handleNext}
+            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all transform hover:scale-105"
+          >
+            Next Challenge
+          </button>
+        </div>
+      )}
     </GameShell>
   );
 };

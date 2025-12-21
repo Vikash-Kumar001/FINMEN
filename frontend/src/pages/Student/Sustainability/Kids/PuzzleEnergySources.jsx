@@ -1,208 +1,260 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getSustainabilityKidsGames } from "../../../../pages/Games/GameCategories/Sustainability/kidGamesData";
 
 const PuzzleEnergySources = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "sustainability-kids-14";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [coins, setCoins] = useState(0);
-  const [draggedItem, setDraggedItem] = useState(null);
-  const [droppedItems, setDroppedItems] = useState([]);
-  const [showResult, setShowResult] = useState(false);
+  
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedSource, setSelectedSource] = useState(null);
+  const [selectedType, setSelectedType] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Find next game path and ID if not provided in location.state
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getSustainabilityKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  // Log when game completes and update location state with nextGameId
-  useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Puzzle: Energy Sources game completed! Score: ${coins}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
-      if (nextGameId && window.history && window.history.replaceState) {
-        const currentState = window.history.state || {};
-        window.history.replaceState({
-          ...currentState,
-          nextGameId: nextGameId
-        }, '');
-      }
-    }
-  }, [showResult, coins, gameId, nextGamePath, nextGameId]);
-
-  const items = [
-    { id: 1, name: "Sun", type: "solar", emoji: "☀️" },
-    { id: 2, name: "Wind", type: "wind", emoji: "💨" },
-    { id: 3, name: "Coal", type: "dirty", emoji: "⛽" },
-    { id: 4, name: "Water", type: "hydro", emoji: "💧" },
-    { id: 5, name: "Oil", type: "dirty", emoji: "🛢️" }
+  // Energy Sources (left side) - 5 items
+  const sources = [
+    { id: 1, name: "Sun", emoji: "☀️", description: "Solar power" },
+    { id: 2, name: "Wind", emoji: "💨", description: "Air movement" },
+    { id: 3, name: "Coal", emoji: "⛽", description: "Fossil fuel" },
+    { id: 4, name: "Water", emoji: "💧", description: "Hydro power" },
+    { id: 5, name: "Oil", emoji: "🛢️", description: "Petroleum" }
   ];
 
-  const categories = [
-    { id: "solar", name: "Solar Energy", emoji: "☀️", color: "from-yellow-500 to-orange-600" },
-    { id: "wind", name: "Wind Energy", emoji: "💨", color: "from-blue-500 to-cyan-600" },
-    { id: "hydro", name: "Water Energy", emoji: "💧", color: "from-blue-400 to-blue-600" },
-    { id: "dirty", name: "Dirty Energy", emoji: "🏭", color: "from-gray-500 to-gray-600" }
+  // Energy Types (right side) - 5 items
+  const types = [
+    { id: 4, name: "Hydroelectric", emoji: "🌊", description: "Water-based energy" },
+    { id: 5, name: "Non-Renewable", emoji: "🏭", description: "Finite resource" },
+    { id: 1, name: "Solar Power", emoji: "🔆", description: "Sunlight energy" },
+    { id: 3, name: "Polluting Fuel", emoji: "🌫️", description: "Environmental hazard" },
+    { id: 2, name: "Wind Energy", emoji: "🌪️", description: "Air-based power" }
   ];
 
-  const handleDragStart = (e, item) => {
-    setDraggedItem(item);
+  // Correct matches
+  const correctMatches = [
+    { sourceId: 1, typeId: 1 }, // Sun → Solar Power
+    { sourceId: 2, typeId: 2 }, // Wind → Wind Energy
+    { sourceId: 3, typeId: 3 }, // Coal → Polluting Fuel
+    { sourceId: 4, typeId: 4 }, // Water → Hydroelectric
+    { sourceId: 5, typeId: 5 }  // Oil → Non-Renewable
+  ];
+
+  const handleSourceSelect = (source) => {
+    if (gameFinished) return;
+    setSelectedSource(source);
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
+  const handleTypeSelect = (type) => {
+    if (gameFinished) return;
+    setSelectedType(type);
   };
 
-  const handleDrop = (e, category) => {
-    e.preventDefault();
-    if (draggedItem) {
-      const newItem = { ...draggedItem, category: category.id };
-      setDroppedItems(prev => {
-        const filtered = prev.filter(item => item.id !== draggedItem.id);
-        return [...filtered, newItem];
-      });
-      setDraggedItem(null);
+  const handleMatch = () => {
+    if (!selectedSource || !selectedType || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      sourceId: selectedSource.id,
+      typeId: selectedType.id,
+      isCorrect: correctMatches.some(
+        match => match.sourceId === selectedSource.id && match.typeId === selectedType.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    };
+
+    // Check if all items are matched
+    if (newMatches.length === sources.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
     }
+
+    // Reset selections
+    setSelectedSource(null);
+    setSelectedType(null);
   };
 
-  const checkAnswers = () => {
-    const correctAnswers = droppedItems.filter(item => 
-      item.type === item.category
-    ).length;
-    setCoins(correctAnswers);
-    if (correctAnswers > 0) {
-      showCorrectAnswerFeedback(correctAnswers, true);
-    }
-    if (correctAnswers === items.length) {
-      showAnswerConfetti();
-    }
-    setTimeout(() => {
-      setShowResult(true);
-    }, correctAnswers > 0 ? 1000 : 0);
+  // Check if a source is already matched
+  const isSourceMatched = (sourceId) => {
+    return matches.some(match => match.sourceId === sourceId);
+  };
+
+  // Check if a type is already matched
+  const isTypeMatched = (typeId) => {
+    return matches.some(match => match.typeId === typeId);
+  };
+
+  // Get match result for a source
+  const getMatchResult = (sourceId) => {
+    const match = matches.find(m => m.sourceId === sourceId);
+    return match ? match.isCorrect : null;
   };
 
   const handleNext = () => {
     navigate("/student/sustainability/kids/water-tap-story");
   };
 
-  const getItemsForCategory = (categoryId) => {
-    return droppedItems.filter(item => item.category === categoryId);
-  };
-
-  const isItemDropped = (itemId) => {
-    return droppedItems.some(item => item.id === itemId);
-  };
-
   return (
     <GameShell
-      title="Puzzle: Energy Sources"
-      subtitle="Drag energy sources to the correct category!"
-      currentLevel={14}
-      totalLevels={20}
+      title="Energy Sources Puzzle"
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Sources with Energy Types (${matches.length}/${sources.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId={gameId}
+      gameType="sustainability"
+      totalLevels={sources.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === sources.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/sustainability/kids"
+      maxScore={sources.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      score={coins}
-      showGameOver={showResult}
-      gameId={gameId}
-      gameType="sustainability"
-      maxScore={items.length}
-      showConfetti={showResult && coins === items.length}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      {flashPoints}
-      <div className="space-y-6">
-        <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl p-6 border border-purple-400/30">
-          <h3 className="text-lg font-bold text-white mb-4 text-center">Drag energy sources to sort them:</h3>
-          <div className="grid grid-cols-3 gap-3">
-            {items.map((item) => (
-              !isItemDropped(item.id) && (
-                <div
-                  key={item.id}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, item)}
-                  className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl p-4 border border-white/20 cursor-move transition-all transform hover:scale-105 text-center"
-                >
-                  <div className="text-4xl mb-2">{item.emoji}</div>
-                  <div className="text-sm text-white font-semibold">{item.name}</div>
-                </div>
-              )
-            ))}
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {categories.map((category) => (
-            <div
-              key={category.id}
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, category)}
-              className={`bg-gradient-to-br ${category.color} rounded-2xl p-6 border-2 border-dashed border-white/30 min-h-[150px]`}
-            >
-              <div className="text-center mb-4">
-                <div className="text-5xl mb-2">{category.emoji}</div>
-                <h3 className="text-lg font-bold text-white">{category.name}</h3>
-              </div>
-              <div className="space-y-2">
-                {getItemsForCategory(category.id).map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-white/20 backdrop-blur-sm rounded-lg p-2 text-center"
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Energy Sources */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Energy Sources</h3>
+              <div className="space-y-4">
+                {sources.map(source => (
+                  <button
+                    key={source.id}
+                    onClick={() => handleSourceSelect(source)}
+                    disabled={isSourceMatched(source.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isSourceMatched(source.id)
+                        ? getMatchResult(source.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedSource?.id === source.id
+                          ? "bg-blue-500/50 border-2 border-blue-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
                   >
-                    <div className="text-2xl">{item.emoji}</div>
-                    <div className="text-xs text-white">{item.name}</div>
-                  </div>
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{source.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{source.name}</h4>
+                        <p className="text-white/80 text-sm">{source.description}</p>
+                      </div>
+                    </div>
+                  </button>
                 ))}
               </div>
             </div>
-          ))}
-        </div>
-        {!showResult && (
-          <button
-            onClick={checkAnswers}
-            disabled={droppedItems.length !== items.length}
-            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-          >
-            Check Answers
-          </button>
-        )}
-        {showResult && (
-          <div className="text-center space-y-4">
-            <div className="text-6xl mb-4">🎉</div>
-            <h3 className="text-2xl font-bold text-white">Great sorting!</h3>
-            <p className="text-gray-300">
-              You sorted {coins} out of {items.length} energy sources correctly!
-            </p>
-            <p className="text-green-400 font-semibold">
-              You earned {coins} coins! Keep learning about clean energy! ⚡
-            </p>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedSource 
+                    ? `Selected: ${selectedSource.name}` 
+                    : "Select a Source"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedSource || !selectedType}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedSource && selectedType
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{sources.length}</p>
+                  <p>Matched: {matches.length}/{sources.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Energy Types */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Energy Types</h3>
+              <div className="space-y-4">
+                {types.map(type => (
+                  <button
+                    key={type.id}
+                    onClick={() => handleTypeSelect(type)}
+                    disabled={isTypeMatched(type.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isTypeMatched(type.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedType?.id === type.id
+                          ? "bg-purple-500/50 border-2 border-purple-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{type.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{type.name}</h4>
+                        <p className="text-white/80 text-sm">{type.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {sources.length} energy sources with their types!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Renewable energy sources like sun and wind are cleaner than fossil fuels like coal and oil!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {sources.length} sources correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about whether each energy source is renewable or polluting!
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -211,4 +263,3 @@ const PuzzleEnergySources = () => {
 };
 
 export default PuzzleEnergySources;
-

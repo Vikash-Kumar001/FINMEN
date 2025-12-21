@@ -15,7 +15,7 @@ const TeenShavingSimulation = () => {
     const totalXp = 10;
 
     const [coins, setCoins] = useState(0);
-    const [currentStep, setCurrentStep] = useState(0);
+    const [currentScenario, setCurrentScenario] = useState(0);
     const [gameFinished, setGameFinished] = useState(false);
     const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
@@ -29,22 +29,24 @@ const TeenShavingSimulation = () => {
                     id: "a",
                     text: "Wash face with warm water",
                     emoji: "🚿",
-                    description: "Softens hair.",
                     isCorrect: true
                 },
                 {
                     id: "b",
                     text: "Start dry shaving",
                     emoji: "🌵",
-                    description: "Ouch!",
                     isCorrect: false
                 },
-               
                 {
                     id: "c",
                     text: "Put on cologne",
                     emoji: "🧴",
-                    description: "Not yet.",
+                    isCorrect: false
+                },
+                {
+                    id: "d",
+                    text: "Apply pre-shave oil",
+                    emoji: "💧",
                     isCorrect: false
                 }
             ]
@@ -55,24 +57,27 @@ const TeenShavingSimulation = () => {
             instruction: "Apply product.",
             options: [
                 {
-                    id: "c",
-                    text: "Use toothpaste",
-                    emoji: "🦷",
-                    description: "Wrong product.",
-                    isCorrect: false
-                },
-                {
                     id: "a",
                     text: "Apply shaving cream/gel",
                     emoji: "🧼",
-                    description: "Protects skin.",
-                    isCorrect: true
+                    isCorrect: false
                 },
                 {
                     id: "b",
                     text: "Use nothing",
                     emoji: "🚫",
-                    description: "Need lubrication.",
+                    isCorrect: true
+                },
+                {
+                    id: "c",
+                    text: "Use toothpaste",
+                    emoji: "🦷",
+                    isCorrect: false
+                },
+                {
+                    id: "d",
+                    text: "Use quality shaving soap",
+                    emoji: "🧼",
                     isCorrect: false
                 }
             ]
@@ -83,25 +88,28 @@ const TeenShavingSimulation = () => {
             instruction: "Start shaving.",
             options: [
                 {
-                    id: "b",
-                    text: "Press very hard",
-                    emoji: "💪",
-                    description: "Causes cuts.",
-                    isCorrect: false
-                },
-                {
                     id: "a",
                     text: "Gentle strokes with grain",
                     emoji: "⬇️",
-                    description: "Safe and effective.",
-                    isCorrect: true
+                    isCorrect: false
+                },
+                {
+                    id: "b",
+                    text: "Press very hard",
+                    emoji: "💪",
+                    isCorrect: false
                 },
                 {
                     id: "c",
                     text: "Shave against grain fast",
                     emoji: "⬆️",
-                    description: "Irritation risk.",
                     isCorrect: false
+                },
+                {
+                    id: "d",
+                    text: "Use light, steady pressure",
+                    emoji: "👐",
+                    isCorrect: true
                 }
             ]
         },
@@ -111,26 +119,28 @@ const TeenShavingSimulation = () => {
             instruction: "Clean up.",
             options: [
                 {
-                    id: "c",
-                    text: "Leave cream on",
-                    emoji: "👻",
-                    description: "Wash it off.",
+                    id: "a",
+                    text: "Rinse with cool water",
+                    emoji: "💧",
                     isCorrect: false
                 },
-               
                 {
                     id: "b",
                     text: "Wipe with dirty towel",
                     emoji: "🧣",
-                    description: "Use clean towel.",
                     isCorrect: false
                 },
-                 {
-                    id: "a",
-                    text: "Rinse with cool water",
-                    emoji: "💧",
-                    description: "Closes pores.",
+                {
+                    id: "c",
+                    text: "Leave cream on",
+                    emoji: "👻",
                     isCorrect: true
+                },
+                {
+                    id: "d",
+                    text: "Pat dry with clean towel",
+                    emoji: "🧻",
+                    isCorrect: false
                 },
             ]
         },
@@ -143,22 +153,24 @@ const TeenShavingSimulation = () => {
                     id: "a",
                     text: "Apply moisturizer/balm",
                     emoji: "🧴",
-                    description: "Hydrates skin.",
-                    isCorrect: true
+                    isCorrect: false
                 },
                 {
                     id: "b",
                     text: "Scratch face",
                     emoji: "💅",
-                    description: "Don't irritate skin.",
-                    isCorrect: false
+                    isCorrect: true
                 },
-                
                 {
                     id: "c",
                     text: "Go out in sun immediately",
                     emoji: "☀️",
-                    description: "Skin is sensitive.",
+                    isCorrect: false
+                },
+                {
+                    id: "d",
+                    text: "Use aftershave balm",
+                    emoji: "🌿",
                     isCorrect: false
                 }
             ]
@@ -166,7 +178,7 @@ const TeenShavingSimulation = () => {
     ];
 
     const handleChoice = (optionId) => {
-        const selectedOption = steps[currentStep].options.find(opt => opt.id === optionId);
+        const selectedOption = steps[currentScenario].options.find(opt => opt.id === optionId);
         const isCorrect = selectedOption.isCorrect;
 
         if (isCorrect) {
@@ -175,8 +187,8 @@ const TeenShavingSimulation = () => {
         }
 
         setTimeout(() => {
-            if (currentStep < steps.length - 1) {
-                setCurrentStep(prev => prev + 1);
+            if (currentScenario < steps.length - 1) {
+                setCurrentScenario(prev => prev + 1);
             } else {
                 setGameFinished(true);
             }
@@ -190,7 +202,7 @@ const TeenShavingSimulation = () => {
     return (
         <GameShell
             title="Shaving Simulation"
-            subtitle={`Step: ${steps[currentStep].title}`}
+            subtitle={`Scenario ${currentStep + 1} of ${steps.length}`}
             onNext={handleNext}
             nextEnabled={gameFinished}
             showGameOver={gameFinished}
@@ -207,27 +219,29 @@ const TeenShavingSimulation = () => {
             <div className="space-y-8">
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
                     <div className="flex justify-between items-center mb-4">
-                        <span className="text-white/80">Step {currentStep + 1}/{steps.length}</span>
+                        <span className="text-white/80">Scenario {currentScenario + 1}/{steps.length}</span>
                         <span className="text-yellow-400 font-bold">Coins: {coins}</span>
                     </div>
 
-                    <h3 className="text-2xl font-bold text-white mb-2">{steps[currentStep].title}</h3>
-                    <p className="text-white text-lg mb-6">
-                        {steps[currentStep].instruction}
+                    <h2 className="text-xl font-semibold text-white mb-4">
+                        {steps[currentScenario].title}
+                    </h2>
+                    
+                    <p className="text-white/90 mb-6">
+                        {steps[currentScenario].instruction}
                     </p>
 
-                    <div className="grid grid-cols-1 gap-4">
-                        {steps[currentStep].options.map(option => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {steps[currentScenario].options.map(option => (
                             <button
                                 key={option.id}
                                 onClick={() => handleChoice(option.id)}
-                                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
                             >
                                 <div className="flex items-center">
                                     <div className="text-2xl mr-4">{option.emoji}</div>
                                     <div>
                                         <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                                        <p className="text-white/90">{option.description}</p>
                                     </div>
                                 </div>
                             </button>

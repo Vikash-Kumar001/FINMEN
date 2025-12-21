@@ -5,7 +5,7 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const TOTAL_ROUNDS = 5;
-const ROUND_TIME = 5;
+const ROUND_TIME = 10;
 
 const GermBusterReflex = () => {
   const location = useLocation();
@@ -34,50 +34,50 @@ const GermBusterReflex = () => {
       id: 1,
       question: "You played on dirty playground equipment! Choose the germ buster!",
       options: [
-        { text: "Soap", isCorrect: true, emoji: "🧼" },
-        { text: "Dirty Hands", isCorrect: false, emoji: "🤢" },
-        { text: "Towel", isCorrect: false, emoji: "🧺" },
-        { text: "Water Only", isCorrect: false, emoji: "💧" }
+        { id: 'a', text: "Soap", isCorrect: true, emoji: "🧼" },
+        { id: 'b', text: "Dirty Hands", isCorrect: false, emoji: "🤢" },
+        { id: 'c', text: "Towel", isCorrect: false, emoji: "🧺" },
+        { id: 'd', text: "Water Only", isCorrect: false, emoji: "💧" }
       ]
     },
     {
       id: 2,
       question: "You petted a dog! What should you do before eating?",
       options: [
-        { text: "Touch Food", isCorrect: false, emoji: "🍔" },
-        { text: "Soap", isCorrect: true, emoji: "🧼" },
-        { text: "Pet Again", isCorrect: false, emoji: "🐕" },
-        { text: "Wipe Pants", isCorrect: false, emoji: "👖" }
+        { id: 'a', text: "Touch Food", isCorrect: false, emoji: "🍔" },
+        { id: 'b', text: "Soap", isCorrect: true, emoji: "🧼" },
+        { id: 'c', text: "Pet Again", isCorrect: false, emoji: "🐕" },
+        { id: 'd', text: "Wipe Pants", isCorrect: false, emoji: "👖" }
       ]
     },
     {
       id: 3,
       question: "You sneezed into your hands! Choose the healthy option!",
       options: [
-        { text: "Shake Hands", isCorrect: false, emoji: "🤝" },
-        { text: "Touch Face", isCorrect: false, emoji: "🤦" },
-        { text: "Soap", isCorrect: true, emoji: "🧼" },
-        { text: "High Five", isCorrect: false, emoji: "✋" }
+        { id: 'a', text: "Shake Hands", isCorrect: false, emoji: "🤝" },
+        { id: 'b', text: "Touch Face", isCorrect: false, emoji: "🤦" },
+        { id: 'c', text: "Soap", isCorrect: true, emoji: "🧼" },
+        { id: 'd', text: "High Five", isCorrect: false, emoji: "✋" }
       ]
     },
     {
       id: 4,
       question: "Bedtime! Your hands touched many things today! What do you do?",
       options: [
-        { text: "Skip Washing", isCorrect: false, emoji: "🚫" },
-        { text: "Soap", isCorrect: true, emoji: "🧼" },
-        { text: "Sleep Dirty", isCorrect: false, emoji: "😴" },
-        { text: "Just Water", isCorrect: false, emoji: "💧" }
+        { id: 'a', text: "Skip Washing", isCorrect: false, emoji: "🚫" },
+        { id: 'b', text: "Sanitizer", isCorrect: true, emoji: "🧴" },
+        { id: 'c', text: "Soap", isCorrect: false, emoji: "🧼" },
+        { id: 'd', text: "Sleep Dirty", isCorrect: false, emoji: "😴" }
       ]
     },
     {
       id: 5,
       question: "You touched something germy! Be the germ buster!",
       options: [
-        { text: "Soap", isCorrect: true, emoji: "🧼" },
-        { text: "Stay Germy", isCorrect: false, emoji: "🤢" },
-        { text: "Eat", isCorrect: false, emoji: "🍽️" },
-        { text: "Ignore", isCorrect: false, emoji: "🤷" }
+        { id: 'a', text: "Wash Hands", isCorrect: true, emoji: "🧼" },
+        { id: 'b', text: "Stay Germy", isCorrect: false, emoji: "🤢" },
+        { id: 'c', text: "Eat", isCorrect: false, emoji: "🍽️" },
+        { id: 'd', text: "Ignore", isCorrect: false, emoji: "🤷" }
       ]
     }
   ];
@@ -189,6 +189,7 @@ const GermBusterReflex = () => {
         setGameState("finished");
       } else {
         setCurrentRound((prev) => prev + 1);
+        setAnswered(false); // Reset answered state for next round
       }
     }, 500);
   };
@@ -198,7 +199,7 @@ const GermBusterReflex = () => {
   return (
     <GameShell
       title="Germ Buster Reflex"
-      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Bust those germs!` : "Bust those germs!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound} of ${TOTAL_ROUNDS}` : gameState === "finished" ? "Game Complete!" : "Bust those germs!"}
       currentLevel={currentRound}
       coinsPerLevel={coinsPerLevel}
       showGameOver={gameState === "finished"}

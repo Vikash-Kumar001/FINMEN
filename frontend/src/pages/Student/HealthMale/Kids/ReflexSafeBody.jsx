@@ -16,7 +16,7 @@ const ReflexSafeBody = () => {
   const coinsPerLevel = 1;
   const totalCoins = 5;
   const totalXp = 10;
-  const ROUND_TIME = 5;
+  const ROUND_TIME = 10;
   const TOTAL_ROUNDS = 5;
 
   const [currentRound, setCurrentRound] = useState(1);
@@ -34,50 +34,50 @@ const ReflexSafeBody = () => {
       id: 1,
       question: "What is private?",
       options: [
-        { text: "Ignored", emoji: "❌", isCorrect: false },
-        { text: "Protected", emoji: "🛡️", isCorrect: true },
-        { text: "Shared", emoji: "📢", isCorrect: false },
-        { text: "Forgotten", emoji: "🤷", isCorrect: false }
+        { id: 'a', text: "Protected", emoji: "🛡️", isCorrect: true },
+        { id: 'b', text: "Ignored", emoji: "❌", isCorrect: false },
+        { id: 'c', text: "Shared", emoji: "📢", isCorrect: false },
+        { id: 'd', text: "Forgotten", emoji: "🤷", isCorrect: false }
       ]
     },
     {
       id: 2,
       question: "How to treat body parts?",
       options: [
-        { text: "Share Everything", emoji: "👀", isCorrect: false },
-        { text: "Respect Them", emoji: "🙏", isCorrect: true },
-        { text: "Hide Them", emoji: "🙈", isCorrect: false },
-        { text: "Dislike Them", emoji: "👎", isCorrect: false }
+        { id: 'a', text: "Share Everything", emoji: "👀", isCorrect: false },
+        { id: 'b', text: "Dislike Them", emoji: "👎", isCorrect: false },
+        { id: 'c', text: "Respect Them", emoji: "🙏", isCorrect: true },
+        { id: 'd', text: "Hide Them", emoji: "🙈", isCorrect: false }
       ]
     },
     {
       id: 3,
       question: "Keep private parts...",
       options: [
-        { text: "Public", emoji: "🌍", isCorrect: false },
-        { text: "Safe", emoji: "🔒", isCorrect: true },
-        { text: "Open", emoji: "🔓", isCorrect: false },
-        { text: "Unsafe", emoji: "⚠️", isCorrect: false }
+        { id: 'a', text: "Public", emoji: "🌍", isCorrect: false },
+        { id: 'b', text: "Safe", emoji: "🔒", isCorrect: true },
+        { id: 'c', text: "Open", emoji: "🔓", isCorrect: false },
+        { id: 'd', text: "Unsafe", emoji: "⚠️", isCorrect: false }
       ]
     },
     {
       id: 4,
       question: "How to feel about your body?",
       options: [
-        { text: "Ashamed", emoji: "😞", isCorrect: false },
-        { text: "Love It", emoji: "💖", isCorrect: true },
-        { text: "Scared", emoji: "😨", isCorrect: false },
-        { text: "Confused", emoji: "😕", isCorrect: false }
+        { id: 'a', text: "Ashamed", emoji: "😞", isCorrect: false },
+        { id: 'b', text: "Confused", emoji: "😕", isCorrect: false },
+        { id: 'c', text: "Scared", emoji: "😨", isCorrect: false },
+        { id: 'd', text: "Love It", emoji: "💖", isCorrect: true }
       ]
     },
     {
       id: 5,
       question: "If someone makes you uncomfortable?",
       options: [
-        { text: "Stay Silent", emoji: "🤐", isCorrect: false },
-        { text: "Hide", emoji: "📦", isCorrect: false },
-        { text: "Tell Adult", emoji: "🗣️", isCorrect: true },
-        { text: "Ignore", emoji: "🤷", isCorrect: false }
+        { id: 'a', text: "Stay Silent", emoji: "🤐", isCorrect: false },
+        { id: 'b', text: "Hide", emoji: "📦", isCorrect: false },
+        { id: 'c', text: "Ignore", emoji: "🤷", isCorrect: false },
+        { id: 'd', text: "Tell Adult", emoji: "🗣️", isCorrect: true }
       ]
     }
   ];

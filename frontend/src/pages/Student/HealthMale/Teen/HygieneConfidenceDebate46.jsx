@@ -15,180 +15,166 @@ const HygieneConfidenceDebate46 = () => {
   const totalXp = 10;
 
   const [coins, setCoins] = useState(0);
-  const [currentStage, setCurrentStage] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
       id: 1,
-      title: "Smelling Good",
-      question: "Does smelling good make you confident?",
+      text: "Does smelling good make you confident?",
       options: [
         {
           id: "a",
           text: "Yes, definitely",
-          emoji: "😎",
-          description: "You don't worry about odor.",
-          isCorrect: true
+          emoji: "😎"
         },
         {
           id: "b",
           text: "No, looks matter more",
-          emoji: "🙄",
-          description: "Smell is very noticeable.",
-          isCorrect: false
+          emoji: "🙄"
         },
         {
           id: "c",
           text: "Only to dogs",
-          emoji: "🐶",
-          description: "People notice too.",
-          isCorrect: false
+          emoji: "🐶"
         }
-      ]
+      ],
+      correctAnswer: "c",
+      explanation: "People notice too. You don't worry about odor, and smell is very noticeable."
     },
     {
       id: 2,
-      title: "Bad Breath",
-      question: "Can bad breath ruin a conversation?",
+      text: "Can bad breath ruin a conversation?",
       options: [
         {
           id: "b",
           text: "No, people ignore it",
-          emoji: "🤥",
-          description: "It's hard to ignore.",
-          isCorrect: false
+          emoji: "🤥"
         },
         {
           id: "a",
           text: "Yes, it's distracting",
-          emoji: "🤢",
-          description: "It pushes people away.",
-          isCorrect: true
+          emoji: "🤢"
         },
         {
           id: "c",
           text: "Only if you shout",
-          emoji: "🗣️",
-          description: "Even whispering spreads it.",
-          isCorrect: false
+          emoji: "🗣️"
         }
-      ]
+      ],
+      correctAnswer: "a",
+      explanation: "It pushes people away. It's hard to ignore, and even whispering spreads it."
     },
     {
       id: 3,
-      title: "Clean Clothes",
-      question: "Do clean clothes matter?",
+      text: "Do clean clothes matter?",
       options: [
         {
           id: "c",
           text: "No, messy is cool",
-          emoji: "🗑️",
-          description: "Clean is respectful.",
-          isCorrect: false
+          emoji: "🗑️"
         },
         {
           id: "b",
           text: "Only expensive ones",
-          emoji: "💲",
-          description: "Cleanliness > Brand.",
-          isCorrect: false
+          emoji: "💲"
         },
         {
           id: "a",
           text: "Yes, shows self-respect",
-          emoji: "👔",
-          description: "You feel better in clean clothes.",
-          isCorrect: true
+          emoji: "👔"
         }
-      ]
+      ],
+      correctAnswer: "a",
+      explanation: "You feel better in clean clothes. Clean is respectful, and cleanliness > brand."
     },
     {
       id: 4,
-      title: "Acne",
-      question: "Can you be confident with acne?",
+      text: "Can you be confident with acne?",
       options: [
         {
           id: "b",
           text: "No, hide face",
-          emoji: "🙈",
-          description: "Don't hide.",
-          isCorrect: false
+          emoji: "🙈"
         },
         {
           id: "a",
           text: "Yes, personality shines",
-          emoji: "✨",
-          description: "You are more than your skin.",
-          isCorrect: true
+          emoji: "✨"
         },
         {
           id: "c",
           text: "Only in dark rooms",
-          emoji: "🌑",
-          description: "Be confident everywhere.",
-          isCorrect: false
+          emoji: "🌑"
         }
-      ]
+      ],
+      correctAnswer: "a",
+      explanation: "You are more than your skin. Don't hide, and be confident everywhere."
     },
     {
       id: 5,
-      title: "Self-Care",
-      question: "Is self-care selfish?",
+      text: "Is self-care selfish?",
       options: [
         {
           id: "c",
           text: "Yes, help others only",
-          emoji: "🤲",
-          description: "You must help yourself first.",
-          isCorrect: false
+          emoji: "🤲"
         },
         {
           id: "b",
           text: "It's a waste of time",
-          emoji: "⌛",
-          description: "It's essential.",
-          isCorrect: false
+          emoji: "⌛"
         },
         {
           id: "a",
           text: "No, it's healthy",
-          emoji: "❤️",
-          description: "Taking care of you is good.",
-          isCorrect: true
+          emoji: "❤️"
         }
-      ]
+      ],
+      correctAnswer: "a",
+      explanation: "Taking care of you is good. You must help yourself first, and it's essential."
     }
   ];
 
-  const handleOptionSelect = (option) => {
-    if (option.isCorrect) {
-      setCoins(prev => prev + 1);
+  const handleOptionSelect = (optionId) => {
+    if (selectedOption || showFeedback) return;
+    
+    resetFeedback(); // Reset any existing feedback
+    
+    setSelectedOption(optionId);
+    const isCorrect = optionId === questions[currentQuestion].correctAnswer;
+    
+    if (isCorrect) {
+      setCoins(prev => prev + 1); // 1 coin per correct answer
       showCorrectAnswerFeedback(1, true);
-
-      setTimeout(() => {
-        if (currentStage < stages.length - 1) {
-          setCurrentStage(prev => prev + 1);
-        } else {
-          setGameFinished(true);
-        }
-      }, 1500);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
+    
+    setShowFeedback(true);
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+      } else {
+        setGameFinished(true);
+      }
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/student/health-male/teens/journal-of-care");
   };
 
-  const currentS = stages[currentStage];
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Hygiene Confidence Debate"
-      subtitle={`Topic ${currentStage + 1} of ${stages.length}`}
+subtitle={!gameFinished ? `Debate ${currentQuestion + 1} of ${questions.length}` : "Debate Complete!"}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
@@ -197,36 +183,100 @@ const HygieneConfidenceDebate46 = () => {
       gameType="health-male"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      maxScore={stages.length}
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-white mb-2">{currentS.title}</h3>
-            <p className="text-white/90 text-lg">{currentS.question}</p>
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Debate {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Score: {coins}</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {currentS.options.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => handleOptionSelect(option)}
-                className="bg-white/10 hover:bg-white/20 p-6 rounded-xl border border-white/20 transition-all transform hover:scale-105 flex flex-col items-center gap-4 group"
-              >
-                <div className="text-6xl group-hover:scale-110 transition-transform">
-                  {option.emoji}
-                </div>
-                <div className="text-white font-bold text-xl text-center">
-                  {option.text}
-                </div>
-                <p className="text-white/70 text-sm text-center">{option.description}</p>
-              </button>
-            ))}
+          <div className="text-center mb-6">
+            <div className="text-5xl mb-4">🧼</div>
+            <h3 className="text-2xl font-bold text-white mb-2">Hygiene & Confidence Debate</h3>
           </div>
+
+          <p className="text-white text-lg mb-6">
+            {getCurrentQuestion().text}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {getCurrentQuestion().options.map(option => {
+              const isSelected = selectedOption === option.id;
+              const isCorrect = option.id === getCurrentQuestion().correctAnswer;
+              const showCorrect = showFeedback && isCorrect;
+              const showIncorrect = showFeedback && isSelected && !isCorrect;
+              
+              // Add emojis for each option like in the reference game
+              const optionEmojis = {
+                a: "✅",
+                b: "❌",
+                c: "⚠️"
+              };
+              
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleOptionSelect(option.id)}
+                  disabled={showFeedback}
+                  className={`bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${
+                    showFeedback ? (isCorrect ? 'ring-4 ring-green-500' : isSelected ? 'ring-4 ring-red-500' : '') : ''
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-2xl mr-4">{optionEmojis[option.id] || '❓'}</div>
+                    <div>
+                      <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {showFeedback && (
+            <div className={`mt-6 p-4 rounded-xl ${
+              selectedOption === getCurrentQuestion().correctAnswer
+                ? 'bg-green-500/20 border border-green-500/30'
+                : 'bg-red-500/20 border border-red-500/30'
+            }`}>
+              <p className={`font-semibold ${
+                selectedOption === getCurrentQuestion().correctAnswer
+                  ? 'text-green-300'
+                  : 'text-red-300'
+              }`}>
+                {selectedOption === getCurrentQuestion().correctAnswer
+                  ? 'Correct! 🎉'
+                  : 'Not quite right!'}
+              </p>
+              <p className="text-white/90 mt-2">
+                {getCurrentQuestion().explanation}
+              </p>
+            </div>
+          )}
         </div>
+        
+        {gameFinished && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <h3 className="text-3xl font-bold text-white mb-4">Debate Complete!</h3>
+            <p className="text-xl text-white/90 mb-6">
+              You scored {coins} out of {questions.length}!
+            </p>
+            <p className="text-white/80 mb-8">
+              Good hygiene habits boost confidence and social connections.
+            </p>
+            <button
+              onClick={handleNext}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all transform hover:scale-105"
+            >
+              Next Challenge
+            </button>
+          </div>
+        )}
       </div>
     </GameShell>
   );

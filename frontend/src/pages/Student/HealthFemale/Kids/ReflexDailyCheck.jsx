@@ -16,7 +16,7 @@ const ReflexDailyCheck = () => {
   const [gameState, setGameState] = useState('ready'); // ready, playing, finished
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [timer, setTimer] = useState(5);
+  const [timer, setTimer] = useState(10);  // Changed from 5 to 10
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedback, setFeedback] = useState({ correct: false, message: "" });
 
@@ -91,7 +91,7 @@ const ReflexDailyCheck = () => {
   // Start Game Handler
   const handleStartGame = () => {
     setGameState('playing');
-    setTimer(5);
+    setTimer(10);
     setCurrentRound(0);
     setScore(0);
   };
@@ -113,7 +113,7 @@ const ReflexDailyCheck = () => {
       setShowFeedback(false);
       if (currentRound < questions.length - 1) {
         setCurrentRound((prev) => prev + 1);
-        setTimer(5); // Reset timer for next round
+        setTimer(10); // Reset timer for next round
       } else {
         setGameState('finished');
         showAnswerConfetti();

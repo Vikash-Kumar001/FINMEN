@@ -18,37 +18,35 @@ const QuizCleanliness = () => {
 
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "What is the best daily hygiene habit?",
       options: [
+        
         {
           id: "b",
           text: "Wear the same dirty shirt",
           emoji: "👕",
-          description: "Clean clothes help prevent skin problems",
           isCorrect: false
         },
         {
           id: "c",
           text: "Skip brushing teeth",
           emoji: "🪥",
-          description: "Brushing prevents cavities and bad breath",
           isCorrect: false
         },
         {
           id: "a",
           text: "Take a bath daily",
           emoji: "🛁",
-          description: "Daily baths remove dirt and keep you fresh",
           isCorrect: true
-        }
+        },
       ]
     },
     {
@@ -56,24 +54,21 @@ const QuizCleanliness = () => {
       text: "How often should you brush your teeth?",
       options: [
         {
-          id: "b",
-          text: "Twice a day",
-          emoji: "✨",
-          description: "Morning and night keeps teeth clean",
-          isCorrect: true
-        },
-        {
           id: "a",
           text: "Once a week",
           emoji: "📅",
-          description: "Not enough to keep teeth healthy",
           isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Twice a day",
+          emoji: "✨",
+          isCorrect: true
         },
         {
           id: "c",
           text: "Only when they hurt",
           emoji: "😬",
-          description: "Brush before problems start",
           isCorrect: false
         }
       ]
@@ -83,24 +78,21 @@ const QuizCleanliness = () => {
       text: "What should you do after playing outside?",
       options: [
         {
-          id: "b",
-          text: "Just change clothes",
-          emoji: "👔",
-          description: "Still need to clean your body",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Take a shower",
           emoji: "🚿",
-          description: "Removes dirt, sweat, and germs from playing",
           isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Just change clothes",
+          emoji: "👔",
+          isCorrect: false
         },
         {
           id: "c",
           text: "Nothing special",
           emoji: "😴",
-          description: "Outdoor play makes you dirty and sweaty",
           isCorrect: false
         }
       ]
@@ -110,25 +102,22 @@ const QuizCleanliness = () => {
       text: "What's important for keeping nails clean?",
       options: [
         {
+          id: "a",
+          text: "Cut them regularly",
+          emoji: "✂️",
+          isCorrect: true
+        },
+        {
           id: "b",
           text: "Paint them colorful",
           emoji: "💅",
-          description: "Looks nice but doesn't clean them",
           isCorrect: false
         },
         {
           id: "c",
           text: "Bite them short",
           emoji: "🦷",
-          description: "Biting can cause infections and pain",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Cut them regularly",
-          emoji: "✂️",
-          description: "Prevents dirt buildup and infections",
-          isCorrect: true
         }
       ]
     },
@@ -136,129 +125,141 @@ const QuizCleanliness = () => {
       id: 5,
       text: "Why should you comb your hair daily?",
       options: [
+        
         {
           id: "b",
           text: "Hair doesn't need combing",
           emoji: "😕",
-          description: "Regular combing prevents tangles and dirt",
           isCorrect: false
         },
         {
           id: "a",
           text: "To look neat and tidy",
           emoji: "💇",
-          description: "Clean hair looks good and feels good",
           isCorrect: true
         },
         {
           id: "c",
           text: "Only for special occasions",
           emoji: "🎉",
-          description: "Daily grooming is important for hygiene",
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleChoice = (selectedChoice) => {
-    if (currentQuestion < 0 || currentQuestion >= questions.length) {
-      return;
-    }
-
-    const currentQ = questions[currentQuestion];
-    if (!currentQ || !currentQ.options) {
-      return;
-    }
-
-    const newChoices = [...choices, {
-      questionId: currentQ.id,
-      choice: selectedChoice,
-      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
-    }];
-
-    setChoices(newChoices);
-
-    // If the choice is correct, add coins and show flash/confetti
-    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
+    
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-
-    // Move to next question or show results
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, isCorrect ? 1000 : 800);
     } else {
-      // Calculate final score
-      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setTimeout(() => {
-        setShowResult(true);
-      }, isCorrect ? 1000 : 800);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setShowFeedback(true);
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
+      } else {
+        setGameFinished(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
   const handleNext = () => {
     navigate("/games/health-male/kids");
   };
 
-  const getCurrentQuestion = () => {
-    if (currentQuestion >= 0 && currentQuestion < questions.length) {
-      return questions[currentQuestion];
-    }
-    return null;
-  };
-
-  const currentQuestionData = getCurrentQuestion();
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = coins;
 
   return (
     <GameShell
       title="Quiz on Cleanliness"
-      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      currentLevel={2}
-      totalLevels={10}
-      coinsPerLevel={coinsPerLevel}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={false}
-      showGameOver={showResult}
-      score={coins}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={finalScore}
       gameId="health-male-kids-2"
       gameType="health-male"
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
+      totalLevels={5}
+      currentLevel={2}
+      showConfetti={gameFinished}
+      backPath="/games/health-male/kids"
       maxScore={questions.length}
+      coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}
-      showConfetti={showResult && finalScore === questions.length}>
-      <div className="space-y-8">
-        {!showResult && currentQuestionData ? (
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
-
-              <p className="text-white text-lg mb-6 text-center">
+              
+              <div className="text-6xl mb-4 text-center">🧼</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
                 {currentQuestionData.text}
               </p>
-
+              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options && currentQuestionData.options.map(option => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.id)}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 flex flex-col items-center justify-center text-center h-full"
-                  >
-                    <div className="text-4xl mb-3">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
-                  </button>
-                ))}
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
               </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         ) : null}

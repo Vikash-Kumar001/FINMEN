@@ -7,8 +7,10 @@ const QuizTeenHabits = () => {
   const navigate = useNavigate();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   // Hardcode rewards
   const coinsPerLevel = 1;
@@ -21,24 +23,21 @@ const QuizTeenHabits = () => {
       text: "Which supports health?",
       options: [
         {
-          id: "b",
+          id: "a",
           text: "Sleep + balanced diet",
           emoji: "😴",
-          description: "Sleep and nutrition are essential for teen health",
           isCorrect: true
         },
         {
-          id: "a",
+          id: "b",
           text: "Skipping meals",
           emoji: "🍽️",
-          description: "Regular meals provide necessary nutrients",
           isCorrect: false
         },
         {
           id: "c",
           text: "Staying up all night",
           emoji: "🌙",
-          description: "Sleep is crucial for growth and development",
           isCorrect: false
         }
       ]
@@ -49,23 +48,20 @@ const QuizTeenHabits = () => {
       options: [
         {
           id: "a",
+          text: "Skipping school",
+          emoji: "🏫",
+          isCorrect: false
+        },
+        {
+          id: "b",
           text: "Regular exercise",
           emoji: "🏃",
-          description: "Physical activity improves mood and reduces stress",
           isCorrect: true
         },
         {
           id: "c",
           text: "Social media all day",
           emoji: "📱",
-          description: "Too much screen time can harm mental health",
-          isCorrect: false
-        },
-        {
-          id: "b",
-          text: "Skipping school",
-          emoji: "🏫",
-          description: "Education is important for future success",
           isCorrect: false
         }
       ]
@@ -75,24 +71,21 @@ const QuizTeenHabits = () => {
       text: "How does a consistent bedtime help teens?",
       options: [
         {
-          id: "b",
+          id: "a",
           text: "Better school performance",
           emoji: "📚",
-          description: "Good sleep improves focus and learning",
           isCorrect: true
         },
         {
-          id: "c",
+          id: "b",
           text: "More time for TV",
           emoji: "📺",
-          description: "Quality sleep is more important than screen time",
           isCorrect: false
         },
         {
-          id: "a",
+          id: "c",
           text: "No difference",
           emoji: "🤷",
-          description: "Regular sleep schedule improves health",
           isCorrect: false
         }
       ]
@@ -103,23 +96,20 @@ const QuizTeenHabits = () => {
       options: [
         {
           id: "a",
-          text: "Daily movement and activity",
-          emoji: "🏃",
-          description: "Regular exercise maintains physical fitness",
-          isCorrect: true
-        },
-        {
-          id: "b",
-          text: "Only eating junk food",
-          emoji: "🍔",
-          description: "Balanced nutrition supports physical health",
+          text: "Avoiding all sports",
+          emoji: "⚽",
           isCorrect: false
         },
         {
+          id: "b",
+          text: "Daily movement and activity",
+          emoji: "🏃",
+          isCorrect: true
+        },
+        {
           id: "c",
-          text: "Avoiding all sports",
-          emoji: "⚽",
-          description: "Physical activity is essential for health",
+          text: "Only eating junk food",
+          emoji: "🍔",
           isCorrect: false
         }
       ]
@@ -129,49 +119,56 @@ const QuizTeenHabits = () => {
       text: "How should teens manage screen time?",
       options: [
         {
-          id: "b",
+          id: "a",
           text: "No limits needed",
           emoji: "📱",
-          description: "Too much screen time affects sleep and health",
           isCorrect: false
         },
         {
-          id: "a",
-          text: "Set healthy limits",
-          emoji: "⏰",
-          description: "Balanced screen time supports healthy development",
-          isCorrect: true
+          id: "b",
+          text: "Only use screens",
+          emoji: "💻",
+          isCorrect: false
         },
         {
           id: "c",
-          text: "Only use screens",
-          emoji: "💻",
-          description: "Real activities are important for health",
-          isCorrect: false
+          text: "Set healthy limits",
+          emoji: "⏰",
+          isCorrect: true
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (gameFinished) return;
-
-    const currentQ = questions[currentQuestion];
-    const selectedOption = currentQ.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
+    
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
+    
+    setShowFeedback(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 1000);
+    }, isCorrect ? 1000 : 800);
   };
 
   const currentQ = questions[currentQuestion];
@@ -183,50 +180,69 @@ const QuizTeenHabits = () => {
   return (
     <GameShell
       title="Quiz on Teen Habits"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={score}
       gameId="health-male-teen-92"
       gameType="health-male"
+      showConfetti={gameFinished}
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
-      showAnswerConfetti={showAnswerConfetti}
     >
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Score: {score}</span>
+            <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
           </div>
 
           <p className="text-white text-lg mb-6">
             {currentQ.text}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {currentQ.options.map(option => (
               <button
                 key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                onClick={() => handleAnswer(option.id)}
+                disabled={showFeedback}
+                className={`p-6 rounded-2xl shadow-lg transition-all transform text-left ${
+                  showFeedback && option.isCorrect
+                    ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                    : showFeedback && selectedOption === option.id && !option.isCorrect
+                    ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                    : selectedOption === option.id
+                    ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                    : "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                } ${showFeedback ? "cursor-not-allowed" : ""}`}
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>
             ))}
           </div>
+                      
+          {showFeedback && (
+            <div className={`rounded-lg p-5 mt-6 ${
+              questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                ? "bg-green-500/20"
+                : "bg-red-500/20"
+            }`}>
+              <p className="text-white whitespace-pre-line">
+                {questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                  ? "Great job! That's exactly right! 🎉"
+                  : "Not quite right. Try again next time!"}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </GameShell>

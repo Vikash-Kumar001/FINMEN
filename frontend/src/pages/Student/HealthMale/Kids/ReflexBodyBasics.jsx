@@ -16,7 +16,7 @@ const ReflexBodyBasics = () => {
   const coinsPerLevel = 1;
   const totalCoins = 5;
   const totalXp = 10;
-  const ROUND_TIME = 5;
+  const ROUND_TIME = 10;
   const TOTAL_ROUNDS = 5;
 
   const [currentRound, setCurrentRound] = useState(1);
@@ -33,12 +33,15 @@ const ReflexBodyBasics = () => {
     {
       id: 1,
       question: "How do organs work?",
+      emoji: "🧬",
+      correctAnswer: "Work Together",
       options: [
         { text: "Work Alone", emoji: "❌", isCorrect: false },
-        { text: "Work Together", emoji: "💚", isCorrect: true },
+        { text: "Work Together", emoji: "💚", isCorrect: true }, // Position B
         { text: "Fight Each Other", emoji: "⚔️", isCorrect: false },
         { text: "Stop Working", emoji: "🛑", isCorrect: false }
-      ]
+      ],
+     
     },
     {
       id: 2,
@@ -46,26 +49,29 @@ const ReflexBodyBasics = () => {
       options: [
         { text: "Breathes", emoji: "💨", isCorrect: false },
         { text: "Digests Food", emoji: "🍎", isCorrect: false },
-        { text: "Pumps Blood", emoji: "🫀", isCorrect: true },
-        { text: "Thinks", emoji: "🧠", isCorrect: false }
+        { text: "Pumps Blood", emoji: "", isCorrect: true }, // Position C
+        { text: "Thinks", emoji: "", isCorrect: false }
       ]
     },
     {
       id: 3,
       question: "What do lungs do?",
+      emoji: "🫁",
+      correctAnswer: "Give Oxygen",
       options: [
-        { text: "Give Oxygen", emoji: "🫁", isCorrect: true },
         { text: "Pump Blood", emoji: "❤️", isCorrect: false },
         { text: "Digest", emoji: "🍔", isCorrect: false },
-        { text: "Move Body", emoji: "💪", isCorrect: false }
-      ]
+        { text: "Move Body", emoji: "💪", isCorrect: false },
+        { text: "Give Oxygen", emoji: "🫁", isCorrect: true } // Position D
+      ],
+      
     },
     {
       id: 4,
       question: "What does the stomach do?",
       options: [
+        { text: "Digests Food", emoji: "🫄", isCorrect: true }, // Position A
         { text: "Thinks", emoji: "🤔", isCorrect: false },
-        { text: "Digests Food", emoji: "🫄", isCorrect: true },
         { text: "Breathes", emoji: "🌬️", isCorrect: false },
         { text: "Sees", emoji: "👁️", isCorrect: false }
       ]
@@ -75,9 +81,9 @@ const ReflexBodyBasics = () => {
       question: "What does the brain do?",
       options: [
         { text: "Pumps", emoji: "💓", isCorrect: false },
-        { text: "Digests", emoji: "🥪", isCorrect: false },
-        { text: "Walks", emoji: "🦶", isCorrect: false },
-        { text: "Controls Body", emoji: "🧠", isCorrect: true },
+        { text: "Controls Body", emoji: "", isCorrect: true }, // Position B
+        { text: "Digests", emoji: "", isCorrect: false },
+        { text: "Walks", emoji: "", isCorrect: false },
       ]
     }
   ];

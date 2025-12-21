@@ -17,7 +17,7 @@ const GrowingTallerStory = () => {
   const totalCoins = 5;
   const totalXp = 10;
   const maxScore = 5;
-  const gameId = "health-female-kids-80";
+  const gameId = "health-female-kids-21";
 
   const questions = [
     {

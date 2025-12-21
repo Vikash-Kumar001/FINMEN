@@ -10,9 +10,9 @@ const PosterSaveWater = () => {
   const location = useLocation();
   const gameId = "sustainability-kids-16";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const totalXp = gameData?.xp || location.state?.totalXp || 25;
   const [currentStage, setCurrentStage] = useState(0);
   const [selectedPoster, setSelectedPoster] = useState(null);
   const [showResult, setShowResult] = useState(false);
@@ -63,17 +63,17 @@ const PosterSaveWater = () => {
       posters: [
         {
           id: 1,
-          title: "Every Drop Counts",
-          description: "A poster showing water drops with Earth",
-          emoji: "💧🌍",
-          isCorrect: true
-        },
-        {
-          id: 2,
           title: "Waste All Water",
           description: "A poster encouraging wasting water",
           emoji: "💦",
           isCorrect: false
+        },
+        {
+          id: 2,
+          title: "Every Drop Counts",
+          description: "A poster showing water drops with Earth",
+          emoji: "💧🌍",
+          isCorrect: true
         },
         {
           id: 3,
@@ -91,28 +91,112 @@ const PosterSaveWater = () => {
       posters: [
         {
           id: 1,
-          title: "Turn Off When Not Using",
-          description: "A poster showing turning off taps",
-          emoji: "🚰💧",
-          isCorrect: true
-        },
-        {
-          id: 2,
           title: "Leave Taps Running",
           description: "A poster showing taps always on",
           emoji: "💦",
           isCorrect: false
         },
         {
-          id: 3,
+          id: 2,
           title: "Use All Water",
           description: "A poster encouraging using all water",
           emoji: "🌊",
           isCorrect: false
+        },
+        {
+          id: 3,
+          title: "Turn Off When Not Using",
+          description: "A poster showing turning off taps",
+          emoji: "🚰💧",
+          isCorrect: true
         }
       ],
       correctFeedback: "Turn Off When Not Using encourages saving water!",
       explanation: "Turning off taps when not using them saves precious water!"
+    },
+    {
+      question: "Which poster best shows fixing leaks?",
+      posters: [
+        {
+          id: 1,
+          title: "Report Leaks",
+          description: "A poster showing how to report water leaks",
+          emoji: "🔧💧",
+          isCorrect: false
+        },
+        {
+          id: 2,
+          title: "Ignore Dripping Taps",
+          description: "A poster showing ignoring dripping taps",
+          emoji: "无视💧",
+          isCorrect: false
+        },
+        {
+          id: 3,
+          title: "Fix Leaks Fast",
+          description: "A poster showing quick leak repairs",
+          emoji: "🛠️💧",
+          isCorrect: true
+        }
+      ],
+      correctFeedback: "Fix Leaks Fast is the responsible choice!",
+      explanation: "Fixing leaks quickly prevents water waste and saves money!"
+    },
+    {
+      question: "Which poster promotes shorter showers?",
+      posters: [
+        {
+          id: 1,
+          title: "Take Short Showers",
+          description: "A poster showing timing your shower",
+          emoji: "⏱️🚿",
+          isCorrect: true
+        },
+        {
+          id: 2,
+          title: "Long Luxury Showers",
+          description: "A poster showing long relaxing showers",
+          emoji: "🛁",
+          isCorrect: false
+        },
+        {
+          id: 3,
+          title: "Baths Only",
+          description: "A poster showing only taking baths",
+          emoji: "🛀",
+          isCorrect: false
+        }
+      ],
+      correctFeedback: "Take Short Showers helps conserve water!",
+      explanation: "Shorter showers significantly reduce water usage!"
+    },
+    {
+      question: "Which poster encourages collecting rainwater?",
+      posters: [
+        {
+          id: 1,
+          title: "Use Hose Always",
+          description: "A poster showing using hose for everything",
+          emoji: "🚿",
+          isCorrect: false
+        },
+        {
+          id: 2,
+          title: "Collect Rainwater",
+          description: "A poster showing rain collection barrels",
+          emoji: "🌧️🪣",
+          isCorrect: true
+        },
+        {
+          id: 3,
+          title: "Let Rain Run Off",
+          description: "A poster showing ignoring rainfall",
+          emoji: "🌧️➡️",
+          isCorrect: false
+        }
+      ],
+      correctFeedback: "Collect Rainwater is an excellent conservation method!",
+      explanation: "Rainwater collection provides free water for gardens and reduces demand on municipal supplies!"
     }
   ];
 

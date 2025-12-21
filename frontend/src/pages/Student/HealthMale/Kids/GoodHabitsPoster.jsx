@@ -64,18 +64,18 @@ const GoodHabitsPoster = () => {
           isCorrect: false
         },
         {
-          id: "a",
-          text: "Brush & Wash",
-          emoji: "🚿",
-          description: "Clean body feels great!",
-          isCorrect: true
-        },
-        {
           id: "c",
           text: "Dirty Clothes",
           emoji: "👕",
           description: "Wear clean clothes every day.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Brush & Wash",
+          emoji: "🚿",
+          description: "Clean body feels great!",
+          isCorrect: true
         }
       ]
     },
@@ -84,13 +84,6 @@ const GoodHabitsPoster = () => {
       title: "Active Kid",
       question: "Which poster shows a healthy activity?",
       options: [
-        {
-          id: "c",
-          text: "Sit on Couch",
-          emoji: "🛋️",
-          description: "Sitting too long isn't healthy.",
-          isCorrect: false
-        },
         {
           id: "b",
           text: "Play Video Games",
@@ -104,6 +97,13 @@ const GoodHabitsPoster = () => {
           emoji: "🚲",
           description: "Biking is great exercise!",
           isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Sit on Couch",
+          emoji: "🛋️",
+          description: "Sitting too long isn't healthy.",
+          isCorrect: false
         }
       ]
     },
@@ -112,6 +112,13 @@ const GoodHabitsPoster = () => {
       title: "Smart Eater",
       question: "Which poster shows smart eating?",
       options: [
+        {
+          id: "c",
+          text: "Skip Lunch",
+          emoji: "🚫",
+          description: "Your body needs food energy.",
+          isCorrect: false
+        },
         {
           id: "b",
           text: "Only Dessert",
@@ -125,13 +132,6 @@ const GoodHabitsPoster = () => {
           emoji: "🥗",
           description: "Protein, veggies, and grains!",
           isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Skip Lunch",
-          emoji: "🚫",
-          description: "Your body needs food energy.",
-          isCorrect: false
         }
       ]
     },
@@ -140,13 +140,6 @@ const GoodHabitsPoster = () => {
       title: "Sleep Tight",
       question: "Which poster shows good sleep?",
       options: [
-        {
-          id: "c",
-          text: "Stay Up All Night",
-          emoji: "🦉",
-          description: "You need rest to grow.",
-          isCorrect: false
-        },
         {
           id: "b",
           text: "Sleep on Floor",
@@ -160,6 +153,13 @@ const GoodHabitsPoster = () => {
           emoji: "🛌",
           description: "Early to bed, early to rise!",
           isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Stay Up All Night",
+          emoji: "🦉",
+          description: "You need rest to grow.",
+          isCorrect: false
         }
       ]
     }
@@ -178,7 +178,16 @@ const GoodHabitsPoster = () => {
         }
       }, 1500);
     } else {
+      // Show feedback for incorrect answer and move to next question
       showCorrectAnswerFeedback(0, false);
+      
+      setTimeout(() => {
+        if (currentStage < stages.length - 1) {
+          setCurrentStage(prev => prev + 1);
+        } else {
+          setGameFinished(true);
+        }
+      }, 1500);
     }
   };
 
@@ -218,6 +227,7 @@ const GoodHabitsPoster = () => {
                 key={option.id}
                 onClick={() => handleOptionSelect(option)}
                 className="bg-white/10 hover:bg-white/20 p-6 rounded-xl border border-white/20 transition-all transform hover:scale-105 flex flex-col items-center gap-4 group"
+                disabled={gameFinished}
               >
                 <div className="text-6xl group-hover:scale-110 transition-transform">
                   {option.emoji}

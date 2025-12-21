@@ -17,11 +17,12 @@ const QuizFoodGroups = () => {
   const totalCoins = 5;
   const totalXp = 10;
 
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -29,24 +30,21 @@ const QuizFoodGroups = () => {
       text: "Which food gives you protein for strong muscles?",
       options: [
         {
-          id: "b",
-          text: "Rice",
-          emoji: "🍚",
-          description: "Rice gives energy but not protein",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Dal (lentils)",
           emoji: "🍛",
-          description: "Dal is rich in protein for muscle building",
           isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Rice",
+          emoji: "🍚",
+          isCorrect: false
         },
         {
           id: "c",
           text: "Chocolate",
           emoji: "🍫",
-          description: "Chocolate has sugar but no protein",
           isCorrect: false
         }
       ]
@@ -56,24 +54,21 @@ const QuizFoodGroups = () => {
       text: "What food group gives you energy to play?",
       options: [
         {
-          id: "c",
-          text: "Vegetables",
-          emoji: "🥕",
-          description: "Vegetables give vitamins, not energy",
+          id: "a",
+          text: "Milk",
+          emoji: "🥛",
           isCorrect: false
         },
         {
           id: "b",
           text: "Bread and rice",
           emoji: "🍞",
-          description: "Carbohydrates give you energy to run and play",
           isCorrect: true
         },
         {
-          id: "a",
-          text: "Milk",
-          emoji: "🥛",
-          description: "Milk gives calcium but not quick energy",
+          id: "c",
+          text: "Vegetables",
+          emoji: "🥕",
           isCorrect: false
         }
       ]
@@ -86,21 +81,18 @@ const QuizFoodGroups = () => {
           id: "a",
           text: "Fruits",
           emoji: "🍎",
-          description: "Fruits are full of vitamins and minerals",
           isCorrect: true
         },
         {
           id: "b",
           text: "Chips",
           emoji: "🥔",
-          description: "Chips have salt and oil but no vitamins",
           isCorrect: false
         },
         {
           id: "c",
           text: "Candy",
           emoji: "🍬",
-          description: "Candy has sugar but no healthy vitamins",
           isCorrect: false
         }
       ]
@@ -110,24 +102,21 @@ const QuizFoodGroups = () => {
       text: "What food group helps build strong bones?",
       options: [
         {
-          id: "c",
-          text: "Meat",
-          emoji: "🥩",
-          description: "Meat gives protein but not strong bones",
+          id: "a",
+          text: "Bread",
+          emoji: "🍞",
           isCorrect: false
         },
         {
           id: "b",
           text: "Dairy products",
           emoji: "🧀",
-          description: "Milk, cheese, yogurt give calcium for bones",
           isCorrect: true
         },
         {
-          id: "a",
-          text: "Bread",
-          emoji: "🍞",
-          description: "Bread gives energy but not bone strength",
+          id: "c",
+          text: "Meat",
+          emoji: "🥩",
           isCorrect: false
         }
       ]
@@ -137,51 +126,57 @@ const QuizFoodGroups = () => {
       text: "Which food protects you from getting sick?",
       options: [
         {
+          id: "a",
+          text: "Vegetables",
+          emoji: "🥬",
+          isCorrect: true
+        },
+        {
           id: "b",
           text: "Soda",
           emoji: "🥤",
-          description: "Soda has sugar but no protective nutrients",
           isCorrect: false
         },
         {
           id: "c",
           text: "Pizza",
           emoji: "🍕",
-          description: "Pizza is tasty but not protective",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Vegetables",
-          emoji: "🥬",
-          description: "Vegetables boost your immune system",
-          isCorrect: true
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
+    
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
+    setShowFeedback(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, isCorrect ? 1000 : 800);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/games/health-male/kids");
@@ -190,60 +185,80 @@ const QuizFoodGroups = () => {
   return (
     <GameShell
       title="Quiz on Food Groups"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
       gameId={gameId}
       gameType="health-male"
       totalLevels={5}
-      currentLevel={currentQuestion + 1}
+      currentLevel={12}
       showConfetti={gameFinished}
-      flashPoints={flashPoints}
       backPath="/games/health-male/kids"
-      showAnswerConfetti={showAnswerConfetti}
-      maxScore={5}
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🧠</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Nutrition Quiz</h3>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className={`bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${choices.some(c => c.question === currentQuestion) ? 'opacity-75 cursor-not-allowed' : ''
-                  }`}
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+      maxScore={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && questions[currentQuestion] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">🍎</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
                 </div>
-              </button>
-            ))}
+              )}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

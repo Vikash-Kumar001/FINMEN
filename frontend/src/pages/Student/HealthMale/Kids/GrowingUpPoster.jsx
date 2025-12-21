@@ -63,18 +63,18 @@ const GrowingUpPoster = () => {
           isCorrect: false
         },
         {
-          id: 2,
-          title: "New Voice",
-          description: "A poster showing voice changing is natural",
-          emoji: "🗣️🎵",
-          isCorrect: true
-        },
-        {
           id: 3,
           title: "Scary Sounds",
           description: "A poster saying voice changes are scary",
           emoji: "😱🔊",
           isCorrect: false
+        },
+        {
+          id: 2,
+          title: "New Voice",
+          description: "A poster showing voice changing is natural",
+          emoji: "🗣️🎵",
+          isCorrect: true
         }
       ],
       correctFeedback: "New Voice explains it best!",
@@ -84,18 +84,18 @@ const GrowingUpPoster = () => {
       question: "Which poster shows healthy habits for growth?",
       posters: [
         {
-          id: 1,
-          title: "Sleep & Eat Well",
-          description: "A poster with healthy food and good sleep",
-          emoji: "🥗🛌",
-          isCorrect: true
-        },
-        {
           id: 2,
           title: "Stay Up Late",
           description: "A poster encouraging no sleep",
           emoji: "🌙🎮",
           isCorrect: false
+        },
+        {
+          id: 1,
+          title: "Sleep & Eat Well",
+          description: "A poster with healthy food and good sleep",
+          emoji: "🥗🛌",
+          isCorrect: true
         },
         {
           id: 3,
@@ -112,10 +112,10 @@ const GrowingUpPoster = () => {
       question: "Which poster is about body hair?",
       posters: [
         {
-          id: 1,
-          title: "Shave It All",
-          description: "A poster saying hair is bad",
-          emoji: "🪒❌",
+          id: 3,
+          title: "Hide Your Hair",
+          description: "A poster saying to hide body hair",
+          emoji: "🙈👕",
           isCorrect: false
         },
         {
@@ -126,10 +126,10 @@ const GrowingUpPoster = () => {
           isCorrect: true
         },
         {
-          id: 3,
-          title: "Hide Your Hair",
-          description: "A poster saying to hide body hair",
-          emoji: "🙈👕",
+          id: 1,
+          title: "Shave It All",
+          description: "A poster saying hair is bad",
+          emoji: "🪒❌",
           isCorrect: false
         }
       ],
@@ -140,18 +140,18 @@ const GrowingUpPoster = () => {
       question: "Which poster shows confidence?",
       posters: [
         {
-          id: 1,
-          title: "Be Ashamed",
-          description: "A poster about hiding changes",
-          emoji: "😔🙈",
-          isCorrect: false
-        },
-        {
           id: 2,
           title: "Proud of Me",
           description: "A poster showing confidence in growing up",
           emoji: "😎🌟",
           isCorrect: true
+        },
+        {
+          id: 1,
+          title: "Be Ashamed",
+          description: "A poster about hiding changes",
+          emoji: "😔🙈",
+          isCorrect: false
         },
         {
           id: 3,
@@ -192,8 +192,26 @@ const GrowingUpPoster = () => {
         }, 1500);
       }
     } else {
-      // Show result immediately for incorrect
-      setShowResult(true);
+      // Show feedback for incorrect answer and move to next question
+      showCorrectAnswerFeedback(0, false);
+      
+      // Check if this is the last stage
+      const isLastStage = currentStage === stages.length - 1;
+      
+      if (isLastStage) {
+        // Last stage - show result and game over modal
+        setTimeout(() => {
+          setShowResult(true);
+        }, 1500);
+      } else {
+        // Move to next question after showing feedback
+        setTimeout(() => {
+          setCurrentStage(currentStage + 1);
+          setSelectedPoster(null);
+          setShowResult(false);
+          resetFeedback();
+        }, 1500);
+      }
     }
   };
 
@@ -285,12 +303,7 @@ const GrowingUpPoster = () => {
                 <p className="text-white/90 text-lg mb-4">
                   {currentStageData?.correctFeedback || "That's not quite right. Try again!"}
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
+                {/* Removed Try Again button to standardize behavior */}
                 <p className="text-white/80 text-sm">
                   {currentStageData?.explanation || "Look for the poster that promotes healthy growth."}
                 </p>

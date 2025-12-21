@@ -26,27 +26,29 @@ const DailyRoutineSimulation48 = () => {
       activity: "Wake up. First thing?",
       options: [
         {
-          id: "b",
+          id: "a",
           text: "Check phone",
           emoji: "📱",
-          description: "Start with hygiene.",
           isCorrect: false
         },
-       
+        {
+          id: "b",
+          text: "Brush teeth/Wash face",
+          emoji: "🪥",
+          isCorrect: false
+        },
         {
           id: "c",
           text: "Eat candy",
           emoji: "🍬",
-          description: "Not a healthy breakfast.",
           isCorrect: false
         },
-         {
-          id: "a",
-          text: "Brush teeth/Wash face",
-          emoji: "🪥",
-          description: "Fresh start.",
+        {
+          id: "d",
+          text: "Drink water and stretch",
+          emoji: "💧",
           isCorrect: true
-        },
+        }
       ]
     },
     {
@@ -55,25 +57,28 @@ const DailyRoutineSimulation48 = () => {
       activity: "Getting dressed.",
       options: [
         {
-          id: "c",
+          id: "a",
           text: "Wear yesterday's socks",
           emoji: "🧦",
-          description: "Stinky!",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Put on deodorant & clean clothes",
-          emoji: "👕",
-          description: "Ready for the day.",
-          isCorrect: true
         },
         {
           id: "b",
+          text: "Put on deodorant & clean clothes",
+          emoji: "👕",
+          isCorrect: false
+        },
+        {
+          id: "c",
           text: "Skip underwear",
           emoji: "👖",
-          description: "Wear clean underwear.",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Choose weather-appropriate outfit",
+          emoji: "🧥",
+          isCorrect: true
         }
       ]
     },
@@ -83,25 +88,28 @@ const DailyRoutineSimulation48 = () => {
       activity: "Lunch time. Hands are dirty.",
       options: [
         {
-          id: "b",
+          id: "a",
           text: "Eat immediately",
           emoji: "🍔",
-          description: "Germs!",
           isCorrect: false
         },
         {
-          id: "a",
+          id: "b",
           text: "Wash hands first",
           emoji: "🧼",
-          description: "Safe eating.",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "c",
           text: "Lick fingers",
           emoji: "👅",
-          description: "Gross.",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Sanitize with hand gel",
+          emoji: "🧴",
+          isCorrect: true
         }
       ]
     },
@@ -114,23 +122,25 @@ const DailyRoutineSimulation48 = () => {
           id: "a",
           text: "Shower",
           emoji: "🚿",
-          description: "Clean off sweat.",
-          isCorrect: true
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Sit on couch",
+          emoji: "🛋️",
+          isCorrect: false
         },
         {
           id: "c",
-          text: "Sit on couch",
-          emoji: "🛋️",
-          description: "You are sweaty.",
-          isCorrect: false
-        },
-        
-        {
-          id: "b",
           text: "Spray perfume",
           emoji: "🌸",
-          description: "Masks smell only.",
           isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Change into dry clothes",
+          emoji: "👚",
+          isCorrect: true
         }
       ]
     },
@@ -140,27 +150,29 @@ const DailyRoutineSimulation48 = () => {
       activity: "Bedtime.",
       options: [
         {
-          id: "b",
+          id: "a",
           text: "Sleep in jeans",
           emoji: "👖",
-          description: "Uncomfortable.",
           isCorrect: false
         },
-        
+        {
+          id: "b",
+          text: "Brush teeth & wear PJs",
+          emoji: "🛌",
+          isCorrect: false
+        },
         {
           id: "c",
           text: "Eat sugar",
           emoji: "🍭",
-          description: "Bad for teeth and sleep.",
           isCorrect: false
         },
         {
-          id: "a",
-          text: "Brush teeth & wear PJs",
-          emoji: "🛌",
-          description: "Good night routine.",
+          id: "d",
+          text: "Set alarm and organize tomorrow",
+          emoji: "⏰",
           isCorrect: true
-        },
+        }
       ]
     }
   ];
@@ -190,7 +202,7 @@ const DailyRoutineSimulation48 = () => {
   return (
     <GameShell
       title="Daily Routine Simulation"
-      subtitle={`Time: ${steps[currentStep].time}`}
+      subtitle={`Scenario ${currentStep + 1} of ${steps.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
@@ -207,27 +219,29 @@ const DailyRoutineSimulation48 = () => {
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Step {currentStep + 1}/{steps.length}</span>
+            <span className="text-white/80">Scenario {currentStep + 1}/{steps.length}</span>
             <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
 
-          <h3 className="text-2xl font-bold text-white mb-2">{steps[currentStep].time}</h3>
-          <p className="text-white text-lg mb-6">
+          <h2 className="text-xl font-semibold text-white mb-4">
+            {steps[currentStep].time}
+          </h2>
+          
+          <p className="text-white/90 mb-6">
             {steps[currentStep].activity}
           </p>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {steps[currentStep].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

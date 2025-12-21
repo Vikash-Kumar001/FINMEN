@@ -4,7 +4,7 @@ import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const TOTAL_ROUNDS = 5;
-const ROUND_TIME = 5; // 5 seconds per round
+const ROUND_TIME = 10; // 10 seconds per round
 
 const ReflexSmartDrink = () => {
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ const ReflexSmartDrink = () => {
   const totalCoins = 5;
   const totalXp = 10;
   const maxScore = 5;
-  const gameId = "health-female-kids-78";
+  const gameId = "health-female-kids-19";
 
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 

@@ -84,14 +84,14 @@ const QuizOnDangers = () => {
           text: "Liver",
           emoji: "🍺",
           // description: "The liver processes alcohol and can be damaged by it",
-          isCorrect: false
+          isCorrect: true
         },
         {
           id: "b",
           text: "Heart",
           emoji: "❤️",
           // description: "While affected, the liver bears the main burden",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "c",
@@ -107,13 +107,7 @@ const QuizOnDangers = () => {
       text: "What is a consequence of drug use?",
       emoji: "💊",
       options: [
-        {
-          id: "a",
-          text: "Brain chemistry disruption",
-          emoji: "😵",
-          // description: "Drugs alter neurotransmitters and brain function",
-          isCorrect: false
-        },
+        
         {
           id: "b",
           text: "Enhanced memory",
@@ -122,11 +116,18 @@ const QuizOnDangers = () => {
           isCorrect: false
         },
         {
+          id: "a",
+          text: "Brain chemistry disruption",
+          emoji: "😵",
+          // description: "Drugs alter neurotransmitters and brain function",
+          isCorrect: true
+        },
+        {
           id: "c",
           text: "Improved mental health",
           emoji: "😊",
           // description: "Drugs often worsen mental health conditions",
-          isCorrect: true
+          isCorrect: false
         }
       ]
     },

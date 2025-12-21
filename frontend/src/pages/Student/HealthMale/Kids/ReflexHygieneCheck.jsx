@@ -16,7 +16,7 @@ const ReflexHygieneCheck = () => {
   const coinsPerLevel = 1;
   const totalCoins = 5;
   const totalXp = 10;
-  const ROUND_TIME = 5;
+  const ROUND_TIME = 10;
   const TOTAL_ROUNDS = 5;
 
   const [currentRound, setCurrentRound] = useState(1);
@@ -34,50 +34,50 @@ const ReflexHygieneCheck = () => {
       id: 1,
       question: "What to use for bath?",
       options: [
-        { text: "Skip Bath", emoji: "❌", isCorrect: false },
-        { text: "Dirt", emoji: "💩", isCorrect: false },
-        { text: "Soap", emoji: "🧼", isCorrect: true },
-        { text: "Oil", emoji: "🛢️", isCorrect: false }
+        { id: 'a', text: "Skip Bath", emoji: "❌", isCorrect: false },
+        { id: 'b', text: "Dirt", emoji: "💩", isCorrect: false },
+        { id: 'c', text: "Oil", emoji: "🛢️", isCorrect: false },
+        { id: 'd', text: "Soap", emoji: "🧼", isCorrect: true }
       ]
     },
     {
       id: 2,
       question: "What to use for smell?",
       options: [
-        { text: "Deodorant", emoji: "🧴", isCorrect: true },
-        { text: "No Deodorant", emoji: "🦨", isCorrect: false },
-        { text: "Water", emoji: "💧", isCorrect: false },
-        { text: "Mud", emoji: "🟤", isCorrect: false }
+        { id: 'a', text: "Deodorant", emoji: "🧴", isCorrect: true },
+        { id: 'b', text: "No Deodorant", emoji: "🦨", isCorrect: false },
+        { id: 'c', text: "Water", emoji: "💧", isCorrect: false },
+        { id: 'd', text: "Mud", emoji: "🟤", isCorrect: false }
       ]
     },
     {
       id: 3,
       question: "What to wear?",
       options: [
-        { text: "Dirty Shirt", emoji: "👕", isCorrect: false },
-        { text: "Clean Clothes", emoji: "🧺", isCorrect: true },
-        { text: "Wet Clothes", emoji: "💦", isCorrect: false },
-        { text: "Torn Clothes", emoji: "✂️", isCorrect: false }
+        { id: 'a', text: "Dirty Shirt", emoji: "👕", isCorrect: false },
+        { id: 'b', text: "Clean Clothes", emoji: "🧺", isCorrect: true },
+        { id: 'c', text: "Wet Clothes", emoji: "💦", isCorrect: false },
+        { id: 'd', text: "Torn Clothes", emoji: "✂️", isCorrect: false }
       ]
     },
     {
       id: 4,
       question: "How to clean body?",
       options: [
-        { text: "Skip Shower", emoji: "😴", isCorrect: false },
-        { text: "Sleep", emoji: "🛌", isCorrect: false },
-        { text: "Run", emoji: "🏃", isCorrect: false },
-        { text: "Shower", emoji: "🚿", isCorrect: true },
+        { id: 'a', text: "Skip Shower", emoji: "😴", isCorrect: false },
+        { id: 'b', text: "Sleep", emoji: "🛌", isCorrect: false },
+        { id: 'c', text: "Shower", emoji: "🚿", isCorrect: true },
+        { id: 'd', text: "Run", emoji: "🏃", isCorrect: false }
       ]
     },
     {
       id: 5,
       question: "How to clean teeth?",
       options: [
-        { text: "Eat Candy", emoji: "🍬", isCorrect: false },
-        { text: "Brush Teeth", emoji: "🪥", isCorrect: true },
-        { text: "Drink Soda", emoji: "🥤", isCorrect: false },
-        { text: "Sleep", emoji: "💤", isCorrect: false }
+        { id: 'a', text: "Eat Candy", emoji: "🍬", isCorrect: false },
+        { id: 'b', text: "Sleep", emoji: "💤", isCorrect: false },
+        { id: 'c', text: "Brush Teeth", emoji: "🪥", isCorrect: true },
+        { id: 'd', text: "Drink Soda", emoji: "🥤", isCorrect: false }
       ]
     }
   ];

@@ -64,18 +64,18 @@ const PreventionFirstPoster = () => {
           isCorrect: false
         },
         {
-          id: "a",
-          text: "Vampire Cough",
-          emoji: "🧛",
-          description: "Coughing into your elbow keeps germs contained!",
-          isCorrect: true
-        },
-        {
           id: "c",
           text: "Cough in Hands",
           emoji: "🤲",
           description: "Coughing in hands spreads germs when you touch things.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Vampire Cough",
+          emoji: "🧛",
+          description: "Coughing into your elbow keeps germs contained!",
+          isCorrect: true
         }
       ]
     },
@@ -84,13 +84,6 @@ const PreventionFirstPoster = () => {
       title: "Healthy Eating",
       question: "Which poster shows food that fights sickness?",
       options: [
-        {
-          id: "c",
-          text: "Only Candy",
-          emoji: "🍭",
-          description: "Sugar can make it harder to fight sickness.",
-          isCorrect: false
-        },
         {
           id: "b",
           text: "Soda Pop",
@@ -104,6 +97,13 @@ const PreventionFirstPoster = () => {
           emoji: "🍎",
           description: "Vitamins in fruits and veggies boost your immune system!",
           isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Only Candy",
+          emoji: "🍭",
+          description: "Sugar can make it harder to fight sickness.",
+          isCorrect: false
         }
       ]
     },
@@ -112,6 +112,13 @@ const PreventionFirstPoster = () => {
       title: "Active Play",
       question: "Which poster shows how to keep your body strong?",
       options: [
+        {
+          id: "c",
+          text: "Sleep All Day",
+          emoji: "🛌",
+          description: "You need sleep, but you also need to move!",
+          isCorrect: false
+        },
         {
           id: "b",
           text: "Watch TV All Day",
@@ -125,13 +132,6 @@ const PreventionFirstPoster = () => {
           emoji: "⚽",
           description: "Exercise makes your heart and body strong!",
           isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Sleep All Day",
-          emoji: "🛌",
-          description: "You need sleep, but you also need to move!",
-          isCorrect: false
         }
       ]
     },
@@ -140,13 +140,6 @@ const PreventionFirstPoster = () => {
       title: "Sleep Well",
       question: "Which poster shows good sleep habits?",
       options: [
-        {
-          id: "c",
-          text: "Stay Up Late",
-          emoji: "🦉",
-          description: "Staying up late makes you tired and weak.",
-          isCorrect: false
-        },
         {
           id: "b",
           text: "Sleep with Lights On",
@@ -160,6 +153,13 @@ const PreventionFirstPoster = () => {
           emoji: "🌙",
           description: "Getting enough sleep helps your body repair itself!",
           isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Stay Up Late",
+          emoji: "🦉",
+          description: "Staying up late makes you tired and weak.",
+          isCorrect: false
         }
       ]
     }
@@ -178,7 +178,16 @@ const PreventionFirstPoster = () => {
         }
       }, 1500);
     } else {
+      // Show feedback for incorrect answer and move to next question
       showCorrectAnswerFeedback(0, false);
+      
+      setTimeout(() => {
+        if (currentStage < stages.length - 1) {
+          setCurrentStage(prev => prev + 1);
+        } else {
+          setGameFinished(true);
+        }
+      }, 1500);
     }
   };
 
@@ -218,6 +227,7 @@ const PreventionFirstPoster = () => {
                 key={option.id}
                 onClick={() => handleOptionSelect(option)}
                 className="bg-white/10 hover:bg-white/20 p-6 rounded-xl border border-white/20 transition-all transform hover:scale-105 flex flex-col items-center gap-4 group"
+                disabled={gameFinished}
               >
                 <div className="text-6xl group-hover:scale-110 transition-transform">
                   {option.emoji}

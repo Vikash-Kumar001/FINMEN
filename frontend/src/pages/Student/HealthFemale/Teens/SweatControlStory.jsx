@@ -73,7 +73,7 @@ const SweatControlStory = () => {
       options: [
         {
           id: "a",
-          text: "After every use",
+          text: "After never use",
           emoji: "👕",
           isCorrect: false
         },

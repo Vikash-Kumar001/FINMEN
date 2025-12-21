@@ -5,7 +5,7 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const TOTAL_ROUNDS = 5;
-const ROUND_TIME = 5;
+const ROUND_TIME = 10;
 
 const ReflexHygieneAlert = () => {
   const navigate = useNavigate();

@@ -64,18 +64,18 @@ const SayNoPoster = () => {
           isCorrect: false
         },
         {
-          id: "a",
-          text: "Walk Away Fast",
-          emoji: "🏃",
-          description: "Leave the situation immediately.",
-          isCorrect: true
-        },
-        {
           id: "c",
           text: "Argue with Them",
           emoji: "🗣️",
           description: "Arguing keeps you in the bad situation.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Walk Away Fast",
+          emoji: "🏃",
+          description: "Leave the situation immediately.",
+          isCorrect: true
         }
       ]
     },
@@ -120,18 +120,18 @@ const SayNoPoster = () => {
           isCorrect: false
         },
         {
-          id: "a",
-          text: "Respect Your No",
-          emoji: "🤝",
-          description: "Real friends listen when you say no.",
-          isCorrect: true
-        },
-        {
           id: "c",
           text: "Make Fun of You",
           emoji: "😝",
           description: "Teasing isn't what friends do.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Respect Your No",
+          emoji: "🤝",
+          description: "Real friends listen when you say no.",
+          isCorrect: true
         }
       ]
     },
@@ -148,18 +148,18 @@ const SayNoPoster = () => {
           isCorrect: false
         },
         {
-          id: "b",
-          text: "Hides Away",
-          emoji: "🙈",
-          description: "Hiding doesn't solve the problem.",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Makes Own Choices",
           emoji: "🦁",
           description: "Being a leader of your own life is strong!",
           isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Hides Away",
+          emoji: "🙈",
+          description: "Hiding doesn't solve the problem.",
+          isCorrect: false
         }
       ]
     }
@@ -178,7 +178,16 @@ const SayNoPoster = () => {
         }
       }, 1500);
     } else {
+      // Show feedback for incorrect answer and move to next question
       showCorrectAnswerFeedback(0, false);
+      
+      setTimeout(() => {
+        if (currentStage < stages.length - 1) {
+          setCurrentStage(prev => prev + 1);
+        } else {
+          setGameFinished(true);
+        }
+      }, 1500);
     }
   };
 
@@ -218,6 +227,7 @@ const SayNoPoster = () => {
                 key={option.id}
                 onClick={() => handleOptionSelect(option)}
                 className="bg-white/10 hover:bg-white/20 p-6 rounded-xl border border-white/20 transition-all transform hover:scale-105 flex flex-col items-center gap-4 group"
+                disabled={gameFinished}
               >
                 <div className="text-6xl group-hover:scale-110 transition-transform">
                   {option.emoji}

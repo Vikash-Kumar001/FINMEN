@@ -5,91 +5,105 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const EffectsPuzzle = () => {
   const navigate = useNavigate();
-  const [coins, setCoins] = useState(0);
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(null);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedActivity, setSelectedActivity] = useState(null);
+  const [selectedEffect, setSelectedEffect] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   // Hardcode rewards
   const coinsPerLevel = 1;
   const totalCoins = 5;
   const totalXp = 10;
 
-  const puzzles = [
-    {
-      id: 1,
-      item: "Smoking",
-      emoji: "🚬",
-      matches: [
-        { id: "lungs", text: "Lung Damage", emoji: "🫁", correct: true },
-        { id: "heart", text: "Heart Health", emoji: "❤️", correct: false },
-        { id: "brain", text: "Brain Boost", emoji: "🧠", correct: false }
-      ]
-    },
-    {
-      id: 2,
-      item: "Alcohol",
-      emoji: "🍺",
-      matches: [
-        { id: "brain", text: "Brain Boost", emoji: "🧠", correct: false },
-        { id: "liver", text: "Liver Damage", emoji: "🫀", correct: true },
-        { id: "lungs", text: "Lung Health", emoji: "🫁", correct: false }
-      ]
-    },
-    {
-      id: 3,
-      item: "Drugs",
-      emoji: "💊",
-      matches: [
-        { id: "brain", text: "Brain Damage", emoji: "🧠", correct: true },
-        { id: "heart", text: "Heart Health", emoji: "❤️", correct: false },
-        { id: "lungs", text: "Lung Health", emoji: "🫁", correct: false }
-      ]
-    },
-    {
-      id: 4,
-      item: "Vaping",
-      emoji: "💨",
-      matches: [
-        { id: "lungs", text: "Lung Damage", emoji: "🫁", correct: true },
-        { id: "brain", text: "Brain Boost", emoji: "🧠", correct: false },
-        { id: "heart", text: "Heart Health", emoji: "❤️", correct: false }
-      ]
-    },
-    {
-      id: 5,
-      item: "Exercise",
-      emoji: "🏃",
-      matches: [
-        { id: "heart", text: "Heart Health", emoji: "❤️", correct: true },
-        { id: "brain", text: "Brain Damage", emoji: "🧠", correct: false },
-        { id: "lungs", text: "Lung Damage", emoji: "🫁", correct: false }
-      ]
-    }
+  // Activities/Substances (left side) - 5 items
+  const activities = [
+    { id: 1, name: "Smoking", emoji: "🚬", description: "Tobacco inhalation" },
+    { id: 2, name: "Alcohol", emoji: "🍺", description: "Liquid consumption" },
+    { id: 3, name: "Drugs", emoji: "-pill", description: "Chemical substances" },
+    { id: 4, name: "Vaping", emoji: "💨", description: "Inhalation device" },
+    { id: 5, name: "Exercise", emoji: "🏃", description: "Physical activity" }
   ];
 
-  const handleMatch = (matchId) => {
-    const currentPuzzleData = puzzles[currentPuzzle];
-    const match = currentPuzzleData.matches.find(m => m.id === matchId);
-    setSelectedMatch(matchId);
+  // Effects on Body (right side) - 5 items
+  const effects = [
+    { id: 3, name: "Brain Damage", emoji: "🧠", description: "Neural impairment" },
+    { id: 5, name: "Heart Health", emoji: "❤️", description: "Cardiovascular benefit" },
+    { id: 1, name: "Lung Damage", emoji: "🫁", description: "Respiratory harm" },
+    { id: 4, name: "Lung Damage", emoji: "🫁", description: "Respiratory harm" },
+    { id: 2, name: "Liver Damage", emoji: "🫀", description: "Organ impairment" }
+  ];
 
-    if (match.correct) {
-      setCoins(prev => prev + 1);
+  // Correct matches
+  const correctMatches = [
+    { activityId: 1, effectId: 1 }, // Smoking → Lung Damage
+    { activityId: 2, effectId: 2 }, // Alcohol → Liver Damage
+    { activityId: 3, effectId: 3 }, // Drugs → Brain Damage
+    { activityId: 4, effectId: 4 }, // Vaping → Lung Damage
+    { activityId: 5, effectId: 5 }  // Exercise → Heart Health
+  ];
+
+  const handleActivitySelect = (activity) => {
+    if (gameFinished) return;
+    setSelectedActivity(activity);
+  };
+
+  const handleEffectSelect = (effect) => {
+    if (gameFinished) return;
+    setSelectedEffect(effect);
+  };
+
+  const handleMatch = () => {
+    if (!selectedActivity || !selectedEffect || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      activityId: selectedActivity.id,
+      effectId: selectedEffect.id,
+      isCorrect: correctMatches.some(
+        match => match.activityId === selectedActivity.id && match.effectId === selectedEffect.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setShowCoinFeedback(currentPuzzleData.id);
-      setTimeout(() => setShowCoinFeedback(null), 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    setTimeout(() => {
-      if (currentPuzzle < puzzles.length - 1) {
-        setCurrentPuzzle(prev => prev + 1);
-        setSelectedMatch(null);
-      } else {
+    // Check if all items are matched
+    if (newMatches.length === activities.length) {
+      setTimeout(() => {
         setGameFinished(true);
-      }
-    }, 1500);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedActivity(null);
+    setSelectedEffect(null);
+  };
+
+  // Check if an activity is already matched
+  const isActivityMatched = (activityId) => {
+    return matches.some(match => match.activityId === activityId);
+  };
+
+  // Check if an effect is already matched
+  const isEffectMatched = (effectId) => {
+    return matches.some(match => match.effectId === effectId);
+  };
+
+  // Get match result for an activity
+  const getMatchResult = (activityId) => {
+    const match = matches.find(m => m.activityId === activityId);
+    return match ? match.isCorrect : null;
   };
 
   const handleNext = () => {
@@ -98,83 +112,144 @@ const EffectsPuzzle = () => {
 
   return (
     <GameShell
-      title="Puzzle: Effects"
-      subtitle={`Puzzle ${currentPuzzle + 1}/5: ${puzzles[currentPuzzle].item}`}
+      title="Effects Puzzle"
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Activities with Their Effects (${matches.length}/${activities.length} matched)`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={coins}
+      score={score}
       gameId="health-male-teen-84"
       gameType="health-male"
-      maxScore={puzzles.length}
+      totalLevels={activities.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === activities.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/health-male/teens"
+      maxScore={activities.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
-      showAnswerConfetti={showAnswerConfetti}
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/5: {puzzles[currentPuzzle].item}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6 text-center">
-            Match the activity to its main effect on the body!
-          </p>
-
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-              {showCoinFeedback === puzzles[currentPuzzle].id && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                    +1
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-4xl mr-3">{puzzles[currentPuzzle].emoji}</div>
-                <div className="text-white text-xl font-bold">{puzzles[currentPuzzle].item}</div>
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Activities/Substances */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Activities/Substances</h3>
+              <div className="space-y-4">
+                {activities.map(activity => (
+                  <button
+                    key={activity.id}
+                    onClick={() => handleActivitySelect(activity)}
+                    disabled={isActivityMatched(activity.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isActivityMatched(activity.id)
+                        ? getMatchResult(activity.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedActivity?.id === activity.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{activity.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{activity.name}</h4>
+                        <p className="text-white/80 text-sm">{activity.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
+            </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                {puzzles[currentPuzzle].matches.map((match) => {
-                  const isSelected = selectedMatch === match.id;
-                  const isCorrect = selectedMatch === match.id && match.correct;
-                  const isWrong = selectedMatch === match.id && !match.correct;
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedActivity 
+                    ? `Selected: ${selectedActivity.name}` 
+                    : "Select an Activity"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedActivity || !selectedEffect}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedActivity && selectedEffect
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{activities.length}</p>
+                  <p>Matched: {matches.length}/{activities.length}</p>
+                </div>
+              </div>
+            </div>
 
-                  return (
-                    <button
-                      key={match.id}
-                      onClick={() => handleMatch(match.id)}
-                      disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${!selectedMatch
-                          ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                          : isCorrect
-                            ? 'bg-green-100/20 border-green-500 text-white'
-                            : isWrong
-                              ? 'bg-red-100/20 border-red-500 text-white'
-                              : 'bg-gray-100/20 border-gray-500 text-white'
-                        }`}
-                    >
-                      {isCorrect && (
-                        <div className="absolute -top-2 -right-2 text-2xl">✅</div>
-                      )}
-                      {isWrong && (
-                        <div className="absolute -top-2 -right-2 text-2xl">❌</div>
-                      )}
-                      <div className="text-2xl mb-1">{match.emoji}</div>
-                      <div className="font-medium text-sm">{match.text}</div>
-                    </button>
-                  );
-                })}
+            {/* Right column - Effects on Body */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Effects on Body</h3>
+              <div className="space-y-4">
+                {effects.map(effect => (
+                  <button
+                    key={effect.id}
+                    onClick={() => handleEffectSelect(effect)}
+                    disabled={isEffectMatched(effect.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isEffectMatched(effect.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedEffect?.id === effect.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{effect.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{effect.name}</h4>
+                        <p className="text-white/80 text-sm">{effect.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {activities.length} activities with their effects on the body!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Different activities have different effects on our bodies - some helpful, others harmful!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {activities.length} activities correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about how each activity affects your body's organs!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

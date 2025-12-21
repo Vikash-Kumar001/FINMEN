@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -6,15 +6,59 @@ import { getGameDataById } from "../../../../utils/getGameData";
 import { getSustainabilityKidsGames } from "../../../../pages/Games/GameCategories/Sustainability/kidGamesData";
 
 const TOTAL_ROUNDS = 5;
-const ROUND_TIME = 5;
+const ROUND_TIME = 10;
 
-const words = [
-  { word: "TURN OFF", isCorrect: true },
-  { word: "LEAVE ON", isCorrect: false },
-  { word: "UNPLUG", isCorrect: true },
-  { word: "KEEP RUNNING", isCorrect: false },
-  { word: "SAVE ENERGY", isCorrect: true },
-  { word: "WASTE POWER", isCorrect: false }
+const questions = [
+  {
+    id: 1,
+    text: "Which action saves energy?",
+    options: [
+      { id: 'a', text: " Unplug Devices", emoji: "🔌", isCorrect: true },
+      { id: 'b', text: " Leave Lights On", emoji: "💡", isCorrect: false },
+      { id: 'c', text: " Keep Computer On", emoji: "🖥️", isCorrect: false },
+      { id: 'd', text: " Leave TV On", emoji: "📺", isCorrect: false }
+    ]
+  },
+  {
+    id: 2,
+    text: "What reduces electricity use?",
+    options: [
+      { id: 'a', text: " Use Natural Light", emoji: "🌞", isCorrect: false },
+      { id: 'b', text: " Set AC to 60°F", emoji: "❄️", isCorrect: false },
+      { id: 'c', text: " Use Battery Power", emoji: "🔋", isCorrect: true },
+      { id: 'd', text: " Heat Unused Rooms", emoji: "🔥", isCorrect: false }
+    ]
+  },
+  {
+    id: 3,
+    text: "Which appliance uses least energy?",
+    options: [
+      { id: 'a', text: " Ceiling Fan", emoji: "🌀", isCorrect: false },
+      { id: 'b', text: " Electric Heater", emoji: "🔥", isCorrect: false },
+      { id: 'c', text: " Energy Star Fridge", emoji: "❄️", isCorrect: true },
+      { id: 'd', text: " LED Bulb", emoji: "💡", isCorrect: false }
+    ]
+  },
+  {
+    id: 4,
+    text: "What's an energy-efficient habit?",
+    options: [
+      { id: 'a', text: " Drive Short Trips", emoji: "🚗", isCorrect: false },
+      { id: 'b', text: " Walk or Bike", emoji: "🚶", isCorrect: true },
+      { id: 'c', text: " Leave Chargers Plugged In", emoji: "🔌", isCorrect: false },
+      { id: 'd', text: " Use Incandescent Bulbs", emoji: "💡", isCorrect: false }
+    ]
+  },
+  {
+    id: 5,
+    text: "Which helps save energy at home?",
+    options: [
+      { id: 'a', text: " Adjust Thermostat", emoji: "🌡️", isCorrect: false },
+      { id: 'b', text: " Long Showers", emoji: "🚿", isCorrect: false },
+      { id: 'c', text: " Leave Laptop Charging", emoji: "💻", isCorrect: false },
+      { id: 'd', text: " Unplug Unused Devices", emoji: "🔌", isCorrect: true }
+    ]
+  }
 ];
 
 const ReflexEnergySaver = () => {
@@ -22,19 +66,20 @@ const ReflexEnergySaver = () => {
   const location = useLocation();
   const gameId = "sustainability-kids-13";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [gameState, setGameState] = useState("ready");
+  
+  const [currentRound, setCurrentRound] = useState(1);
+  const [gameState, setGameState] = useState('ready'); // ready, playing, finished
   const [score, setScore] = useState(0);
-  const [currentRound, setCurrentRound] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(5);
-  const [currentWord, setCurrentWord] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
   const timerRef = useRef(null);
+  const currentRoundRef = useRef(1);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Find next game path and ID if not provided in location.state
-  const { nextGamePath, nextGameId } = useMemo(() => {
+  const { nextGamePath, nextGameId } = (() => {
     if (location.state?.nextGamePath) {
       return {
         nextGamePath: location.state.nextGamePath,
@@ -55,9 +100,8 @@ const ReflexEnergySaver = () => {
       console.warn("Error finding next game:", error);
     }
     return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
+  })();
 
-  // Log when game completes and update location state with nextGameId
   useEffect(() => {
     if (gameState === "finished") {
       console.log(`🎮 Reflex Energy Saver game completed! Score: ${score}/${TOTAL_ROUNDS}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
@@ -71,160 +115,193 @@ const ReflexEnergySaver = () => {
     }
   }, [gameState, score, gameId, nextGamePath, nextGameId]);
 
-  const shuffleArray = useCallback((array) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  // Update ref when currentRound changes
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  // Reset timer when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
-    return shuffled;
+  }, [currentRound, gameState]);
+
+  // Handle time up - move to next question or show results
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
+    resetFeedback();
+
+    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
+
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+      }
+    }, 1000);
   }, []);
 
-  const showNextWord = useCallback(() => {
-    if (gameState !== "playing") return;
-    const correctWords = words.filter(w => w.isCorrect === true);
-    const incorrectWords = words.filter(w => w.isCorrect === false);
-    const shuffledCorrect = shuffleArray(correctWords);
-    const shuffledIncorrect = shuffleArray(incorrectWords);
-    let selectedWord;
-    if (currentRound % 2 === 1) {
-      const roundIndex = Math.floor((currentRound - 1) / 2);
-      selectedWord = shuffledCorrect[roundIndex % shuffledCorrect.length];
-    } else {
-      const roundIndex = Math.floor((currentRound - 2) / 2);
-      selectedWord = shuffledIncorrect[roundIndex % shuffledIncorrect.length];
-    }
-    if (selectedWord) {
-      setCurrentWord(selectedWord);
-    }
-  }, [gameState, currentRound, shuffleArray]);
-
-  const startGame = () => {
-    resetFeedback();
-    setGameState("playing");
-    setScore(0);
-    setCurrentRound(1);
-    setTimeLeft(ROUND_TIME);
-    showNextWord();
-  };
-
-  const handleTap = () => {
-    if (gameState !== "playing" || !currentWord) return;
-    const shouldTap = currentRound % 2 === 1;
-    const isCorrect = shouldTap && currentWord.isCorrect;
-    if (isCorrect) {
-      setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    }
-    if (currentRound < TOTAL_ROUNDS) {
-      setCurrentRound(prev => prev + 1);
-      setTimeLeft(ROUND_TIME);
-      setTimeout(() => showNextWord(), 500);
-    } else {
-      setGameState("finished");
-      if (score + (isCorrect ? 1 : 0) >= TOTAL_ROUNDS - 1) {
-        showAnswerConfetti();
-      }
-    }
-  };
-
+  // Timer effect - countdown from 10 seconds for each question
   useEffect(() => {
-    if (gameState === "playing" && timeLeft > 0) {
-      timerRef.current = setTimeout(() => {
-        setTimeLeft(prev => prev - 1);
-      }, 1000);
-    } else if (gameState === "playing" && timeLeft === 0) {
-      if (currentRound < TOTAL_ROUNDS) {
-        setCurrentRound(prev => prev + 1);
-        setTimeLeft(ROUND_TIME);
-        setTimeout(() => showNextWord(), 500);
-      } else {
-        setGameState("finished");
+    if (gameState !== "playing") {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
       }
+      return;
     }
+
+    // Check if game should be finished
+    if (currentRoundRef.current > TOTAL_ROUNDS) {
+      setGameState("finished");
+      return;
+    }
+
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // Start countdown timer
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          // Time's up for this round
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          handleTimeUp();
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
+
     return () => {
       if (timerRef.current) {
-        clearTimeout(timerRef.current);
+        clearInterval(timerRef.current);
+        timerRef.current = null;
       }
     };
-  }, [gameState, timeLeft, currentRound, showNextWord]);
+  }, [gameState, handleTimeUp, currentRound]);
 
-  const handleNext = () => {
-    navigate("/student/sustainability/kids/puzzle-energy-sources");
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    resetFeedback();
   };
 
-  const finalScore = score;
-  const coins = finalScore;
+  const handleAnswer = (option) => {
+    if (gameState !== "playing" || answered || currentRound > TOTAL_ROUNDS) return;
+
+    // Clear the timer immediately when user answers
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    setAnswered(true);
+    resetFeedback();
+
+    if (option.isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    // Move to next round or show results after a short delay
+    setTimeout(() => {
+      if (currentRound >= TOTAL_ROUNDS) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+        setAnswered(false); // Reset answered state for next round
+      }
+    }, 500);
+  };
+
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Energy Saver"
-      subtitle={gameState === "ready" ? "Tap quickly for 'Turn Off' actions, avoid 'Leave On'!" : gameState === "playing" ? `Round ${currentRound} of ${TOTAL_ROUNDS} - Time: ${timeLeft}s` : "Game Complete!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound} of ${TOTAL_ROUNDS}` : gameState === "finished" ? "Game Complete!" : "Act fast!"}
       currentLevel={currentRound}
-      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      score={score}
       showGameOver={gameState === "finished"}
+      score={score}
       gameId={gameId}
       gameType="sustainability"
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      totalLevels={TOTAL_ROUNDS}
       maxScore={TOTAL_ROUNDS}
-      showConfetti={gameState === "finished" && score === TOTAL_ROUNDS}
+      showConfetti={gameState === "finished" && score >= 3}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      {flashPoints}
-      {gameState === "ready" && (
-        <div className="text-center space-y-6">
-          <div className="text-6xl mb-4">⚡</div>
-          <h3 className="text-2xl font-bold text-white mb-4">Ready to Play?</h3>
-          <p className="text-gray-300 mb-6">
-            Tap when you see TURN OFF actions (like TURN OFF, UNPLUG, SAVE ENERGY)
-            <br />
-            Don't tap for LEAVE ON actions (like LEAVE ON, KEEP RUNNING, WASTE POWER)
-          </p>
-          <button
-            onClick={startGame}
-            className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-600 hover:to-orange-700 transition-all transform hover:scale-105"
-          >
-            Start Game
-          </button>
-        </div>
-      )}
-      {gameState === "playing" && currentWord && (
-        <div className="text-center space-y-6">
-          <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-2xl p-8 border border-yellow-400/30">
-            <div className="text-6xl font-extrabold text-white mb-4">
-              {currentWord.word}
-            </div>
-            <p className="text-gray-300 mb-6">
-              {currentRound % 2 === 1 ? "Tap if this saves energy!" : "Don't tap - this wastes energy!"}
-            </p>
+      <div className="space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/80 mb-6 text-lg">Choose the energy-saving action quickly! You have {ROUND_TIME} seconds per round</p>
             <button
-              onClick={handleTap}
-              className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-12 py-6 rounded-xl font-bold text-xl hover:from-blue-600 hover:to-cyan-700 transition-all transform active:scale-95"
+              onClick={startGame}
+              className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105"
             >
-              TAP!
+              Start Game
             </button>
+            <p className="text-white/60 mt-4">You'll have {ROUND_TIME} seconds per round</p>
           </div>
-        </div>
-      )}
-      {gameState === "finished" && (
-        <div className="text-center space-y-6">
-          <div className="text-6xl mb-4">🎉</div>
-          <h3 className="text-2xl font-bold text-white">Game Over!</h3>
-          <p className="text-gray-300">
-            You scored {finalScore} out of {TOTAL_ROUNDS}!
-          </p>
-          <p className="text-green-400 font-semibold">
-            You earned {coins} coins! Great energy-saving reflexes! ⚡
-          </p>
-        </div>
-      )}
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}/{TOTAL_ROUNDS}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.text}
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-4xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </GameShell>
   );
 };
 
 export default ReflexEnergySaver;
-

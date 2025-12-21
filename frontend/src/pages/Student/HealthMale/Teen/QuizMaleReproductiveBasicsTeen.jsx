@@ -7,6 +7,8 @@ const QuizMaleReproductiveBasicsTeen = () => {
   const navigate = useNavigate();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
@@ -17,23 +19,20 @@ const QuizMaleReproductiveBasicsTeen = () => {
       options: [
         {
           id: "a",
-          text: "Lungs",
-          emoji: "🫁",
-          description: "Lungs help with breathing, not sperm production",
-          isCorrect: false
+          text: "Testes",
+          emoji: "🫐",
+          isCorrect: true
         },
         {
           id: "b",
-          text: "Testes",
-          emoji: "🫐",
-          description: "Testes are the male reproductive organs that produce sperm",
-          isCorrect: true
+          text: "Lungs",
+          emoji: "🫁",
+          isCorrect: false
         },
         {
           id: "c",
           text: "Heart",
           emoji: "❤️",
-          description: "Heart pumps blood, but doesn't produce sperm",
           isCorrect: false
         }
       ]
@@ -46,22 +45,19 @@ const QuizMaleReproductiveBasicsTeen = () => {
           id: "a",
           text: "Produce sperm",
           emoji: "🏭",
-          description: "Sperm is produced in the testes, not the penis",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Store urine",
-          emoji: "💧",
-          description: "Penis has multiple functions including reproduction",
-          isCorrect: false
+          text: "Transfer sperm",
+          emoji: "🔄",
+          isCorrect: true
         },
         {
           id: "c",
-          text: "Transfer sperm",
-          emoji: "🔄",
-          description: "Penis transfers sperm to the female reproductive system",
-          isCorrect: true
+          text: "Store urine",
+          emoji: "💧",
+          isCorrect: false
         }
       ]
     },
@@ -71,24 +67,21 @@ const QuizMaleReproductiveBasicsTeen = () => {
       options: [
         {
           id: "a",
-          text: "Hormones",
-          emoji: "🧬",
-          description: "Hormones like testosterone drive puberty changes",
-          isCorrect: true
+          text: "Exercise",
+          emoji: "💪",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Exercise",
-          emoji: "💪",
-          description: "Exercise is healthy but hormones cause puberty",
+          text: "Diet changes",
+          emoji: "🍎",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Diet changes",
-          emoji: "🍎",
-          description: "Hormones, not diet, primarily cause puberty",
-          isCorrect: false
+          text: "Hormones",
+          emoji: "🧬",
+          isCorrect: true
         }
       ]
     },
@@ -100,22 +93,19 @@ const QuizMaleReproductiveBasicsTeen = () => {
           id: "a",
           text: "Kidneys",
           emoji: "🫘",
-          description: "Kidneys filter blood, not related to sperm production",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Testes",
-          emoji: "🥜",
-          description: "Sperm is produced in the testes",
-          isCorrect: true
+          text: "Bladder",
+          emoji: "🚽",
+          isCorrect: false
         },
         {
           id: "c",
-          text: "Bladder",
-          emoji: "🚽",
-          description: "Bladder stores urine, not involved in sperm production",
-          isCorrect: false
+          text: "Testes",
+          emoji: "🥜",
+          isCorrect: true
         }
       ]
     },
@@ -127,38 +117,42 @@ const QuizMaleReproductiveBasicsTeen = () => {
           id: "a",
           text: "A type of cell",
           emoji: "🔍",
-          description: "Semen is a fluid, not a cell",
           isCorrect: false
         },
         {
           id: "b",
-          text: "Just sperm",
-          emoji: "🔬",
-          description: "Semen contains more than just sperm",
-          isCorrect: false
+          text: "Fluid containing sperm",
+          emoji: "💦",
+          isCorrect: true
         },
         {
           id: "c",
-          text: "Fluid containing sperm",
-          emoji: "💦",
-          description: "Semen is the fluid that carries sperm",
-          isCorrect: true
+          text: "Just sperm",
+          emoji: "🔬",
+          isCorrect: false
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (showFeedback) return; // Prevent multiple clicks
+    
+    const selectedOpt = questions[currentQuestion].options.find(opt => opt.id === optionId);
+    setSelectedOption(optionId);
+    setShowFeedback(true);
+    
+    const isCorrect = selectedOpt.isCorrect;
     if (isCorrect) {
       showCorrectAnswerFeedback(1, true);
     }
-
+    
     setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
+    
     setTimeout(() => {
+      setShowFeedback(false);
+      setSelectedOption(null);
+      
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
@@ -205,14 +199,22 @@ const QuizMaleReproductiveBasicsTeen = () => {
             {getCurrentQuestion().options.map(option => (
               <button
                 key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                onClick={() => handleAnswer(option.id)}
+                disabled={showFeedback}
+                className={`p-4 rounded-2xl text-left transition-all duration-300 ${
+                  showFeedback 
+                    ? option.isCorrect 
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600' 
+                      : selectedOption === option.id 
+                        ? 'bg-gradient-to-r from-red-500 to-rose-600' 
+                        : 'bg-gradient-to-r from-blue-500 to-indigo-600'
+                    : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
+                } ${showFeedback && option.isCorrect ? 'ring-4 ring-yellow-400 animate-pulse' : ''}`}
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>

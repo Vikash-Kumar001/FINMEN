@@ -19,8 +19,10 @@ const QuizEmotions = () => {
 
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -29,23 +31,20 @@ const QuizEmotions = () => {
       options: [
         {
           id: "a",
-          text: "Chair",
-          emoji: "🪑",
-          description: "A chair is a thing, not a feeling",
-          isCorrect: false
+          text: "Happy",
+          emoji: "😊",
+          isCorrect: true
         },
         {
           id: "b",
-          text: "Happy",
-          emoji: "😊",
-          description: "Happy is a feeling you have inside",
-          isCorrect: true
+          text: "Chair",
+          emoji: "🪑",
+          isCorrect: false
         },
         {
           id: "c",
           text: "Book",
           emoji: "📚",
-          description: "A book is a thing you read, not a feeling",
           isCorrect: false
         }
       ]
@@ -56,23 +55,20 @@ const QuizEmotions = () => {
       options: [
         {
           id: "a",
-          text: "When you feel unhappy",
-          emoji: "😢",
-          description: "Sad means feeling unhappy or down",
-          isCorrect: true
+          text: "A game you play",
+          emoji: "🎮",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "A game you play",
-          emoji: "🎮",
-          description: "Sad is an emotion, not a game",
-          isCorrect: false
+          text: "When you feel unhappy",
+          emoji: "😢",
+          isCorrect: true
         },
         {
           id: "c",
           text: "A type of food",
           emoji: "🍎",
-          description: "Sad is when you feel unhappy or cry",
           isCorrect: false
         }
       ]
@@ -83,24 +79,21 @@ const QuizEmotions = () => {
       options: [
         {
           id: "a",
-          text: "Jumping with joy",
-          emoji: "🤾",
-          description: "This shows happiness, not anger",
-          isCorrect: false
+          text: "Frowning and crossing arms",
+          emoji: "😠",
+          isCorrect: true
         },
         {
           id: "b",
-          text: "Smiling and laughing",
-          emoji: "😄",
-          description: "Angry people usually frown or yell",
+          text: "Jumping with joy",
+          emoji: "🤾",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Frowning and crossing arms",
-          emoji: "😠",
-          description: "These are signs of anger",
-          isCorrect: true
+          text: "Smiling and laughing",
+          emoji: "😄",
+          isCorrect: false
         }
       ]
     },
@@ -110,24 +103,21 @@ const QuizEmotions = () => {
       options: [
         {
           id: "a",
-          text: "When you feel really happy and energetic",
-          emoji: "🎉",
-          description: "Excited means very happy and full of energy",
-          isCorrect: true
+          text: "A type of vegetable",
+          emoji: "🥕",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "A type of vegetable",
-          emoji: "🥕",
-          description: "Excited is a feeling, not a food",
+          text: "When you're very tired",
+          emoji: "😴",
           isCorrect: false
         },
         {
           id: "c",
-          text: "When you're very tired",
-          emoji: "😴",
-          description: "Excited is the opposite of tired",
-          isCorrect: false
+          text: "When you feel really happy and energetic",
+          emoji: "🎉",
+          isCorrect: true
         }
       ]
     },
@@ -137,45 +127,55 @@ const QuizEmotions = () => {
       options: [
         {
           id: "a",
-          text: "Boredom",
-          emoji: "😐",
-          description: "Fear is more helpful than boredom for staying safe",
-          isCorrect: false
+          text: "Fear",
+          emoji: "😨",
+          isCorrect: true
         },
         {
           id: "b",
-          text: "Happiness",
-          emoji: "😊",
-          description: "Fear helps us stay safe when something might be dangerous",
+          text: "Boredom",
+          emoji: "😐",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Fear",
-          emoji: "😨",
-          description: "Fear tells us when we need to be careful",
-          isCorrect: true
+          text: "Happiness",
+          emoji: "😊",
+          isCorrect: false
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
-
+  const handleAnswer = (optionId) => {
+    if (showFeedback || gameFinished) return;
+    
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
+    
+    setShowFeedback(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, isCorrect ? 1000 : 800);
   };
 
   const handleNext = () => {
@@ -185,50 +185,80 @@ const QuizEmotions = () => {
   return (
     <GameShell
       title="Quiz on Emotions"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
       gameId={gameId}
       gameType="health-male"
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
+      totalLevels={5}
+      currentLevel={52}
+      showConfetti={gameFinished}
+      backPath="/games/health-male/kids"
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}
-      backPath="/games/health-male/kids"
-    >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {questions[currentQuestion].text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {questions[currentQuestion].options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+      totalXp={totalXp}>
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!gameFinished && questions[currentQuestion] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <div className="text-6xl mb-4 text-center">😊</div>
+              
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
                 </div>
-              </button>
-            ))}
+              )}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

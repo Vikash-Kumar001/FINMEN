@@ -16,7 +16,7 @@ const ReflexFreshness = () => {
     const coinsPerLevel = 1;
     const totalCoins = 5;
     const totalXp = 10;
-    const ROUND_TIME = 5;
+    const ROUND_TIME = 10;
     const TOTAL_ROUNDS = 5;
 
     const [currentRound, setCurrentRound] = useState(1);
@@ -34,50 +34,50 @@ const ReflexFreshness = () => {
             id: 1,
             question: "What to wear?",
             options: [
-                { text: "Dirty Shirt", emoji: "❌", isCorrect: false },
-                { text: "Wet Clothes", emoji: "💦", isCorrect: false },
-                { text: "Clean Clothes", emoji: "👕", isCorrect: true },
-                { text: "Torn Clothes", emoji: "✂️", isCorrect: false }
+                { id: 'a', text: "Clean Clothes", emoji: "👕", isCorrect: true },
+                { id: 'b', text: "Dirty Shirt", emoji: "❌", isCorrect: false },
+                { id: 'c', text: "Wet Clothes", emoji: "💦", isCorrect: false },
+                { id: 'd', text: "Torn Clothes", emoji: "✂️", isCorrect: false }
             ]
         },
         {
             id: 2,
             question: "How to smell good?",
             options: [
-                { text: "Skip Bath", emoji: "🦨", isCorrect: false },
-                { text: "Fresh Soap", emoji: "🧼", isCorrect: true },
-                { text: "Dirt", emoji: "💩", isCorrect: false },
-                { text: "Mud", emoji: "🟤", isCorrect: false }
+                { id: 'a', text: "Skip Bath", emoji: "🦨", isCorrect: false },
+                { id: 'b', text: "Dirt", emoji: "💩", isCorrect: false },
+                { id: 'c', text: "Mud", emoji: "🟤", isCorrect: false },
+                { id: 'd', text: "Fresh Soap", emoji: "🧼", isCorrect: true }
             ]
         },
         {
             id: 3,
             question: "How to keep face clean?",
             options: [
-                { text: "Clean Face", emoji: "🧴", isCorrect: true },
-                { text: "Dirty Face", emoji: "😞", isCorrect: false },
-                { text: "Oily Face", emoji: "🛢️", isCorrect: false },
-                { text: "Sticky Face", emoji: "🍯", isCorrect: false }
+                { id: 'a', text: "Dirty Face", emoji: "😞", isCorrect: false },
+                { id: 'b', text: "Oily Face", emoji: "🛢️", isCorrect: false },
+                { id: 'c', text: "Clean Face", emoji: "🧴", isCorrect: true },
+                { id: 'd', text: "Sticky Face", emoji: "🍯", isCorrect: false }
             ]
         },
         {
             id: 4,
             question: "How to keep teeth clean?",
             options: [
-                { text: "Skip Brushing", emoji: "🦶", isCorrect: false },
-                { text: "Eat Candy", emoji: "🍬", isCorrect: false },
-                { text: "Drink Soda", emoji: "🥤", isCorrect: false },
-                { text: "Brush Teeth", emoji: "🦷", isCorrect: true },
+                { id: 'a', text: "Eat Candy", emoji: "🍬", isCorrect: false },
+                { id: 'b', text: "Brush Teeth", emoji: "🦷", isCorrect: true },
+                { id: 'c', text: "Drink Soda", emoji: "🥤", isCorrect: false },
+                { id: 'd', text: "Skip Brushing", emoji: "🦶", isCorrect: false },
             ]
         },
         {
             id: 5,
             question: "How to stay fresh?",
             options: [
-                { text: "Stay Dirty", emoji: "🤢", isCorrect: false },
-                { text: "Daily Bath", emoji: "🚿", isCorrect: true },
-                { text: "Roll in Mud", emoji: "🐷", isCorrect: false },
-                { text: "Never Wash", emoji: "🙅", isCorrect: false }
+                { id: 'a', text: "Daily Bath", emoji: "🚿", isCorrect: true },
+                { id: 'b', text: "Stay Dirty", emoji: "🤢", isCorrect: false },
+                { id: 'c', text: "Roll in Mud", emoji: "🐷", isCorrect: false },
+                { id: 'd', text: "Never Wash", emoji: "🙅", isCorrect: false }
             ]
         }
     ];
@@ -189,6 +189,7 @@ const ReflexFreshness = () => {
                 setGameState("finished");
             } else {
                 setCurrentRound((prev) => prev + 1);
+                setAnswered(false); // Reset answered state for next round
             }
         }, 500);
     };

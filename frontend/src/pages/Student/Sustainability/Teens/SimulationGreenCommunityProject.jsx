@@ -9,13 +9,14 @@ const SimulationGreenCommunityProject = () => {
   const location = useLocation();
   const gameData = getGameDataById("sustainability-teens-24");
   const gameId = gameData?.id || "sustainability-teens-24";
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [score, setScore] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const [currentScenario, setCurrentScenario] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const { nextGamePath, nextGameId } = useMemo(() => {
@@ -59,99 +60,114 @@ const SimulationGreenCommunityProject = () => {
       id: 1,
       text: "What's the first step in planning a green community project?",
       options: [
-        { id: "assess", text: "Assess community needs", emoji: "📊", description: "Understand what's needed", isCorrect: true },
-        { id: "ignore", text: "Ignore community input", emoji: "😐", description: "Not effective", isCorrect: false },
-        { id: "rush", text: "Rush into action", emoji: "⚡", description: "Needs planning", isCorrect: false }
+        { id: "a", text: "Ignore community input", emoji: "😐", isCorrect: false },
+        { id: "b", text: "Assess community needs", emoji: "📊", isCorrect: true },
+        { id: "c", text: "Rush into action", emoji: "⚡", isCorrect: false },
+        { id: "d", text: "Copy another project", emoji: "📋", isCorrect: false }
       ]
     },
     {
       id: 2,
       text: "How should you engage the community?",
       options: [
-        { id: "exclude", text: "Exclude community members", emoji: "🚫", description: "Lacks support", isCorrect: false },
-        { id: "involve", text: "Involve everyone in planning", emoji: "👥", description: "Builds support", isCorrect: true },
-        { id: "dictate", text: "Dictate the plan", emoji: "📢", description: "Not collaborative", isCorrect: false }
+        { id: "a", text: "Exclude community members", emoji: "🚫", isCorrect: false },
+        { id: "b", text: "Dictate the plan", emoji: "📢", isCorrect: false },
+        { id: "c", text: "Involve everyone in planning", emoji: "👥", isCorrect: false },
+        { id: "d", text: "Work in isolation", emoji: "👤", isCorrect: true }
       ]
     },
     {
       id: 3,
       text: "What makes a community project sustainable?",
       options: [
-        { id: "shortterm", text: "Quick fixes only", emoji: "⚡", description: "Not sustainable", isCorrect: false },
-        { id: "ignore", text: "Ignore maintenance", emoji: "🔧", description: "Won't last", isCorrect: false },
-        { id: "longterm", text: "Long-term impact and maintenance", emoji: "🌱", description: "Lasting change", isCorrect: true }
+        { id: "a", text: "Quick fixes only", emoji: "⚡", isCorrect: true },
+        { id: "b", text: "Ignore maintenance", emoji: "🔧", isCorrect: false },
+        { id: "c", text: "Long-term impact and maintenance", emoji: "🌱", isCorrect: false },
+        { id: "d", text: "High cost materials", emoji: "💰", isCorrect: false }
       ]
     },
     {
       id: 4,
       text: "How do you measure project success?",
       options: [
-        { id: "metrics", text: "Track environmental metrics", emoji: "📈", description: "Measure impact", isCorrect: true },
-        { id: "ignore", text: "Ignore results", emoji: "😶", description: "No learning", isCorrect: false },
-        { id: "guess", text: "Guess the impact", emoji: "🎲", description: "Not accurate", isCorrect: false }
+        { id: "a", text: "Ignore results", emoji: "😶", isCorrect: false },
+        { id: "b", text: "Guess the impact", emoji: "🎲", isCorrect: false },
+        { id: "c", text: "Track environmental metrics", emoji: "📈", isCorrect: false },
+        { id: "d", text: "Count complaints", emoji: "📉", isCorrect: true }
+      ]
+    },
+    {
+      id: 5,
+      text: "What should you do after project completion?",
+      options: [
+        { id: "a", text: "Forget about it", emoji: "-dismiss", isCorrect: false },
+        { id: "b", text: "Evaluate and document outcomes", emoji: "📝", isCorrect: false },
+        { id: "c", text: "Start a new project immediately", emoji: "🚀", isCorrect: true },
+        { id: "d", text: "Stop all maintenance", emoji: "🛑", isCorrect: false }
       ]
     }
   ];
 
-  const handleChoice = (isCorrect) => {
-    if (answered) return;
-    setAnswered(true);
-    resetFeedback();
+  const handleChoice = (optionId) => {
+    const selectedOption = questions[currentScenario].options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
+
     if (isCorrect) {
-      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
+
+    setChoices([...choices, { scenario: currentScenario, optionId, isCorrect }]);
+
     setTimeout(() => {
-      if (currentQuestion === questions.length - 1) {
-        setShowResult(true);
+      if (currentScenario < questions.length - 1) {
+        setCurrentScenario(prev => prev + 1);
       } else {
-        setCurrentQuestion(prev => prev + 1);
-        setAnswered(false);
+        setGameFinished(true);
       }
-    }, 500);
+    }, 1500);
   };
 
-  const currentQuestionData = questions[currentQuestion];
+  const currentQuestionData = questions[currentScenario];
 
   return (
     <GameShell
       title="Simulation: Green Community Project"
-      score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Simulation Complete!"}
+      subtitle={`Scenario ${currentScenario + 1} of ${questions.length}`}
+      showGameOver={gameFinished}
+      score={coins}
+      gameId={gameId}
+      gameType="sustainability"
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      gameId={gameId}
-      gameType="sustainability"
-      totalLevels={questions.length}
-      currentLevel={currentQuestion + 1}
-      maxScore={questions.length}
-      showConfetti={showResult && score >= 3}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
       <div className="space-y-8">
-        {!showResult && currentQuestionData && (
+        {!gameFinished && currentQuestionData && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
             <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-              <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              <span className="text-white/80">Scenario {currentScenario + 1}/{questions.length}</span>
+              <span className="text-yellow-400 font-bold">Coins: {coins}</span>
             </div>
             <p className="text-white text-lg mb-6">{currentQuestionData.text}</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {currentQuestionData.options.map((option) => (
                 <button
                   key={option.id}
-                  onClick={() => handleChoice(option.isCorrect)}
-                  disabled={answered}
-                  className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  onClick={() => handleChoice(option.id)}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
                 >
-                  <div className="text-3xl mb-3">{option.emoji}</div>
-                  <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                  <p className="text-white/90 text-sm">{option.description}</p>
+                  <div className="flex items-center">
+                    <div className="text-2xl mr-4">{option.emoji}</div>
+                    <div>
+                      <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                    </div>
+                  </div>
                 </button>
               ))}
             </div>

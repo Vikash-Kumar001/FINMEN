@@ -63,18 +63,18 @@ const StayFreshPosterAdvanced = () => {
                     isCorrect: false
                 },
                 {
-                    id: 2,
-                    title: "Fresh Clothes",
-                    description: "A poster showing wearing clean clothes daily",
-                    emoji: "🧺",
-                    isCorrect: true
-                },
-                {
                     id: 3,
                     title: "Wet Clothes",
                     description: "A poster showing wearing wet clothes",
                     emoji: "💦",
                     isCorrect: false
+                },
+                {
+                    id: 2,
+                    title: "Fresh Clothes",
+                    description: "A poster showing wearing clean clothes daily",
+                    emoji: "🧺",
+                    isCorrect: true
                 }
             ],
             correctFeedback: "Fresh Clothes keep you healthy!",
@@ -112,13 +112,6 @@ const StayFreshPosterAdvanced = () => {
             question: "Which poster shows hand hygiene?",
             posters: [
                 {
-                    id: 1,
-                    title: "Wipe on Pants",
-                    description: "A poster showing wiping hands on clothes",
-                    emoji: "👖",
-                    isCorrect: false
-                },
-                {
                     id: 2,
                     title: "Lick Fingers",
                     description: "A poster showing licking dirty fingers",
@@ -131,6 +124,13 @@ const StayFreshPosterAdvanced = () => {
                     description: "A poster showing washing hands with soap and water",
                     emoji: "🧼",
                     isCorrect: true
+                },
+                {
+                    id: 1,
+                    title: "Wipe on Pants",
+                    description: "A poster showing wiping hands on clothes",
+                    emoji: "👖",
+                    isCorrect: false
                 }
             ],
             correctFeedback: "Wash with Soap is the safe way!",
@@ -140,18 +140,18 @@ const StayFreshPosterAdvanced = () => {
             question: "Which poster shows overall freshness?",
             posters: [
                 {
-                    id: 1,
-                    title: "Messy Hair",
-                    description: "A poster showing uncombed hair",
-                    emoji: "🦁",
-                    isCorrect: false
-                },
-                {
                     id: 2,
                     title: "Clean & Groomed",
                     description: "A poster showing a neat and clean appearance",
                     emoji: "✨",
                     isCorrect: true
+                },
+                {
+                    id: 1,
+                    title: "Messy Hair",
+                    description: "A poster showing uncombed hair",
+                    emoji: "🦁",
+                    isCorrect: false
                 },
                 {
                     id: 3,
@@ -192,8 +192,26 @@ const StayFreshPosterAdvanced = () => {
                 }, 1500);
             }
         } else {
-            // Show result immediately for incorrect
-            setShowResult(true);
+            // Show feedback for incorrect answer and move to next question
+            showCorrectAnswerFeedback(0, false);
+            
+            // Check if this is the last stage
+            const isLastStage = currentStage === stages.length - 1;
+            
+            if (isLastStage) {
+                // Last stage - show result and game over modal
+                setTimeout(() => {
+                    setShowResult(true);
+                }, 1500);
+            } else {
+                // Move to next question after showing feedback
+                setTimeout(() => {
+                    setCurrentStage(currentStage + 1);
+                    setSelectedPoster(null);
+                    setShowResult(false);
+                    resetFeedback();
+                }, 1500);
+            }
         }
     };
 
@@ -285,12 +303,7 @@ const StayFreshPosterAdvanced = () => {
                                 <p className="text-white/90 text-lg mb-4">
                                     {currentStageData?.correctFeedback || "That's not quite right. Try again!"}
                                 </p>
-                                <button
-                                    onClick={handleTryAgain}
-                                    className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                                >
-                                    Try Again
-                                </button>
+                                {/* Removed Try Again button to standardize behavior */}
                                 <p className="text-white/80 text-sm">
                                     {currentStageData?.explanation || "Look for the poster that shows good hygiene."}
                                 </p>

@@ -5,73 +5,196 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const RespectBoundariesSimulation = () => {
   const navigate = useNavigate();
-  const [currentDay, setCurrentDay] = useState(0);
-  const [boundaryChoices, setBoundaryChoices] = useState([]);
+  const [currentScenario, setCurrentScenario] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [lastChoice, setLastChoice] = useState(null);
+  const [coins, setCoins] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const days = [
-    { id: 1, name: "Monday", icon: "📅" },
-    { id: 2, name: "Tuesday", icon: "📆" },
-    { id: 3, name: "Wednesday", icon: "🗓️" },
-    { id: 4, name: "Thursday", icon: "📅" },
-    { id: 5, name: "Friday", icon: "📆" }
-  ];
-
-  const boundaryOptions = [
+  const scenarios = [
     {
-      id: "respect",
-      text: "Respect Privacy",
-      emoji: "🤝",
-      description: "Choose to respect personal boundaries and privacy",
-      isHealthy: true
+      id: 1,
+      day: "Monday",
+      icon: "📅",
+      situation: "A friend asks to see your private messages. What do you do?",
+      options: [
+        {
+          id: "a",
+          text: "Show them the messages",
+          emoji: "📱",
+          isHealthy: false
+        },
+        {
+          id: "b",
+          text: "Politely decline",
+          emoji: "✋",
+          isHealthy: true
+        },
+        {
+          id: "c",
+          text: "Get angry and yell",
+          emoji: "😡",
+          isHealthy: false
+        },
+        {
+          id: "d",
+          text: "Change the subject",
+          emoji: "💬",
+          isHealthy: false
+        }
+      ]
     },
     {
-      id: "pressure",
-      text: "Share Private Info",
-      emoji: "📱",
-      description: "Give in to pressure and share personal information",
-      isHealthy: false
+      id: 2,
+      day: "Tuesday",
+      icon: "📆",
+      situation: "Someone tries to hug you, but you're not comfortable. How do you respond?",
+      options: [
+        {
+          id: "a",
+          text: "Push them away forcefully",
+          emoji: "💪",
+          isHealthy: false
+        },
+        {
+          id: "b",
+          text: "Stand still and tolerate it",
+          emoji: "😐",
+          isHealthy: false
+        },
+        {
+          id: "c",
+          text: "Step back and say 'stop'",
+          emoji: "🛑",
+          isHealthy: true
+        },
+        {
+          id: "d",
+          text: "Ignore the situation",
+          emoji: "🙈",
+          isHealthy: false
+        }
+      ]
     },
     {
-      id: "ignore",
-      text: "Ignore Pressure",
-      emoji: "😤",
-      description: "Get upset but don't handle the situation well",
-      isHealthy: false
+      id: 3,
+      day: "Wednesday",
+      icon: "🗓️",
+      situation: "A classmate wants to borrow your homework to copy. What's your response?",
+      options: [
+        {
+          id: "a",
+          text: "Let them copy without question",
+          emoji: "📋",
+          isHealthy: false
+        },
+        {
+          id: "b",
+          text: "Say no and explain why",
+          emoji: "🙅",
+          isHealthy: true
+        },
+        {
+          id: "c",
+          text: "Lie and say you didn't do it",
+          emoji: "🤥",
+          isHealthy: false
+        },
+        {
+          id: "d",
+          text: "Give them a fake copy",
+          emoji: "👻",
+          isHealthy: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      day: "Thursday",
+      icon: "📅",
+      situation: "A friend wants to post a photo of you online without asking. How do you react?",
+      options: [
+        {
+          id: "a",
+          text: "Let them post it",
+          emoji: "📸",
+          isHealthy: false
+        },
+        {
+          id: "b",
+          text: "Ask to see it first",
+          emoji: "👁️",
+          isHealthy: true
+        },
+        {
+          id: "c",
+          text: "Get jealous and argue",
+          emoji: "😠",
+          isHealthy: false
+        },
+        {
+          id: "d",
+          text: "Post it yourself first",
+          emoji: "📲",
+          isHealthy: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      day: "Friday",
+      icon: "📆",
+      situation: "Someone keeps entering your personal space despite you stepping back. What do you do?",
+      options: [
+        {
+          id: "a",
+          text: "Tell a trusted adult",
+          emoji: "👨‍🏫",
+          isHealthy: true
+        },
+        {
+          id: "b",
+          text: "Keep moving away silently",
+          emoji: "🚶",
+          isHealthy: false
+        },
+        {
+          id: "c",
+          text: "Yell at them publicly",
+          emoji: "📢",
+          isHealthy: false
+        },
+        {
+          id: "d",
+          text: "Ignore it completely",
+          emoji: "😴",
+          isHealthy: false
+        }
+      ]
     }
   ];
 
-  const handleBoundaryChoice = (boundaryId) => {
-    const selectedBoundary = boundaryOptions.find(boundary => boundary.id === boundaryId);
-    const isHealthy = selectedBoundary.isHealthy;
-
-    setBoundaryChoices({ ...boundaryChoices, [currentDay]: boundaryId });
-    setLastChoice(selectedBoundary);
+  const handleChoice = (optionId) => {
+    const selectedOption = scenarios[currentScenario].options.find(opt => opt.id === optionId);
+    const isHealthy = selectedOption.isHealthy;
 
     if (isHealthy) {
       showCorrectAnswerFeedback(1, true);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
 
-    setShowFeedback(true);
+    setChoices([...choices, { scenario: currentScenario, optionId, isHealthy }]);
 
     setTimeout(() => {
-      setShowFeedback(false);
-
-      if (currentDay < days.length - 1) {
-        setCurrentDay(prev => prev + 1);
+      if (currentScenario < scenarios.length - 1) {
+        setCurrentScenario(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 2000);
+    }, 1500);
   };
 
-  const getCurrentDay = () => days[currentDay];
-  const healthyDays = Object.values(boundaryChoices).filter(boundaryId =>
-    boundaryOptions.find(boundary => boundary.id === boundaryId)?.isHealthy
-  ).length;
+
 
   const handleNext = () => {
     navigate("/student/health-male/teens/reflex-health-choice-teen");
@@ -80,103 +203,53 @@ const RespectBoundariesSimulation = () => {
   return (
     <GameShell
       title="Simulation: Respect Boundaries (Teen)"
-      subtitle={`Day ${currentDay + 1} of ${days.length}`}
+      subtitle={`Scenario ${currentScenario + 1} of ${scenarios.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={healthyDays * 5}
+      score={coins}
       gameId="health-male-teen-38"
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={38}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={scenarios.length}
+      coinsPerLevel={1}
+      totalCoins={5}
+      totalXp={10}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 38/100</span>
-            <span className="text-yellow-400 font-bold">Coins: {healthyDays * 5}</span>
+            <span className="text-white/80">Scenario {currentScenario + 1}/{scenarios.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
 
-          <div className="text-center mb-6">
-            <div className="text-4xl mb-2">{getCurrentDay().icon}</div>
-            <h3 className="text-white text-2xl font-bold mb-2">
-              {getCurrentDay().name} Social Situation
-            </h3>
-            <p className="text-white/80">
-              You're learning to respect personal boundaries and privacy as a teen.
-            </p>
-          </div>
+          <h2 className="text-xl font-semibold text-white mb-4">
+            {scenarios[currentScenario].day} Social Situation
+          </h2>
+          
+          <p className="text-white/90 mb-6">
+            {scenarios[currentScenario].situation}
+          </p>
 
-          {showFeedback && lastChoice && (
-            <div className={`text-center mb-6 p-4 rounded-xl ${
-              lastChoice.isHealthy
-                ? 'bg-green-500/20 border border-green-500/30'
-                : 'bg-red-500/20 border border-red-500/30'
-            }`}>
-              <div className="text-2xl mb-2">
-                {lastChoice.isHealthy ? '✅' : '❌'}
-              </div>
-              <p className={`font-bold ${
-                lastChoice.isHealthy ? 'text-green-400' : 'text-red-400'
-              }`}>
-                {lastChoice.isHealthy ? 'Good Choice!' : 'Not the Best Response'}
-              </p>
-              <p className="text-white/90 text-sm mt-1">
-                {lastChoice.description}
-              </p>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            {boundaryOptions.map(option => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {scenarios[currentScenario].options.map(option => (
               <button
                 key={option.id}
-                onClick={() => handleBoundaryChoice(option.id)}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                onClick={() => handleChoice(option.id)}
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
-                  <div className="text-3xl mr-4">{option.emoji}</div>
+                  <div className="text-2xl mr-4">{option.emoji}</div>
                   <div>
                     <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </div>
                 </div>
               </button>
             ))}
           </div>
 
-          {Object.keys(boundaryChoices).length > 0 && (
-            <div className="mt-6">
-              <h4 className="text-white font-bold mb-3">Your Weekly Choices:</h4>
-              <div className="grid grid-cols-1 gap-2">
-                {days.map(day => {
-                  const boundaryId = boundaryChoices[day.id - 1];
-                  const boundary = boundaryId ? boundaryOptions.find(b => b.id === boundaryId) : null;
-
-                  return (
-                    <div key={day.id} className="flex items-center justify-between bg-white/10 rounded-lg p-3">
-                      <div className="flex items-center">
-                        <span className="text-xl mr-3">{day.icon}</span>
-                        <span className="text-white font-medium">{day.name}:</span>
-                      </div>
-                      {boundary ? (
-                        <div className="flex items-center">
-                          <span className="text-xl mr-2">{boundary.emoji}</span>
-                          <span className="text-white/90">{boundary.text}</span>
-                        </div>
-                      ) : (
-                        <span className="text-white/50">Not chosen</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          
         </div>
       </div>
     </GameShell>

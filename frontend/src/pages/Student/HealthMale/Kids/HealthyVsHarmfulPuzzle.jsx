@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const HealthyVsHarmfulPuzzle = () => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   // Get game data from game category folder (source of truth)
   const gameId = "health-male-kids-84";
@@ -18,164 +17,245 @@ const HealthyVsHarmfulPuzzle = () => {
   const totalXp = 10;
 
   const [score, setScore] = useState(0);
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [matches, setMatches] = useState([]);
+  const [selectedHealthy, setSelectedHealthy] = useState(null);
+  const [selectedHarmful, setSelectedHarmful] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      category: "Healthy",
-      question: "Which one is HEALTHY for your body?",
-      options: [
-        { id: "a", text: "Fresh Water", emoji: "💧", isCorrect: true, explanation: "Water keeps you hydrated and healthy!" },
-        { id: "b", text: "Cigarettes", emoji: "🚬", isCorrect: false, explanation: "Cigarettes hurt your lungs." },
-        { id: "c", text: "Beer", emoji: "🍺", isCorrect: false, explanation: "Alcohol is bad for growing kids." }
-      ]
-    },
-    {
-      id: 2,
-      category: "Harmful",
-      question: "Which one is HARMFUL (bad) for you?",
-      options: [
-        { id: "b", text: "Apples", emoji: "🍎", isCorrect: false, explanation: "Apples are good for you!" },
-        { id: "a", text: "Smoking", emoji: "😤", isCorrect: true, explanation: "Smoking damages your body." },
-        { id: "c", text: "Running", emoji: "🏃", isCorrect: false, explanation: "Running makes you strong." }
-      ]
-    },
-    {
-      id: 3,
-      category: "Healthy",
-      question: "Which activity makes you STRONG?",
-      options: [
-        { id: "c", text: "Drinking Alcohol", emoji: "🍷", isCorrect: false, explanation: "Alcohol makes you weak." },
-        { id: "b", text: "Taking Drugs", emoji: "💊", isCorrect: false, explanation: "Drugs are dangerous." },
-        { id: "a", text: "Playing Soccer", emoji: "⚽", isCorrect: true, explanation: "Sports build strong muscles!" }
-      ]
-    },
-    {
-      id: 4,
-      category: "Harmful",
-      question: "What should you AVOID?",
-      options: [
-        { id: "b", text: "Vegetables", emoji: "🥦", isCorrect: false, explanation: "Veggies are super healthy!" },
-        { id: "a", text: "Unknown Pills", emoji: "💊", isCorrect: true, explanation: "Never take pills not given by parents/doctors." },
-        { id: "c", text: "Sleep", emoji: "😴", isCorrect: false, explanation: "Sleep helps you grow." }
-      ]
-    },
-    {
-      id: 5,
-      category: "Healthy",
-      question: "What helps your brain GROW?",
-      options: [
-        { id: "c", text: "Wine", emoji: "🥂", isCorrect: false, explanation: "Alcohol hurts the brain." },
-        { id: "b", text: "Smoke", emoji: "🌫️", isCorrect: false, explanation: "Smoke is bad for your brain." },
-        { id: "a", text: "Reading Books", emoji: "📚", isCorrect: true, explanation: "Reading makes you smarter!" }
-      ]
-    }
+  // Healthy items (left side) - 5 items
+  const healthyItems = [
+    { id: 1, name: "Fresh Water", emoji: "💧", description: "Clear liquid" },
+    { id: 2, name: "Apples", emoji: "🍎", description: "Red fruit" },
+    { id: 3, name: "Running", emoji: "🏃", description: "Fast movement" },
+    { id: 4, name: "Vegetables", emoji: "🥦", description: "Green plants" },
+    { id: 5, name: "Reading Books", emoji: "📚", description: "Learning activity" }
   ];
 
-  const handleOptionSelect = (option) => {
-    setSelectedOption(option.id);
+  // Harmful items (right side) - 5 items
+  const harmfulItems = [
+    { id: 3, name: "Taking Drugs", emoji: "💊", description: "Dangerous pills" },
+    { id: 5, name: "Unknown Pills", emoji: "💊", description: "Unsafe medication" },
+    { id: 1, name: "Cigarettes", emoji: "🚬", description: "Tobacco product" },
+    { id: 4, name: "Smoke", emoji: "🌫️", description: "Air pollutant" },
+    { id: 2, name: "Drinking Alcohol", emoji: "🍷", description: "Adult beverage" }
+  ];
+
+  // Correct matches
+  const correctMatches = [
+    { healthyId: 1, harmfulId: 1 }, // Fresh Water → Cigarettes
+    { healthyId: 2, harmfulId: 2 }, // Apples → Drinking Alcohol
+    { healthyId: 3, harmfulId: 3 }, // Running → Taking Drugs
+    { healthyId: 4, harmfulId: 4 }, // Vegetables → Smoke
+    { healthyId: 5, harmfulId: 5 }  // Reading Books → Unknown Pills
+  ];
+
+  const handleHealthySelect = (healthy) => {
+    if (gameFinished) return;
+    setSelectedHealthy(healthy);
+  };
+
+  const handleHarmfulSelect = (harmful) => {
+    if (gameFinished) return;
+    setSelectedHarmful(harmful);
+  };
+
+  const handleMatch = () => {
+    if (!selectedHealthy || !selectedHarmful || gameFinished) return;
+
     resetFeedback();
 
-    if (option.isCorrect) {
+    const newMatch = {
+      healthyId: selectedHealthy.id,
+      harmfulId: selectedHarmful.id,
+      isCorrect: correctMatches.some(
+        match => match.healthyId === selectedHealthy.id && match.harmfulId === selectedHarmful.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
 
-    setTimeout(() => {
-      if (currentPuzzle < puzzles.length - 1) {
-        setCurrentPuzzle(prev => prev + 1);
-        setSelectedOption(null);
-      } else {
-        setShowResult(true);
-      }
-    }, 1500);
+    // Check if all items are matched
+    if (newMatches.length === healthyItems.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedHealthy(null);
+    setSelectedHarmful(null);
+  };
+
+  // Check if a healthy item is already matched
+  const isHealthyMatched = (healthyId) => {
+    return matches.some(match => match.healthyId === healthyId);
+  };
+
+  // Check if a harmful item is already matched
+  const isHarmfulMatched = (harmfulId) => {
+    return matches.some(match => match.harmfulId === harmfulId);
+  };
+
+  // Get match result for a healthy item
+  const getMatchResult = (healthyId) => {
+    const match = matches.find(m => m.healthyId === healthyId);
+    return match ? match.isCorrect : null;
   };
 
   const handleNext = () => {
     navigate("/student/health-male/kids/alcohol-story");
   };
 
-  const currentP = puzzles[currentPuzzle];
-
   return (
     <GameShell
       title="Healthy vs Harmful"
-      subtitle={showResult ? "Puzzle Complete!" : `Match healthy and harmful choices (${currentPuzzle + 1}/${puzzles.length} completed)`}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Healthy with Harmful (${matches.length}/${healthyItems.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={score}
+      gameId={gameId}
+      gameType="health-male"
+      totalLevels={healthyItems.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === healthyItems.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/health-male/kids"
+      maxScore={healthyItems.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      gameId={gameId}
-      gameType="health-male"
-      totalLevels={puzzles.length}
-      currentLevel={currentPuzzle + 1}
-      maxScore={puzzles.length}
-      showConfetti={showResult && score === puzzles.length}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      onNext={handleNext}
-      nextEnabled={showResult}
     >
-      <div className="space-y-8 max-w-5xl mx-auto">
-        {!showResult ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Healthy Items */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Puzzles: {currentPuzzle + 1}/{puzzles.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}/{puzzles.length}</span>
-              </div>
-              
-              <p className="text-white/90 text-center mb-6">
-                {currentP.question}
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {currentP.options.map((option) => {
-                  const isSelected = selectedOption === option.id;
-                  const isCorrect = isSelected && option.isCorrect;
-                  const isWrong = isSelected && !option.isCorrect;
-
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleOptionSelect(option)}
-                      disabled={selectedOption !== null}
-                      className={`w-full p-4 rounded-xl transition-all border-2 ${
-                        !selectedOption
-                          ? 'bg-white/10 hover:bg-white/20 border-white/30 cursor-pointer'
-                          : isCorrect
-                            ? 'bg-green-500/20 border-green-400 opacity-70 cursor-not-allowed'
-                            : isWrong
-                              ? 'bg-red-500/20 border-red-400 opacity-70 cursor-not-allowed'
-                              : 'bg-white/10 border-white/30 cursor-not-allowed'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="text-2xl mr-3">{option.emoji}</span>
-                        <div className="text-left flex-1">
-                          <div className="font-semibold text-white">{option.text}</div>
-                          <div className="text-sm text-white/70">{option.explanation}</div>
-                        </div>
-                        {isSelected && (
-                          <span className={`text-xl ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
-                            {isCorrect ? '✓' : '✗'}
-                          </span>
-                        )}
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Healthy Choices</h3>
+              <div className="space-y-4">
+                {healthyItems.map(healthy => (
+                  <button
+                    key={healthy.id}
+                    onClick={() => handleHealthySelect(healthy)}
+                    disabled={isHealthyMatched(healthy.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isHealthyMatched(healthy.id)
+                        ? getMatchResult(healthy.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedHealthy?.id === healthy.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{healthy.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{healthy.name}</h4>
+                        <p className="text-white/80 text-sm">{healthy.description}</p>
                       </div>
-                    </button>
-                  );
-                })}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedHealthy 
+                    ? `Selected: ${selectedHealthy.name}` 
+                    : "Select a Healthy Choice"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedHealthy || !selectedHarmful}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedHealthy && selectedHarmful
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{healthyItems.length}</p>
+                  <p>Matched: {matches.length}/{healthyItems.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Harmful Items */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Harmful Choices</h3>
+              <div className="space-y-4">
+                {harmfulItems.map(harmful => (
+                  <button
+                    key={harmful.id}
+                    onClick={() => handleHarmfulSelect(harmful)}
+                    disabled={isHarmfulMatched(harmful.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isHarmfulMatched(harmful.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedHarmful?.id === harmful.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{harmful.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{harmful.name}</h4>
+                        <p className="text-white/80 text-sm">{harmful.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {healthyItems.length} healthy choices with harmful ones!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Making healthy choices and avoiding harmful ones keeps your body and mind strong!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {healthyItems.length} choices correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what each choice does to your body!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

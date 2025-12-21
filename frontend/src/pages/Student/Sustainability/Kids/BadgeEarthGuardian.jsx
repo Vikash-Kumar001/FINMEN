@@ -64,9 +64,10 @@ const BadgeEarthGuardian = () => {
       icon: Globe,
       item: "Ocean Protection",
       options: [
-        { text: "Reduce plastic use and clean beaches", correct: true, coins: 1 },
-        { text: "Throw trash in ocean", correct: false, coins: 0 },
-        { text: "Ignore ocean pollution", correct: false, coins: 0 }
+        { id: "c", text: "Reduce plastic use and clean beaches", emoji: "🌊", correct: true, coins: 1 },
+        { id: "a", text: "Throw trash in ocean", emoji: "🗑️", correct: false, coins: 0 },
+        { id: "b", text: "Ignore ocean pollution", emoji: "🙈", correct: false, coins: 0 },
+        { id: "d", text: "Dump chemicals in water", emoji: "🧪", correct: false, coins: 0 }
       ],
       feedback: {
         correct: "Excellent! Protecting oceans helps marine life!",
@@ -80,9 +81,10 @@ const BadgeEarthGuardian = () => {
       icon: Heart,
       item: "Wildlife Care",
       options: [
-        { text: "Harm animal homes", correct: false, coins: 0 },
-        { text: "Protect habitats and plant trees", correct: true, coins: 1 },
-        { text: "Ignore wildlife", correct: false, coins: 0 }
+        { id: "a", text: "Harm animal homes", emoji: "🏚️", correct: false, coins: 0 },
+        { id: "b", text: "Ignore wildlife", emoji: "🙉", correct: false, coins: 0 },
+        { id: "c", text: "Feed wild animals", emoji: "🍖", correct: false, coins: 0 },
+        { id: "d", text: "Protect habitats and plant trees", emoji: "🌳", correct: true, coins: 1 }
       ],
       feedback: {
         correct: "Perfect! Protecting habitats helps animals thrive!",
@@ -96,9 +98,10 @@ const BadgeEarthGuardian = () => {
       icon: Leaf,
       item: "Clean Air",
       options: [
-        { text: "Use cars everywhere", correct: false, coins: 0 },
-        { text: "Pollute the air", correct: false, coins: 0 },
-        { text: "Walk, bike, and plant trees", correct: true, coins: 1 }
+        { id: "a", text: "Use cars everywhere", emoji: "🚗", correct: false, coins: 0 },
+        { id: "c", text: "Walk, bike, and plant trees", emoji: "🍃", correct: true, coins: 1 },
+        { id: "b", text: "Pollute the air", emoji: "🏭", correct: false, coins: 0 },
+        { id: "d", text: "Burn fossil fuels", emoji: "⛽", correct: false, coins: 0 }
       ],
       feedback: {
         correct: "Great! Walking, biking, and trees keep air clean!",
@@ -112,9 +115,10 @@ const BadgeEarthGuardian = () => {
       icon: TreePine,
       item: "Green Transportation",
       options: [
-        { text: "Always use cars", correct: false, coins: 0 },
-        { text: "Walk, bike, or use public transport", correct: true, coins: 1 },
-        { text: "Waste fuel", correct: false, coins: 0 }
+        { id: "a", text: "Always use cars", emoji: "🚙", correct: false, coins: 0 },
+        { id: "b", text: "Waste fuel", emoji: "🛢️", correct: false, coins: 0 },
+        { id: "c", text: "Fly everywhere", emoji: "✈️", correct: false, coins: 0 },
+        { id: "d", text: "Walk, bike, or use public transport", emoji: "🚲", correct: true, coins: 1 }
       ],
       feedback: {
         correct: "Amazing! Green transportation helps our planet!",
@@ -128,9 +132,10 @@ const BadgeEarthGuardian = () => {
       icon: Earth,
       item: "Earth Guardian",
       options: [
-        { text: "Harm the environment", correct: false, coins: 0 },
-        { text: "Ignore Earth's problems", correct: false, coins: 0 },
-        { text: "Protect oceans, wildlife, air, and use green transport", correct: true, coins: 1 }
+        { id: "a", text: "Harm the environment", emoji: "🧨", correct: false, coins: 0 },
+        { id: "b", text: "Ignore Earth's problems", emoji: "😑", correct: false, coins: 0 },
+        { id: "c", text: "Protect oceans, wildlife, air, and use green transport", emoji: "🌍", correct: true, coins: 1 },
+        { id: "d", text: "Litter everywhere", emoji: "🗑️", correct: false, coins: 0 }
       ],
       feedback: {
         correct: "Wonderful! You're a true Earth Guardian!",
@@ -142,27 +147,33 @@ const BadgeEarthGuardian = () => {
   const currentLevelData = levels[currentLevel - 1];
   const Icon = currentLevelData.icon;
 
-  const handleAnswer = (option) => {
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
+
+  const handleAnswer = (optionIndex) => {
     if (answered) return;
-    setSelectedAnswer(option);
+
     setAnswered(true);
+    setSelectedOptionIndex(optionIndex);
     resetFeedback();
-    const isCorrect = option.correct;
-    const isLastQuestion = currentLevel === 5;
+
+    const currentLevelData = levels[currentLevel - 1];
+    const selectedOption = currentLevelData.options[optionIndex];
+    const isCorrect = selectedOption.correct;
+
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
+
+    const isLastQuestion = currentLevel === 5;
+
     setTimeout(() => {
       if (isLastQuestion) {
         setShowResult(true);
-        if (score + (isCorrect ? 1 : 0) >= 4) {
-          showAnswerConfetti();
-        }
       } else {
         setCurrentLevel(prev => prev + 1);
         setAnswered(false);
-        setSelectedAnswer(null);
+        setSelectedOptionIndex(null);
       }
     }, 2000);
   };
@@ -197,30 +208,124 @@ const BadgeEarthGuardian = () => {
             <div className="flex justify-center mb-4">
               <Icon className="w-16 h-16 text-green-400" />
             </div>
-            <h3 className="text-2xl font-bold mb-2">{currentLevelData.title}</h3>
-            <p className="text-lg mb-6">{currentLevelData.question}</p>
-            <div className="space-y-3">
-              {currentLevelData.options.map((option, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleAnswer(option)}
-                  disabled={answered}
-                  className={`w-full p-4 rounded-xl font-semibold transition-all ${
-                    answered && selectedAnswer === option
-                      ? option.correct
-                        ? "bg-green-500"
-                        : "bg-red-500"
-                      : "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
-                  } text-white disabled:opacity-50`}
-                >
-                  {option.text}
-                </button>
-              ))}
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Question {currentLevel} of 5</span>
+              <span className="text-yellow-400 font-bold">Score: {score}/5</span>
             </div>
-            {answered && selectedAnswer && (
-              <p className="mt-4 text-yellow-300">
-                {selectedAnswer.correct ? currentLevelData.feedback.correct : currentLevelData.feedback.wrong}
-              </p>
+            <h3 className="text-2xl font-bold mb-2">{currentLevelData.title}</h3>
+            <p className="text-white text-lg mb-6 text-center">
+              {currentLevelData.question}
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {currentLevelData.options.map((option, idx) => {
+                const isSelected = selectedOptionIndex === idx;
+                const showFeedback = answered;
+
+                let buttonClass = "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3";
+
+                if (showFeedback) {
+                  if (isSelected) {
+                    buttonClass = option.correct
+                      ? "bg-green-500 ring-4 ring-green-300 text-white p-6 rounded-2xl shadow-lg min-h-[60px] flex items-center justify-center gap-3"
+                      : "bg-red-500 ring-4 ring-red-300 text-white p-6 rounded-2xl shadow-lg min-h-[60px] flex items-center justify-center gap-3";
+                  } else {
+                    buttonClass = "bg-white/10 opacity-50 text-white p-6 rounded-2xl shadow-lg min-h-[60px] flex items-center justify-center gap-3";
+                  }
+                }
+
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(idx)}
+                    disabled={showFeedback}
+                    className={buttonClass}
+                  >
+                    <span className="text-2xl">{option.emoji}</span>
+                    <span className="font-bold text-lg">{option.text}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {answered && selectedOptionIndex !== null && (
+              <div className={`mt-4 p-4 rounded-xl ${
+                currentLevelData.options[selectedOptionIndex].correct
+                  ? 'bg-green-500/20 border border-green-500/30'
+                  : 'bg-red-500/20 border border-red-500/30'
+              }`}>
+                <p className="text-white font-semibold">
+                  {currentLevelData.options[selectedOptionIndex].correct
+                    ? currentLevelData.feedback.correct
+                    : currentLevelData.feedback.wrong}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+        {showResult && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 4 ? (
+              <div>
+                <div className="text-6xl mb-4">🏆</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Earth Guardian Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-6">
+                  You demonstrated excellent knowledge about environmental protection with {score} correct answers out of 5!
+                </p>
+                
+                <div className="bg-gradient-to-br from-purple-500 to-pink-600 text-white p-6 rounded-2xl mb-6">
+                  <h4 className="text-2xl font-bold mb-2">🎉 Achievement Unlocked!</h4>
+                  <p className="text-xl">Badge: Earth Guardian</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-green-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-green-300 mb-2">Ocean Protector</h4>
+                    <p className="text-white/90 text-sm">
+                      You understand how to protect our oceans and marine life.
+                    </p>
+                  </div>
+                  <div className="bg-blue-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-blue-300 mb-2">Planet Hero</h4>
+                    <p className="text-white/90 text-sm">
+                      You know how to care for our environment.
+                    </p>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    if (nextGamePath) {
+                      window.location.href = nextGamePath;
+                    }
+                  }}
+                  className="bg-gradient-to-br from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all mb-4"
+                >
+                  Continue Learning
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning About Environmental Protection!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You answered {score} questions correctly out of 5.
+                </p>
+                <p className="text-white/90 mb-6">
+                  Review environmental topics to strengthen your knowledge and earn your badge.
+                </p>
+                <button
+                  onClick={() => {
+                    setCurrentLevel(1);
+                    setScore(0);
+                    setAnswered(false);
+                    setSelectedOptionIndex(null);
+                    setShowResult(false);
+                    resetFeedback();
+                  }}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+              </div>
             )}
           </div>
         )}

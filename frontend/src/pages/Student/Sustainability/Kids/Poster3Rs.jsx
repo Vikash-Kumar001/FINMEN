@@ -10,9 +10,9 @@ const Poster3Rs = () => {
   const location = useLocation();
   const gameId = "sustainability-kids-6";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const totalXp = gameData?.xp || location.state?.totalXp || 25;
   const [currentStage, setCurrentStage] = useState(0);
   const [selectedPoster, setSelectedPoster] = useState(null);
   const [showResult, setShowResult] = useState(false);
@@ -63,17 +63,17 @@ const Poster3Rs = () => {
       posters: [
         {
           id: 1,
-          title: "3 Rs Save Our Planet",
-          description: "A poster showing Reduce, Reuse, Recycle with Earth",
-          emoji: "♻️🌍",
-          isCorrect: true
-        },
-        {
-          id: 2,
           title: "Just Throw It Away",
           description: "A poster showing only throwing things away",
           emoji: "🗑️",
           isCorrect: false
+        },
+        {
+          id: 2,
+          title: "3 Rs Save Our Planet",
+          description: "A poster showing Reduce, Reuse, Recycle with Earth",
+          emoji: "♻️🌍",
+          isCorrect: true
         },
         {
           id: 3,
@@ -91,28 +91,112 @@ const Poster3Rs = () => {
       posters: [
         {
           id: 1,
-          title: "Use Less, Waste Less",
-          description: "A poster showing using fewer resources",
-          emoji: "📉♻️",
-          isCorrect: true
-        },
-        {
-          id: 2,
           title: "Buy Everything",
           description: "A poster encouraging buying lots of things",
           emoji: "🛒",
           isCorrect: false
         },
         {
-          id: 3,
+          id: 2,
           title: "Throw It All Away",
           description: "A poster showing throwing everything away",
           emoji: "🗑️",
           isCorrect: false
+        },
+        {
+          id: 3,
+          title: "Use Less, Waste Less",
+          description: "A poster showing using fewer resources",
+          emoji: "📉♻️",
+          isCorrect: true
         }
       ],
       correctFeedback: "Use Less, Waste Less encourages reducing waste!",
       explanation: "Reducing what we use helps save resources and protect the environment!"
+    },
+    {
+      question: "Which poster best shows reusing items?",
+      posters: [
+        {
+          id: 1,
+          title: "Repurpose Old Items",
+          description: "A poster showing creative ways to reuse old things",
+          emoji: "🔄📦",
+          isCorrect: false
+        },
+        {
+          id: 2,
+          title: "Use Once and Trash",
+          description: "A poster showing single-use items",
+          emoji: "🗑️",
+          isCorrect: false
+        },
+        {
+          id: 3,
+          title: "Creative Reuse Ideas",
+          description: "A poster showing fun ways to repurpose items",
+          emoji: "🎨♻️",
+          isCorrect: true
+        }
+      ],
+      correctFeedback: "Creative Reuse Ideas shows great examples of reusing!",
+      explanation: "Reusing items creatively helps reduce waste and save resources!"
+    },
+    {
+      question: "Which poster best promotes recycling?",
+      posters: [
+        {
+          id: 1,
+          title: "Sort Your Recycling",
+          description: "A poster showing how to sort recyclable materials",
+          emoji: "♻️📊",
+          isCorrect: true
+        },
+        {
+          id: 2,
+          title: "All Trash Goes Together",
+          description: "A poster showing mixing all waste together",
+          emoji: "🗑️",
+          isCorrect: false
+        },
+        {
+          id: 3,
+          title: "Recycling is Pointless",
+          description: "A poster discouraging recycling efforts",
+          emoji: "🙅‍♂️",
+          isCorrect: false
+        }
+      ],
+      correctFeedback: "Sort Your Recycling gives helpful guidance!",
+      explanation: "Properly sorting recyclables ensures they can be processed correctly!"
+    },
+    {
+      question: "Which poster best shows protecting our environment?",
+      posters: [
+        {
+          id: 1,
+          title: "Pollute More",
+          description: "A poster encouraging environmental damage",
+          emoji: "🏭",
+          isCorrect: false
+        },
+        {
+          id: 2,
+          title: "Protect Nature",
+          description: "A poster showing care for plants and animals",
+          emoji: "🌿🐾",
+          isCorrect: true
+        },
+        {
+          id: 3,
+          title: "Ignore Environmental Issues",
+          description: "A poster suggesting we don't worry about the environment",
+          emoji: "🙈",
+          isCorrect: false
+        }
+      ],
+      correctFeedback: "Protect Nature is the right choice for our planet!",
+      explanation: "Taking care of nature helps preserve our beautiful planet for future generations!"
     }
   ];
 

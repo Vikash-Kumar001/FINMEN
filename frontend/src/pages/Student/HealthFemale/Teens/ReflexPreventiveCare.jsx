@@ -6,7 +6,7 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const TOTAL_ROUNDS = 5;
 const ROUND_TIME = 10; // 10 seconds per round
 
-const ReflexConfidenceCheck = () => {
+const ReflexPreventiveCare = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -16,7 +16,7 @@ const ReflexConfidenceCheck = () => {
   const totalXp = location.state?.totalXp || 10; // Total XP from game card
   
   const maxScore = 5;
-  const gameId = "health-female-teen-63";
+  const gameId = "health-female-teen-73";
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
@@ -31,52 +31,52 @@ const ReflexConfidenceCheck = () => {
   const questions = [
     {
       id: 1,
-      question: "Which thought builds confidence?",
+      question: "What's the primary goal of preventive care?",
       options: [
-        { text: "I am useless", isCorrect: false, emoji: "❌" },
-        { text: "I can try", isCorrect: true, emoji: "💪" },
-        { text: "I will fail", isCorrect: false, emoji: "😰" },
-        { text: "I am stupid", isCorrect: false, emoji: "😵" }
+        { text: "Cure Diseases", emoji: "💊", isCorrect: false },
+        { text: "Prevent Illness", emoji: "🛡️", isCorrect: true },
+        { text: "Ignore Symptoms", emoji: "🙈", isCorrect: false },
+        { text: "Delay Treatment", emoji: "⏳", isCorrect: false }
       ]
     },
     {
       id: 2,
-      question: "Which belief shows self-worth?",
+      question: "How often should teens have health checkups?",
       options: [
-        { text: "I am worthless", isCorrect: false, emoji: "🗑️" },
-        { text: "I am capable", isCorrect: true, emoji: "🌟" },
-        { text: "I deserve respect", isCorrect: false, emoji: "👑" },
-        { text: "I can learn", isCorrect: false, emoji: "📚" }
+        { text: "Only When Sick", emoji: "🤒", isCorrect: false },
+        { text: "Annual Visits", emoji: "📅", isCorrect: true },
+        { text: "Never Needed", emoji: "🙅", isCorrect: false },
+        { text: "Biannual Only", emoji: "📆", isCorrect: false }
       ]
     },
     {
       id: 3,
-      question: "Which mindset promotes growth?",
+      question: "Which vaccine is crucial for teen health?",
       options: [
-        { text: "I can learn", isCorrect: true, emoji: "📚" },
-        { text: "I am stupid", isCorrect: false, emoji: "😵" },
-        { text: "I am useless", isCorrect: false, emoji: "❌" },
-        { text: "I will fail", isCorrect: false, emoji: "😰" }
+        { text: "HPV Vaccine", emoji: "💉", isCorrect: true },
+        { text: "No Vaccines", emoji: "❌", isCorrect: false },
+        { text: "Only Flu Shot", emoji: "🤧", isCorrect: false },
+        { text: "Adult Vaccines", emoji: "👴", isCorrect: false }
       ]
     },
     {
       id: 4,
-      question: "Which statement reflects self-respect?",
+      question: "What's important for dental preventive care?",
       options: [
-        { text: "I am worthless", isCorrect: false, emoji: "🗑️" },
-        { text: "I will fail", isCorrect: false, emoji: "😰" },
-        { text: "I deserve respect", isCorrect: true, emoji: "👑" },
-        { text: "I am stupid", isCorrect: false, emoji: "😵" }
+        { text: "Skip Brushing", emoji: "🚷", isCorrect: false },
+        { text: "Regular Cleanings", emoji: "🦷", isCorrect: true },
+        { text: "Only Pain Relief", emoji: " đau", isCorrect: false },
+        { text: "Avoid Dentist", emoji: "👻", isCorrect: false }
       ]
     },
     {
       id: 5,
-      question: "Which attitude shows capability?",
+      question: "Which screening is important for teens?",
       options: [
-        { text: "I am useless", isCorrect: false, emoji: "❌" },
-        { text: "I am capable", isCorrect: true, emoji: "🌟" },
-        { text: "I am worthless", isCorrect: false, emoji: "🗑️" },
-        { text: "I will fail", isCorrect: false, emoji: "😰" }
+        { text: "Vision Test", emoji: "👁️", isCorrect: true },
+        { text: "Ignore Issues", emoji: "🙉", isCorrect: false },
+        { text: "Only Weight Check", emoji: "⚖️", isCorrect: false },
+        { text: "No Screenings", emoji: "❌", isCorrect: false }
       ]
     }
   ];
@@ -175,15 +175,15 @@ const ReflexConfidenceCheck = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/health-female/teens/puzzle-self-value-match");
+    navigate("/student/health-female/teens/puzzle-doctor-tools");
   };
 
   const currentQ = questions[currentRound - 1];
 
   return (
     <GameShell
-      title="Reflex Confidence Check"
-      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}` : "Confidence Blitz!"}
+      title="Reflex Preventive Care"
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}` : "Preventive Care Challenge!"}
       coins={score}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
@@ -204,10 +204,10 @@ const ReflexConfidenceCheck = () => {
       <div className="space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-6xl mb-6">💪</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Confidence Blitz!</h3>
+            <div className="text-6xl mb-6">🛡️</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Preventive Care Challenge!</h3>
             <p className="text-white/90 text-lg mb-6">
-              You have {ROUND_TIME} seconds to choose the positive self-belief!
+              You have {ROUND_TIME} seconds to choose the best preventive care option!
             </p>
             <button
               onClick={startGame}
@@ -262,7 +262,7 @@ const ReflexConfidenceCheck = () => {
         {gameState === "finished" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
             <div className="text-6xl mb-6">🏆</div>
-            <h2 className="text-3xl font-bold text-white mb-4">Blitz Complete!</h2>
+            <h2 className="text-3xl font-bold text-white mb-4">Challenge Complete!</h2>
             <p className="text-xl text-white/90 mb-6">You scored {score} out of {TOTAL_ROUNDS}!</p>
 
             <div className="flex justify-center gap-4">
@@ -286,4 +286,4 @@ const ReflexConfidenceCheck = () => {
   );
 };
 
-export default ReflexConfidenceCheck;
+export default ReflexPreventiveCare;

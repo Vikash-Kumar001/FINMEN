@@ -22,7 +22,7 @@ const ReflexTeenRoutine = () => {
   const totalCoins = 5;
   const totalXp = 10;
   const TOTAL_ROUNDS = 5;
-  const ROUND_TIME = 5;
+  const ROUND_TIME = 10;
 
   const scenarios = [
     {

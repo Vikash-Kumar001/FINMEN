@@ -1,287 +1,267 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
-import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const RightsApplicationPuzzle = () => {
-  const location = useLocation();
-  
-  const gameId = "uvls-teen-29";
-  const gameData = getGameDataById(gameId);
-  
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getUvlsTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-  
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  const navigate = useNavigate();
 
-  const questions = [
-    {
-      id: 1,
-      text: "Your right to equal education is denied. What's the best action to protect your rights?",
-      options: [
-        { 
-          id: "a", 
-          text: "Report the denial to authorities and advocate for access", 
-          emoji: "🏫",
-          description: "Takes action to enforce rights",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Accept the inequality", 
-          emoji: "😔",
-          description: "Doesn't protect rights",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Do nothing", 
-          emoji: "🚫",
-          description: "No action taken",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 2,
-      text: "You face violence. What's the best action to protect your right to safety?",
-      options: [
-        { 
-          id: "b", 
-          text: "Endure the abuse", 
-          emoji: "😰",
-          description: "Dangerous and wrong",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "Seek a protection order and report to police", 
-          emoji: "🚫",
-          description: "Legal protection and safety",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Ignore it", 
-          emoji: "🙈",
-          description: "Not safe",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 3,
-      text: "You're paid less for equal work. What's the best action?",
-      options: [
-        { 
-          id: "a", 
-          text: "File a complaint and request a pay audit", 
-          emoji: "💰",
-          description: "Uses legal channels",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Accept less pay", 
-          emoji: "📉",
-          description: "Doesn't address the issue",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Quit the job immediately", 
-          emoji: "👋",
-          description: "Not the best first step",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 4,
-      text: "You face discrimination. What's the best action?",
-      options: [
-        { 
-          id: "b", 
-          text: "Tolerate the discrimination", 
-          emoji: "😐",
-          description: "Doesn't protect rights",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Do nothing", 
-          emoji: "🚫",
-          description: "No action",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "Take legal action and report to HR", 
-          emoji: "⚖️",
-          description: "Uses proper channels",
-          isCorrect: true
-        }
-      ]
-    },
-    {
-      id: 5,
-      text: "Your health rights are denied. What's the best action?",
-      options: [
-        { 
-          id: "a", 
-          text: "Access care and advocate for services", 
-          emoji: "🏥",
-          description: "Protects health rights",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Deny yourself care", 
-          emoji: "🚫",
-          description: "Harmful",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Ignore your health needs", 
-          emoji: "😷",
-          description: "Not safe",
-          isCorrect: false
-        }
-      ]
-    }
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedRight, setSelectedRight] = useState(null);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  // Human rights (left side) - 5 items with hints
+  const rights = [
+    { id: 1, name: "Equal Education", emoji: "📚", hint: "Right to learn without discrimination" },
+    { id: 2, name: "Personal Safety", emoji: "🛡️", hint: "Protection from harm and violence" },
+    { id: 3, name: "Fair Pay", emoji: "💰", hint: "Equal compensation for equal work" },
+    { id: 4, name: "Non-Discrimination", emoji: "⚖️", hint: "Equal treatment regardless of differences" },
+    { id: 5, name: "Healthcare Access", emoji: "🏥", hint: "Right to medical care and wellness" }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (answered || levelCompleted) return;
-    
-    setAnswered(true);
-    setSelectedOption(optionId);
+  // Protective actions (right side) - 5 items with descriptions
+  const actions = [
+    { id: 6, name: "Advocacy & Reporting", emoji: "📢", description: "Speak up and inform authorities" },
+    { id: 7, name: "Legal Protection", emoji: "👮", description: "Use law enforcement for safety" },
+    { id: 8, name: "Formal Complaint", emoji: "📝", description: "Official documentation of issues" },
+    { id: 9, name: "HR Intervention", emoji: "👔", description: "Workplace policy enforcement" },
+    { id: 10, name: "Medical Advocacy", emoji: "💉", description: "Demand healthcare services" }
+  ];
+
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedActions = [
+    actions[2], // Formal Complaint (id: 8)
+    actions[4], // Medical Advocacy (id: 10)
+    actions[1], // Legal Protection (id: 7)
+    actions[0], // Advocacy & Reporting (id: 6)
+    actions[3]  // HR Intervention (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each right has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { rightId: 1, actionId: 6 }, // Equal Education → Advocacy & Reporting
+    { rightId: 2, actionId: 7 }, // Personal Safety → Legal Protection
+    { rightId: 3, actionId: 8 }, // Fair Pay → Formal Complaint
+    { rightId: 4, actionId: 9 }, // Non-Discrimination → HR Intervention
+    { rightId: 5, actionId: 10 } // Healthcare Access → Medical Advocacy
+  ];
+
+  const handleRightSelect = (right) => {
+    if (gameFinished) return;
+    setSelectedRight(right);
+  };
+
+  const handleActionSelect = (action) => {
+    if (gameFinished) return;
+    setSelectedAction(action);
+  };
+
+  const handleMatch = () => {
+    if (!selectedRight || !selectedAction || gameFinished) return;
+
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOptionData?.isCorrect || false;
-    
-    if (isCorrect) {
+
+    const newMatch = {
+      rightId: selectedRight.id,
+      actionId: selectedAction.id,
+      isCorrect: correctMatches.some(
+        match => match.rightId === selectedRight.id && match.actionId === selectedAction.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setAnswered(false);
-        resetFeedback();
-      } else {
-        setLevelCompleted(true);
-      }
-    }, isCorrect ? 1000 : 800);
+
+    // Check if all items are matched
+    if (newMatches.length === rights.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedRight(null);
+    setSelectedAction(null);
   };
 
-  const currentQuestionData = questions[currentQuestion];
-  const finalScore = score;
+  // Check if a right is already matched
+  const isRightMatched = (rightId) => {
+    return matches.some(match => match.rightId === rightId);
+  };
+
+  // Check if an action is already matched
+  const isActionMatched = (actionId) => {
+    return matches.some(match => match.actionId === actionId);
+  };
+
+  // Get match result for a right
+  const getMatchResult = (rightId) => {
+    const match = matches.find(m => m.rightId === rightId);
+    return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/uvls/teen");
+  };
 
   return (
     <GameShell
       title="Rights Application Puzzle"
-      subtitle={levelCompleted ? "Puzzle Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Rights with Actions (${matches.length}/${rights.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="uvls-teen-29"
+      gameType="uvls"
+      totalLevels={rights.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === rights.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/uvls/teen"
+      maxScore={rights.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId={gameId}
-      gameType="uvls"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!levelCompleted && currentQuestionData ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Human Rights */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Human Rights</h3>
+              <div className="space-y-4">
+                {rights.map(right => (
+                  <button
+                    key={right.id}
+                    onClick={() => handleRightSelect(right)}
+                    disabled={isRightMatched(right.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isRightMatched(right.id)
+                        ? getMatchResult(right.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedRight?.id === right.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{right.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{right.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {right.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-              
-              <p className="text-white text-lg md:text-xl mb-6 text-center">
-                {currentQuestionData.text}
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map(option => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleAnswer(option.id)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                        showCorrect
-                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : showIncorrect
-                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                          : isSelected
-                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-2xl mb-2">{option.emoji}</div>
-                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
-                    </button>
-                  );
-                })}
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedRight 
+                    ? `Selected: ${selectedRight.name}` 
+                    : "Select a Human Right"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedRight || !selectedAction}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedRight && selectedAction
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{rights.length}</p>
+                  <p>Matched: {matches.length}/{rights.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Protective Actions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Protective Actions</h3>
+              <div className="space-y-4">
+                {rearrangedActions.map(action => (
+                  <button
+                    key={action.id}
+                    onClick={() => handleActionSelect(action)}
+                    disabled={isActionMatched(action.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isActionMatched(action.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedAction?.id === action.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{action.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{action.name}</h4>
+                        <p className="text-white/80 text-sm">{action.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {rights.length} human rights with protective actions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Knowing your rights and taking appropriate action is essential for protection!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {rights.length} human rights correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about which action best protects each specific right!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

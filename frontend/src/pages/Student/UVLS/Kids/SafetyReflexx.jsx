@@ -61,9 +61,9 @@ const SafetyReflexx = () => {
       question: "What should you do in a car?",
       correctAnswer: "Buckle seatbelt",
       options: [
-        { text: "Buckle seatbelt", isCorrect: true, emoji: "🔒" },
         { text: "Stand up", isCorrect: false, emoji: "🚶" },
         { text: "Play around", isCorrect: false, emoji: "🎮" },
+        { text: "Buckle seatbelt", isCorrect: true, emoji: "🔒" },
         { text: "Unbuckle", isCorrect: false, emoji: "🔓" }
       ]
     },
@@ -72,10 +72,10 @@ const SafetyReflexx = () => {
       question: "What should you do with strangers?",
       correctAnswer: "Say no to candy",
       options: [
-        { text: "Say no to candy", isCorrect: true, emoji: "🚫" },
         { text: "Go with them", isCorrect: false, emoji: "🚶" },
         { text: "Take gifts", isCorrect: false, emoji: "🎁" },
-        { text: "Trust everyone", isCorrect: false, emoji: "🤝" }
+        { text: "Trust everyone", isCorrect: false, emoji: "🤝" },
+        { text: "Say no to candy", isCorrect: true, emoji: "🚫" },
       ]
     },
     {
@@ -83,8 +83,8 @@ const SafetyReflexx = () => {
       question: "What should you do to stay safe?",
       correctAnswer: "Wash hands",
       options: [
-        { text: "Wash hands", isCorrect: true, emoji: "🧼" },
         { text: "Never wash", isCorrect: false, emoji: "🚫" },
+        { text: "Wash hands", isCorrect: true, emoji: "🧼" },
         { text: "Touch everything", isCorrect: false, emoji: "👆" },
         { text: "Ignore hygiene", isCorrect: false, emoji: "🙈" }
       ]

@@ -1,206 +1,262 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const ResolveStepsPuzzle = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const gameId = "uvls-kids-74";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [arrangements, setArrangements] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [userOrder, setUserOrder] = useState([]);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedStep, setSelectedStep] = useState(null);
+  const [selectedOutcome, setSelectedOutcome] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const questions = [
-    {
-      id: 1,
-      steps: ["Listen", "Understand", "Propose", "Agree"],
-      correctOrder: ["Listen", "Understand", "Propose", "Agree"]
-    },
-    {
-      id: 2,
-      steps: ["Talk", "Compromise", "Agree", "Check"],
-      correctOrder: ["Talk", "Compromise", "Agree", "Check"]
-    },
-    {
-      id: 3,
-      steps: ["Calm", "Share", "Solve", "Confirm"],
-      correctOrder: ["Calm", "Share", "Solve", "Confirm"]
-    },
-    {
-      id: 4,
-      steps: ["Hear both", "Find fair", "Check happy", "Finalize"],
-      correctOrder: ["Hear both", "Find fair", "Check happy", "Finalize"]
-    },
-    {
-      id: 5,
-      steps: ["Stop argue", "Think win-win", "Try plan", "Review"],
-      correctOrder: ["Stop argue", "Think win-win", "Try plan", "Review"]
-    }
+  // Conflict resolution steps (left side) - 5 items
+  const steps = [
+    { id: 1, name: "Listen", emoji: "👂", hint: "Hear all perspectives" },
+    { id: 2, name: "Understand", emoji: "🧠", hint: "Grasp the issue" },
+    { id: 3, name: "Propose", emoji: "💡", hint: "Suggest solutions" },
+    { id: 4, name: "Agree", emoji: "🤝", hint: "Reach consensus" },
+    { id: 5, name: "Follow-up", emoji: "📅", hint: "Check effectiveness" }
   ];
 
-  const handleStepClick = (step) => {
-    // Add step to user order if not already selected
-    if (!userOrder.includes(step)) {
-      setUserOrder([...userOrder, step]);
-    }
+  // Resolution outcomes (right side) - 5 items
+  const outcomes = [
+    { id: 6, name: "Clear Communication", emoji: "📢", description: "Everyone heard and understood" },
+    { id: 7, name: "Problem Clarity", emoji: "🔍", description: "Issue properly identified" },
+    { id: 8, name: "Solution Ideas", emoji: "✨", description: "Creative options generated" },
+    { id: 9, name: "Mutual Agreement", emoji: "✅", description: "Consensus reached" },
+    { id: 10, name: "Implementation Check", emoji: "🔁", description: "Verify solution works" }
+  ];
+
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedOutcomes = [
+    outcomes[2], // Solution Ideas (id: 8)
+    outcomes[4], // Implementation Check (id: 10)
+    outcomes[1], // Problem Clarity (id: 7)
+    outcomes[0], // Clear Communication (id: 6)
+    outcomes[3]  // Mutual Agreement (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each step has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { stepId: 1, outcomeId: 6 }, // Listen → Clear Communication
+    { stepId: 2, outcomeId: 7 }, // Understand → Problem Clarity
+    { stepId: 3, outcomeId: 8 }, // Propose → Solution Ideas
+    { stepId: 4, outcomeId: 9 }, // Agree → Mutual Agreement
+    { stepId: 5, outcomeId: 10 } // Follow-up → Implementation Check
+  ];
+
+  const handleStepSelect = (step) => {
+    if (gameFinished) return;
+    setSelectedStep(step);
   };
 
-  const handleRemoveStep = (step) => {
-    // Remove step from user order
-    setUserOrder(userOrder.filter(s => s !== step));
+  const handleOutcomeSelect = (outcome) => {
+    if (gameFinished) return;
+    setSelectedOutcome(outcome);
   };
 
-  const handleArrange = () => {
-    const newArrangements = [...arrangements, userOrder];
-    setArrangements(newArrangements);
+  const handleMatch = () => {
+    if (!selectedStep || !selectedOutcome || gameFinished) return;
 
-    const isCorrect = userOrder.join(',') === questions[currentLevel].correctOrder.join(',');
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    }
-
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setUserOrder([]); // Reset user order for next level
-      }, isCorrect ? 800 : 0);
-    } else {
-      const correctArrangements = newArrangements.filter((uo, idx) => uo.join(',') === questions[idx].correctOrder.join(',')).length;
-      setFinalScore(correctArrangements);
-      setShowResult(true);
-    }
-  };
-
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentLevel(0);
-    setArrangements([]);
-    setCoins(0);
-    setFinalScore(0);
-    setUserOrder([]);
     resetFeedback();
+
+    const newMatch = {
+      stepId: selectedStep.id,
+      outcomeId: selectedOutcome.id,
+      isCorrect: correctMatches.some(
+        match => match.stepId === selectedStep.id && match.outcomeId === selectedOutcome.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    // Check if all items are matched
+    if (newMatches.length === steps.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedStep(null);
+    setSelectedOutcome(null);
+  };
+
+  // Check if a step is already matched
+  const isStepMatched = (stepId) => {
+    return matches.some(match => match.stepId === stepId);
+  };
+
+  // Check if an outcome is already matched
+  const isOutcomeMatched = (outcomeId) => {
+    return matches.some(match => match.outcomeId === outcomeId);
+  };
+
+  // Get match result for a step
+  const getMatchResult = (stepId) => {
+    const match = matches.find(m => m.stepId === stepId);
+    return match ? match.isCorrect : null;
   };
 
   const handleNext = () => {
     navigate("/games/uvls/kids");
   };
 
-  const getCurrentLevel = () => questions[currentLevel];
-
   return (
     <GameShell
       title="Resolve Steps Puzzle"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Steps with Outcomes (${matches.length}/${steps.length} matched)`}
       onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
       gameId="uvls-kids-74"
       gameType="uvls"
-      totalLevels={100}
-      currentLevel={74}
-      showConfetti={showResult && finalScore >= 3}
+      totalLevels={steps.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === steps.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/uvls/kids"
+      maxScore={steps.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Conflict Resolution Steps */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Order mediation steps!</p>
-              
-              {/* Display user's current selection order */}
-              <div className="mb-4 min-h-[40px]">
-                <p className="text-white/80 mb-2">Your order:</p>
-                <div className="flex flex-wrap gap-2">
-                  {userOrder.map((step, index) => (
-                    <div 
-                      key={`${step}-${index}`} 
-                      className="bg-green-500 p-2 rounded flex items-center cursor-pointer"
-                      onClick={() => handleRemoveStep(step)}
-                    >
-                      {index + 1}. {step} ❌
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Resolution Steps</h3>
+              <div className="space-y-4">
+                {steps.map(step => (
+                  <button
+                    key={step.id}
+                    onClick={() => handleStepSelect(step)}
+                    disabled={isStepMatched(step.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isStepMatched(step.id)
+                        ? getMatchResult(step.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedStep?.id === step.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{step.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{step.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {step.hint}</p>
+                      </div>
                     </div>
-                  ))}
-                  {userOrder.length === 0 && (
-                    <p className="text-white/50 italic">Click on steps below to add them in order</p>
-                  )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedStep 
+                    ? `Selected: ${selectedStep.name}` 
+                    : "Select a Resolution Step"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedStep || !selectedOutcome}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedStep && selectedOutcome
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{steps.length}</p>
+                  <p>Matched: {matches.length}/{steps.length}</p>
                 </div>
               </div>
-              
-              {/* Available steps to select */}
-              <div className="flex flex-wrap gap-4 mb-4">
-                {getCurrentLevel().steps
-                  .filter(step => !userOrder.includes(step))
-                  .map(step => (
-                    <div 
-                      key={step} 
-                      className="bg-blue-500 p-2 rounded cursor-pointer hover:bg-blue-600 transition"
-                      onClick={() => handleStepClick(step)}
-                    >
-                      {step} 🧩
+            </div>
+
+            {/* Right column - Resolution Outcomes */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Resolution Outcomes</h3>
+              <div className="space-y-4">
+                {rearrangedOutcomes.map(outcome => (
+                  <button
+                    key={outcome.id}
+                    onClick={() => handleOutcomeSelect(outcome)}
+                    disabled={isOutcomeMatched(outcome.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isOutcomeMatched(outcome.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedOutcome?.id === outcome.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{outcome.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{outcome.name}</h4>
+                        <p className="text-white/80 text-sm">{outcome.description}</p>
+                      </div>
                     </div>
-                  ))}
+                  </button>
+                ))}
               </div>
-              
-              <button 
-                onClick={handleArrange} 
-                className="mt-4 bg-purple-500 text-white p-2 rounded disabled:opacity-50"
-                disabled={userOrder.length !== getCurrentLevel().steps.length}
-              >
-                Submit Order
-              </button>
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 3 ? (
+            {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Steps Solver!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You ordered correctly {finalScore} out of {questions.length} times!
-                  You know the steps to resolve conflicts!
+                  You correctly matched {score} out of {steps.length} conflict resolution steps with their outcomes!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{finalScore} Coins</span>
+                  <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Following the right steps helps resolve conflicts peacefully and fairly!
+                  Lesson: Following proper conflict resolution steps leads to successful outcomes!
                 </p>
               </div>
             ) : (
               <div>
                 <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Order Better!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You ordered correctly {finalScore} out of {questions.length} times.
-                  Keep learning the steps to resolve conflicts!
+                  You matched {score} out of {steps.length} conflict resolution steps correctly.
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Remember the steps: Listen, understand, then propose solutions!
+                  Tip: Think about what each resolution step accomplishes!
                 </p>
               </div>
             )}

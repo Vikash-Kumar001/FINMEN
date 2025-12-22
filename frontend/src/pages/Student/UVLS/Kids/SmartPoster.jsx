@@ -29,7 +29,7 @@ const SmartPoster = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Set Specific, Measurable, Doable Goals."',
+      question: 'Which poster emphasizes creating well-defined and attainable objectives?',
       choices: [
         { text: "Vague, Unclear, Impossible Goals 🚫", correct: false },
         { text: "Set Specific, Measurable, Doable Goals 🎯", correct: true },
@@ -37,7 +37,7 @@ const SmartPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Clear Goal, Track Progress, Achievable."',
+      question: 'Which poster promotes monitoring advancement toward targets?',
       choices: [
         { text: "Clear Goal, Track Progress, Achievable 📈", correct: true },
         { text: "Unclear Goal, No Tracking, Unrealistic 🚫", correct: false },
@@ -45,7 +45,7 @@ const SmartPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "What to Do, How Much, When Done."',
+      question: 'Which poster focuses on defining actionable steps with measurable outcomes?',
       choices: [
         { text: "What to Do, How Much, When Done ✅", correct: true },
         { text: "No Plan, No Amount, No Deadline 🚫", correct: false },
@@ -53,7 +53,7 @@ const SmartPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Simple Aim, Count It, Possible."',
+      question: 'Which poster encourages straightforward and quantifiable ambitions?',
       choices: [
         { text: "Simple Aim, Count It, Possible 📊", correct: true },
         { text: "Complex Aim, Can't Count, Impossible 🚫", correct: false },

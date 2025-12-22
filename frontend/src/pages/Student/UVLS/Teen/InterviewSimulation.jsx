@@ -42,7 +42,7 @@ const InterviewSimulation = () => {
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answer, setAnswer] = useState("");
+  const [selectedOption, setSelectedOption] = useState(null);
   const [score, setScore] = useState(0);
   const [levelCompleted, setLevelCompleted] = useState(false);
   const [answered, setAnswered] = useState(false);
@@ -50,46 +50,191 @@ const InterviewSimulation = () => {
   const questions = [
     {
       id: 1,
-      text: "Question: 'Tell me about yourself.'",
-      ideal: "Use structured response with STAR method (Situation, Task, Action, Result)",
-      minLength: 50
+      text: "How should you begin answering 'Tell me about yourself'?",
+      options: [
+        { 
+          id: "a", 
+          text: "Start with your educational background", 
+          emoji: "📚",
+          description: "Good foundation",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Use the STAR method to structure your response", 
+          emoji: "⭐",
+          description: "Professional approach",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Talk about your hobbies and interests", 
+          emoji: "🎨",
+          description: "Not relevant",
+          isCorrect: false
+        },
+        { 
+          id: "d", 
+          text: "List all your previous jobs", 
+          emoji: "💼",
+          description: "Too detailed",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      text: "Question: 'Why this job?'",
-      ideal: "Show research about the role and demonstrate fit",
-      minLength: 50
+      text: "When answering 'Why this job?', what should you focus on?",
+      options: [
+        { 
+          id: "b", 
+          text: "Show research about the role and company", 
+          emoji: "🔍",
+          description: "Demonstrates genuine interest",
+          isCorrect: true
+        },
+        { 
+          id: "a", 
+          text: "Talk about salary expectations", 
+          emoji: "💰",
+          description: "Premature",
+          isCorrect: false
+        },
+        
+        { 
+          id: "c", 
+          text: "Say it's your dream job without specifics", 
+          emoji: "💭",
+          description: "Vague",
+          isCorrect: false
+        },
+        { 
+          id: "d", 
+          text: "Complain about your current job", 
+          emoji: "😠",
+          description: "Negative",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      text: "Question: 'What are your strengths and weaknesses?'",
-      ideal: "Be honest with specific examples",
-      minLength: 50
+      text: "How should you respond to 'What are your strengths and weaknesses'?",
+      options: [
+        { 
+          id: "a", 
+          text: "Claim to have no weaknesses", 
+          emoji: "🚫",
+          description: "Unrealistic",
+          isCorrect: false
+        },
+        
+        { 
+          id: "c", 
+          text: "List generic strengths like 'hardworking'", 
+          emoji: "💤",
+          description: "Unconvincing",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Be honest with specific examples", 
+          emoji: "🏆",
+          description: "Authentic approach",
+          isCorrect: true
+        },
+        { 
+          id: "d", 
+          text: "Avoid answering directly", 
+          emoji: "🙈",
+          description: "Evading",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      text: "Question: 'Give an example of teamwork.'",
-      ideal: "Use STAR method to structure your response",
-      minLength: 50
+      text: "When giving an example of teamwork, what's the best approach?",
+      options: [
+        { 
+          id: "a", 
+          text: "Take credit for the team's success", 
+          emoji: "🏆",
+          description: "Self-centered",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Use STAR method to structure your response", 
+          emoji: "⭐",
+          description: "Clear and structured",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Blame teammates for failures", 
+          emoji: "😠",
+          description: "Unprofessional",
+          isCorrect: false
+        },
+        { 
+          id: "d", 
+          text: "Give a vague general answer", 
+          emoji: "☁️",
+          description: "Unclear",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "Question: 'Do you have any questions for us?'",
-      ideal: "Ask thoughtful questions about the role and company",
-      minLength: 30
+      text: "What's the best way to approach 'Do you have any questions for us'?",
+      options: [
+        { 
+          id: "a", 
+          text: "Ask about salary and benefits immediately", 
+          emoji: "💸",
+          description: "Too early",
+          isCorrect: false
+        },
+        
+        { 
+          id: "c", 
+          text: "Say you have no questions", 
+          emoji: "🤷",
+          description: "Missed opportunity",
+          isCorrect: false
+        },
+        { 
+          id: "d", 
+          text: "Ask about vacation time only", 
+          emoji: "🏖️",
+          description: "Narrow focus",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Ask thoughtful questions about the role and company", 
+          emoji: "🤔",
+          description: "Shows engagement",
+          isCorrect: true
+        },
+      ]
     }
   ];
 
-  const handleSubmit = () => {
-    if (answered || answer.trim() === "") return;
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
     setAnswered(true);
+    setSelectedOption(optionId);
     resetFeedback();
     
     const currentQuestionData = questions[currentQuestion];
-    const isStructured = answer.trim().length >= currentQuestionData.minLength;
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    if (isStructured) {
+    if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
@@ -99,13 +244,13 @@ const InterviewSimulation = () => {
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
-        setAnswer("");
+        setSelectedOption(null);
         setAnswered(false);
         resetFeedback();
       } else {
         setLevelCompleted(true);
       }
-    }, isStructured ? 1000 : 800);
+    }, isCorrect ? 1000 : 800);
   };
 
   const currentQuestionData = questions[currentQuestion];
@@ -140,37 +285,38 @@ const InterviewSimulation = () => {
                 <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white text-lg md:text-xl mb-4 text-center">
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
                 {currentQuestionData.text}
               </p>
               
-              <p className="text-white/70 text-sm mb-4 text-center">
-                Tip: {currentQuestionData.ideal}
-              </p>
-              
-              <textarea
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                className="w-full h-40 p-4 bg-white/20 border-2 border-white/40 rounded-xl text-white placeholder-white/50"
-                placeholder="Type your answer here..."
-                disabled={answered}
-              />
-              
-              <div className="mt-2 text-white/50 text-sm text-center">
-                {answer.trim().length}/{currentQuestionData.minLength} characters minimum
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              <button
-                onClick={handleSubmit}
-                disabled={answer.trim() === "" || answered}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  answer.trim() !== "" && !answered
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Submit Answer
-              </button>
             </div>
           </div>
         ) : null}

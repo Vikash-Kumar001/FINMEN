@@ -52,19 +52,20 @@ const EthicalRoleplay = () => {
       id: 1,
       text: "Dilemma: Copy homework from a friend or do it yourself?",
       options: [
-        { 
-          id: "a", 
-          text: "Do it yourself or ask for help", 
-          emoji: "✍️",
-          description: "Ethical approach - honest learning",
-          isCorrect: true
-        },
+       
         { 
           id: "b", 
           text: "Copy the homework", 
           emoji: "📋",
           description: "Unethical - academic dishonesty",
           isCorrect: false
+        },
+         { 
+          id: "a", 
+          text: "Do it yourself or ask for help", 
+          emoji: "✍️",
+          description: "Ethical approach - honest learning",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -106,13 +107,7 @@ const EthicalRoleplay = () => {
       id: 3,
       text: "Dilemma: Cheat on a test or study hard?",
       options: [
-        { 
-          id: "a", 
-          text: "Study hard and prepare ethically", 
-          emoji: "📚",
-          description: "Ethical - honest preparation",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Cheat on the test", 
@@ -126,7 +121,14 @@ const EthicalRoleplay = () => {
           emoji: "🎲",
           description: "Not a responsible approach",
           isCorrect: false
-        }
+        },
+        { 
+          id: "a", 
+          text: "Study hard and prepare ethically", 
+          emoji: "📚",
+          description: "Ethical - honest preparation",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -160,19 +162,20 @@ const EthicalRoleplay = () => {
       id: 5,
       text: "Dilemma: Spread gossip about someone or stay silent?",
       options: [
-        { 
-          id: "a", 
-          text: "Stay silent or defend the person", 
-          emoji: "🤐",
-          description: "Ethical - respectful behavior",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Spread the gossip", 
           emoji: "🗣️",
           description: "Unethical - harmful behavior",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Stay silent or defend the person", 
+          emoji: "🤐",
+          description: "Ethical - respectful behavior",
+          isCorrect: true
         },
         { 
           id: "c", 

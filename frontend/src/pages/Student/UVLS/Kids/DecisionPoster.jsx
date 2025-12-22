@@ -29,7 +29,7 @@ const DecisionPoster = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Stop, Think, Choose."',
+      question: 'Which poster promotes thoughtful consideration before acting?',
       choices: [
         { text: "Act Without Thinking ⚡", correct: false },
         { text: "Stop, Think, Choose 🤔", correct: true },
@@ -37,7 +37,7 @@ const DecisionPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Look, Listen, Decide."',
+      question: 'Which poster emphasizes gathering information before making choices?',
       choices: [
         { text: "Look, Listen, Decide 👂", correct: true },
         { text: "Ignore Everything 🙈", correct: false },
@@ -45,7 +45,7 @@ const DecisionPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Ask, Weigh, Pick."',
+      question: 'Which poster highlights evaluating options systematically?',
       choices: [
         { text: "Never Ask Questions 🚫", correct: false },
         { text: "Ask, Weigh, Pick ⚖️", correct: true },
@@ -53,7 +53,7 @@ const DecisionPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Pause, Plan, Act."',
+      question: 'Which poster encourages structured approach to problem-solving?',
       choices: [
         { text: "Pause, Plan, Act 📋", correct: true },
         { text: "Act Immediately ⚡", correct: false },

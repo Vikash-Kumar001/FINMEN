@@ -1,309 +1,267 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
-import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const BATNAPuzzle = () => {
-  const location = useLocation();
-  
-  const gameId = "uvls-teen-74";
-  const gameData = getGameDataById(gameId);
-  
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getUvlsTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-  
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  const navigate = useNavigate();
 
-  const questions = [
-    {
-      id: 1,
-      text: "Negotiation: Buying a used car. What's a good BATNA (Best Alternative To Negotiated Agreement)?",
-      options: [
-        { 
-          id: "a", 
-          text: "Buy from another seller or walk away if price is too high", 
-          emoji: "🚗",
-          description: "Realistic alternatives",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Accept any price they offer", 
-          emoji: "💰",
-          description: "No negotiation power",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Steal the car", 
-          emoji: "🚫",
-          description: "Illegal and unethical",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 2,
-      text: "Negotiation: Renting an apartment. What's a good BATNA?",
-      options: [
-        { 
-          id: "b", 
-          text: "Pay over your budget", 
-          emoji: "💸",
-          description: "Not a good alternative",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "Find a cheaper place or live with family temporarily", 
-          emoji: "🏠",
-          description: "Practical alternatives",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Become homeless", 
-          emoji: "🚫",
-          description: "Not a viable alternative",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 3,
-      text: "Negotiation: Job salary. What's a good BATNA?",
-      options: [
-        { 
-          id: "a", 
-          text: "Another job offer or staying in current position", 
-          emoji: "💼",
-          description: "Gives you negotiation power",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Accept low pay no matter what", 
-          emoji: "😔",
-          description: "Weakens your position",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Quit without another job", 
-          emoji: "🚪",
-          description: "Risky alternative",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 4,
-      text: "Negotiation: Group project deadline. What's a good BATNA?",
-      options: [
-        { 
-          id: "b", 
-          text: "Miss the deadline", 
-          emoji: "⏰",
-          description: "Not a good alternative",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Quit the group completely", 
-          emoji: "🚪",
-          description: "Extreme and may have consequences",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "Work independently or negotiate extension with clear plan", 
-          emoji: "📋",
-          description: "Practical alternatives",
-          isCorrect: true
-        }
-      ]
-    },
-    {
-      id: 5,
-      text: "Negotiation: Buying a phone. What's a good BATNA?",
-      options: [
-        { 
-          id: "a", 
-          text: "Different model or wait for sale", 
-          emoji: "📱",
-          description: "Realistic alternatives",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Pay full price no matter what", 
-          emoji: "💸",
-          description: "No negotiation leverage",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Steal the phone", 
-          emoji: "🚫",
-          description: "Illegal and wrong",
-          isCorrect: false
-        }
-      ]
-    }
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedSituation, setSelectedSituation] = useState(null);
+  const [selectedBATNA, setSelectedBATNA] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  // Negotiation situations (left side) - 5 items with hints
+  const situations = [
+    { id: 1, name: "Buying a Used Car", emoji: "🚗", hint: "Need transportation but on a budget" },
+    { id: 2, name: "Renting an Apartment", emoji: "🏠", hint: "Need housing but have limited funds" },
+    { id: 3, name: "Job Salary Negotiation", emoji: "💼", hint: "Want fair compensation for your work" },
+    { id: 4, name: "Group Project Deadline", emoji: "📋", hint: "Team isn't meeting commitments" },
+    { id: 5, name: "Buying a New Phone", emoji: "📱", hint: "Device broke but need replacement" }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (answered || levelCompleted) return;
-    
-    setAnswered(true);
-    setSelectedOption(optionId);
+  // BATNA options (right side) - 5 items with descriptions
+  const batnas = [
+    { id: 6, name: "Another Seller/Walk Away", emoji: "🛒", description: "Research other options or leave deal" },
+    { id: 7, name: "Cheaper Place/Family Stay", emoji: "🏡", description: "Find affordable housing or temporary solution" },
+    { id: 8, name: "Other Job Offers", emoji: "👔", description: "Have competing opportunities" },
+    { id: 9, name: "Independent Work/Extension", emoji: "📅", description: "Work alone or negotiate timeline" },
+    { id: 10, name: "Different Model/Sale Wait", emoji: "🕒", description: "Choose alternative or delay purchase" }
+  ];
+
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedBATNAs = [
+    batnas[2], // Other Job Offers (id: 8)
+    batnas[4], // Different Model/Sale Wait (id: 10)
+    batnas[1], // Cheaper Place/Family Stay (id: 7)
+    batnas[0], // Another Seller/Walk Away (id: 6)
+    batnas[3]  // Independent Work/Extension (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each situation has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { situationId: 1, batnaId: 6 }, // Buying a Used Car → Another Seller/Walk Away
+    { situationId: 2, batnaId: 7 }, // Renting an Apartment → Cheaper Place/Family Stay
+    { situationId: 3, batnaId: 8 }, // Job Salary Negotiation → Other Job Offers
+    { situationId: 4, batnaId: 9 }, // Group Project Deadline → Independent Work/Extension
+    { situationId: 5, batnaId: 10 } // Buying a New Phone → Different Model/Sale Wait
+  ];
+
+  const handleSituationSelect = (situation) => {
+    if (gameFinished) return;
+    setSelectedSituation(situation);
+  };
+
+  const handleBATNASelect = (batna) => {
+    if (gameFinished) return;
+    setSelectedBATNA(batna);
+  };
+
+  const handleMatch = () => {
+    if (!selectedSituation || !selectedBATNA || gameFinished) return;
+
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOptionData?.isCorrect || false;
-    
-    if (isCorrect) {
-      const newScore = score + 1;
-      setScore(newScore);
+
+    const newMatch = {
+      situationId: selectedSituation.id,
+      batnaId: selectedBATNA.id,
+      isCorrect: correctMatches.some(
+        match => match.situationId === selectedSituation.id && match.batnaId === selectedBATNA.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
-    const isLastQuestion = currentQuestion === questions.length - 1;
-    
-    if (isLastQuestion) {
-      // Add delay to ensure state updates propagate before showing result
+
+    // Check if all items are matched
+    if (newMatches.length === situations.length) {
       setTimeout(() => {
-        setLevelCompleted(true);
-      }, 200);
-    } else {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setAnswered(false);
-        resetFeedback();
-      }, isCorrect ? 1000 : 800);
+        setGameFinished(true);
+      }, 1500);
     }
+
+    // Reset selections
+    setSelectedSituation(null);
+    setSelectedBATNA(null);
   };
 
-  const currentQuestionData = questions[currentQuestion];
-  const finalScore = score;
-  
-  // Log completion and update location state when game completes
-  useEffect(() => {
-    if (levelCompleted) {
-      console.log(`🎮 BATNA Puzzle game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
-      
-      // Update location state with nextGameId for GameOverModal
-      if (nextGameId && window.history && window.history.replaceState) {
-        const currentState = window.history.state || {};
-        window.history.replaceState({
-          ...currentState,
-          nextGameId: nextGameId
-        }, '');
-      }
-    }
-  }, [levelCompleted, score, gameId, nextGamePath, nextGameId, questions.length]);
+  // Check if a situation is already matched
+  const isSituationMatched = (situationId) => {
+    return matches.some(match => match.situationId === situationId);
+  };
+
+  // Check if a BATNA is already matched
+  const isBATNAMatched = (batnaId) => {
+    return matches.some(match => match.batnaId === batnaId);
+  };
+
+  // Get match result for a situation
+  const getMatchResult = (situationId) => {
+    const match = matches.find(m => m.situationId === situationId);
+    return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/uvls/teen");
+  };
 
   return (
     <GameShell
       title="BATNA Puzzle"
-      subtitle={levelCompleted ? "Puzzle Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Situations with BATNAs (${matches.length}/${situations.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="uvls-teen-74"
+      gameType="uvls"
+      totalLevels={situations.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === situations.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/uvls/teen"
+      maxScore={situations.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId={gameId}
-      gameType="uvls"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!levelCompleted && currentQuestionData ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Negotiation Situations */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Negotiation Situations</h3>
+              <div className="space-y-4">
+                {situations.map(situation => (
+                  <button
+                    key={situation.id}
+                    onClick={() => handleSituationSelect(situation)}
+                    disabled={isSituationMatched(situation.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isSituationMatched(situation.id)
+                        ? getMatchResult(situation.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedSituation?.id === situation.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{situation.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{situation.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {situation.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-              
-              <p className="text-white text-lg md:text-xl mb-6 text-center">
-                {currentQuestionData.text}
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map(option => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleAnswer(option.id)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                        showCorrect
-                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : showIncorrect
-                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                          : isSelected
-                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-2xl mb-2">{option.emoji}</div>
-                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
-                    </button>
-                  );
-                })}
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedSituation 
+                    ? `Selected: ${selectedSituation.name}` 
+                    : "Select a Negotiation Situation"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedSituation || !selectedBATNA}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedSituation && selectedBATNA
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{situations.length}</p>
+                  <p>Matched: {matches.length}/{situations.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - BATNA Options */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">BATNA Options</h3>
+              <div className="space-y-4">
+                {rearrangedBATNAs.map(batna => (
+                  <button
+                    key={batna.id}
+                    onClick={() => handleBATNASelect(batna)}
+                    disabled={isBATNAMatched(batna.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isBATNAMatched(batna.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedBATNA?.id === batna.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{batna.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{batna.name}</h4>
+                        <p className="text-white/80 text-sm">{batna.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {situations.length} negotiation situations with their best alternatives!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Having a strong Best Alternative To Negotiated Agreement (BATNA) gives you negotiating power!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {situations.length} negotiation situations correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what realistic alternatives you'd have in each negotiation scenario!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

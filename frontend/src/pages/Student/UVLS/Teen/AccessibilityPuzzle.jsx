@@ -1,290 +1,267 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
-import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const AccessibilityPuzzle = () => {
-  const location = useLocation();
-  
-  // Get game data from game category folder (source of truth)
-  const gameId = "uvls-teen-13";
-  const gameData = getGameDataById(gameId);
-  
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
-  // Find next game path and ID if not provided in location.state
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getUvlsTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-  
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  const navigate = useNavigate();
 
-  const questions = [
-    {
-      id: 1,
-      text: "A student with visual impairment needs accommodations. What's the best accommodation?",
-      options: [
-        { 
-          id: "a", 
-          text: "Large print materials or screen reader software", 
-          emoji: "👓",
-          description: "Provides accessible format for learning",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Require them to sit in front", 
-          emoji: "🪑",
-          description: "Doesn't address their specific needs",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Give them easier assignments", 
-          emoji: "📝",
-          description: "Unnecessarily lowers expectations",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 2,
-      text: "A student with hearing impairment needs accommodations. What's the best accommodation?",
-      options: [
-        { 
-          id: "b", 
-          text: "Speak louder at them", 
-          emoji: "📢",
-          description: "Doesn't address hearing loss",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "Sign language interpreter or written instructions", 
-          emoji: "👂",
-          description: "Provides accessible communication",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Excuse them from class discussions", 
-          emoji: "🙈",
-          description: "Excludes them unnecessarily",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 3,
-      text: "A student using a wheelchair needs accommodations. What's the best accommodation?",
-      options: [
-        { 
-          id: "a", 
-          text: "Ramps, elevators, accessible desks", 
-          emoji: "♿",
-          description: "Removes physical barriers",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Schedule all classes on ground floor only", 
-          emoji: "🚫",
-          description: "Limits their access unnecessarily",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Have others carry them upstairs", 
-          emoji: "👥",
-          description: "Not practical or respectful",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 4,
-      text: "A student with ADHD needs accommodations. What's the best accommodation?",
-      options: [
-        { 
-          id: "b", 
-          text: "Tell them to sit still and focus better", 
-          emoji: "👆",
-          description: "Doesn't address the condition",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "Extended time, breaks, fidget tools", 
-          emoji: "🧠",
-          description: "Supports their learning needs",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Separate them from other students", 
-          emoji: "🚫",
-          description: "Isolates them unnecessarily",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 5,
-      text: "A student with dyslexia needs accommodations. What's the best accommodation?",
-      options: [
-        { 
-          id: "a", 
-          text: "Audiobooks, extra time for reading tasks", 
-          emoji: "📖",
-          description: "Provides alternative learning methods",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Lower reading level assignments only", 
-          emoji: "📉",
-          description: "Unnecessarily limits their learning",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Exempt them from all reading", 
-          emoji: "❌",
-          description: "Prevents skill development",
-          isCorrect: false
-        }
-      ]
-    }
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedImpairment, setSelectedImpairment] = useState(null);
+  const [selectedAccommodation, setSelectedAccommodation] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  // Disabilities/Impairments (left side) - 5 items with hints
+  const impairments = [
+    { id: 1, name: "Visual Impairment", emoji: "👁️", hint: "Difficulty seeing clearly" },
+    { id: 2, name: "Hearing Impairment", emoji: "👂", hint: "Difficulty hearing sounds" },
+    { id: 3, name: "Mobility Limitation", emoji: "🦽", hint: "Difficulty moving around" },
+    { id: 4, name: "ADHD", emoji: "🧠", hint: "Attention and focus challenges" },
+    { id: 5, name: "Dyslexia", emoji: "🔤", hint: "Reading and writing difficulties" }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (answered || levelCompleted) return;
-    
-    setAnswered(true);
-    setSelectedOption(optionId);
+  // Accommodations (right side) - 5 items with descriptions
+  const accommodations = [
+    { id: 6, name: "Screen Reader Software", emoji: "🔊", description: "Converts text to speech" },
+    { id: 7, name: "Sign Language Interpreter", emoji: "🤟", description: "Facilitates communication" },
+    { id: 8, name: "Ramps and Elevators", emoji: "♿", description: "Enables physical access" },
+    { id: 9, name: "Fidget Tools", emoji: "🧘", description: "Helps with focus and attention" },
+    { id: 10, name: "Audiobooks", emoji: "🎧", description: "Alternative to traditional reading" }
+  ];
+
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedAccommodations = [
+    accommodations[2], // Ramps and Elevators (id: 8)
+    accommodations[4], // Audiobooks (id: 10)
+    accommodations[1], // Sign Language Interpreter (id: 7)
+    accommodations[0], // Screen Reader Software (id: 6)
+    accommodations[3]  // Fidget Tools (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each impairment has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { impairmentId: 1, accommodationId: 6 }, // Visual Impairment → Screen Reader Software
+    { impairmentId: 2, accommodationId: 7 }, // Hearing Impairment → Sign Language Interpreter
+    { impairmentId: 3, accommodationId: 8 }, // Mobility Limitation → Ramps and Elevators
+    { impairmentId: 4, accommodationId: 9 }, // ADHD → Fidget Tools
+    { impairmentId: 5, accommodationId: 10 } // Dyslexia → Audiobooks
+  ];
+
+  const handleImpairmentSelect = (impairment) => {
+    if (gameFinished) return;
+    setSelectedImpairment(impairment);
+  };
+
+  const handleAccommodationSelect = (accommodation) => {
+    if (gameFinished) return;
+    setSelectedAccommodation(accommodation);
+  };
+
+  const handleMatch = () => {
+    if (!selectedImpairment || !selectedAccommodation || gameFinished) return;
+
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOptionData?.isCorrect || false;
-    
-    if (isCorrect) {
+
+    const newMatch = {
+      impairmentId: selectedImpairment.id,
+      accommodationId: selectedAccommodation.id,
+      isCorrect: correctMatches.some(
+        match => match.impairmentId === selectedImpairment.id && match.accommodationId === selectedAccommodation.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setAnswered(false);
-        resetFeedback();
-      } else {
-        setLevelCompleted(true);
-      }
-    }, isCorrect ? 1000 : 800);
+
+    // Check if all items are matched
+    if (newMatches.length === impairments.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedImpairment(null);
+    setSelectedAccommodation(null);
   };
 
-  const currentQuestionData = questions[currentQuestion];
-  const finalScore = score;
+  // Check if an impairment is already matched
+  const isImpairmentMatched = (impairmentId) => {
+    return matches.some(match => match.impairmentId === impairmentId);
+  };
+
+  // Check if an accommodation is already matched
+  const isAccommodationMatched = (accommodationId) => {
+    return matches.some(match => match.accommodationId === accommodationId);
+  };
+
+  // Get match result for an impairment
+  const getMatchResult = (impairmentId) => {
+    const match = matches.find(m => m.impairmentId === impairmentId);
+    return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/uvls/teen");
+  };
 
   return (
     <GameShell
       title="Accessibility Puzzle"
-      subtitle={levelCompleted ? "Puzzle Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Impairments with Accommodations (${matches.length}/${impairments.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="uvls-teen-13"
+      gameType="uvls"
+      totalLevels={impairments.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === impairments.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/uvls/teen"
+      maxScore={impairments.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId={gameId}
-      gameType="uvls"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!levelCompleted && currentQuestionData ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Disabilities/Impairments */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Disabilities/Impairments</h3>
+              <div className="space-y-4">
+                {impairments.map(impairment => (
+                  <button
+                    key={impairment.id}
+                    onClick={() => handleImpairmentSelect(impairment)}
+                    disabled={isImpairmentMatched(impairment.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isImpairmentMatched(impairment.id)
+                        ? getMatchResult(impairment.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedImpairment?.id === impairment.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{impairment.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{impairment.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {impairment.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-              
-              <p className="text-white text-lg md:text-xl mb-6 text-center">
-                {currentQuestionData.text}
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map(option => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleAnswer(option.id)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                        showCorrect
-                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : showIncorrect
-                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                          : isSelected
-                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-2xl mb-2">{option.emoji}</div>
-                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
-                    </button>
-                  );
-                })}
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedImpairment 
+                    ? `Selected: ${selectedImpairment.name}` 
+                    : "Select a Disability/Impairment"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedImpairment || !selectedAccommodation}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedImpairment && selectedAccommodation
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{impairments.length}</p>
+                  <p>Matched: {matches.length}/{impairments.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Accommodations */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Accommodations</h3>
+              <div className="space-y-4">
+                {rearrangedAccommodations.map(accommodation => (
+                  <button
+                    key={accommodation.id}
+                    onClick={() => handleAccommodationSelect(accommodation)}
+                    disabled={isAccommodationMatched(accommodation.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isAccommodationMatched(accommodation.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedAccommodation?.id === accommodation.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{accommodation.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{accommodation.name}</h4>
+                        <p className="text-white/80 text-sm">{accommodation.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {impairments.length} disabilities with appropriate accommodations!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding different disabilities and their accommodations helps create inclusive environments for everyone!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {impairments.length} disabilities correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what challenges each disability presents and what tools or adjustments could help!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

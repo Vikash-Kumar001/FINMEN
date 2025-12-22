@@ -26,19 +26,20 @@ const ComfortRoleplay = () => {
       text: "Your friend is crying because they lost their favorite toy. What's the best way to comfort them?",
       emoji: "😢",
       options: [
-        { 
-          id: "help", 
-          text: "I'm sorry you're sad. Can I help you look for it?", 
-          emoji: "🔍", 
-          description: "Show empathy and offer help",
-          isCorrect: true 
-        },
+        
         { 
           id: "dismiss", 
           text: "It's just a toy, get over it.", 
           emoji: "😤", 
           description: "Dismissive and unkind",
           isCorrect: false 
+        },
+        { 
+          id: "help", 
+          text: "I'm sorry you're sad. Can I help you look for it?", 
+          emoji: "🔍", 
+          description: "Show empathy and offer help",
+          isCorrect: true 
         },
         { 
           id: "ignore", 
@@ -82,13 +83,7 @@ const ComfortRoleplay = () => {
       text: "A new student is sitting alone and looks lonely. What should you do?",
       emoji: "😔",
       options: [
-        { 
-          id: "invite", 
-          text: "Hi! Want to sit with me and my friends?", 
-          emoji: "👋", 
-          description: "Welcoming and inclusive",
-          isCorrect: true 
-        },
+        
         { 
           id: "judge", 
           text: "Why are you sitting alone? That's weird.", 
@@ -102,7 +97,14 @@ const ComfortRoleplay = () => {
           emoji: "😕", 
           description: "Insensitive question",
           isCorrect: false 
-        }
+        },
+        { 
+          id: "invite", 
+          text: "Hi! Want to sit with me and my friends?", 
+          emoji: "👋", 
+          description: "Welcoming and inclusive",
+          isCorrect: true 
+        },
       ]
     },
     {
@@ -110,19 +112,20 @@ const ComfortRoleplay = () => {
       text: "Your sibling is scared about their first day at a new school. How can you comfort them?",
       emoji: "😰",
       options: [
-        { 
-          id: "support", 
-          text: "I'll walk with you to school. You'll be okay!", 
-          emoji: "🚶", 
-          description: "Offers practical support",
-          isCorrect: true 
-        },
+        
         { 
           id: "dismiss", 
           text: "Stop being scared, it's just school.", 
           emoji: "😒", 
           description: "Dismisses their fear",
           isCorrect: false 
+        },
+        { 
+          id: "support", 
+          text: "I'll walk with you to school. You'll be okay!", 
+          emoji: "🚶", 
+          description: "Offers practical support",
+          isCorrect: true 
         },
         { 
           id: "scare", 

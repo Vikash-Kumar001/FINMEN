@@ -1,287 +1,267 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
-import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const PolicyPuzzle = () => {
-  const location = useLocation();
-  
-  const gameId = "uvls-teen-59";
-  const gameData = getGameDataById(gameId);
-  
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getUvlsTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-  
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  const navigate = useNavigate();
 
-  const questions = [
-    {
-      id: 1,
-      text: "Policy: 'No phones in school.' What's the most practical improvement?",
-      options: [
-        { 
-          id: "a", 
-          text: "Allow phones for educational use during designated times", 
-          emoji: "📱",
-          description: "Balances restriction with practical use",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Ban all technology completely", 
-          emoji: "🚫",
-          description: "Too restrictive and impractical",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Ignore the policy entirely", 
-          emoji: "🙈",
-          description: "Doesn't improve the policy",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 2,
-      text: "Policy: 'Uniform required.' What's the most feasible improvement?",
-      options: [
-        { 
-          id: "b", 
-          text: "Abolish uniforms completely", 
-          emoji: "👕",
-          description: "Not an improvement, just elimination",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "Allow casual Fridays or uniform customization options", 
-          emoji: "🎨",
-          description: "Practical compromise that maintains structure",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Make uniforms even stricter", 
-          emoji: "⚡",
-          description: "Not an improvement for students",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 3,
-      text: "Policy: 'Homework every day.' What's the most feasible improvement?",
-      options: [
-        { 
-          id: "a", 
-          text: "Reduce homework load and make it project-based", 
-          emoji: "📚",
-          description: "Balances learning with student wellbeing",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Give even more homework", 
-          emoji: "📝",
-          description: "Worsens the problem",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Eliminate all homework", 
-          emoji: "🗑️",
-          description: "Removes practice opportunities",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 4,
-      text: "Policy: 'No recess for misbehavior.' What's the most practical improvement?",
-      options: [
-        { 
-          id: "b", 
-          text: "Make punishment even longer", 
-          emoji: "⏰",
-          description: "Not an improvement",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Ignore misbehavior completely", 
-          emoji: "🙈",
-          description: "Doesn't address the issue",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "Provide alternative constructive activities instead of removing recess", 
-          emoji: "🏃",
-          description: "Addresses behavior while maintaining physical activity",
-          isCorrect: true
-        }
-      ]
-    },
-    {
-      id: 5,
-      text: "Policy: 'Grading on curve.' What's the most feasible improvement?",
-      options: [
-        { 
-          id: "a", 
-          text: "Use a combination of absolute grading and curve when appropriate", 
-          emoji: "📊",
-          description: "Balanced approach to fair assessment",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Remove all grading", 
-          emoji: "✂️",
-          description: "Not practical for assessment",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Make the curve even stricter", 
-          emoji: "📉",
-          description: "Not an improvement",
-          isCorrect: false
-        }
-      ]
-    }
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedPolicy, setSelectedPolicy] = useState(null);
+  const [selectedImprovement, setSelectedImprovement] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  // School policies (left side) - 5 items with hints
+  const policies = [
+    { id: 1, name: "No Phones Allowed", emoji: "📱", hint: "Restricting device usage during school hours" },
+    { id: 2, name: "Mandatory Uniforms", emoji: "👕", hint: "Requiring specific clothing for all students" },
+    { id: 3, name: "Daily Homework", emoji: "📚", hint: "Assigning work to be completed at home" },
+    { id: 4, name: "Recess Removal", emoji: "🏃", hint: "Withholding break time as punishment" },
+    { id: 5, name: "Grading on Curve", emoji: "📊", hint: "Comparing student performance relatively" }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (answered || levelCompleted) return;
-    
-    setAnswered(true);
-    setSelectedOption(optionId);
+  // Policy improvements (right side) - 5 items with descriptions
+  const improvements = [
+    { id: 6, name: "Designated Usage", emoji: "⏰", description: "Allow devices during specific educational times" },
+    { id: 7, name: "Flexible Options", emoji: "🎨", description: "Permit variations while maintaining standards" },
+    { id: 8, name: "Project-Based Tasks", emoji: "🎓", description: "Focus on meaningful, engaging assignments" },
+    { id: 9, name: "Constructive Alternatives", emoji: "🔨", description: "Replace punishment with learning opportunities" },
+    { id: 10, name: "Balanced Assessment", emoji: "⚖️", description: "Combine relative and absolute evaluation methods" }
+  ];
+
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedImprovements = [
+    improvements[2], // Project-Based Tasks (id: 8)
+    improvements[4], // Balanced Assessment (id: 10)
+    improvements[1], // Flexible Options (id: 7)
+    improvements[0], // Designated Usage (id: 6)
+    improvements[3]  // Constructive Alternatives (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each policy has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { policyId: 1, improvementId: 6 }, // No Phones Allowed → Designated Usage
+    { policyId: 2, improvementId: 7 }, // Mandatory Uniforms → Flexible Options
+    { policyId: 3, improvementId: 8 }, // Daily Homework → Project-Based Tasks
+    { policyId: 4, improvementId: 9 }, // Recess Removal → Constructive Alternatives
+    { policyId: 5, improvementId: 10 } // Grading on Curve → Balanced Assessment
+  ];
+
+  const handlePolicySelect = (policy) => {
+    if (gameFinished) return;
+    setSelectedPolicy(policy);
+  };
+
+  const handleImprovementSelect = (improvement) => {
+    if (gameFinished) return;
+    setSelectedImprovement(improvement);
+  };
+
+  const handleMatch = () => {
+    if (!selectedPolicy || !selectedImprovement || gameFinished) return;
+
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOptionData?.isCorrect || false;
-    
-    if (isCorrect) {
+
+    const newMatch = {
+      policyId: selectedPolicy.id,
+      improvementId: selectedImprovement.id,
+      isCorrect: correctMatches.some(
+        match => match.policyId === selectedPolicy.id && match.improvementId === selectedImprovement.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setAnswered(false);
-        resetFeedback();
-      } else {
-        setLevelCompleted(true);
-      }
-    }, isCorrect ? 1000 : 800);
+
+    // Check if all items are matched
+    if (newMatches.length === policies.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedPolicy(null);
+    setSelectedImprovement(null);
   };
 
-  const currentQuestionData = questions[currentQuestion];
-  const finalScore = score;
+  // Check if a policy is already matched
+  const isPolicyMatched = (policyId) => {
+    return matches.some(match => match.policyId === policyId);
+  };
+
+  // Check if an improvement is already matched
+  const isImprovementMatched = (improvementId) => {
+    return matches.some(match => match.improvementId === improvementId);
+  };
+
+  // Get match result for a policy
+  const getMatchResult = (policyId) => {
+    const match = matches.find(m => m.policyId === policyId);
+    return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/uvls/teen");
+  };
 
   return (
     <GameShell
       title="Policy Puzzle"
-      subtitle={levelCompleted ? "Puzzle Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Policies with Improvements (${matches.length}/${policies.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="uvls-teen-59"
+      gameType="uvls"
+      totalLevels={policies.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === policies.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/uvls/teen"
+      maxScore={policies.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId={gameId}
-      gameType="uvls"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!levelCompleted && currentQuestionData ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - School Policies */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">School Policies</h3>
+              <div className="space-y-4">
+                {policies.map(policy => (
+                  <button
+                    key={policy.id}
+                    onClick={() => handlePolicySelect(policy)}
+                    disabled={isPolicyMatched(policy.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isPolicyMatched(policy.id)
+                        ? getMatchResult(policy.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedPolicy?.id === policy.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{policy.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{policy.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {policy.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-              
-              <p className="text-white text-lg md:text-xl mb-6 text-center">
-                {currentQuestionData.text}
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map(option => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleAnswer(option.id)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                        showCorrect
-                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : showIncorrect
-                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                          : isSelected
-                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-2xl mb-2">{option.emoji}</div>
-                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
-                    </button>
-                  );
-                })}
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedPolicy 
+                    ? `Selected: ${selectedPolicy.name}` 
+                    : "Select a School Policy"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedPolicy || !selectedImprovement}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedPolicy && selectedImprovement
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{policies.length}</p>
+                  <p>Matched: {matches.length}/{policies.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Policy Improvements */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Policy Improvements</h3>
+              <div className="space-y-4">
+                {rearrangedImprovements.map(improvement => (
+                  <button
+                    key={improvement.id}
+                    onClick={() => handleImprovementSelect(improvement)}
+                    disabled={isImprovementMatched(improvement.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isImprovementMatched(improvement.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedImprovement?.id === improvement.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{improvement.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{improvement.name}</h4>
+                        <p className="text-white/80 text-sm">{improvement.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {policies.length} school policies with practical improvements!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Thoughtful policy improvements balance structure with flexibility for better outcomes!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {policies.length} school policies correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about how each policy could be adjusted to be more effective and fair!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

@@ -1,294 +1,273 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
-import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const PolicyCasePuzzle = () => {
-  const location = useLocation();
-  
-  const gameId = "uvls-teen-19";
-  const gameData = getGameDataById(gameId);
-  
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getUvlsTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-  
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  const navigate = useNavigate();
 
-  const questions = [
-    {
-      id: 1,
-      text: "Several students with diverse needs report feeling excluded. As a student leader, which policy action should you recommend?",
-      options: [
-        { 
-          id: "a", 
-          text: "Implement mandatory diversity and inclusion training for all students", 
-          emoji: "🎓",
-          description: "Evidence-based approach that builds understanding",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Just tell students to be nicer", 
-          emoji: "😐",
-          description: "Vague directive with minimal impact",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Ignore the problem", 
-          emoji: "🙈",
-          description: "Doesn't address the issue",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 2,
-      text: "What's another effective policy to improve inclusion?",
-      options: [
-        { 
-          id: "b", 
-          text: "Segregate students by ability", 
-          emoji: "🚫",
-          description: "Creates divisions",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "Create student-led inclusion committees", 
-          emoji: "👥",
-          description: "Peer-driven initiatives create lasting change",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Hope it goes away", 
-          emoji: "🤷",
-          description: "Not a solution",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 3,
-      text: "Which policy establishes clear boundaries for inclusion?",
-      options: [
-        { 
-          id: "a", 
-          text: "Establish clear anti-discrimination policies with consequences", 
-          emoji: "🛡️",
-          description: "Clear boundaries reduce incidents",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Make vague suggestions", 
-          emoji: "💭",
-          description: "Not effective",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Do nothing", 
-          emoji: "❌",
-          description: "Won't help",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 4,
-      text: "How can you ensure all students can participate fully?",
-      options: [
-        { 
-          id: "b", 
-          text: "Only provide one format for everything", 
-          emoji: "📄",
-          description: "Limits accessibility",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Ignore different needs", 
-          emoji: "🙈",
-          description: "Doesn't address the problem",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "Provide accessible materials and flexible participation options", 
-          emoji: "♿",
-          description: "Students with different needs can participate fully",
-          isCorrect: true
-        }
-      ]
-    },
-    {
-      id: 5,
-      text: "What policy helps build appreciation for diversity?",
-      options: [
-        { 
-          id: "a", 
-          text: "Celebrate diversity through cultural awareness events", 
-          emoji: "🌍",
-          description: "Students learn to appreciate differences",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Avoid talking about differences", 
-          emoji: "🤐",
-          description: "Misses learning opportunities",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Pretend everyone is the same", 
-          emoji: "🔄",
-          description: "Doesn't acknowledge diversity",
-          isCorrect: false
-        }
-      ]
-    }
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedChallenge, setSelectedChallenge] = useState(null);
+  const [selectedPolicy, setSelectedPolicy] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  // Inclusion challenges (left side) - 5 items with hints
+  const challenges = [
+    { id: 1, name: "Student Exclusion", emoji: "🚫", hint: "Peers feeling left out of activities" },
+    { id: 2, name: "Lack of Representation", emoji: "👥", hint: "Missing diverse voices in leadership" },
+    { id: 3, name: "Discrimination Cases", emoji: "⚖️", hint: "Unfair treatment based on identity" },
+    { id: 4, name: "Accessibility Barriers", emoji: "♿", hint: "Physical or digital obstacles" },
+    { id: 5, name: "Cultural Insensitivity", emoji: "🌍", hint: "Lack of appreciation for differences" }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (answered || levelCompleted) return;
-    
-    setAnswered(true);
-    setSelectedOption(optionId);
+  // Policy solutions (right side) - 5 items with descriptions
+  const policies = [
+    { id: 6, name: "Inclusion Training", emoji: "🎓", description: "Educational programs to build awareness" },
+    { id: 7, name: "Diverse Committees", emoji: "🏛️", description: "Representative decision-making groups" },
+    { id: 8, name: "Anti-Discrimination Rules", emoji: "🛡️", description: "Clear consequences for unfair treatment" },
+    { id: 9, name: "Accessible Materials", emoji: "📘", description: "Multiple formats for different needs" },
+    { id: 10, name: "Cultural Events", emoji: "🎊", description: "Celebrations that honor diversity" }
+  ];
+
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedPolicies = [
+    policies[2], // Anti-Discrimination Rules (id: 8)
+    policies[4], // Cultural Events (id: 10)
+    policies[1], // Diverse Committees (id: 7)
+    policies[0], // Inclusion Training (id: 6)
+    policies[3]  // Accessible Materials (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each challenge has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { challengeId: 1, policyId: 6 }, // Student Exclusion → Inclusion Training
+    { challengeId: 2, policyId: 7 }, // Lack of Representation → Diverse Committees
+    { challengeId: 3, policyId: 8 }, // Discrimination Cases → Anti-Discrimination Rules
+    { challengeId: 4, policyId: 9 }, // Accessibility Barriers → Accessible Materials
+    { challengeId: 5, policyId: 10 } // Cultural Insensitivity → Cultural Events
+  ];
+
+  const handleChallengeSelect = (challenge) => {
+    if (gameFinished) return;
+    setSelectedChallenge(challenge);
+  };
+
+  const handlePolicySelect = (policy) => {
+    if (gameFinished) return;
+    setSelectedPolicy(policy);
+  };
+
+  const handleMatch = () => {
+    if (!selectedChallenge || !selectedPolicy || gameFinished) return;
+
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOptionData?.isCorrect || false;
-    
-    if (isCorrect) {
+
+    const newMatch = {
+      challengeId: selectedChallenge.id,
+      policyId: selectedPolicy.id,
+      isCorrect: correctMatches.some(
+        match => match.challengeId === selectedChallenge.id && match.policyId === selectedPolicy.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setAnswered(false);
-        resetFeedback();
-      } else {
-        setLevelCompleted(true);
-      }
-    }, isCorrect ? 1000 : 800);
+
+    // Check if all items are matched
+    if (newMatches.length === challenges.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedChallenge(null);
+    setSelectedPolicy(null);
   };
 
-  const currentQuestionData = questions[currentQuestion];
-  const finalScore = score;
+  // Check if a challenge is already matched
+  const isChallengeMatched = (challengeId) => {
+    return matches.some(match => match.challengeId === challengeId);
+  };
+
+  // Check if a policy is already matched
+  const isPolicyMatched = (policyId) => {
+    return matches.some(match => match.policyId === policyId);
+  };
+
+  // Get match result for a challenge
+  const getMatchResult = (challengeId) => {
+    const match = matches.find(m => m.challengeId === challengeId);
+    return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/uvls/teen");
+  };
 
   return (
     <GameShell
       title="Policy Case Puzzle"
-      subtitle={levelCompleted ? "Puzzle Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Challenges with Policies (${matches.length}/${challenges.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="uvls-teen-19"
+      gameType="uvls"
+      totalLevels={challenges.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === challenges.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/uvls/teen"
+      maxScore={challenges.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId={gameId}
-      gameType="uvls"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {currentQuestion === 0 && !answered && (
-          <div className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-xl p-6 mb-4 border-2 border-purple-400/50">
-            <h3 className="text-white text-xl font-bold mb-2">School Inclusion Challenge</h3>
-            <p className="text-white/90">Several students with diverse needs report feeling excluded from activities. As a student leader, recommend policy actions to improve inclusion.</p>
-          </div>
-        )}
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {/* School Inclusion Challenge Introduction */}
+        <div className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-xl p-6 border-2 border-purple-400/50">
+          <h3 className="text-white text-xl font-bold mb-2">School Inclusion Challenge</h3>
+          <p className="text-white/90">Several students with diverse needs report feeling excluded from activities. As a student leader, match policy solutions to inclusion challenges.</p>
+        </div>
         
-        {!levelCompleted && currentQuestionData ? (
-          <div className="space-y-6">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Inclusion Challenges */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Inclusion Challenges</h3>
+              <div className="space-y-4">
+                {challenges.map(challenge => (
+                  <button
+                    key={challenge.id}
+                    onClick={() => handleChallengeSelect(challenge)}
+                    disabled={isChallengeMatched(challenge.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isChallengeMatched(challenge.id)
+                        ? getMatchResult(challenge.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedChallenge?.id === challenge.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{challenge.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{challenge.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {challenge.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-              
-              <p className="text-white text-lg md:text-xl mb-6 text-center">
-                {currentQuestionData.text}
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map(option => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleAnswer(option.id)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                        showCorrect
-                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : showIncorrect
-                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                          : isSelected
-                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-2xl mb-2">{option.emoji}</div>
-                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
-                    </button>
-                  );
-                })}
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedChallenge 
+                    ? `Selected: ${selectedChallenge.name}` 
+                    : "Select an Inclusion Challenge"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedChallenge || !selectedPolicy}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedChallenge && selectedPolicy
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{challenges.length}</p>
+                  <p>Matched: {matches.length}/{challenges.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Policy Solutions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Policy Solutions</h3>
+              <div className="space-y-4">
+                {rearrangedPolicies.map(policy => (
+                  <button
+                    key={policy.id}
+                    onClick={() => handlePolicySelect(policy)}
+                    disabled={isPolicyMatched(policy.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isPolicyMatched(policy.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedPolicy?.id === policy.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{policy.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{policy.name}</h4>
+                        <p className="text-white/80 text-sm">{policy.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {challenges.length} inclusion challenges with policy solutions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Effective policy solutions address specific challenges with targeted approaches!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {challenges.length} inclusion challenges correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what specific policy would best address each inclusion challenge!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

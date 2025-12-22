@@ -29,7 +29,7 @@ const AntiBullyingPoster = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Stop Bullying."',
+      question: 'Which poster promotes taking action against harassment?',
       choices: [
         { text: "Bullying is OK 😠", correct: false },
         { text: "Tease Others 🎭", correct: false },
@@ -37,7 +37,7 @@ const AntiBullyingPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Be a Friend."',
+      question: 'Which poster encourages positive social relationships?',
       choices: [
         { text: "Be a Friend 🤝", correct: true },
         { text: "Ignore Friends 🙈", correct: false },
@@ -45,7 +45,7 @@ const AntiBullyingPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Safe School."',
+      question: 'Which poster creates a secure learning environment?',
       choices: [
         { text: "Unsafe School 🚫", correct: false },
         { text: "Safe School 🏫", correct: true },
@@ -53,7 +53,7 @@ const AntiBullyingPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Online Kindness."',
+      question: 'Which poster addresses respectful digital interactions?',
       choices: [
         { text: "Online Kindness 💻", correct: true },
         { text: "Cyber Bully 📱", correct: false },

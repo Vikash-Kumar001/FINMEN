@@ -22,7 +22,7 @@ const QuizGrowth = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback, flashPoints, showAnswerConfetti } = useGameFeedback();
 
   const questions = [
     {
@@ -181,7 +181,7 @@ const QuizGrowth = () => {
   const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
-    navigate("/games/health-male/kids");
+    navigate("/student/health-male/kids");
   };
 
   return (
@@ -198,7 +198,7 @@ const QuizGrowth = () => {
       gameId={gameId}
       gameType="health-male"
       totalLevels={5}
-      currentLevel={22}
+      currentLevel={currentQuestion + 1}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-male/kids"

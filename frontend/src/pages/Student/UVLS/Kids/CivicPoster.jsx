@@ -29,7 +29,7 @@ const CivicPoster = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Clean Up, Help Others, Obey Rules."',
+      question: 'Which poster promotes environmental stewardship and community cooperation?',
       choices: [
         { text: "Make Mess, Ignore Others, Break Rules 🚫", correct: false },
         { text: "Clean Up, Help Others, Obey Rules 🧹", correct: true },
@@ -37,7 +37,7 @@ const CivicPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Recycle, Be Kind, Vote Later."',
+      question: 'Which poster encourages sustainable practices and kindness?',
       choices: [
         { text: "Recycle, Be Kind, Vote Later ♻️", correct: true },
         { text: "Throw Trash, Be Mean 😠", correct: false },
@@ -45,7 +45,7 @@ const CivicPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Plant Trees, Share, Respect."',
+      question: 'Which poster emphasizes environmental conservation and mutual respect?',
       choices: [
         { text: "Cut Trees, Keep Everything, Disrespect 🌳", correct: false },
         { text: "Plant Trees, Share, Respect 🌳", correct: true },
@@ -53,11 +53,11 @@ const CivicPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Volunteer, Save Water, No Litter."',
+      question: 'Which poster highlights community service and resource conservation?',
       choices: [
-        { text: "Volunteer, Save Water, No Litter 💧", correct: true },
         { text: "Never Help, Waste Water, Litter 🚫", correct: false },
         { text: "Ignore Community 🏘️", correct: false },
+        { text: "Volunteer, Save Water, No Litter 💧", correct: true },
       ],
     },
     {

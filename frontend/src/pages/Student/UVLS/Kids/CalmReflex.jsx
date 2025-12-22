@@ -72,8 +72,8 @@ const CalmReflex = () => {
       question: "What should you do when upset?",
       correctAnswer: "Ask for help",
       options: [
-        { text: "Ask for help", isCorrect: true, emoji: "🙋" },
         { text: "Keep it inside", isCorrect: false, emoji: "🤐" },
+        { text: "Ask for help", isCorrect: true, emoji: "🙋" },
         { text: "Take it out on others", isCorrect: false, emoji: "😡" },
         { text: "Ignore the feeling", isCorrect: false, emoji: "🙈" }
       ]

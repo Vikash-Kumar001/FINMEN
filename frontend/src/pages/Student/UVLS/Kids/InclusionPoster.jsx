@@ -29,7 +29,7 @@ const InclusionPoster = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Everyone Belongs."',
+      question: 'Which poster emphasizes that all people should feel accepted?',
       choices: [
         { text: "Exclude Some People 🚫", correct: false },
         { text: "Only My Friends 👥", correct: false },
@@ -37,7 +37,7 @@ const InclusionPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Together We\'re Strong."',
+      question: 'Which poster highlights the power of unity and collaboration?',
       choices: [
         { text: "Together We're Strong 💪", correct: true },
         { text: "I Work Alone 😤", correct: false },
@@ -45,7 +45,7 @@ const InclusionPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "All Are Welcome."',
+      question: 'Which poster creates an atmosphere where all individuals are invited?',
       choices: [
         { text: "Only Some Welcome 🏠", correct: false },
         { text: "All Are Welcome 🏠", correct: true },
@@ -53,7 +53,7 @@ const InclusionPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Friendship Circle."',
+      question: 'Which poster represents building connections with diverse groups of people?',
       choices: [
         { text: "Friendship Circle 👥", correct: true },
         { text: "Small Group Only 👤", correct: false },

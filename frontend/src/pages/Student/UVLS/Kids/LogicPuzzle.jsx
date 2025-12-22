@@ -1,134 +1,233 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const LogicPuzzle = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const gameId = "uvls-kids-54";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const gameData = getGameDataById(gameId);
   const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [solves, setSolves] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedPattern, setSelectedPattern] = useState(null);
+  const [selectedRule, setSelectedRule] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const questions = [
-    {
-      id: 1,
-      puzzle: "Red, Blue, ?",
-      options: ["Green", "Yellow", "Purple"],
-      correct: "Green"
-    },
-    {
-      id: 2,
-      puzzle: "1, 2, ?",
-      options: ["3", "4", "5"],
-      correct: "3"
-    },
-    {
-      id: 3,
-      puzzle: "Circle, Square, ?",
-      options: ["Triangle", "Star", "Heart"],
-      correct: "Triangle"
-    },
-    {
-      id: 4,
-      puzzle: "Apple, Banana, ?",
-      options: ["Cherry", "Dog", "Car"],
-      correct: "Cherry"
-    },
-    {
-      id: 5,
-      puzzle: "Dog, Cat, ?",
-      options: ["Bird", "Car", "Tree"],
-      correct: "Bird"
-    }
+  // Logic patterns (left side) - 5 items with hints
+  const patterns = [
+    { id: 1, name: "Color Sequence", emoji: "🌈", hint: "Red, Blue, Green pattern" },
+    { id: 2, name: "Number Order", emoji: "🔢", hint: "1, 2, 3 counting sequence" },
+    { id: 3, name: "Shape Rotation", emoji: "🔺", hint: "Circle, Square, Triangle series" },
+    { id: 4, name: "Category Chain", emoji: "🍎", hint: "Apple, Banana, Cherry fruits" },
+    { id: 5, name: "Animal Group", emoji: "🐶", hint: "Dog, Cat, Bird pets" }
   ];
 
-  const handleSolve = (selected) => {
-    const newSolves = [...solves, selected];
-    setSolves(newSolves);
+  // Logic rules (right side) - 5 items with descriptions
+  const rules = [
+    { id: 6, name: "Rainbow Progression", emoji: "🎨", description: "Follows color spectrum order" },
+    { id: 7, name: "Numerical Sequence", emoji: "📈", description: "Counts in ascending order" },
+    { id: 8, name: "Geometric Cycle", emoji: "🔄", description: "Rotates through shape types" },
+    { id: 9, name: "Fruit Family", emoji: "🍒", description: "Groups by food category" },
+    { id: 10, name: "Pet Classification", emoji: "🐾", description: "Common domestic animals" }
+  ];
 
-    const isCorrect = selected === questions[currentLevel].correct;
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    }
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedRules = [
+    rules[2], // Geometric Cycle (id: 8)
+    rules[4], // Pet Classification (id: 10)
+    rules[1], // Numerical Sequence (id: 7)
+    rules[0], // Rainbow Progression (id: 6)
+    rules[3]  // Fruit Family (id: 9)
+  ];
 
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-      }, isCorrect ? 800 : 0);
-    } else {
-      const correctSolves = newSolves.filter((sel, idx) => sel === questions[idx].correct).length;
-      setFinalScore(correctSolves);
-      setShowResult(true);
-    }
+  // Correct matches using proper IDs, not positional order
+  // Each pattern has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { patternId: 1, ruleId: 6 }, // Color Sequence → Rainbow Progression
+    { patternId: 2, ruleId: 7 }, // Number Order → Numerical Sequence
+    { patternId: 3, ruleId: 8 }, // Shape Rotation → Geometric Cycle
+    { patternId: 4, ruleId: 9 }, // Category Chain → Fruit Family
+    { patternId: 5, ruleId: 10 } // Animal Group → Pet Classification
+  ];
+
+  const handlePatternSelect = (pattern) => {
+    if (gameFinished) return;
+    setSelectedPattern(pattern);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentLevel(0);
-    setSolves([]);
-    setCoins(0);
-    setFinalScore(0);
+  const handleRuleSelect = (rule) => {
+    if (gameFinished) return;
+    setSelectedRule(rule);
+  };
+
+  const handleMatch = () => {
+    if (!selectedPattern || !selectedRule || gameFinished) return;
+
     resetFeedback();
+
+    const newMatch = {
+      patternId: selectedPattern.id,
+      ruleId: selectedRule.id,
+      isCorrect: correctMatches.some(
+        match => match.patternId === selectedPattern.id && match.ruleId === selectedRule.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    // Check if all items are matched
+    if (newMatches.length === patterns.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedPattern(null);
+    setSelectedRule(null);
+  };
+
+  // Check if a pattern is already matched
+  const isPatternMatched = (patternId) => {
+    return matches.some(match => match.patternId === patternId);
+  };
+
+  // Check if a rule is already matched
+  const isRuleMatched = (ruleId) => {
+    return matches.some(match => match.ruleId === ruleId);
+  };
+
+  // Get match result for a pattern
+  const getMatchResult = (patternId) => {
+    const match = matches.find(m => m.patternId === patternId);
+    return match ? match.isCorrect : null;
   };
 
   const handleNext = () => {
     navigate("/games/uvls/kids");
   };
 
-  const getCurrentLevel = () => questions[currentLevel];
-
   return (
     <GameShell
       title="Logic Puzzle"
-      score={coins}
-  subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Patterns with Rules (${matches.length}/${patterns.length} matched)`}
       onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
       gameId="uvls-kids-54"
       gameType="uvls"
-      totalLevels={70}
-      currentLevel={54}
-      showConfetti={showResult && finalScore >= 3}
+      totalLevels={patterns.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === patterns.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/uvls/kids"
+      maxScore={patterns.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Logic Patterns */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentLevel + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
-              </div>
-              <p className="text-white text-xl md:text-2xl mb-6 text-center font-semibold">
-                Complete the pattern: <span className="text-yellow-300">{getCurrentLevel().puzzle}</span>
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getCurrentLevel().options.map(opt => (
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Logic Patterns</h3>
+              <div className="space-y-4">
+                {patterns.map(pattern => (
                   <button
-                    key={opt}
-                    onClick={() => handleSolve(opt)}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-xl font-bold flex items-center justify-center gap-3"
+                    key={pattern.id}
+                    onClick={() => handlePatternSelect(pattern)}
+                    disabled={isPatternMatched(pattern.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isPatternMatched(pattern.id)
+                        ? getMatchResult(pattern.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedPattern?.id === pattern.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
                   >
-                    <span className="text-3xl">🧩</span>
-                    <span>{opt}</span>
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{pattern.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{pattern.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {pattern.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedPattern 
+                    ? `Selected: ${selectedPattern.name}` 
+                    : "Select a Logic Pattern"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedPattern || !selectedRule}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedPattern && selectedRule
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{patterns.length}</p>
+                  <p>Matched: {matches.length}/{patterns.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Logic Rules */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Logic Rules</h3>
+              <div className="space-y-4">
+                {rearrangedRules.map(rule => (
+                  <button
+                    key={rule.id}
+                    onClick={() => handleRuleSelect(rule)}
+                    disabled={isRuleMatched(rule.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isRuleMatched(rule.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedRule?.id === rule.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{rule.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{rule.name}</h4>
+                        <p className="text-white/80 text-sm">{rule.description}</p>
+                      </div>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -136,37 +235,29 @@ const LogicPuzzle = () => {
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 3 ? (
+            {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Puzzle Solver!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You solved {finalScore} out of {questions.length} puzzles!
-                  You're great at finding patterns!
+                  You correctly matched {score} out of {patterns.length} logic patterns with rules!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{finalScore} Coins</span>
+                  <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Finding patterns helps you solve problems and think logically!
+                  Lesson: Understanding patterns helps you think logically and solve problems!
                 </p>
               </div>
             ) : (
               <div>
                 <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Solve More!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You solved {finalScore} out of {questions.length} puzzles.
-                  Keep practicing to find patterns!
+                  You matched {score} out of {patterns.length} logic patterns correctly.
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Look for what comes next in the pattern - colors, numbers, shapes, or categories!
+                  Tip: Think about which rule best explains each pattern!
                 </p>
               </div>
             )}

@@ -29,7 +29,7 @@ const MediationPoster = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Listen Both, Find Fair Solution."',
+      question: 'Which poster emphasizes impartial listening to resolve disputes?',
       choices: [
         { text: "Only Listen to One 👂", correct: false },
         { text: "Listen Both, Find Fair Solution ⚖️", correct: true },
@@ -37,7 +37,7 @@ const MediationPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Calm Down, Share Feelings, Solve Together."',
+      question: 'Which poster promotes de-escalation and collaborative problem-solving?',
       choices: [
         { text: "Calm Down, Share Feelings, Solve Together 🤝", correct: true },
         { text: "Stay Angry and Fight 😠", correct: false },
@@ -45,7 +45,7 @@ const MediationPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Stop Argue, Think Win-Win."',
+      question: 'Which poster advocates for mutually beneficial outcomes?',
       choices: [
         { text: "Keep Arguing Forever 🗣️", correct: false },
         { text: "Stop Argue, Think Win-Win 💭", correct: true },
@@ -53,7 +53,7 @@ const MediationPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Hear Both Sides, Propose Compromise."',
+      question: 'Which poster highlights the importance of balanced negotiation?',
       choices: [
         { text: "Hear Both Sides, Propose Compromise 🤝", correct: true },
         { text: "Only One Side Matters 👆", correct: false },

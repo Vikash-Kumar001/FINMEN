@@ -1,287 +1,267 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
-import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const BuildToolboxPuzzle = () => {
-  const location = useLocation();
-  
-  const gameId = "uvls-teen-49";
-  const gameData = getGameDataById(gameId);
-  
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getUvlsTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-  
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  const navigate = useNavigate();
 
-  const questions = [
-    {
-      id: 1,
-      text: "What breathing technique should be in your emotion regulation toolbox?",
-      options: [
-        { 
-          id: "a", 
-          text: "Deep breathing exercises and meditation", 
-          emoji: "🧘",
-          description: "Calms the nervous system",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Holding your breath", 
-          emoji: "😤",
-          description: "Not effective for regulation",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Rapid shallow breathing", 
-          emoji: "😰",
-          description: "May increase anxiety",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 2,
-      text: "What social support should be in your toolbox?",
-      options: [
-        { 
-          id: "b", 
-          text: "Isolating from others", 
-          emoji: "🚪",
-          description: "Not helpful",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "Talking to friends, family, or counselors", 
-          emoji: "💬",
-          description: "Provides emotional support",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Avoiding all social contact", 
-          emoji: "🙈",
-          description: "Limits support",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 3,
-      text: "What physical activity should be in your toolbox?",
-      options: [
-        { 
-          id: "a", 
-          text: "Exercise, yoga, or going for a walk", 
-          emoji: "🏃",
-          description: "Releases endorphins and reduces stress",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Staying completely still", 
-          emoji: "🛑",
-          description: "May increase restlessness",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Avoiding all movement", 
-          emoji: "😴",
-          description: "Not active regulation",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 4,
-      text: "What creative outlet should be in your toolbox?",
-      options: [
-        { 
-          id: "b", 
-          text: "Suppressing all creativity", 
-          emoji: "🚫",
-          description: "Limits expression",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Only watching others create", 
-          emoji: "👀",
-          description: "Passive, not active",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
-          text: "Journaling, drawing, music, or art", 
-          emoji: "🎨",
-          description: "Expresses and processes emotions",
-          isCorrect: true
-        }
-      ]
-    },
-    {
-      id: 5,
-      text: "What mindfulness practice should be in your toolbox?",
-      options: [
-        { 
-          id: "a", 
-          text: "Mindfulness meditation and present-moment awareness", 
-          emoji: "🧘",
-          description: "Develops emotional awareness",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Constant distraction", 
-          emoji: "📱",
-          description: "Avoids facing emotions",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Ignoring your emotions completely", 
-          emoji: "🙈",
-          description: "Not mindful",
-          isCorrect: false
-        }
-      ]
-    }
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedEmotion, setSelectedEmotion] = useState(null);
+  const [selectedTechnique, setSelectedTechnique] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  // Emotions/Stressors (left side) - 5 items with hints
+  const emotions = [
+    { id: 1, name: "Anxiety", emoji: "😰", hint: "Feeling worried or nervous" },
+    { id: 2, name: "Anger", emoji: "😠", hint: "Feeling mad or frustrated" },
+    { id: 3, name: "Sadness", emoji: "😢", hint: "Feeling down or upset" },
+    { id: 4, name: "Overwhelm", emoji: "😵", hint: "Feeling overloaded or stressed" },
+    { id: 5, name: "Loneliness", emoji: "😔", hint: "Feeling isolated or alone" }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (answered || levelCompleted) return;
-    
-    setAnswered(true);
-    setSelectedOption(optionId);
+  // Regulation Techniques (right side) - 5 items with descriptions
+  const techniques = [
+    { id: 6, name: "Deep Breathing", emoji: "💨", description: "Slow, controlled breaths to calm nerves" },
+    { id: 7, name: "Physical Exercise", emoji: "🏃", description: "Movement to release tension and energy" },
+    { id: 8, name: "Journal Writing", emoji: "📝", description: "Writing thoughts to process emotions" },
+    { id: 9, name: "Mindfulness Meditation", emoji: "🧘", description: "Focusing on the present moment" },
+    { id: 10, name: "Social Connection", emoji: "👥", description: "Reaching out to friends or family" }
+  ];
+
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedTechniques = [
+    techniques[2], // Journal Writing (id: 8)
+    techniques[4], // Social Connection (id: 10)
+    techniques[1], // Physical Exercise (id: 7)
+    techniques[0], // Deep Breathing (id: 6)
+    techniques[3]  // Mindfulness Meditation (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each emotion has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { emotionId: 1, techniqueId: 6 }, // Anxiety → Deep Breathing
+    { emotionId: 2, techniqueId: 7 }, // Anger → Physical Exercise
+    { emotionId: 3, techniqueId: 8 }, // Sadness → Journal Writing
+    { emotionId: 4, techniqueId: 9 }, // Overwhelm → Mindfulness Meditation
+    { emotionId: 5, techniqueId: 10 } // Loneliness → Social Connection
+  ];
+
+  const handleEmotionSelect = (emotion) => {
+    if (gameFinished) return;
+    setSelectedEmotion(emotion);
+  };
+
+  const handleTechniqueSelect = (technique) => {
+    if (gameFinished) return;
+    setSelectedTechnique(technique);
+  };
+
+  const handleMatch = () => {
+    if (!selectedEmotion || !selectedTechnique || gameFinished) return;
+
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOptionData?.isCorrect || false;
-    
-    if (isCorrect) {
+
+    const newMatch = {
+      emotionId: selectedEmotion.id,
+      techniqueId: selectedTechnique.id,
+      isCorrect: correctMatches.some(
+        match => match.emotionId === selectedEmotion.id && match.techniqueId === selectedTechnique.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setAnswered(false);
-        resetFeedback();
-      } else {
-        setLevelCompleted(true);
-      }
-    }, isCorrect ? 1000 : 800);
+
+    // Check if all items are matched
+    if (newMatches.length === emotions.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedEmotion(null);
+    setSelectedTechnique(null);
   };
 
-  const currentQuestionData = questions[currentQuestion];
-  const finalScore = score;
+  // Check if an emotion is already matched
+  const isEmotionMatched = (emotionId) => {
+    return matches.some(match => match.emotionId === emotionId);
+  };
+
+  // Check if a technique is already matched
+  const isTechniqueMatched = (techniqueId) => {
+    return matches.some(match => match.techniqueId === techniqueId);
+  };
+
+  // Get match result for an emotion
+  const getMatchResult = (emotionId) => {
+    const match = matches.find(m => m.emotionId === emotionId);
+    return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/uvls/teen");
+  };
 
   return (
     <GameShell
       title="Build Toolbox Puzzle"
-      subtitle={levelCompleted ? "Toolbox Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={gameFinished ? "Toolbox Complete!" : `Match Emotions with Techniques (${matches.length}/${emotions.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="uvls-teen-49"
+      gameType="uvls"
+      totalLevels={emotions.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === emotions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/uvls/teen"
+      maxScore={emotions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId={gameId}
-      gameType="uvls"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!levelCompleted && currentQuestionData ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Emotions/Stressors */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Emotions/Stressors</h3>
+              <div className="space-y-4">
+                {emotions.map(emotion => (
+                  <button
+                    key={emotion.id}
+                    onClick={() => handleEmotionSelect(emotion)}
+                    disabled={isEmotionMatched(emotion.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isEmotionMatched(emotion.id)
+                        ? getMatchResult(emotion.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedEmotion?.id === emotion.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{emotion.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{emotion.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {emotion.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-              
-              <p className="text-white text-lg md:text-xl mb-6 text-center">
-                {currentQuestionData.text}
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map(option => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleAnswer(option.id)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                        showCorrect
-                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : showIncorrect
-                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                          : isSelected
-                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-2xl mb-2">{option.emoji}</div>
-                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
-                    </button>
-                  );
-                })}
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedEmotion 
+                    ? `Selected: ${selectedEmotion.name}` 
+                    : "Select an Emotion/Stressor"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedEmotion || !selectedTechnique}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedEmotion && selectedTechnique
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{emotions.length}</p>
+                  <p>Matched: {matches.length}/{emotions.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Regulation Techniques */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Regulation Techniques</h3>
+              <div className="space-y-4">
+                {rearrangedTechniques.map(technique => (
+                  <button
+                    key={technique.id}
+                    onClick={() => handleTechniqueSelect(technique)}
+                    disabled={isTechniqueMatched(technique.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isTechniqueMatched(technique.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedTechnique?.id === technique.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{technique.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{technique.name}</h4>
+                        <p className="text-white/80 text-sm">{technique.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {emotions.length} emotions with regulation techniques!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Building an emotional regulation toolbox with different techniques helps you manage various feelings!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {emotions.length} emotions correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what techniques would help you when experiencing different emotions!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

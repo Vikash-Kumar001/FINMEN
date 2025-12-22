@@ -29,7 +29,7 @@ const EqualityPoster = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Equal Play for All."',
+      question: 'Which poster promotes fair participation regardless of gender?',
       choices: [
         { text: "Only Boys Play ⚽", correct: false },
         { text: "Only Girls Play 🎀", correct: false },
@@ -37,7 +37,7 @@ const EqualityPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Equal Jobs for Everyone."',
+      question: 'Which poster advocates for career opportunities without gender restrictions?',
       choices: [
         { text: "Equal Jobs for Everyone 👩‍⚕️", correct: true },
         { text: "Boys Only Jobs 👨", correct: false },
@@ -45,7 +45,7 @@ const EqualityPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Equal School for All."',
+      question: 'Which poster ensures educational access for all children?',
       choices: [
         { text: "Some Can't Learn 📚", correct: false },
         { text: "Equal School for All 📚", correct: true },
@@ -53,7 +53,7 @@ const EqualityPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Equal Dreams."',
+      question: 'Which poster inspires limitless aspirations for everyone?',
       choices: [
         { text: "Equal Dreams ✨", correct: true },
         { text: "Limited Dreams 🚫", correct: false },

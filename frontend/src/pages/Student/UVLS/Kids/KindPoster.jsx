@@ -29,7 +29,7 @@ const KindPoster = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Kindness Matters."',
+      question: 'Which poster promotes treating others with respect?',
       choices: [
         { text: "Be Mean to Others 😠", correct: false },
         { text: "Ignore People 🙈", correct: false },
@@ -37,7 +37,7 @@ const KindPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Help Others, Help Yourself."',
+      question: 'Which poster encourages mutual support?',
       choices: [
         { text: "Help Others, Help Yourself 🤝", correct: true },
         { text: "Only Think About Me 😤", correct: false },
@@ -45,7 +45,7 @@ const KindPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Share and Care."',
+      question: 'Which poster teaches generosity?',
       choices: [
         { text: "Keep Everything for Me 🏺", correct: false },
         { text: "Share and Care 💕", correct: true },
@@ -53,7 +53,7 @@ const KindPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Be Kind Every Day."',
+      question: 'Which poster reminds us to be consistently compassionate?',
       choices: [
         { text: "Be Kind Every Day 🌟", correct: true },
         { text: "Be Mean Sometimes 😠", correct: false },

@@ -1,242 +1,267 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
-import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const HabitChainPuzzle = () => {
-  const location = useLocation();
-  
-  const gameId = "uvls-teen-97";
-  const gameData = getGameDataById(gameId);
-  
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getUvlsTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-  
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChain, setSelectedChain] = useState([]);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [score, setScore] = useState(0);
-  const [answered, setAnswered] = useState(false);
+  const navigate = useNavigate();
 
-  const questions = [
-    {
-      id: 1,
-      text: "Outcome: Better health. Arrange habits in the correct order:",
-      habits: [
-        { id: 0, text: "Wake early", emoji: "🌅" },
-        { id: 1, text: "Exercise", emoji: "💪" },
-        { id: 2, text: "Healthy breakfast", emoji: "🍎" },
-        { id: 3, text: "Hydrate", emoji: "💧" },
-        { id: 4, text: "Sleep early", emoji: "😴" }
-      ],
-      correctOrder: [0, 1, 2, 3, 4]
-    },
-    {
-      id: 2,
-      text: "Outcome: Good grades. Arrange habits in the correct order:",
-      habits: [
-        { id: 0, text: "Study daily", emoji: "📚" },
-        { id: 1, text: "Review notes", emoji: "📝" },
-        { id: 2, text: "Practice tests", emoji: "✏️" },
-        { id: 3, text: "Ask questions", emoji: "❓" },
-        { id: 4, text: "Rest well", emoji: "😴" }
-      ],
-      correctOrder: [0, 1, 2, 3, 4]
-    },
-    {
-      id: 3,
-      text: "Outcome: Save money. Arrange habits in the correct order:",
-      habits: [
-        { id: 0, text: "Track spending", emoji: "📊" },
-        { id: 1, text: "Budget", emoji: "💰" },
-        { id: 2, text: "Avoid impulse", emoji: "🚫" },
-        { id: 3, text: "Save first", emoji: "💵" },
-        { id: 4, text: "Invest", emoji: "📈" }
-      ],
-      correctOrder: [0, 1, 2, 3, 4]
-    },
-    {
-      id: 4,
-      text: "Outcome: Learn instrument. Arrange habits in the correct order:",
-      habits: [
-        { id: 0, text: "Practice daily", emoji: "🎵" },
-        { id: 1, text: "Take lessons", emoji: "🎼" },
-        { id: 2, text: "Listen to music", emoji: "🎧" },
-        { id: 3, text: "Perform", emoji: "🎤" },
-        { id: 4, text: "Record progress", emoji: "📹" }
-      ],
-      correctOrder: [0, 1, 2, 3, 4]
-    },
-    {
-      id: 5,
-      text: "Outcome: Read more. Arrange habits in the correct order:",
-      habits: [
-        { id: 0, text: "Set time", emoji: "⏰" },
-        { id: 1, text: "Choose books", emoji: "📖" },
-        { id: 2, text: "Join club", emoji: "👥" },
-        { id: 3, text: "Discuss", emoji: "💬" },
-        { id: 4, text: "Track books", emoji: "📚" }
-      ],
-      correctOrder: [0, 1, 2, 3, 4]
-    }
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedHabit, setSelectedHabit] = useState(null);
+  const [selectedBenefit, setSelectedBenefit] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  // Healthy habits (left side) - 5 items with hints
+  const habits = [
+    { id: 1, name: "Daily Exercise", emoji: "💪", hint: "Physical activity for body strength" },
+    { id: 2, name: "Healthy Eating", emoji: "🥗", hint: "Nutritious food choices for energy" },
+    { id: 3, name: "Quality Sleep", emoji: "😴", hint: "Adequate rest for mental clarity" },
+    { id: 4, name: "Mindfulness", emoji: "🧘", hint: "Present-moment awareness practice" },
+    { id: 5, name: "Regular Reading", emoji: "📚", hint: "Continuous learning and knowledge" }
   ];
 
-  const handleHabitSelect = (habitId) => {
-    if (answered) return;
-    if (!selectedChain.includes(habitId)) {
-      setSelectedChain([...selectedChain, habitId]);
-    }
+  // Health benefits (right side) - 5 items with descriptions
+  const benefits = [
+    { id: 6, name: "Stronger Muscles", emoji: "🦾", description: "Improved physical strength and endurance" },
+    { id: 7, name: "Better Digestion", emoji: "🍽️", description: "Enhanced nutrient absorption and gut health" },
+    { id: 8, name: "Sharper Focus", emoji: "🎯", description: "Improved concentration and mental clarity" },
+    { id: 9, name: "Reduced Stress", emoji: "😌", description: "Lower anxiety and improved emotional balance" },
+    { id: 10, name: "Expanded Vocabulary", emoji: "🧠", description: "Increased knowledge and communication skills" }
+  ];
+
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedBenefits = [
+    benefits[2], // Sharper Focus (id: 8)
+    benefits[4], // Expanded Vocabulary (id: 10)
+    benefits[1], // Better Digestion (id: 7)
+    benefits[0], // Stronger Muscles (id: 6)
+    benefits[3]  // Reduced Stress (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each habit has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { habitId: 1, benefitId: 6 }, // Daily Exercise → Stronger Muscles
+    { habitId: 2, benefitId: 7 }, // Healthy Eating → Better Digestion
+    { habitId: 3, benefitId: 8 }, // Quality Sleep → Sharper Focus
+    { habitId: 4, benefitId: 9 }, // Mindfulness → Reduced Stress
+    { habitId: 5, benefitId: 10 } // Regular Reading → Expanded Vocabulary
+  ];
+
+  const handleHabitSelect = (habit) => {
+    if (gameFinished) return;
+    setSelectedHabit(habit);
   };
 
-  const handleConfirm = () => {
-    if (answered || selectedChain.length !== 5) return;
-    
-    setAnswered(true);
+  const handleBenefitSelect = (benefit) => {
+    if (gameFinished) return;
+    setSelectedBenefit(benefit);
+  };
+
+  const handleMatch = () => {
+    if (!selectedHabit || !selectedBenefit || gameFinished) return;
+
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const isCorrect = selectedChain.every((val, idx) => val === currentQuestionData.correctOrder[idx]);
-    
-    setResponses([...responses, {
-      questionId: currentQuestionData.id,
-      isCorrect
-    }]);
-    
-    if (isCorrect) {
+
+    const newMatch = {
+      habitId: selectedHabit.id,
+      benefitId: selectedBenefit.id,
+      isCorrect: correctMatches.some(
+        match => match.habitId === selectedHabit.id && match.benefitId === selectedBenefit.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedChain([]);
-        setAnswered(false);
-        resetFeedback();
-      } else {
-        setShowResult(true);
-      }
-    }, isCorrect ? 1000 : 800);
+
+    // Check if all items are matched
+    if (newMatches.length === habits.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedHabit(null);
+    setSelectedBenefit(null);
   };
 
-  const currentQuestionData = questions[currentQuestion];
-  const finalScore = score;
+  // Check if a habit is already matched
+  const isHabitMatched = (habitId) => {
+    return matches.some(match => match.habitId === habitId);
+  };
+
+  // Check if a benefit is already matched
+  const isBenefitMatched = (benefitId) => {
+    return matches.some(match => match.benefitId === benefitId);
+  };
+
+  // Get match result for a habit
+  const getMatchResult = (habitId) => {
+    const match = matches.find(m => m.habitId === habitId);
+    return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/uvls/teen");
+  };
 
   return (
     <GameShell
       title="Habit Chain Puzzle"
-      subtitle={showResult ? "Puzzle Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Habits with Benefits (${matches.length}/${habits.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="uvls-teen-97"
+      gameType="uvls"
+      totalLevels={habits.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === habits.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/uvls/teen"
+      maxScore={habits.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId={gameId}
-      gameType="uvls"
-      showGameOver={showResult}
-      maxScore={questions.length}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-      showConfetti={showResult && finalScore >= 3}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!showResult && currentQuestionData ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Healthy Habits */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Healthy Habits</h3>
+              <div className="space-y-4">
+                {habits.map(habit => (
+                  <button
+                    key={habit.id}
+                    onClick={() => handleHabitSelect(habit)}
+                    disabled={isHabitMatched(habit.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isHabitMatched(habit.id)
+                        ? getMatchResult(habit.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedHabit?.id === habit.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{habit.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{habit.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {habit.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-              
-              <p className="text-white text-lg md:text-xl mb-6 text-center">
-                {currentQuestionData.text}
-              </p>
-              
-              <p className="text-white/90 mb-4 text-center">Click habits in the correct order:</p>
-              
-              <div className="space-y-3 mb-6">
-                {currentQuestionData.habits.map((habit) => {
-                  const isSelected = selectedChain.includes(habit.id);
-                  const position = selectedChain.indexOf(habit.id);
-                  
-                  return (
-                    <button
-                      key={habit.id}
-                      onClick={() => handleHabitSelect(habit.id)}
-                      disabled={answered || isSelected}
-                      className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                        isSelected
-                          ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                          : answered
-                          ? 'bg-gray-500/30 border-gray-400 opacity-50 cursor-not-allowed'
-                          : 'bg-white/20 border-white/40 hover:bg-white/30'
-                      }`}
-                    >
-                      <span className="text-white font-medium">
-                        {isSelected && `#${position + 1} - `}
-                        <span className="text-2xl mr-2">{habit.emoji}</span>
-                        {habit.text}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              
-              {selectedChain.length > 0 && (
-                <p className="text-white mb-4 text-center">
-                  Chain: {selectedChain.map(i => currentQuestionData.habits[i].text).join(" → ")}
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedHabit 
+                    ? `Selected: ${selectedHabit.name}` 
+                    : "Select a Healthy Habit"}
                 </p>
-              )}
-              
-              <button
-                onClick={handleConfirm}
-                disabled={selectedChain.length !== 5 || answered}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedChain.length === 5 && !answered
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Confirm Chain
-              </button>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedHabit || !selectedBenefit}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedHabit && selectedBenefit
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{habits.length}</p>
+                  <p>Matched: {matches.length}/{habits.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Health Benefits */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Health Benefits</h3>
+              <div className="space-y-4">
+                {rearrangedBenefits.map(benefit => (
+                  <button
+                    key={benefit.id}
+                    onClick={() => handleBenefitSelect(benefit)}
+                    disabled={isBenefitMatched(benefit.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isBenefitMatched(benefit.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedBenefit?.id === benefit.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{benefit.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{benefit.name}</h4>
+                        <p className="text-white/80 text-sm">{benefit.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {habits.length} healthy habits with their benefits!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Building healthy habits creates positive chains that lead to lasting wellness benefits!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {habits.length} healthy habits correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about how each healthy habit contributes to your overall well-being!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

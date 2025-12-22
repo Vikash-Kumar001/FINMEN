@@ -1,221 +1,262 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const CommunityRolesPuzzle = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const gameId = "uvls-kids-84";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
   const [matches, setMatches] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
   const [selectedHelper, setSelectedHelper] = useState(null);
-  const [userMatches, setUserMatches] = useState({});
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const questions = [
-    {
-      id: 1,
-      helpers: ["Doctor", "Teacher", "Police"],
-      jobs: ["Teach kids", "Keep safe", "Heal sick"],
-      correct: { "Doctor": "Heal sick", "Teacher": "Teach kids", "Police": "Keep safe" }
-    },
-    {
-      id: 2,
-      helpers: ["Firefighter", "Farmer", "Postman"],
-      jobs: ["Deliver mail", "Fight fire", "Grow food"],
-      correct: { "Firefighter": "Fight fire", "Farmer": "Grow food", "Postman": "Deliver mail" }
-    },
-    {
-      id: 3,
-      helpers: ["Librarian", "Vet", "Baker"],
-      jobs: ["Bake bread", "Lend books", "Care animals"],
-      correct: { "Librarian": "Lend books", "Vet": "Care animals", "Baker": "Bake bread" }
-    },
-    {
-      id: 4,
-      helpers: ["Mechanic", "Nurse", "Pilot"],
-      jobs: ["Fly planes", "Fix cars", "Help patients"],
-      correct: { "Mechanic": "Fix cars", "Nurse": "Help patients", "Pilot": "Fly planes" }
-    },
-    {
-      id: 5,
-      helpers: ["Chef", "Builder", "Artist"],
-      jobs: ["Make art", "Build houses", "Cook meals"],
-      correct: { "Chef": "Cook meals", "Builder": "Build houses", "Artist": "Make art" }
-    }
+  // Community helpers (left side) - 5 items
+  const helpers = [
+    { id: 1, name: "Doctor", emoji: "👨‍⚕️", hint: "Heals people" },
+    { id: 2, name: "Teacher", emoji: "👩‍🏫", hint: "Educates students" },
+    { id: 3, name: "Firefighter", emoji: "👨‍🚒", hint: "Fights fires" },
+    { id: 4, name: "Farmer", emoji: "👨‍🌾", hint: "Grows crops" },
+    { id: 5, name: "Librarian", emoji: "👩‍💼", hint: "Manages books" }
   ];
 
-  const handleHelperClick = (helper) => {
+  // Community jobs (right side) - 5 items
+  const jobs = [
+    { id: 6, name: "Heal Sick", emoji: "🩺", description: "Treat ill patients" },
+    { id: 7, name: "Teach Kids", emoji: "📚", description: "Educate children" },
+    { id: 8, name: "Fight Fires", emoji: "🔥", description: "Extinguish blazes" },
+    { id: 9, name: "Grow Food", emoji: "🌽", description: "Cultivate crops" },
+    { id: 10, name: "Manage Books", emoji: "📖", description: "Organize library" }
+  ];
+
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedJobs = [
+    jobs[2], // Fight Fires (id: 8)
+    jobs[4], // Manage Books (id: 10)
+    jobs[1], // Teach Kids (id: 7)
+    jobs[0], // Heal Sick (id: 6)
+    jobs[3]  // Grow Food (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each helper has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { helperId: 1, jobId: 6 }, // Doctor → Heal Sick
+    { helperId: 2, jobId: 7 }, // Teacher → Teach Kids
+    { helperId: 3, jobId: 8 }, // Firefighter → Fight Fires
+    { helperId: 4, jobId: 9 }, // Farmer → Grow Food
+    { helperId: 5, jobId: 10 } // Librarian → Manage Books
+  ];
+
+  const handleHelperSelect = (helper) => {
+    if (gameFinished) return;
     setSelectedHelper(helper);
   };
 
-  const handleJobClick = (job) => {
-    if (selectedHelper) {
-      // Create a new match
-      const newMatches = { ...userMatches, [selectedHelper]: job };
-      setUserMatches(newMatches);
-      setSelectedHelper(null); // Reset selection
-    }
+  const handleJobSelect = (job) => {
+    if (gameFinished) return;
+    setSelectedJob(job);
   };
 
   const handleMatch = () => {
-    const newMatches = [...matches, userMatches];
+    if (!selectedHelper || !selectedJob || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      helperId: selectedHelper.id,
+      jobId: selectedJob.id,
+      isCorrect: correctMatches.some(
+        match => match.helperId === selectedHelper.id && match.jobId === selectedJob.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
     setMatches(newMatches);
 
-    const isCorrect = Object.keys(questions[currentLevel].correct).every(key => userMatches[key] === questions[currentLevel].correct[key]);
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentLevel < questions.length - 1) {
+    // Check if all items are matched
+    if (newMatches.length === helpers.length) {
       setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setUserMatches({}); // Reset for next level
-        setSelectedHelper(null);
-      }, isCorrect ? 800 : 0);
-    } else {
-      const correctMatches = newMatches.filter((um, idx) => Object.keys(questions[idx].correct).every(key => um[key] === questions[idx].correct[key])).length;
-      setFinalScore(correctMatches);
-      setShowResult(true);
+        setGameFinished(true);
+      }, 1500);
     }
+
+    // Reset selections
+    setSelectedHelper(null);
+    setSelectedJob(null);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentLevel(0);
-    setMatches([]);
-    setCoins(0);
-    setFinalScore(0);
-    setUserMatches({});
-    setSelectedHelper(null);
-    resetFeedback();
+  // Check if a helper is already matched
+  const isHelperMatched = (helperId) => {
+    return matches.some(match => match.helperId === helperId);
+  };
+
+  // Check if a job is already matched
+  const isJobMatched = (jobId) => {
+    return matches.some(match => match.jobId === jobId);
+  };
+
+  // Get match result for a helper
+  const getMatchResult = (helperId) => {
+    const match = matches.find(m => m.helperId === helperId);
+    return match ? match.isCorrect : null;
   };
 
   const handleNext = () => {
     navigate("/games/uvls/kids");
   };
 
-  const getCurrentLevel = () => questions[currentLevel];
-
   return (
     <GameShell
       title="Community Roles Puzzle"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Helpers with Jobs (${matches.length}/${helpers.length} matched)`}
       onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 4}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 4}
-      
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
       gameId="uvls-kids-84"
       gameType="uvls"
-      totalLevels={100}
-      currentLevel={84}
-      showConfetti={showResult && finalScore >= 4}
+      totalLevels={helpers.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === helpers.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/uvls/kids"
+      maxScore={helpers.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Community Helpers */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Match helpers to jobs!</p>
-              
-              {/* Display current matches */}
-              <div className="mb-4 min-h-[30px]">
-                {Object.entries(userMatches).map(([helper, job]) => (
-                  <p key={`${helper}-${job}`} className="text-white">
-                    {helper} → {job} ✅
-                  </p>
-                ))}
-                {selectedHelper && (
-                  <p className="text-yellow-300">
-                    Selected: {selectedHelper} (now tap a job)
-                  </p>
-                )}
-              </div>
-              
-              {/* Helpers */}
-              <div className="flex flex-wrap gap-4">
-                {getCurrentLevel().helpers.map(helper => (
-                  <div 
-                    key={helper} 
-                    className={`p-2 rounded cursor-pointer ${selectedHelper === helper ? 'bg-yellow-500' : userMatches[helper] ? 'bg-green-500' : 'bg-blue-500'}`}
-                    onClick={() => handleHelperClick(helper)}
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Community Helpers</h3>
+              <div className="space-y-4">
+                {helpers.map(helper => (
+                  <button
+                    key={helper.id}
+                    onClick={() => handleHelperSelect(helper)}
+                    disabled={isHelperMatched(helper.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isHelperMatched(helper.id)
+                        ? getMatchResult(helper.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedHelper?.id === helper.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
                   >
-                    {helper} 👥
-                  </div>
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{helper.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{helper.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {helper.hint}</p>
+                      </div>
+                    </div>
+                  </button>
                 ))}
               </div>
-              
-              {/* Jobs */}
-              <div className="flex flex-wrap gap-4 mt-4">
-                {getCurrentLevel().jobs.map(job => (
-                  <div 
-                    key={job} 
-                    className={`p-2 rounded cursor-pointer ${Object.values(userMatches).includes(job) ? 'bg-green-500' : 'bg-green-500'}`}
-                    onClick={() => handleJobClick(job)}
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedHelper 
+                    ? `Selected: ${selectedHelper.name}` 
+                    : "Select a Helper"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedHelper || !selectedJob}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedHelper && selectedJob
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{helpers.length}</p>
+                  <p>Matched: {matches.length}/{helpers.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Community Jobs */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Community Jobs</h3>
+              <div className="space-y-4">
+                {rearrangedJobs.map(job => (
+                  <button
+                    key={job.id}
+                    onClick={() => handleJobSelect(job)}
+                    disabled={isJobMatched(job.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isJobMatched(job.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedJob?.id === job.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
                   >
-                    {job} 🛠️
-                  </div>
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{job.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{job.name}</h4>
+                        <p className="text-white/80 text-sm">{job.description}</p>
+                      </div>
+                    </div>
+                  </button>
                 ))}
               </div>
-              
-              <button 
-                onClick={handleMatch} 
-                className="mt-4 bg-purple-500 text-white p-2 rounded"
-                disabled={Object.keys(userMatches).length !== getCurrentLevel().helpers.length}
-              >
-                Submit
-              </button>
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 4 ? (
+            {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Roles Master!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You matched correctly {finalScore} out of {questions.length} times!
-                  You understand community roles!
+                  You correctly matched {score} out of {helpers.length} community helpers with their jobs!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{finalScore} Coins</span>
+                  <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Understanding different community roles helps us appreciate how everyone contributes!
+                  Lesson: Understanding community roles helps us appreciate how everyone contributes!
                 </p>
               </div>
             ) : (
               <div>
                 <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Match More!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You matched correctly {finalScore} out of {questions.length} times.
-                  Keep learning about community roles!
+                  You matched {score} out of {helpers.length} community helpers correctly.
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Learn about different jobs in your community - doctors, teachers, firefighters, and more!
+                  Tip: Think about what each community helper actually does!
                 </p>
               </div>
             )}

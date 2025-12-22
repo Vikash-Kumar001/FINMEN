@@ -1,257 +1,262 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
 
 const TriggerMapPuzzle = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const gameId = "uvls-kids-49";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
   const [matches, setMatches] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [selectedTrigger, setSelectedTrigger] = useState(null); // State for tracking selected trigger
-  const [selectedCalm, setSelectedCalm] = useState(null); // State for tracking selected calm
-  const [userMatches, setUserMatches] = useState({}); // State for tracking user matches
+  const [selectedTrigger, setSelectedTrigger] = useState(null);
+  const [selectedCalm, setSelectedCalm] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const questions = [
-    {
-      id: 1,
-      triggers: ["Angry", "Sad", "Scared"],
-      calms: ["Talk", "Hug", "Breathe"],
-      correct: { "Angry": "Breathe", "Sad": "Talk", "Scared": "Hug" }
-    },
-    {
-      id: 2,
-      triggers: ["Frustrated", "Anxious", "Tired"],
-      calms: ["Rest", "Count", "Walk"],
-      correct: { "Frustrated": "Count", "Anxious": "Walk", "Tired": "Rest" }
-    },
-    {
-      id: 3,
-      triggers: ["Excited too much", "Lonely", "Overwhelmed"],
-      calms: ["Break tasks", "Calm down", "Call friend"],
-      correct: { "Excited too much": "Calm down", "Lonely": "Call friend", "Overwhelmed": "Break tasks" }
-    },
-    {
-      id: 4,
-      triggers: ["Jealous", "Bored", "Nervous"],
-      calms: ["Prepare", "Play", "Positive think"],
-      correct: { "Jealous": "Positive think", "Bored": "Play", "Nervous": "Prepare" }
-    },
-    {
-      id: 5,
-      triggers: ["Hurt", "Confused", "Happy overload"],
-      calms: ["Share joy", "Seek help", "Ask question"],
-      correct: { "Hurt": "Seek help", "Confused": "Ask question", "Happy overload": "Share joy" }
-    }
+  // Emotional triggers (left side) - 5 items with hints
+  const triggers = [
+    { id: 1, name: "Angry", emoji: "😠", hint: "Feeling mad or upset" },
+    { id: 2, name: "Sad", emoji: "😢", hint: "Feeling down or unhappy" },
+    { id: 3, name: "Scared", emoji: "😨", hint: "Feeling afraid or nervous" },
+    { id: 4, name: "Frustrated", emoji: "😤", hint: "Feeling annoyed or irritated" },
+    { id: 5, name: "Lonely", emoji: "😔", hint: "Feeling isolated or alone" }
   ];
 
-  // Function to handle trigger selection
-  const selectTrigger = (trigger) => {
+  // Calming strategies (right side) - 5 items with descriptions
+  const calms = [
+    { id: 6, name: "Deep Breathing", emoji: "💨", description: "Taking slow, deep breaths" },
+    { id: 7, name: "Talking", emoji: "🗣️", description: "Sharing feelings with someone" },
+    { id: 8, name: "Walking", emoji: "🚶", description: "Moving your body gently" },
+    { id: 9, name: "Listening Music", emoji: "🎵", description: "Enjoying soothing sounds" },
+    { id: 10, name: "Calling Friend", emoji: "📞", description: "Connecting with loved ones" }
+  ];
+
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedCalms = [
+    calms[2], // Walking (id: 8)
+    calms[4], // Calling Friend (id: 10)
+    calms[1], // Talking (id: 7)
+    calms[0], // Deep Breathing (id: 6)
+    calms[3]  // Listening Music (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each trigger has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { triggerId: 1, calmId: 6 }, // Angry → Deep Breathing
+    { triggerId: 2, calmId: 7 }, // Sad → Talking
+    { triggerId: 3, calmId: 8 }, // Scared → Walking
+    { triggerId: 4, calmId: 9 }, // Frustrated → Listening Music
+    { triggerId: 5, calmId: 10 } // Lonely → Calling Friend
+  ];
+
+  const handleTriggerSelect = (trigger) => {
+    if (gameFinished) return;
     setSelectedTrigger(trigger);
-    // If both trigger and calm are selected, create a match
-    if (selectedCalm) {
-      const newMatches = { ...userMatches, [trigger]: selectedCalm };
-      setUserMatches(newMatches);
-      setSelectedTrigger(null);
-      setSelectedCalm(null);
-    }
   };
 
-  // Function to handle calm selection
-  const selectCalm = (calm) => {
+  const handleCalmSelect = (calm) => {
+    if (gameFinished) return;
     setSelectedCalm(calm);
-    // If both trigger and calm are selected, create a match
-    if (selectedTrigger) {
-      const newMatches = { ...userMatches, [selectedTrigger]: calm };
-      setUserMatches(newMatches);
-      setSelectedTrigger(null);
-      setSelectedCalm(null);
-    }
   };
 
   const handleMatch = () => {
-    const newMatches = [...matches, userMatches];
+    if (!selectedTrigger || !selectedCalm || gameFinished) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      triggerId: selectedTrigger.id,
+      calmId: selectedCalm.id,
+      isCorrect: correctMatches.some(
+        match => match.triggerId === selectedTrigger.id && match.calmId === selectedCalm.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
     setMatches(newMatches);
 
-    const isCorrect = Object.keys(questions[currentLevel].correct).every(key => userMatches[key] === questions[currentLevel].correct[key]);
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setUserMatches({}); // Reset matches for next level
-        setSelectedTrigger(null);
-        setSelectedCalm(null);
-      }, isCorrect ? 800 : 0);
     } else {
-      const correctMatches = newMatches.filter((um, idx) => Object.keys(questions[idx].correct).every(key => um[key] === questions[idx].correct[key])).length;
-      setFinalScore(correctMatches);
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
-  };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentLevel(0);
-    setMatches([]);
-    setCoins(0);
-    setFinalScore(0);
-    setUserMatches({}); // Reset matches
+    // Check if all items are matched
+    if (newMatches.length === triggers.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
     setSelectedTrigger(null);
     setSelectedCalm(null);
-    resetFeedback();
+  };
+
+  // Check if a trigger is already matched
+  const isTriggerMatched = (triggerId) => {
+    return matches.some(match => match.triggerId === triggerId);
+  };
+
+  // Check if a calm is already matched
+  const isCalmMatched = (calmId) => {
+    return matches.some(match => match.calmId === calmId);
+  };
+
+  // Get match result for a trigger
+  const getMatchResult = (triggerId) => {
+    const match = matches.find(m => m.triggerId === triggerId);
+    return match ? match.isCorrect : null;
   };
 
   const handleNext = () => {
     navigate("/games/uvls/kids");
   };
 
-  const getCurrentLevel = () => questions[currentLevel];
-
   return (
     <GameShell
       title="Trigger Map Puzzle"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Triggers with Calms (${matches.length}/${triggers.length} matched)`}
       onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 4}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 4}
-      
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
       gameId="uvls-kids-49"
       gameType="uvls"
-      totalLevels={50}
-      currentLevel={49}
-      showConfetti={showResult && finalScore >= 4}
+      totalLevels={triggers.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === triggers.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/uvls/kids"
+      maxScore={triggers.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Emotional Triggers */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Link triggers to calms!</p>
-              
-              {/* Triggers section */}
-              <div className="mb-6">
-                <h3 className="text-white font-medium mb-2">Triggers:</h3>
-                <div className="flex flex-wrap gap-3">
-                  {getCurrentLevel().triggers.map(trig => (
-                    <button
-                      key={trig}
-                      onClick={() => selectTrigger(trig)}
-                      className={`px-4 py-2 rounded-full font-medium transition-all ${
-                        selectedTrigger === trig
-                          ? "bg-red-400 text-white ring-2 ring-red-300"
-                          : userMatches[trig]
-                          ? "bg-green-500 text-white"
-                          : "bg-red-500/80 text-white hover:bg-red-500"
-                      }`}
-                    >
-                      {trig} ⚠️
-                      {userMatches[trig] && (
-                        <span className="ml-2 text-xs">→ {userMatches[trig]}</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Calms section */}
-              <div className="mb-6">
-                <h3 className="text-white font-medium mb-2">Calms:</h3>
-                <div className="flex flex-wrap gap-3">
-                  {getCurrentLevel().calms.map(calm => (
-                    <button
-                      key={calm}
-                      onClick={() => selectCalm(calm)}
-                      className={`px-4 py-2 rounded-full font-medium transition-all ${
-                        selectedCalm === calm
-                          ? "bg-blue-400 text-white ring-2 ring-blue-300"
-                          : Object.values(userMatches).includes(calm)
-                          ? "bg-purple-500 text-white"
-                          : "bg-blue-500/80 text-white hover:bg-blue-500"
-                      }`}
-                    >
-                      {calm} 😌
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Current matches display */}
-              {Object.keys(userMatches).length > 0 && (
-                <div className="mb-4 p-3 bg-white/10 rounded-lg">
-                  <h4 className="text-white font-medium mb-2">Your Matches:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(userMatches).map(([trigger, calm]) => (
-                      <div key={trigger} className="bg-yellow-500/80 text-black px-3 py-1 rounded-full text-sm font-medium">
-                        {trigger} → {calm}
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Emotional Triggers</h3>
+              <div className="space-y-4">
+                {triggers.map(trigger => (
+                  <button
+                    key={trigger.id}
+                    onClick={() => handleTriggerSelect(trigger)}
+                    disabled={isTriggerMatched(trigger.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isTriggerMatched(trigger.id)
+                        ? getMatchResult(trigger.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedTrigger?.id === trigger.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{trigger.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{trigger.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {trigger.hint}</p>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedTrigger 
+                    ? `Selected: ${selectedTrigger.name}` 
+                    : "Select an Emotional Trigger"}
+                </p>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedTrigger || !selectedCalm}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedTrigger && selectedCalm
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{triggers.length}</p>
+                  <p>Matched: {matches.length}/{triggers.length}</p>
                 </div>
-              )}
-              
-              {/* Submit button */}
-              <button 
-                onClick={handleMatch} 
-                className="mt-2 bg-purple-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-purple-600 transition"
-                disabled={Object.keys(userMatches).length === 0}
-              >
-                Submit Matches ({Object.keys(userMatches).length})
-              </button>
+              </div>
+            </div>
+
+            {/* Right column - Calming Strategies */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Calming Strategies</h3>
+              <div className="space-y-4">
+                {rearrangedCalms.map(calm => (
+                  <button
+                    key={calm.id}
+                    onClick={() => handleCalmSelect(calm)}
+                    disabled={isCalmMatched(calm.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isCalmMatched(calm.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedCalm?.id === calm.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{calm.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{calm.name}</h4>
+                        <p className="text-white/80 text-sm">{calm.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 4 ? (
+            {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Puzzle Solver!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You solved {finalScore} out of {questions.length} puzzles!
-                  You know how to match triggers to calming strategies!
+                  You correctly matched {score} out of {triggers.length} emotional triggers with calming strategies!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{finalScore} Coins</span>
+                  <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Understanding what triggers you and how to calm down helps you manage your emotions!
+                  Lesson: Recognizing your emotions and knowing how to calm down helps you manage your feelings better!
                 </p>
               </div>
             ) : (
               <div>
                 <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Puzzle More!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You solved {finalScore} out of {questions.length} puzzles.
-                  Keep practicing to match triggers with calming strategies!
+                  You matched {score} out of {triggers.length} emotional triggers correctly.
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Learn to recognize your triggers and practice calming strategies like breathing, talking, or taking a walk!
+                  Tip: Think about what makes you feel better when you're experiencing different emotions!
                 </p>
               </div>
             )}

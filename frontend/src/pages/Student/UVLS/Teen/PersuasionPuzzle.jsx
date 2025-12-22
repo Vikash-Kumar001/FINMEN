@@ -1,236 +1,267 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
-import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const PersuasionPuzzle = () => {
-  const location = useLocation();
-  
-  const gameId = "uvls-teen-66";
-  const gameData = getGameDataById(gameId);
-  
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getUvlsTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-  
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedSequence, setSelectedSequence] = useState([]);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [score, setScore] = useState(0);
-  const [answered, setAnswered] = useState(false);
+  const navigate = useNavigate();
 
-  const questions = [
-    {
-      id: 1,
-      text: "Topic: Convince parents for later curfew. Arrange the persuasion sequence:",
-      tiles: [
-        { id: 0, text: "Claim: Need more time with friends", emoji: "💬" },
-        { id: 1, text: "Evidence: Good grades", emoji: "📊" },
-        { id: 2, text: "CTA: Extend to 10pm", emoji: "⏰" }
-      ],
-      correctOrder: [0, 1, 2]
-    },
-    {
-      id: 2,
-      text: "Topic: Persuade teacher for extension. Arrange the persuasion sequence:",
-      tiles: [
-        { id: 0, text: "Claim: Need more time", emoji: "⏳" },
-        { id: 1, text: "Evidence: Busy schedule", emoji: "📅" },
-        { id: 2, text: "CTA: One day extra", emoji: "📝" }
-      ],
-      correctOrder: [0, 1, 2]
-    },
-    {
-      id: 3,
-      text: "Topic: Sell idea to group. Arrange the persuasion sequence:",
-      tiles: [
-        { id: 0, text: "Claim: This plan is best", emoji: "💡" },
-        { id: 1, text: "Evidence: Pros list", emoji: "✅" },
-        { id: 2, text: "CTA: Vote yes", emoji: "🗳️" }
-      ],
-      correctOrder: [0, 1, 2]
-    },
-    {
-      id: 4,
-      text: "Topic: Advocate for school event. Arrange the persuasion sequence:",
-      tiles: [
-        { id: 0, text: "Claim: Fun day needed", emoji: "🎉" },
-        { id: 1, text: "Evidence: Student survey", emoji: "📋" },
-        { id: 2, text: "CTA: Approve budget", emoji: "💰" }
-      ],
-      correctOrder: [0, 1, 2]
-    },
-    {
-      id: 5,
-      text: "Topic: Negotiate chore reduction. Arrange the persuasion sequence:",
-      tiles: [
-        { id: 0, text: "Claim: Too many chores", emoji: "🧹" },
-        { id: 1, text: "Evidence: Study time impacted", emoji: "📚" },
-        { id: 2, text: "CTA: Reduce to 3/week", emoji: "📉" }
-      ],
-      correctOrder: [0, 1, 2]
-    }
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [selectedTechnique, setSelectedTechnique] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  // Persuasion requests (left side) - 5 items with hints
+  const requests = [
+    { id: 1, name: "Later Curfew", emoji: "⏰", hint: "Asking for more evening freedom" },
+    { id: 2, name: "Assignment Extension", emoji: "📝", hint: "Requesting more time to complete work" },
+    { id: 3, name: "Group Project Idea", emoji: "💡", hint: "Presenting a proposal to teammates" },
+    { id: 4, name: "School Event", emoji: "🎉", hint: "Advocating for a special activity" },
+    { id: 5, name: "Chore Reduction", emoji: "🧹", hint: "Negotiating household responsibilities" }
   ];
 
-  const handleTileSelect = (tileId) => {
-    if (answered) return;
-    if (!selectedSequence.includes(tileId)) {
-      setSelectedSequence([...selectedSequence, tileId]);
-    }
+  // Persuasion techniques (right side) - 5 items with descriptions
+  const techniques = [
+    { id: 6, name: "Show Responsibility", emoji: "📊", description: "Demonstrate reliability with evidence" },
+    { id: 7, name: "Explain Schedule", emoji: "📅", description: "Clarify time constraints and priorities" },
+    { id: 8, name: "List Benefits", emoji: "✅", description: "Present advantages of your proposal" },
+    { id: 9, name: "Survey Support", emoji: "📋", description: "Show community interest and backing" },
+    { id: 10, name: "Link to Goals", emoji: "📚", description: "Connect request to important objectives" }
+  ];
+
+  // Manually rearrange positions to prevent positional matching
+  // Original order was [6,7,8,9,10], rearranged to [8,10,7,6,9]
+  const rearrangedTechniques = [
+    techniques[2], // List Benefits (id: 8)
+    techniques[4], // Link to Goals (id: 10)
+    techniques[1], // Explain Schedule (id: 7)
+    techniques[0], // Show Responsibility (id: 6)
+    techniques[3]  // Survey Support (id: 9)
+  ];
+
+  // Correct matches using proper IDs, not positional order
+  // Each request has a unique correct match for true one-to-one mapping
+  const correctMatches = [
+    { requestId: 1, techniqueId: 6 }, // Later Curfew → Show Responsibility
+    { requestId: 2, techniqueId: 7 }, // Assignment Extension → Explain Schedule
+    { requestId: 3, techniqueId: 8 }, // Group Project Idea → List Benefits
+    { requestId: 4, techniqueId: 9 }, // School Event → Survey Support
+    { requestId: 5, techniqueId: 10 } // Chore Reduction → Link to Goals
+  ];
+
+  const handleRequestSelect = (request) => {
+    if (gameFinished) return;
+    setSelectedRequest(request);
   };
 
-  const handleConfirm = () => {
-    if (answered || selectedSequence.length !== 3) return;
-    
-    setAnswered(true);
+  const handleTechniqueSelect = (technique) => {
+    if (gameFinished) return;
+    setSelectedTechnique(technique);
+  };
+
+  const handleMatch = () => {
+    if (!selectedRequest || !selectedTechnique || gameFinished) return;
+
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const isCorrect = selectedSequence.every((val, idx) => val === currentQuestionData.correctOrder[idx]);
-    
-    setResponses([...responses, {
-      questionId: currentQuestionData.id,
-      isCorrect
-    }]);
-    
-    if (isCorrect) {
+
+    const newMatch = {
+      requestId: selectedRequest.id,
+      techniqueId: selectedTechnique.id,
+      isCorrect: correctMatches.some(
+        match => match.requestId === selectedRequest.id && match.techniqueId === selectedTechnique.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedSequence([]);
-        setAnswered(false);
-        resetFeedback();
-      } else {
-        // Small delay to ensure score state is updated before showing result
-        setTimeout(() => {
-          setShowResult(true);
-        }, 100);
-      }
-    }, isCorrect ? 1000 : 800);
+
+    // Check if all items are matched
+    if (newMatches.length === requests.length) {
+      setTimeout(() => {
+        setGameFinished(true);
+      }, 1500);
+    }
+
+    // Reset selections
+    setSelectedRequest(null);
+    setSelectedTechnique(null);
   };
 
-  const currentQuestionData = questions[currentQuestion];
-  // Calculate final score from responses to ensure accuracy
-  const finalScore = showResult ? responses.filter(r => r.isCorrect).length : score;
+  // Check if a request is already matched
+  const isRequestMatched = (requestId) => {
+    return matches.some(match => match.requestId === requestId);
+  };
+
+  // Check if a technique is already matched
+  const isTechniqueMatched = (techniqueId) => {
+    return matches.some(match => match.techniqueId === techniqueId);
+  };
+
+  // Get match result for a request
+  const getMatchResult = (requestId) => {
+    const match = matches.find(m => m.requestId === requestId);
+    return match ? match.isCorrect : null;
+  };
+
+  const handleNext = () => {
+    navigate("/games/uvls/teen");
+  };
 
   return (
     <GameShell
       title="Persuasion Puzzle"
-      subtitle={showResult ? "Puzzle Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Match Requests with Techniques (${matches.length}/${requests.length} matched)`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={score}
+      gameId="uvls-teen-66"
+      gameType="uvls"
+      totalLevels={requests.length}
+      currentLevel={matches.length + 1}
+      showConfetti={gameFinished && score === requests.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/uvls/teen"
+      maxScore={requests.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId={gameId}
-      gameType="uvls"
-      showGameOver={showResult}
-      maxScore={questions.length}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-      showConfetti={showResult && finalScore >= 3}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!showResult && currentQuestionData ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {!gameFinished ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Persuasion Requests */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Persuasion Requests</h3>
+              <div className="space-y-4">
+                {requests.map(request => (
+                  <button
+                    key={request.id}
+                    onClick={() => handleRequestSelect(request)}
+                    disabled={isRequestMatched(request.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isRequestMatched(request.id)
+                        ? getMatchResult(request.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedRequest?.id === request.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{request.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{request.name}</h4>
+                        <p className="text-white/80 text-sm">Hint: {request.hint}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-              
-              <p className="text-white text-lg md:text-xl mb-6 text-center">
-                {currentQuestionData.text}
-              </p>
-              
-              <p className="text-white/90 mb-4 text-center">Click tiles in the correct order:</p>
-              
-              <div className="space-y-3 mb-6">
-                {currentQuestionData.tiles.map((tile) => {
-                  const isSelected = selectedSequence.includes(tile.id);
-                  const position = selectedSequence.indexOf(tile.id);
-                  
-                  return (
-                    <button
-                      key={tile.id}
-                      onClick={() => handleTileSelect(tile.id)}
-                      disabled={answered || isSelected}
-                      className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                        isSelected
-                          ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                          : answered
-                          ? 'bg-gray-500/30 border-gray-400 opacity-50 cursor-not-allowed'
-                          : 'bg-white/20 border-white/40 hover:bg-white/30'
-                      }`}
-                    >
-                      <span className="text-white font-medium">
-                        {isSelected && `#${position + 1} - `}
-                        <span className="text-2xl mr-2">{tile.emoji}</span>
-                        {tile.text}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              
-              {selectedSequence.length > 0 && (
-                <p className="text-white mb-4 text-center">
-                  Sequence: {selectedSequence.map(i => currentQuestionData.tiles[i].text).join(" → ")}
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedRequest 
+                    ? `Selected: ${selectedRequest.name}` 
+                    : "Select a Persuasion Request"}
                 </p>
-              )}
-              
-              <button
-                onClick={handleConfirm}
-                disabled={selectedSequence.length !== 3 || answered}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedSequence.length === 3 && !answered
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Confirm Sequence
-              </button>
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedRequest || !selectedTechnique}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedRequest && selectedTechnique
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  Match
+                </button>
+                <div className="mt-4 text-white/80">
+                  <p>Score: {score}/{requests.length}</p>
+                  <p>Matched: {matches.length}/{requests.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Persuasion Techniques */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Persuasion Techniques</h3>
+              <div className="space-y-4">
+                {rearrangedTechniques.map(technique => (
+                  <button
+                    key={technique.id}
+                    onClick={() => handleTechniqueSelect(technique)}
+                    disabled={isTechniqueMatched(technique.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isTechniqueMatched(technique.id)
+                        ? "bg-green-500/30 border-2 border-green-500 opacity-50"
+                        : selectedTechnique?.id === technique.id
+                        ? "bg-purple-500/50 border-2 border-purple-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{technique.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{technique.name}</h4>
+                        <p className="text-white/80 text-sm">{technique.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {score} out of {requests.length} persuasion requests with effective techniques!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Effective persuasion combines clear requests with supporting evidence and thoughtful techniques!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {score} out of {requests.length} persuasion requests correctly.
+                </p>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what evidence or reasoning would make each request more convincing!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

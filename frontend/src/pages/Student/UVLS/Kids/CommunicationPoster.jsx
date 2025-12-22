@@ -29,7 +29,7 @@ const CommunicationPoster = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Look, Listen, Speak."',
+      question: 'Which poster emphasizes the fundamentals of effective verbal interaction?',
       choices: [
         { text: "Ignore Others 🙈", correct: false },
         { text: "Look, Listen, Speak 👂", correct: true },
@@ -37,7 +37,7 @@ const CommunicationPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Greet, Share, Ask."',
+      question: 'Which poster promotes initiating social connections and sharing information?',
       choices: [
         { text: "Greet, Share, Ask 👋", correct: true },
         { text: "Be Rude 😠", correct: false },
@@ -45,7 +45,7 @@ const CommunicationPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Eye Contact and Respond."',
+      question: 'Which poster highlights the importance of attentive engagement in conversations?',
       choices: [
         { text: "Look Away 🙈", correct: false },
         { text: "Eye Contact and Respond 👀", correct: true },
@@ -53,7 +53,7 @@ const CommunicationPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Be Polite, Clear, Kind."',
+      question: 'Which poster encourages respectful and comprehensible dialogue?',
       choices: [
         { text: "Be Polite, Clear, Kind 💬", correct: true },
         { text: "Be Mean 😠", correct: false },

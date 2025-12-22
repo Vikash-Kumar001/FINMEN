@@ -29,7 +29,7 @@ const ToolboxPoster = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Calm Toolbox: Breathe and Count."',
+      question: 'Which poster suggests techniques for managing anger?',
       choices: [
         { text: "Yell and Scream 😠", correct: false },
         { text: "Calm Toolbox: Breathe and Count 🧘", correct: true },
@@ -37,7 +37,7 @@ const ToolboxPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Feel Better: Draw and Listen."',
+      question: 'Which poster recommends creative outlets for emotional well-being?',
       choices: [
         { text: "Feel Better: Draw and Listen 🎨", correct: true },
         { text: "Stay Upset 😞", correct: false },
@@ -45,7 +45,7 @@ const ToolboxPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Stay Calm: Positive Think."',
+      question: 'Which poster promotes optimistic thinking patterns?',
       choices: [
         { text: "Think Negative 😔", correct: false },
         { text: "Stay Calm: Positive Think 💭", correct: true },
@@ -53,7 +53,7 @@ const ToolboxPoster = () => {
       ],
     },
     {
-      question: 'Choose a poster: "Ask for Help When Needed."',
+      question: 'Which poster encourages seeking support during difficult times?',
       choices: [
         { text: "Ask for Help When Needed 🙋", correct: true },
         { text: "Keep It Inside 🤐", correct: false },

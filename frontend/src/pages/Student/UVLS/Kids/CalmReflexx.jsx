@@ -72,9 +72,9 @@ const CalmReflexx = () => {
       question: "What should you do to calm down?",
       correctAnswer: "Listen to music",
       options: [
-        { text: "Listen to music", isCorrect: true, emoji: "🎵" },
         { text: "Scream", isCorrect: false, emoji: "😠" },
         { text: "Break things", isCorrect: false, emoji: "💥" },
+        { text: "Listen to music", isCorrect: true, emoji: "🎵" },
         { text: "Stay angry", isCorrect: false, emoji: "😤" }
       ]
     },
@@ -83,10 +83,10 @@ const CalmReflexx = () => {
       question: "What helps you relax?",
       correctAnswer: "Think happy thoughts",
       options: [
-        { text: "Think happy thoughts", isCorrect: true, emoji: "💭" },
         { text: "Kick things", isCorrect: false, emoji: "⚽" },
         { text: "Yell", isCorrect: false, emoji: "😠" },
-        { text: "Stay upset", isCorrect: false, emoji: "😞" }
+        { text: "Stay upset", isCorrect: false, emoji: "😞" },
+        { text: "Think happy thoughts", isCorrect: true, emoji: "💭" },
       ]
     }
   ];

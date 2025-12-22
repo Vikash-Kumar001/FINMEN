@@ -30,21 +30,18 @@ const SplitFairlyRoleplay = () => {
           id: "b", 
           text: "Split 2.5 each (or take turns)", 
           emoji: "🤝", 
-          description: "Fair and equal",
           isCorrect: true 
         },
         { 
           id: "a", 
           text: "Split 2 and 3", 
           emoji: "🖼️", 
-          description: "Not equal",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "One person gets all", 
           emoji: "👤", 
-          description: "Not fair",
           isCorrect: false 
         }
       ]
@@ -57,21 +54,18 @@ const SplitFairlyRoleplay = () => {
           id: "b", 
           text: "3 and 1", 
           emoji: "😔", 
-          description: "Not equal",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "2 each", 
           emoji: "🍰", 
-          description: "Fair and equal",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "Eat all alone", 
           emoji: "😋", 
-          description: "Not fair",
           isCorrect: false 
         }
       ]
@@ -84,21 +78,18 @@ const SplitFairlyRoleplay = () => {
           id: "b", 
           text: "4 and 2", 
           emoji: "🤔", 
-          description: "Not equal",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "3 each", 
           emoji: "🍬", 
-          description: "Fair and equal",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "Throw half away", 
           emoji: "🗑️", 
-          description: "Wasteful",
           isCorrect: false 
         }
       ]
@@ -111,21 +102,18 @@ const SplitFairlyRoleplay = () => {
           id: "b", 
           text: "Both to one person", 
           emoji: "👥", 
-          description: "Not fair",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "One each", 
           emoji: "🧸", 
-          description: "Fair and equal",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "Break one in half", 
           emoji: "💥", 
-          description: "Destructive",
           isCorrect: false 
         }
       ]
@@ -138,21 +126,18 @@ const SplitFairlyRoleplay = () => {
           id: "b", 
           text: "7 and 3 minutes", 
           emoji: "😠", 
-          description: "Not equal",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "5 minutes each", 
           emoji: "⏰", 
-          description: "Fair and equal",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "No playtime for anyone", 
           emoji: "🚫", 
-          description: "Not helpful",
           isCorrect: false 
         }
       ]
@@ -240,7 +225,7 @@ const SplitFairlyRoleplay = () => {
                     <div className="flex flex-col items-center justify-center gap-3">
                       <span className="text-4xl">{option.emoji}</span>
                       <span className="font-semibold text-lg">{option.text}</span>
-                      <span className="text-sm opacity-90">{option.description}</span>
+                      
                     </div>
                   </button>
                 ))}

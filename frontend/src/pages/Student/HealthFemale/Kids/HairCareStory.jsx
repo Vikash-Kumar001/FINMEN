@@ -84,7 +84,7 @@ const HairCareStory = () => {
         {
           id: 'a',
           text: "A wide-tooth comb",
-          emoji: "梳",
+          emoji: "🪖",
           isCorrect: true
         },
         {

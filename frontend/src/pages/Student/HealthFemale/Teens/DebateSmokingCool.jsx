@@ -72,6 +72,12 @@ const DebateSmokingCool = () => {
       text: "How does smoking affect physical fitness?",
       options: [
         {
+          id: "a",
+          text: "Reduces stamina and athletic performance",
+          emoji: "🏃",
+          correct: true
+        },
+        {
           id: "b",
           text: "Improves focus and endurance",
           emoji: "🎯",
@@ -83,12 +89,7 @@ const DebateSmokingCool = () => {
           emoji: "😐",
           correct: false
         },
-        {
-          id: "a",
-          text: "Reduces stamina and athletic performance",
-          emoji: "🏃",
-          correct: true
-        }
+        
       ]
     },
     {
@@ -125,18 +126,19 @@ const DebateSmokingCool = () => {
           emoji: "🌟",
           correct: false
         },
+         {
+          id: "a",
+          text: "Causes bad breath and smell that others notice",
+          emoji: "👃",
+          correct: true
+        },
         {
           id: "c",
           text: "Has no effect on how others perceive you",
           emoji: "🧐",
           correct: false
         },
-        {
-          id: "a",
-          text: "Causes bad breath and smell that others notice",
-          emoji: "👃",
-          correct: true
-        }
+       
       ]
     }
   ];

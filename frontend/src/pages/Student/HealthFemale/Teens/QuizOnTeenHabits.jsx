@@ -23,17 +23,18 @@ const QuizOnTeenHabits = () => {
       text: "Which builds long-term health?",
       emoji: "🥗",
       options: [
-        {
-          id: "a",
-          text: "Balanced diet and adequate sleep",
-          emoji: "🥗",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Skipping meals to lose weight",
           emoji: "🍽️",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Balanced diet and adequate sleep",
+          emoji: "🥕",
+          isCorrect: true
         },
         {
           id: "c",
@@ -48,12 +49,7 @@ const QuizOnTeenHabits = () => {
       text: "What is a benefit of regular exercise for teens?",
       emoji: "😊",
       options: [
-        {
-          id: "a",
-          text: "Improved mood and energy levels",
-          emoji: "😊",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Increased need for sleep",
@@ -65,7 +61,13 @@ const QuizOnTeenHabits = () => {
           text: "Reduced academic performance",
           emoji: "📉",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Improved mood and energy levels",
+          emoji: "⚡",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -76,7 +78,7 @@ const QuizOnTeenHabits = () => {
         {
           id: "a",
           text: "Supports brain function and physical performance",
-          emoji: "🧠",
+          emoji: "💧",
           isCorrect: true
         },
         {
@@ -98,17 +100,18 @@ const QuizOnTeenHabits = () => {
       text: "How does consistent study time benefit academic performance?",
       emoji: "📚",
       options: [
-        {
-          id: "a",
-          text: "Builds knowledge retention and reduces stress",
-          emoji: "📚",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Eliminates the need for exams",
           emoji: "✅",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Builds knowledge retention and reduces stress",
+          emoji: "📈",
+          isCorrect: true
         },
         {
           id: "c",
@@ -126,7 +129,7 @@ const QuizOnTeenHabits = () => {
         {
           id: "a",
           text: "Excessive use can disrupt sleep and reduce activity",
-          emoji: "📱",
+          emoji: "⏰",
           isCorrect: true
         },
         {

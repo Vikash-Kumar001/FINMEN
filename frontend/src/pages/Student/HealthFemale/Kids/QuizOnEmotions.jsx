@@ -15,7 +15,7 @@ const QuizOnEmotions = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback, flashPoints } = useGameFeedback();
 
   const questions = [
     {
@@ -54,8 +54,9 @@ const QuizOnEmotions = () => {
       emoji: "😰",
       options: [
         { id: "a", text: "Hide under the bed", emoji: "🛌", isCorrect: false },
-        { id: "b", text: "Talk to a trusted adult", emoji: "🗣️", isCorrect: false },
-        { id: "c", text: "Run away", emoji: "🏃‍♀️", isCorrect: true }
+       
+        { id: "c", text: "Run away", emoji: "🏃‍♀️", isCorrect: false },
+         { id: "b", text: "Talk to a trusted adult", emoji: "🗣️", isCorrect: true },
       ]
     },
     {
@@ -64,8 +65,8 @@ const QuizOnEmotions = () => {
       emoji: "😊",
       options: [
         { id: "a", text: "Getting hurt", emoji: "🤕", isCorrect: false },
-        { id: "b", text: "Doing things I love", emoji: "🎨", isCorrect: false },
-        { id: "c", text: "Being mean", emoji: "😠", isCorrect: true }
+        { id: "b", text: "Doing things I love", emoji: "🎨", isCorrect: true },
+        { id: "c", text: "Being mean", emoji: "😠", isCorrect: false }
       ]
     }
   ];
@@ -125,7 +126,9 @@ const QuizOnEmotions = () => {
       maxScore={questions.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+    >
       <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         {!gameFinished && currentQuestionData ? (
           <div className="space-y-6">

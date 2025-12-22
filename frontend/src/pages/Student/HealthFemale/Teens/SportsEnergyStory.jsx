@@ -32,7 +32,7 @@ const SportsEnergyStory = () => {
         {
           id: "b",
           text: "Energy drink",
-          emoji: "🥤",
+          emoji: "⚡",
           isCorrect: false
         },
         {

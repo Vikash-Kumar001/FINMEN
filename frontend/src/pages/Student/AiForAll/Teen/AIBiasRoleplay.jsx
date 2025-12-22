@@ -172,7 +172,7 @@ const AIBiasRoleplay = () => {
         { 
           id: 2, 
           text: "Ensures fair opportunities", 
-          emoji: "✅", 
+          emoji: "🌟", 
           isCorrect: true
         },
         { 

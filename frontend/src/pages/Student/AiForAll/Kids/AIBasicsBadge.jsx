@@ -34,15 +34,16 @@ const AIBasicsBadge = () => {
       color: "bg-blue-500",
       question: "What does AI (Artificial Intelligence) mean?",
       options: [
-        { 
-          text: "Machines that can learn and make decisions", 
-          emoji: "🤖", 
-          isCorrect: true
-        },
+        
         { 
           text: "Only robots that walk and talk", 
           emoji: "🚶", 
           isCorrect: false
+        },
+        { 
+          text: "Machines that can learn and make decisions", 
+          emoji: "🤖", 
+          isCorrect: true
         },
         { 
           text: "Magic that makes computers work", 
@@ -99,11 +100,7 @@ const AIBasicsBadge = () => {
           emoji: "📊", 
           isCorrect: false
         },
-        { 
-          text: "It learns from data and adapts to new situations", 
-          emoji: "🧠", 
-          isCorrect: true
-        },
+        
         { 
           text: "It always does the same thing", 
           emoji: "🔄", 
@@ -113,7 +110,12 @@ const AIBasicsBadge = () => {
           text: "It never makes mistakes", 
           emoji: "✨", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "It learns from data and adapts to new situations", 
+          emoji: "🧠", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -164,16 +166,17 @@ const AIBasicsBadge = () => {
           emoji: "🎮", 
           isCorrect: false
         },
+         { 
+          text: "Playing AI games with curiosity and learning", 
+          emoji: "🎯", 
+          isCorrect: true
+        },
         { 
           text: "Avoiding all AI technology", 
           emoji: "🚫", 
           isCorrect: false
         },
-        { 
-          text: "Playing AI games with curiosity and learning", 
-          emoji: "🎯", 
-          isCorrect: true
-        }
+       
       ]
     }
   ];

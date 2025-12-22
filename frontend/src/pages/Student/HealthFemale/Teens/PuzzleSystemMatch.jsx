@@ -23,7 +23,7 @@ const PuzzleSystemMatch = () => {
     { id: 1, name: "Ovaries", emoji: "🥚", hint: "Female reproductive organs" },
     { id: 2, name: "Uterus", emoji: "🤰", hint: "Womb where baby develops" },
     { id: 3, name: "Hormones", emoji: "⚗️", hint: "Chemical messengers in body" },
-    { id: 4, name: "Fallopian Tubes", emoji: "输卵", hint: "Pathway for egg transport" },
+    { id: 4, name: "Fallopian Tubes", emoji: "🧪", hint: "Pathway for egg transport" },
     { id: 5, name: "Vagina", emoji: "🚺", hint: "Birth canal and entry point" }
   ];
   

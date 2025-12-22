@@ -95,6 +95,12 @@ const BalancedDietStory = () => {
       id: 4,
       text: "You're at a party with lots of food options. What's your approach?",
       options: [
+         {
+          id: "b",
+          text: "Try a variety including fruits and salads",
+          emoji: "🥗",
+          isCorrect: true
+        },
         {
           id: "a",
           text: "Only eat sweets and snacks",
@@ -107,12 +113,7 @@ const BalancedDietStory = () => {
           emoji: "📉",
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Try a variety including fruits and salads",
-          emoji: "🥗",
-          isCorrect: true
-        }
+       
       ]
     },
     {

@@ -73,7 +73,7 @@ const BadgeEmotionSmartTeenGirl = () => {
         },
         { 
           text: "Stay isolated from everyone", 
-          emoji: "-alone", 
+          emoji: "😔", 
           isCorrect: false
         },
         { 
@@ -135,7 +135,7 @@ const BadgeEmotionSmartTeenGirl = () => {
         },
         { 
           text: "Share your own problems instead", 
-          emoji: " Me", 
+          emoji: "🤷‍♀️", 
           isCorrect: false
         },
         { 

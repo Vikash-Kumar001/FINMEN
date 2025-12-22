@@ -15,7 +15,7 @@ const QuizOnDangers = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback, flashPoints } = useGameFeedback();
 
   const questions = [
     {
@@ -51,13 +51,7 @@ const QuizOnDangers = () => {
       text: "What is a major risk of alcohol use for teens?",
       emoji: "🍺",
       options: [
-        {
-          id: "a",
-          text: "Impaired brain development",
-          emoji: "🧠",
-          // description: "The teen brain is still developing until mid-20s",
-          isCorrect: false
-        },
+       
         {
           id: "b",
           text: "Better decision-making skills",
@@ -70,8 +64,15 @@ const QuizOnDangers = () => {
           text: "Increased academic performance",
           emoji: "📚",
           // description: "Alcohol negatively affects school performance",
+          isCorrect: false
+        },
+         {
+          id: "a",
+          text: "Impaired brain development",
+          emoji: "🧠",
+          // description: "The teen brain is still developing until mid-20s",
           isCorrect: true
-        }
+        },
       ]
     },
     {
@@ -136,18 +137,19 @@ const QuizOnDangers = () => {
       text: "Why are teens particularly vulnerable to substance use?",
       emoji: "🧠",
       options: [
-        {
-          id: "a",
-          text: "Still-developing brain and risk-taking tendencies",
-          emoji: "🧠",
-          // description: "The teen brain is more susceptible to addiction",
-          isCorrect: false
-        },
+        
         {
           id: "b",
           text: "Greater self-control than adults",
           emoji: "💪",
           // description: "Teens typically have less self-control than adults",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Still-developing brain and risk-taking tendencies",
+          emoji: "🧠",
+          // description: "The teen brain is more susceptible to addiction",
           isCorrect: true
         },
         {
@@ -215,6 +217,7 @@ const QuizOnDangers = () => {
       currentLevel={2}
       showConfetti={gameFinished}
       backPath="/games/health-female/teens"
+      flashPoints={flashPoints}
     >
       <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         {!gameFinished && questions[currentQuestion] ? (

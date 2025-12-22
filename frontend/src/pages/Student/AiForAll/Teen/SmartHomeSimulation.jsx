@@ -137,7 +137,7 @@ const SmartHomeSimulation = () => {
         { 
           id: "wires", 
           text: "Physical wiring", 
-          emoji: " wireType", 
+          emoji: "🔌", 
           description: "Cabled connections",
           isCorrect: false
         },

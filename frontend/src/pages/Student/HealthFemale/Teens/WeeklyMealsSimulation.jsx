@@ -54,6 +54,12 @@ const WeeklyMealsSimulation = () => {
       scenario: "You have sports practice after school. What do you pack for a post-practice snack?",
       options: [
         {
+          id: "d",
+          text: "Banana and a handful of nuts",
+          emoji: "🍌",
+          isCorrect: true
+        },
+        {
           id: "a",
           text: "Chips and cola",
           emoji: "🍟",
@@ -71,12 +77,7 @@ const WeeklyMealsSimulation = () => {
           emoji: "🏋️",
           isCorrect: false
         },
-        {
-          id: "d",
-          text: "Banana and a handful of nuts",
-          emoji: "🍌",
-          isCorrect: true
-        }
+        
       ]
     },
     {
@@ -97,17 +98,18 @@ const WeeklyMealsSimulation = () => {
           isCorrect: false
         },
         {
+          id: "d",
+          text: "Home-cooked meal with dal, roti, vegetables, and curd",
+          emoji: "🍛",
+          isCorrect: true
+        },
+        {
           id: "c",
           text: "Salad with grilled chicken and whole grain bread",
           emoji: "🥗",
           isCorrect: false
         },
-        {
-          id: "d",
-          text: "Home-cooked meal with dal, roti, vegetables, and curd",
-          emoji: "🍛",
-          isCorrect: true
-        }
+        
       ]
     },
     {
@@ -122,6 +124,12 @@ const WeeklyMealsSimulation = () => {
           isCorrect: false
         },
         {
+          id: "d",
+          text: "Light healthy snack like sprouts or fruit",
+          emoji: "🥗",
+          isCorrect: true
+        },
+        {
           id: "b",
           text: "Heavy meal that makes you sleepy",
           emoji: "😴",
@@ -133,12 +141,7 @@ const WeeklyMealsSimulation = () => {
           emoji: "🍞",
           isCorrect: false
         },
-        {
-          id: "d",
-          text: "Light healthy snack like sprouts or fruit",
-          emoji: "🥗",
-          isCorrect: true
-        }
+        
       ]
     },
     {

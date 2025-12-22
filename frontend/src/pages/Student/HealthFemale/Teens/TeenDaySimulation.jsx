@@ -53,6 +53,12 @@ const TeenDaySimulation = () => {
       time: "10:00 AM",
       scenario: "You feel a bit hungry between classes. What do you choose?",
       options: [
+         {
+          id: "d",
+          text: "Healthy snack like fruit or nuts",
+          emoji: "🍎",
+          isCorrect: true
+        },
         {
           id: "a",
           text: "Chips from vending machine",
@@ -62,7 +68,7 @@ const TeenDaySimulation = () => {
         {
           id: "b",
           text: "Nothing, just wait for lunch",
-          emoji: "枵",
+          emoji: "🍽️",
           isCorrect: false
         },
         {
@@ -71,12 +77,7 @@ const TeenDaySimulation = () => {
           emoji: "💧",
           isCorrect: false
         },
-        {
-          id: "d",
-          text: "Healthy snack like fruit or nuts",
-          emoji: "🍎",
-          isCorrect: true
-        }
+       
       ]
     },
     {
@@ -96,18 +97,19 @@ const TeenDaySimulation = () => {
           emoji: "⏳",
           isCorrect: false
         },
+         {
+          id: "d",
+          text: "Balanced meal with dal, roti, vegetables",
+          emoji: "🍛",
+          isCorrect: true
+        },
         {
           id: "c",
           text: "Pack a homemade lunch with balanced nutrition",
           emoji: "🍱",
           isCorrect: false
         },
-        {
-          id: "d",
-          text: "Balanced meal with dal, roti, vegetables",
-          emoji: "🍛",
-          isCorrect: true
-        }
+       
       ]
     },
     {
@@ -121,6 +123,12 @@ const TeenDaySimulation = () => {
           emoji: "🍦",
           isCorrect: false
         },
+         {
+          id: "d",
+          text: "Take a walk or do light exercise",
+          emoji: "🚶",
+          isCorrect: true
+        },
         {
           id: "b",
           text: "Just sit and worry about assignments",
@@ -133,12 +141,7 @@ const TeenDaySimulation = () => {
           emoji: "🎵",
           isCorrect: false
         },
-        {
-          id: "d",
-          text: "Take a walk or do light exercise",
-          emoji: "🚶",
-          isCorrect: true
-        }
+       
       ]
     },
     {

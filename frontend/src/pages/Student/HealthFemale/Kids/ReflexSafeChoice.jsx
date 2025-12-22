@@ -71,7 +71,7 @@ const ReflexSafeChoice = () => {
       id: 5,
       question: "Best for your body?",
       options: [
-        { text: "Drugs", isCorrect: false, emoji: "-pill" },
+        { text: "Drugs", isCorrect: false, emoji: "💊" },
         { text: "Sleep all day", isCorrect: false, emoji: "😴" },
         { text: "Sitting", isCorrect: false, emoji: "🪑" },
         { text: "Exercise", isCorrect: true, emoji: "🏃‍♀️" }

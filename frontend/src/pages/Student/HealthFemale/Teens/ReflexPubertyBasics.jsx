@@ -44,8 +44,8 @@ const ReflexPubertyBasics = () => {
       question: "What's the best way to understand puberty?",
       options: [
         { text: "Embarrassment", emoji: "😳", isCorrect: false },
-        { text: "Natural Process", emoji: "🌱", isCorrect: true },
         { text: "Shame", emoji: "❌", isCorrect: false },
+        { text: "Natural Process", emoji: "🌱", isCorrect: true },
         { text: "Abnormality", emoji: "⚠️", isCorrect: false }
       ]
     },
@@ -74,9 +74,9 @@ const ReflexPubertyBasics = () => {
       question: "Which attitude helps during puberty?",
       options: [
         { text: "Embarrassment", emoji: "😳", isCorrect: false },
-        { text: "Natural Process", emoji: "🌱", isCorrect: true },
         { text: "Shame", emoji: "❌", isCorrect: false },
-        { text: "Weirdness", emoji: "👽", isCorrect: false }
+        { text: "Weirdness", emoji: "👽", isCorrect: false },
+        { text: "Natural Process", emoji: "🌱", isCorrect: true },
       ]
     }
   ];

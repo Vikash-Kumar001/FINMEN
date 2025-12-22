@@ -38,9 +38,9 @@ const ReflexDailyCheck = () => {
       scenario: "It's sunny outside! You need...",
       options: [
         { id: "coat", text: "Heavy Coat", emoji: "🧥", isCorrect: false },
-        { id: "sunscreen", text: "Sunscreen & Hat", emoji: "🧢", isCorrect: false },
+        { id: "sunscreen", text: "Sunscreen ", emoji: "🧴", isCorrect: true },
         { id: "umbrella", text: "Umbrella", emoji: "☔", isCorrect: false },
-        { id: "hat", text: "Sunscreen & Hat", emoji: "🧢", isCorrect: true }
+        { id: "hat", text: "Hat", emoji: "🧢", isCorrect: false }
       ]
     },
     {
@@ -58,8 +58,8 @@ const ReflexDailyCheck = () => {
       scenario: "You are thirsty!",
       options: [
         { id: "soda", text: "Soda", emoji: "🥤", isCorrect: false },
-        { id: "water", text: "Water", emoji: "💧", isCorrect: false },
-        { id: "juice", text: "Fresh Juice", emoji: "🧃", isCorrect: true },
+        { id: "juice", text: "Fresh Juice", emoji: "🧃", isCorrect: false },
+        { id: "water", text: "Water", emoji: "💧", isCorrect: true },
         { id: "salt", text: "Eat salt", emoji: "🧂", isCorrect: false }
       ]
     },

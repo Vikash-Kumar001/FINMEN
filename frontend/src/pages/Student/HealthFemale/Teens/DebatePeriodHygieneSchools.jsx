@@ -41,9 +41,9 @@ const DebatePeriodHygieneSchools = () => {
       id: 3,
       text: "Should schools provide period products?",
       options: [
+        { id: "a", text: "Yes, ensure all students have access", correct: true, emoji: "🩹" },
         { id: "b", text: "No, families should provide them", correct: false, emoji: "🏠" },
         { id: "c", text: "Only for wealthy students", correct: false, emoji: "💰" },
-        { id: "a", text: "Yes, ensure all students have access", correct: true, emoji: "🩹" }
       ]
     },
     {
@@ -60,8 +60,8 @@ const DebatePeriodHygieneSchools = () => {
       text: "What's the benefit of inclusive period education?",
       options: [
         { id: "b", text: "Creates unnecessary attention to the topic", correct: false, emoji: "📢" },
+        { id: "a", text: "Reduces stigma and improves health outcomes", correct: true, emoji: "🌟" },
         { id: "c", text: "Only benefits female students", correct: false, emoji: "🚺" },
-        { id: "a", text: "Reduces stigma and improves health outcomes", correct: true, emoji: "🌟" }
       ]
     }
   ];

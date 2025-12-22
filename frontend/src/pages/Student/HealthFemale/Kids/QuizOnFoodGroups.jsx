@@ -15,8 +15,7 @@ const QuizOnFoodGroups = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
+  const { showCorrectAnswerFeedback, resetFeedback, flashPoints } = useGameFeedback();
   const questions = [
     {
       id: 1,
@@ -125,7 +124,9 @@ const QuizOnFoodGroups = () => {
       maxScore={questions.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+    >
       <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         {!gameFinished && currentQuestionData ? (
           <div className="space-y-6">
@@ -133,8 +134,7 @@ const QuizOnFoodGroups = () => {
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
                 <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
-              </div>
-              
+              </div>              
               <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
               
               <p className="text-white text-lg md:text-xl mb-6 text-center">

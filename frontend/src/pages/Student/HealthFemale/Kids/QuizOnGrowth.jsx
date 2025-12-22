@@ -15,9 +15,7 @@ const QuizOnGrowth = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
-  const questions = [
+  const { showCorrectAnswerFeedback, resetFeedback, flashPoints } = useGameFeedback();  const questions = [
     {
       id: 1,
       text: "Which food helps build muscles?",
@@ -53,9 +51,10 @@ const QuizOnGrowth = () => {
       text: "What helps your brain grow?",
       emoji: "🧠",
       options: [
+        { id: "b", text: "Reading and learning", emoji: "📖", isCorrect: true },
         { id: "a", text: "Watching TV all day", emoji: "📺", isCorrect: false },
-        { id: "b", text: "Reading and learning", emoji: "📖", isCorrect: false },
-        { id: "c", text: "Staring at a wall", emoji: "🧱", isCorrect: true }
+        
+        { id: "c", text: "Staring at a wall", emoji: "🧱", isCorrect: false }
       ]
     },
     {
@@ -63,9 +62,10 @@ const QuizOnGrowth = () => {
       text: "When do you grow the most?",
       emoji: "😴",
       options: [
-        { id: "a", text: "While playing tag", emoji: "🏃", isCorrect: false },
+        { id: "c", text: "While eating pizza", emoji: "🍕", isCorrect: false },
+        
         { id: "b", text: "While you sleep", emoji: "🛌", isCorrect: false },
-        { id: "c", text: "While eating pizza", emoji: "🍕", isCorrect: true }
+        { id: "a", text: "While playing tag", emoji: "🏃", isCorrect: true },
       ]
     }
   ];
@@ -125,7 +125,9 @@ const QuizOnGrowth = () => {
       maxScore={questions.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+    >
       <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         {!gameFinished && currentQuestionData ? (
           <div className="space-y-6">

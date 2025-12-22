@@ -73,6 +73,12 @@ const JunkFoodStory = () => {
       text: "You're at a party with lots of snacks. What do you choose?",
       options: [
         {
+          id: "c",
+          text: "Mix of healthy & treat",
+          emoji: "🥗",
+          isCorrect: true
+        },
+        {
           id: "b",
           text: "Only sweets & chips",
           emoji: "🍰",
@@ -84,12 +90,7 @@ const JunkFoodStory = () => {
           emoji: "🍽️",
           isCorrect: false
         },
-        {
-          id: "c",
-          text: "Mix of healthy & treat",
-          emoji: "🥗",
-          isCorrect: true
-        }
+        
       ]
     },
     {
@@ -103,17 +104,18 @@ const JunkFoodStory = () => {
           isCorrect: false
         },
         {
+          id: "b",
+          text: "Explain it's delicious",
+          emoji: "😊",
+          isCorrect: true
+        },
+        {
           id: "c",
           text: "Complain about their teasing",
           emoji: "😠",
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Explain it's delicious",
-          emoji: "😊",
-          isCorrect: true
-        }
+        
       ]
     },
     {

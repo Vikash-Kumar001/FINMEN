@@ -43,7 +43,7 @@ const ReflexEmotionalHealth = () => {
       id: 2,
       question: "How should you deal with difficult emotions?",
       options: [
-        { text: "Neglect Needs", emoji: "忽视", isCorrect: false },
+        { text: "Neglect Needs", emoji: "⛔", isCorrect: false },
         { text: "Bottle Up", emoji: "🔒", isCorrect: false },
         { text: "Express Feelings", emoji: "💬", isCorrect: true },
         { text: "Stay Silent", emoji: "🤐", isCorrect: false }
@@ -56,7 +56,7 @@ const ReflexEmotionalHealth = () => {
         { text: "Isolate Self", emoji: "🚪", isCorrect: false },
         { text: "Stay Silent", emoji: "🤐", isCorrect: false },
         { text: "Talk to Adult", emoji: "👩‍🏫", isCorrect: true },
-        { text: "Neglect Needs", emoji: "忽视", isCorrect: false }
+        { text: "Neglect Needs", emoji: "⛔", isCorrect: false }
       ]
     },
     {
@@ -65,7 +65,7 @@ const ReflexEmotionalHealth = () => {
       options: [
         { text: "Bottle Up", emoji: "🔒", isCorrect: false },
         { text: "Isolate Self", emoji: "🚪", isCorrect: false },
-        { text: "Neglect Needs", emoji: "忽视", isCorrect: false },
+        { text: "Neglect Needs", emoji: "⛔", isCorrect: false },
         { text: "Practice Self-Care", emoji: "🧘", isCorrect: true }
       ]
     },

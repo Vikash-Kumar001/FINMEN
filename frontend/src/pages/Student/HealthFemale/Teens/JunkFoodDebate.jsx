@@ -72,6 +72,12 @@ const JunkFoodDebate = () => {
       text: "How can you enjoy treats while staying healthy?",
       options: [
         {
+          id: "a",
+          text: "Eat treats on special occasions only",
+          emoji: "🎉",
+          correct: true
+        },
+        {
           id: "b",
           text: "Replace all meals with treats",
           emoji: "🍔",
@@ -83,12 +89,7 @@ const JunkFoodDebate = () => {
           emoji: "🚫",
           correct: false
         },
-        {
-          id: "a",
-          text: "Eat treats on special occasions only",
-          emoji: "🎉",
-          correct: true
-        }
+        
       ]
     },
     {
@@ -102,17 +103,18 @@ const JunkFoodDebate = () => {
           correct: false
         },
         {
+          id: "a",
+          text: "Balance 80% healthy, 20% treats",
+          emoji: "⚖️",
+          correct: true
+        },
+        {
           id: "c",
           text: "Only eat what's healthy, no exceptions",
           emoji: "🥦",
           correct: false
         },
-        {
-          id: "a",
-          text: "Balance 80% healthy, 20% treats",
-          emoji: "⚖️",
-          correct: true
-        }
+        
       ]
     },
     {

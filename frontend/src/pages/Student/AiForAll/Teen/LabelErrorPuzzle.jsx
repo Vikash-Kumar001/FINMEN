@@ -24,20 +24,20 @@ const LabelErrorPuzzle = () => {
 
   // Images with incorrect labels (left side) - 6 items
   const leftItems = [
-    { id: 1, name: "🐶", wrongLabel: "Cat 🐱", emoji: "🐶", description: "Dog labeled as Cat" },
-    { id: 2, name: "🍎", wrongLabel: "Tomato 🍅", emoji: "🍎", description: "Apple labeled as Tomato" },
-    { id: 3, name: "🚗", wrongLabel: "Bus 🚌", emoji: "🚗", description: "Car labeled as Bus" },
-    { id: 4, name: "🐘", wrongLabel: "Rhino 🦏", emoji: "🐘", description: "Elephant labeled as Rhino" },
-    { id: 5, name: "🌻", wrongLabel: "Sun ☀️", emoji: "🌻", description: "Flower labeled as Sun" }
+    { id: 1, name: "", wrongLabel: "Cat ", emoji: "🐶", description: "Dog labeled as Cat" },
+    { id: 2, name: "", wrongLabel: "Tomato ", emoji: "🍎", description: "Apple labeled as Tomato" },
+    { id: 3, name: "", wrongLabel: "Bus ", emoji: "🚗", description: "Car labeled as Bus" },
+    { id: 4, name: "", wrongLabel: "Rhino ", emoji: "🐘", description: "Elephant labeled as Rhino" },
+    { id: 5, name: "", wrongLabel: "Sun ", emoji: "🌻", description: "Flower labeled as Sun" }
   ];
 
   // Correct labels (right side) - 6 items, rearranged to split matches
   const rightItems = [
-    { id: 3, name: "Dog 🐶", emoji: "🐶", description: "Correct label for dog" },
-    { id: 2, name: "Apple 🍎", emoji: "🍎", description: "Correct label for apple" },
-    { id: 4, name: "Car 🚗", emoji: "🚗", description: "Correct label for car" },
-    { id: 1, name: "Elephant 🐘", emoji: "🐘", description: "Correct label for elephant" },
-    { id: 5, name: "Flower 🌻", emoji: "🌻", description: "Correct label for flower" }
+    { id: 3, name: "Dog ", emoji: "🐶", description: "Correct label for dog" },
+    { id: 2, name: "Apple ", emoji: "🍎", description: "Correct label for apple" },
+    { id: 4, name: "Car ", emoji: "🚗", description: "Correct label for car" },
+    { id: 1, name: "Elephant ", emoji: "🐘", description: "Correct label for elephant" },
+    { id: 5, name: "Flower ", emoji: "🌻", description: "Correct label for flower" }
   ];
 
   // Correct matches (split across different positions for variety)

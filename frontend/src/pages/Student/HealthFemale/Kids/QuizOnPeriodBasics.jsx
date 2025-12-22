@@ -19,9 +19,7 @@ const QuizOnPeriodBasics = () => {
     const [selectedOption, setSelectedOption] = useState(null);
     const [showFeedback, setShowFeedback] = useState(false);
     const [gameFinished, setGameFinished] = useState(false);
-    const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
-    const questions = [
+    const { showCorrectAnswerFeedback, resetFeedback, flashPoints } = useGameFeedback();    const questions = [
         {
             id: 1,
             text: "Every girl gets her period at the same age.",
@@ -56,25 +54,26 @@ const QuizOnPeriodBasics = () => {
             emoji: "🌙",
             options: [
                 {
+                    id: "b",
+                    text: "About once a month",
+                    emoji: "🌜",
+                    // description: "Correct! Like the moon cycle.",
+                    isCorrect: true
+                },
+                {
                     id: "a",
                     text: "Once a year",
                     emoji: "🗓️",
                     // description: "More often than that.",
                     isCorrect: false
                 },
-                {
-                    id: "b",
-                    text: "About once a month",
-                    emoji: "🌜",
-                    // description: "Correct! Like the moon cycle.",
-                    isCorrect: false
-                },
+                
                 {
                     id: "c",
                     text: "Every day",
                     emoji: "☀️",
                     // description: "Not every day.",
-                    isCorrect: true
+                    isCorrect: false
                 }
             ]
         },
@@ -216,7 +215,9 @@ const QuizOnPeriodBasics = () => {
             maxScore={maxScore}
             coinsPerLevel={coinsPerLevel}
             totalCoins={totalCoins}
-            totalXp={totalXp}>
+            totalXp={totalXp}
+            flashPoints={flashPoints}
+        >
             <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
                 {!gameFinished && questions[currentQuestion] ? (
                     <div className="space-y-6">

@@ -20,10 +20,10 @@ const PuzzleSubstanceEffects = () => {
   
   // Substances (left side) - 5 items
   const substances = [
-    { id: 1, name: "Smoking", emoji: "🚬", hint: "Inhalation of tobacco smoke" },
+    { id: 1, name: "Smoking", emoji: "💨", hint: "Inhalation of tobacco smoke" },
     { id: 2, name: "Alcohol", emoji: "🍺", hint: "Ethanol-based beverage" },
     { id: 3, name: "Drugs", emoji: "💊", hint: "Psychoactive substances" },
-    { id: 4, name: "Nicotine", emoji: " cigaret", hint: "Addictive chemical compound" },
+    { id: 4, name: "Nicotine", emoji: "🚬", hint: "Addictive chemical compound" },
     { id: 5, name: "Marijuana", emoji: "🌿", hint: "Cannabis plant derivative" }
   ];
   

@@ -71,7 +71,7 @@ const FutureAIReflection = () => {
         { 
           id: 3, 
           text: "Become completely independent", 
-          emoji: "-alone",
+          emoji: "😔",
           isCorrect: false
         }
       ],

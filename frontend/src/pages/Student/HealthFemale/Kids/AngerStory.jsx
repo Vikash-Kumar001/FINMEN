@@ -75,7 +75,7 @@ const AngerStory = () => {
         {
           id: "a",
           text: "Flip the board",
-          emoji: "╯°□°）╯",
+          emoji: "⏹️",
           isCorrect: false
         },
         {

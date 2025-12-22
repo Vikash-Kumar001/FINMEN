@@ -49,17 +49,18 @@ const PeriodHygieneStory = () => {
       text: "What do you use for a period?",
       options: [
         {
-          id: "a",
-          text: "Band-aids",
-          emoji: "🩹",
-          isCorrect: false
-        },
-        {
           id: "b",
           text: "Pads or Tampons",
           emoji: "🩸",
           isCorrect: true
         },
+        {
+          id: "a",
+          text: "Band-aids",
+          emoji: "🩹",
+          isCorrect: false
+        },
+        
         {
           id: "c",
           text: "Paper towels not made for it",
@@ -120,12 +121,7 @@ const PeriodHygieneStory = () => {
       id: 5,
       text: "Who can you talk to about periods?",
       options: [
-        {
-          id: "a",
-          text: "Mom, Aunt, or older sister",
-          emoji: "👩‍🦳",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Only pets",
@@ -137,7 +133,13 @@ const PeriodHygieneStory = () => {
           text: "No one",
           emoji: "🤐",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Mom, Aunt, or older sister",
+          emoji: "👩‍🦳",
+          isCorrect: true
+        },
       ]
     }
   ];

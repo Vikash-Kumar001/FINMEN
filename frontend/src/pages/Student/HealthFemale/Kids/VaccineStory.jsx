@@ -97,6 +97,12 @@ const VaccineStory = () => {
       text: "A friend says vaccines are scary.",
       options: [
         {
+          id: "b",
+          text: "Tell them vaccines are like superhero shields",
+          emoji: "🛡️",
+          isCorrect: true
+        },
+        {
           id: "a",
           text: "Agree and get scared",
           emoji: "😨",
@@ -108,12 +114,7 @@ const VaccineStory = () => {
           emoji: "👻",
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Tell them vaccines are like superhero shields",
-          emoji: "🛡️",
-          isCorrect: true
-        }
+        
       ]
     },
     {
@@ -127,17 +128,18 @@ const VaccineStory = () => {
           isCorrect: false
         },
         {
+          id: "a",
+          text: "Say 'Thank You'",
+          emoji: "🙏",
+          isCorrect: true
+        },
+        {
           id: "c",
           text: "Eat it",
           emoji: "😋",
           isCorrect: false
         },
-        {
-          id: "a",
-          text: "Say 'Thank You'",
-          emoji: "🙏",
-          isCorrect: true
-        }
+        
       ]
     }
   ];

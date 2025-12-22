@@ -35,9 +35,9 @@ const AIMistakeReflex = () => {
       statement: "AI says: 2+2=5",
       correctAnswer: "Correct it",
       options: [
-        { text: "Correct it", isCorrect: true, emoji: "🔧" },
         { text: "Ignore", isCorrect: false, emoji: "🙈" },
         { text: "Agree", isCorrect: false, emoji: "👍" },
+        { text: "Correct it", isCorrect: true, emoji: "🔧" },
         { text: "Report", isCorrect: false, emoji: "🚩" }
       ]
     },
@@ -84,8 +84,8 @@ const AIMistakeReflex = () => {
       correctAnswer: "Ignore",
       options: [
         { text: "Correct it", isCorrect: false, emoji: "🔧" },
-        { text: "Ignore", isCorrect: true, emoji: "🙈" },
         { text: "Challenge", isCorrect: false, emoji: "⚔️" },
+        { text: "Ignore", isCorrect: true, emoji: "🙈" },
         { text: "Confirm", isCorrect: false, emoji: "✔️" }
       ]
     }

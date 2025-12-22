@@ -71,6 +71,12 @@ const PubertyDebate = () => {
       id: 3,
       text: "What's the best way to deal with peer comments about puberty?",
       options: [
+         {
+          id: "a",
+          text: "Educate peers about normal development",
+          emoji: "📚",
+          correct: true
+        },
         {
           id: "b",
           text: "Get angry and fight with peers",
@@ -83,12 +89,7 @@ const PubertyDebate = () => {
           emoji: "🔇",
           correct: false
         },
-        {
-          id: "a",
-          text: "Educate peers about normal development",
-          emoji: "📚",
-          correct: true
-        }
+       
       ]
     },
     {
@@ -101,18 +102,19 @@ const PubertyDebate = () => {
           emoji: "🤐",
           correct: false
         },
+         {
+          id: "a",
+          text: "Yes, trusted adults can provide guidance",
+          emoji: "👨‍👩‍👧‍👦",
+          correct: true
+        },
         {
           id: "c",
           text: "Only talk to friends about it",
           emoji: "👭",
           correct: false
         },
-        {
-          id: "a",
-          text: "Yes, trusted adults can provide guidance",
-          emoji: "👨‍👩‍👧‍👦",
-          correct: true
-        }
+       
       ]
     },
     {

@@ -24,7 +24,7 @@ const HygieneMatch = () => {
   const hygieneItems = [
     { id: 1, name: "Toothbrush", emoji: "🪥", hint: "Used for cleaning teeth" },
     { id: 2, name: "Soap", emoji: "🧼", hint: "Used for washing body" },
-    { id: 3, name: "Comb", emoji: "梳子", hint: "Used for styling hair" },
+    { id: 3, name: "Comb", emoji: "🪖", hint: "Used for styling hair" },
     { id: 4, name: "Towel", emoji: "🧺", hint: "Used for drying off" },
     { id: 5, name: "Nail Clippers", emoji: "✂️", hint: "Used for trimming nails" }
   ];

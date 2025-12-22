@@ -23,7 +23,7 @@ const SafetyToolsPuzzle = () => {
   // Safety Tools (left side) - 5 items
   const tools = [
     { id: 1, name: "Sunscreen", emoji: "🧴", hint: "Protects skin from UV rays" },
-    { id: 2, name: "Seatbelt", emoji: "-seatbelt", hint: "Restrains occupant in vehicle" },
+    { id: 2, name: "Seatbelt", emoji: "💺", hint: "Restrains occupant in vehicle" },
     { id: 3, name: "Flashlight", emoji: "💡", hint: "Portable light source" },
     { id: 4, name: "Knee Pads", emoji: "🛡️", hint: "Protective gear for joints" },
     { id: 5, name: "Bandage", emoji: "🩹", hint: "Covering for wounds" }

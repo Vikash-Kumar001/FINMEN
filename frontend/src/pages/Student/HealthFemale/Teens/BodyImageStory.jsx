@@ -95,12 +95,7 @@ const BodyImageStory = () => {
       id: 4,
       text: "How can social media affect body image?",
       options: [
-        {
-          id: "a",
-          text: "By showing unrealistic edited images",
-          emoji: "📱",
-          isCorrect: false
-        },
+       
         {
           id: "b",
           text: "By always showing real bodies",
@@ -109,10 +104,16 @@ const BodyImageStory = () => {
         },
         {
           id: "c",
-          text: "By showing unrealistic edited images",
+          text: "By showing diverse body types positively",
+          emoji: "📱",
+          isCorrect: false
+        },
+         {
+          id: "a",
+          text: "By promoting unrealistic beauty standards",
           emoji: "📱",
           isCorrect: true
-        }
+        },
       ]
     },
     {

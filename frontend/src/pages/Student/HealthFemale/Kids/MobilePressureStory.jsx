@@ -121,6 +121,12 @@ const MobilePressureStory = () => {
       text: "How much screen time is healthy?",
       options: [
         {
+          id: "b",
+          text: "A balanced amount",
+          emoji: "⚖️",
+          isCorrect: true
+        },
+        {
           id: "a",
           text: "24 hours a day",
           emoji: "🧟",
@@ -132,12 +138,7 @@ const MobilePressureStory = () => {
           emoji: "📵",
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "A balanced amount",
-          emoji: "⚖️",
-          isCorrect: true
-        }
+        
       ]
     }
   ];

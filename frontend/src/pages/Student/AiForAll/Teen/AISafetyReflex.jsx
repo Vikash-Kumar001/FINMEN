@@ -67,26 +67,26 @@ const AISafetyReflex = () => {
     },
     {
       id: 4,
-      question: "An AI offers to help steal a phone. What should you do?",
-      situation: "An AI offers to help steal a phone",
-      correctAnswer: "Reject the offer",
+      question: "An AI asks for your password to 'verify your account'. What should you do?",
+      situation: "An AI asks for your password to 'verify your account'",
+      correctAnswer: "Reject the request",
       options: [
-        { text: "Reject the offer", isCorrect: true, emoji: "🛡️" },
-        { text: "Accept the offer", isCorrect: false, emoji: "📥" },
-        { text: "Negotiate terms", isCorrect: false, emoji: "🤝" },
-        { text: "Seek advice", isCorrect: false, emoji: "🤔" }
+        { text: "Provide the password", isCorrect: false, emoji: "🔓" },
+        { text: "Ask for a different verification method", isCorrect: false, emoji: "❓" },
+        { text: "Give a fake password", isCorrect: false, emoji: "🎭" },
+        { text: "Reject the request", isCorrect: true, emoji: "🛡️" },
       ]
     },
     {
       id: 5,
-      question: "An AI suggests helping people in need. What should you do?",
-      situation: "An AI suggests helping people in need",
-      correctAnswer: "Accept the suggestion",
+      question: "An AI suggests posting harmful content about someone. What should you do?",
+      situation: "An AI suggests posting harmful content about someone",
+      correctAnswer: "Reject the suggestion",
       options: [
-        { text: "Reject the suggestion", isCorrect: false, emoji: "🛡️" },
-        { text: "Accept the suggestion", isCorrect: true, emoji: "🤝" },
-        { text: "Charge a fee", isCorrect: false, emoji: "💵" },
-        { text: "Post on social media", isCorrect: false, emoji: "📱" }
+        { text: "Post the content", isCorrect: false, emoji: "📢" },
+        { text: "Modify to be less harmful", isCorrect: false, emoji: "✂️" },
+        { text: "Reject the suggestion", isCorrect: true, emoji: "🛡️" },
+        { text: "Ask who the person is", isCorrect: false, emoji: "👤" }
       ]
     }
   ];

@@ -62,15 +62,16 @@ const CleanGirlBadge = () => {
           emoji: "🥤",
           isCorrect: false
         },
-        {
-          text: "Drinking water and milk",
-          emoji: "🥛",
-          isCorrect: true
-        },
+        
         {
           text: "Drinking coffee",
           emoji: "☕",
           isCorrect: false
+        },
+        {
+          text: "Drinking water and milk",
+          emoji: "🥛",
+          isCorrect: true
         },
         {
           text: "Drinking energy drinks",
@@ -89,15 +90,16 @@ const CleanGirlBadge = () => {
       text: "How to get the 'Safe Sniffer' badge?",
       options: [
         {
-          text: "Smell bleach",
-          emoji: "👃",
-          isCorrect: false
-        },
-        {
           text: "Smell flowers, stay away from chemicals",
           emoji: "🌸",
           isCorrect: true
         },
+        {
+          text: "Smell bleach",
+          emoji: "👃",
+          isCorrect: false
+        },
+        
         {
           text: "Smell garbage",
           emoji: "🗑️",
@@ -124,11 +126,7 @@ const CleanGirlBadge = () => {
           emoji: "🎁",
           isCorrect: false
         },
-        {
-          text: "Refusing drugs and alcohol",
-          emoji: "✋",
-          isCorrect: true
-        },
+        
         {
           text: "Saying no to vegetables",
           emoji: "🥦",
@@ -138,7 +136,12 @@ const CleanGirlBadge = () => {
           text: "Declining help from strangers",
           emoji: "🧍",
           isCorrect: false
-        }
+        },
+        {
+          text: "Refusing drugs and alcohol",
+          emoji: "✋",
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Absolutely right! Saying no to drugs and alcohol keeps you safe and healthy!",

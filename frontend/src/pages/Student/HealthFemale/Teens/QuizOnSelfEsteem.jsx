@@ -54,18 +54,19 @@ const QuizOnSelfEsteem = () => {
           emoji: "🗑️",
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Achieving them builds genuine confidence",
-          emoji: "🎯",
-          isCorrect: true
-        },
+       
         {
           id: "c",
           text: "They prevent any progress",
           emoji: "🛑",
           isCorrect: false
-        }
+        },
+         {
+          id: "b",
+          text: "Achieving them builds genuine confidence",
+          emoji: "🎯",
+          isCorrect: true
+        },
       ]
     },
     {

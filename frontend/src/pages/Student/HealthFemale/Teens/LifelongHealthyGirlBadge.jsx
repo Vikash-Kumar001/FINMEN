@@ -67,7 +67,7 @@ const LifelongHealthyGirlBadge = () => {
         },
         { 
           text: "Staying up late to finish tasks", 
-          emoji: "熬夜", 
+          emoji: "😴", 
           isCorrect: false
         },
         { 
@@ -129,7 +129,7 @@ const LifelongHealthyGirlBadge = () => {
         },
         { 
           text: "By avoiding all responsibilities", 
-          emoji: "鸵鸟", 
+          emoji: "🌱", 
           isCorrect: false
         },
         { 

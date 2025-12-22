@@ -119,12 +119,12 @@ const DrugFreeTeenGirlBadge = () => {
       options: [
         { 
           text: "Trying drugs once won't hurt", 
-          emoji: "❌", 
+          emoji: "🚫", 
           isCorrect: false
         },
         { 
           text: "Marijuana is not addictive", 
-          emoji: "❌", 
+          emoji: "⚠️", 
           isCorrect: false
         },
         { 
@@ -134,7 +134,7 @@ const DrugFreeTeenGirlBadge = () => {
         },
         { 
           text: "Prescription drugs are safe to use recreationally", 
-          emoji: "❌", 
+          emoji: "💊", 
           isCorrect: false
         }
       ],

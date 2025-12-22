@@ -72,7 +72,7 @@ const PreventiveCareTeenBadge = () => {
         },
         { 
           text: "Chickenpox vaccine", 
-          emoji: "痘", 
+          emoji: "💉", 
           isCorrect: false
         },
         { 

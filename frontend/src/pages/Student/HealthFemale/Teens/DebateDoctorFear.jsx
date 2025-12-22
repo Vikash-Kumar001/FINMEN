@@ -41,9 +41,9 @@ const DebateDoctorFear = () => {
       id: 3,
       text: "How can you reduce anxiety about doctor visits?",
       options: [
+        { id: "a", text: "Bring a trusted adult for support", correct: true, emoji: "👨‍👩‍👧" },
         { id: "b", text: "Avoid doctors completely", correct: false, emoji: "🏃" },
         { id: "c", text: "Don't tell the doctor about symptoms", correct: false, emoji: "🤐" },
-        { id: "a", text: "Bring a trusted adult for support", correct: true, emoji: "👨‍👩‍👧" }
       ]
     },
     {
@@ -51,8 +51,8 @@ const DebateDoctorFear = () => {
       text: "What should you expect during a routine checkup?",
       options: [
         { id: "b", text: "Judgment about your lifestyle choices", correct: false, emoji: "🤨" },
+        { id: "a", text: "Professional, respectful care focused on your health", correct: true, emoji: "👩‍⚕️" },
         { id: "c", text: "Painful or uncomfortable procedures", correct: false, emoji: "😣" },
-        { id: "a", text: "Professional, respectful care focused on your health", correct: true, emoji: "👩‍⚕️" }
       ]
     },
     {

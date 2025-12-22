@@ -80,7 +80,7 @@ const PartyStory = () => {
         {
           id: "b",
           text: "Take a small amount to avoid conflict",
-          emoji: "小心翼",
+          emoji: "🤔",
           isCorrect: false
         },
         {

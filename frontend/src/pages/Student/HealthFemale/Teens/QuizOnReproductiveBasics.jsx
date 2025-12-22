@@ -23,17 +23,18 @@ const QuizOnReproductiveBasics = () => {
       text: "Which organ in the female body releases eggs?",
       emoji: "🥚",
       options: [
-        {
-          id: "a",
-          text: "Ovaries",
-          emoji: "🥚",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Stomach",
           emoji: "🍽️",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Ovaries",
+          emoji: "🧧",
+          isCorrect: true
         },
         {
           id: "c",
@@ -48,12 +49,7 @@ const QuizOnReproductiveBasics = () => {
       text: "What is the name of the monthly process where the uterus sheds its lining?",
       emoji: "🩸",
       options: [
-        {
-          id: "a",
-          text: "Menstruation",
-          emoji: "🩸",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Digestion",
@@ -65,7 +61,13 @@ const QuizOnReproductiveBasics = () => {
           text: "Respiration",
           emoji: "💨",
           isCorrect: false
-        }
+        },
+         {
+          id: "a",
+          text: "Menstruation",
+          emoji: "🔴",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -98,17 +100,18 @@ const QuizOnReproductiveBasics = () => {
       text: "How often does ovulation typically occur in a regular menstrual cycle?",
       emoji: "📅",
       options: [
-        {
-          id: "a",
-          text: "Every month",
-          emoji: "🗓️",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Every week",
           emoji: "🔁",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Every month",
+          emoji: "🕧",
+          isCorrect: true
         },
         {
           id: "c",
@@ -126,7 +129,7 @@ const QuizOnReproductiveBasics = () => {
         {
           id: "a",
           text: "To transport eggs from ovaries to uterus",
-          emoji: "输卵",
+          emoji: "🥚",
           isCorrect: true
         },
         {

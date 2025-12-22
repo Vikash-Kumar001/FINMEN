@@ -86,13 +86,7 @@ const SmartMapsStory = () => {
       text: "Why does Google Maps sometimes suggest a longer-looking route than the direct path?",
       options: [
        
-        { 
-          id: "traffic", 
-          text: "Avoiding traffic congestion", 
-          emoji: "🚦", 
-          description: "AI considers real-time traffic data and predicts delays to save you time even if the route looks longer",
-          isCorrect: true
-        },
+        
         { 
           id: "random", 
           text: "Random route selection", 
@@ -107,6 +101,13 @@ const SmartMapsStory = () => {
           description: "AI navigation systems are designed to optimize for time, not distance, using sophisticated algorithms",
           isCorrect: false
         },
+        { 
+          id: "traffic", 
+          text: "Avoiding traffic congestion", 
+          emoji: "🚦", 
+          description: "AI considers real-time traffic data and predicts delays to save you time even if the route looks longer",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -114,19 +115,20 @@ const SmartMapsStory = () => {
       text: "How does your navigation app know about an accident that happened 10 minutes ago?",
       options: [
         
-        { 
-          id: "data", 
-          text: "Real-time data integration", 
-          emoji: "📡", 
-          description: "AI navigation systems collect data from traffic cameras, police reports, user reports, and connected vehicles to stay updated",
-          isCorrect: true
-        },
+        
         { 
           id: "magic", 
           text: "Magical prediction", 
           emoji: "🔮", 
           description: "Navigation systems use real data sources rather than supernatural abilities",
           isCorrect: false
+        },
+        { 
+          id: "data", 
+          text: "Real-time data integration", 
+          emoji: "📡", 
+          description: "AI navigation systems collect data from traffic cameras, police reports, user reports, and connected vehicles to stay updated",
+          isCorrect: true
         },
         { 
           id: "guess", 

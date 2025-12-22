@@ -39,7 +39,7 @@ const FruitVsCandyStory = () => {
         {
           id: "c",
           text: "Chips",
-          emoji: "薯",
+          emoji: "🍟",
           isCorrect: false
         }
       ]

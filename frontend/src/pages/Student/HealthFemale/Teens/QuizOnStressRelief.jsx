@@ -38,7 +38,7 @@ const QuizOnStressRelief = () => {
         {
           id: "c",
           text: "Isolate yourself from others",
-          emoji: "-alone",
+          emoji: "😔",
           isCorrect: false
         }
       ]
@@ -48,12 +48,7 @@ const QuizOnStressRelief = () => {
       text: "What's the benefit of deep breathing exercises?",
       emoji: "💨",
       options: [
-        {
-          id: "a",
-          text: "Activates the body's relaxation response",
-          emoji: "💨",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Increases heart rate dramatically",
@@ -63,9 +58,15 @@ const QuizOnStressRelief = () => {
         {
           id: "c",
           text: "Makes you hold your breath longer",
-          emoji: "憋",
+          emoji: "🫁",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Activates the body's relaxation response",
+          emoji: "💨",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -98,17 +99,18 @@ const QuizOnStressRelief = () => {
       text: "Why is maintaining a consistent sleep schedule important?",
       emoji: "😴",
       options: [
-        {
-          id: "a",
-          text: "Regulates mood and improves stress resilience",
-          emoji: "😴",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Makes you sleep more during the day",
           emoji: "🌞",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Regulates mood and improves stress resilience",
+          emoji: "😴",
+          isCorrect: true
         },
         {
           id: "c",
@@ -123,12 +125,7 @@ const QuizOnStressRelief = () => {
       text: "What's a healthy way to express emotions?",
       emoji: "💬",
       options: [
-        {
-          id: "a",
-          text: "Talk to trusted friends or family",
-          emoji: "💬",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Suppress all emotions completely",
@@ -140,7 +137,13 @@ const QuizOnStressRelief = () => {
           text: "Express emotions aggressively",
           emoji: "😠",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Talk to trusted friends or family",
+          emoji: "💬",
+          isCorrect: true
+        },
       ]
     }
   ];

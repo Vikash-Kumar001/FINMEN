@@ -134,12 +134,7 @@ const AIJobsDebate = () => {
       text: "AI tools can now diagnose basic illnesses. What is the smart choice?",
       emoji: "🏥",
       options: [
-        { 
-          id: 1, 
-          text: "Learn healthcare skills and AI tech", 
-          emoji: "🩺", 
-          isCorrect: true
-        },
+        
         { 
           id: 2, 
           text: "Complain that AI is taking jobs", 
@@ -151,7 +146,13 @@ const AIJobsDebate = () => {
           text: "Avoid healthcare careers", 
           emoji: "🚫",
           isCorrect: false
-        }
+        },
+        { 
+          id: 1, 
+          text: "Learn healthcare skills and AI tech", 
+          emoji: "🩺", 
+          isCorrect: true
+        },
       ],
       explanation: "Learn healthcare skills and AI tech! AI in healthcare doesn't replace human practitioners but enhances their capabilities. Medical professionals who understand both patient care and AI tools will provide better diagnoses, treatments, and personalized care, making them more valuable in the evolving healthcare landscape."
     },
@@ -160,17 +161,18 @@ const AIJobsDebate = () => {
       text: "AI can write articles and create media. What should teens do?",
       emoji: "✍️",
       options: [
-        { 
-          id: 1, 
-          text: "Learn creative & tech skills", 
-          emoji: "🎨", 
-          isCorrect: true
-        },
+        
         { 
           id: 2, 
           text: "Ignore AI creativity", 
           emoji: "🙄", 
           isCorrect: false
+        },
+        { 
+          id: 1, 
+          text: "Learn creative & tech skills", 
+          emoji: "🎨", 
+          isCorrect: true
         },
         { 
           id: 3, 

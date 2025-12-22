@@ -74,7 +74,7 @@ const PeerPressureStory = () => {
         {
           id: "a",
           text: "\"I'll try just a little\"",
-          emoji: "小心翼",
+          emoji: "🤔",
           isCorrect: false
         },
         {

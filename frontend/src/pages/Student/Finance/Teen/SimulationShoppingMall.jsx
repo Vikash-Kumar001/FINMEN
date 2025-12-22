@@ -119,13 +119,13 @@ const SimulationShoppingMall = () => {
           id: "no-fun", 
           text: "Save all, no entertainment", 
           emoji: "📵", 
-          is,
-          { 
+          isCorrect: false
+        },
+        { 
           id: "balanced-fun", 
           text: "Some fun, some savings", 
           emoji: "🎬", 
           isCorrect: true
-        },Correct: false
         }
       ]
     },

@@ -56,7 +56,7 @@ const SimulationDailyRoutinee = () => {
   const questions = [
     {
       id: 1,
-      text: "4 hrs free. Choices: (a) All screen, (b) Sports + study + 1 hr screen. Correct = Balance.",
+      text: "4 hrs free. What's the best way to spend it?",
       options: [
         { id: 'balance', text: 'Sports + study + 1 hr screen', description: 'Balanced approach', isCorrect: true },
         { id: 'screen', text: 'All screen time', description: 'Unbalanced approach', isCorrect: false },

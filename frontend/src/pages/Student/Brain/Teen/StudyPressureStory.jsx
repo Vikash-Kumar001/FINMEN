@@ -70,44 +70,44 @@ const StudyPressureStory = () => {
       id: 2,
       text: "When feeling stressed about studying, what should you do?",
       choices: [
-        { id: 'b', text: 'Study non-stop without breaks' },
-        { id: 'a', text: 'Take short breaks and breathe deeply' },
+        { id: 'a', text: 'Study non-stop without breaks' },
+        { id: 'b', text: 'Take short breaks and breathe deeply' },
         { id: 'c', text: 'Avoid studying completely' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'Short breaks with deep breathing help reduce stress and maintain focus during study sessions!'
     },
     {
       id: 3,
       text: "What's the best way to handle exam pressure?",
       choices: [
-        { id: 'b', text: 'Worry constantly about failing' },
-        { id: 'c', text: 'Ignore the exam completely' },
-        { id: 'a', text: 'Use positive self-talk and stay organized' }
+        { id: 'a', text: 'Worry constantly about failing' },
+        { id: 'b', text: 'Ignore the exam completely' },
+        { id: 'c', text: 'Use positive self-talk and stay organized' }
       ],
-      correct: 'a',
+      correct: 'c',
       explanation: 'Positive self-talk and organization help build confidence and reduce exam anxiety!'
     },
     {
       id: 4,
       text: "How can you manage study pressure effectively?",
       choices: [
-        { id: 'b', text: 'Cram everything at the last minute' },
-        { id: 'c', text: 'Study randomly without a plan' },
-        { id: 'a', text: 'Create a study schedule and stick to it' }
+        { id: 'a', text: 'Cram everything at the last minute' },
+        { id: 'b', text: 'Study randomly without a plan' },
+        { id: 'c', text: 'Create a study schedule and stick to it' }
       ],
-      correct: 'a',
+      correct: 'c',
       explanation: 'A structured study schedule helps manage time effectively and reduces last-minute pressure!'
     },
     {
       id: 5,
       text: "What helps reduce stress during exam preparation?",
       choices: [
-        { id: 'b', text: 'Staying up all night studying' },
+        { id: 'a', text: 'Staying up all night studying' },
+        { id: 'b', text: 'Regular exercise and adequate sleep' },
         { id: 'c', text: 'Skipping meals to save time' },
-        { id: 'a', text: 'Regular exercise and adequate sleep' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'Exercise and sleep are essential for managing stress and maintaining optimal brain function during exam prep!'
     }
   ];

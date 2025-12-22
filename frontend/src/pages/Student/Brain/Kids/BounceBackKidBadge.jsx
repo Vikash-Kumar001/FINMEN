@@ -60,15 +60,16 @@ const BounceBackKidBadge = () => {
       title: "Bounce Back Challenge 2",
       question: "What helps you bounce back?",
       options: [
-        { 
-          text: "Staying positive and trying again", 
-          emoji: "✨", 
-          isCorrect: true
-        },
+        
         { 
           text: "Quitting when things get hard", 
           emoji: "😞", 
           isCorrect: false
+        },
+        { 
+          text: "Staying positive and trying again", 
+          emoji: "✨", 
+          isCorrect: true
         },
         { 
           text: "Avoiding all problems", 
@@ -87,11 +88,7 @@ const BounceBackKidBadge = () => {
       title: "Bounce Back Challenge 3",
       question: "How do resilient people handle setbacks?",
       options: [
-        { 
-          text: "Get back up and keep trying", 
-          emoji: "⬆️", 
-          isCorrect: true
-        },
+        
         { 
           text: "Stay down and give up", 
           emoji: "⬇️", 
@@ -101,6 +98,11 @@ const BounceBackKidBadge = () => {
           text: "Blame everything on others", 
           emoji: "👆", 
           isCorrect: false
+        },
+        { 
+          text: "Get back up and keep trying", 
+          emoji: "⬆️", 
+          isCorrect: true
         },
         { 
           text: "Never face challenges", 
@@ -141,11 +143,7 @@ const BounceBackKidBadge = () => {
       title: "Bounce Back Challenge 5",
       question: "How do you build resilience?",
       options: [
-        { 
-          text: "Face challenges, learn from failures, and keep trying", 
-          emoji: "🎯", 
-          isCorrect: true
-        },
+       
         { 
           text: "Avoid all difficulties", 
           emoji: "🚫", 
@@ -160,7 +158,12 @@ const BounceBackKidBadge = () => {
           text: "Never learn from mistakes", 
           emoji: "🔄", 
           isCorrect: false
-        }
+        },
+         { 
+          text: "Face challenges, learn from failures, and keep trying", 
+          emoji: "🎯", 
+          isCorrect: true
+        },
       ]
     }
   ];

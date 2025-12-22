@@ -57,7 +57,7 @@ const SleeppQuiz = () => {
   const questions = [
     {
       id: 1,
-      text: "How many hours should teens sleep? (a) 5, (b) 6–8, (c) 12). Correct = 6–8.",
+      text: "How many hours should teens sleep?",
       choices: [
         { id: 'a', text: '5 hours' },
         { id: 'b', text: '6-8 hours' },

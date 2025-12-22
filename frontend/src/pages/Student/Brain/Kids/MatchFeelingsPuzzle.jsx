@@ -29,11 +29,11 @@ const MatchFeelingsPuzzle = () => {
 
   // Left side - expressions/actions
   const leftItems = [
-    { id: 1, name: "Smile", emoji: "😊", description: "Happy expression" },
-    { id: 2, name: "Tears", emoji: "😢", description: "Sad expression" },
-    { id: 3, name: "Frown", emoji: "😠", description: "Angry expression" },
-    { id: 4, name: "Jump", emoji: "🎉", description: "Excited action" },
-    { id: 5, name: "Shake", emoji: "😨", description: "Scared action" }
+    { id: 1, name: "Smile",  description: "Happy expression" },
+    { id: 2, name: "Tears",  description: "Sad expression" },
+    { id: 3, name: "Frown",  description: "Angry expression" },
+    { id: 4, name: "Jump",  description: "Excited action" },
+    { id: 5, name: "Shake",  description: "Scared action" }
   ];
 
   // Right side - emotions

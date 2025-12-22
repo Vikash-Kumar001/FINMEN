@@ -55,17 +55,19 @@ const PosterBrainHealth = () => {
     {
       question: 'Which poster best shows "Stay Hydrated for Brain Health"?',
       choices: [
-        { text: "Poster showing water and brain connection", correct: true, emoji: "💧🧠" },
+        
         { text: "Poster showing only soda drinks", correct: false, emoji: "🥤" },
+        { text: "Poster showing water and brain connection", correct: true, emoji: "💧🧠" },
         { text: "Poster showing only food", correct: false, emoji: "🍔" }
       ]
     },
     {
       question: 'Which poster best shows "My Brain Health Plan"?',
       choices: [
-        { text: "Poster showing multiple brain health tips together", correct: true, emoji: "📋🧠" },
+        
         { text: "Poster showing only one activity", correct: false, emoji: "⚽" },
-        { text: "Poster showing only unhealthy habits", correct: false, emoji: "🚫" }
+        { text: "Poster showing only unhealthy habits", correct: false, emoji: "🚫" },
+        { text: "Poster showing multiple brain health tips together", correct: true, emoji: "📋🧠" },
       ]
     }
   ];

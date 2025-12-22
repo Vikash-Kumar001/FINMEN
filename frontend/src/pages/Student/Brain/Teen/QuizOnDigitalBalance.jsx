@@ -57,7 +57,7 @@ const QuizOnDigitalBalance = () => {
   const questions = [
     {
       id: 1,
-      text: "What is digital detox? (a) Time without gadgets, (b) More gadgets). Correct = Time without gadgets.",
+      text: "What is digital detox? ",
       choices: [
         { id: 'a', text: 'Time without gadgets' },
         { id: 'b', text: 'More gadgets' },

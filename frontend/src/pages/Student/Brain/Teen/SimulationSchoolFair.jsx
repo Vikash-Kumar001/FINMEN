@@ -56,7 +56,7 @@ const SimulationSchoolFair = () => {
   const questions = [
     {
       id: 1,
-      text: "Budget ₹500. Choose: (a) Copy poster, (b) Build model. Best = Build model.",
+      text: "Budget ₹500. What's the best approach?",
       options: [
         { id: 'build', text: 'Build model', description: 'Creative and hands-on', isCorrect: true },
         { id: 'copy', text: 'Copy poster', description: 'Unoriginal approach', isCorrect: false },

@@ -31,19 +31,20 @@ const ShoppingListStory = () => {
       id: 1,
       text: "Mom gives you 3 items to buy: milk, bread, eggs. You forget 2. Is this good memory?",
       options: [
-        { 
-          id: "no", 
-          text: "No", 
-          emoji: "❌", 
-          description: "Forgetting items shows poor memory",
-          isCorrect: true
-        },
+        
         { 
           id: "yes", 
           text: "Yes", 
           emoji: "✅", 
           description: "This is not good memory",
           isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "❌", 
+          description: "Forgetting items shows poor memory",
+          isCorrect: true
         },
         { 
           id: "maybe", 
@@ -85,13 +86,7 @@ const ShoppingListStory = () => {
       id: 3,
       text: "What helps improve your memory?",
       options: [
-        { 
-          id: "sleep", 
-          text: "Getting enough sleep", 
-          emoji: "😴", 
-          description: "Sleep helps memory formation",
-          isCorrect: true
-        },
+        
         { 
           id: "stress", 
           text: "Being stressed all the time", 
@@ -105,26 +100,34 @@ const ShoppingListStory = () => {
           emoji: "🍽️", 
           description: "Nutrition is important for memory",
           isCorrect: false
-        }
+        },
+        { 
+          id: "sleep", 
+          text: "Getting enough sleep", 
+          emoji: "😴", 
+          description: "Sleep helps memory formation",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 4,
       text: "You need to remember 5 things. What's a good strategy?",
       options: [
-        { 
-          id: "write", 
-          text: "Write them down or make a list", 
-          emoji: "📝", 
-          description: "Writing helps you remember",
-          isCorrect: true
-        },
+        
         { 
           id: "forget", 
           text: "Try to remember without help", 
           emoji: "🧠", 
           description: "Using tools is better",
           isCorrect: false
+        },
+        { 
+          id: "write", 
+          text: "Write them down or make a list", 
+          emoji: "📝", 
+          description: "Writing helps you remember",
+          isCorrect: true
         },
         { 
           id: "ignore", 

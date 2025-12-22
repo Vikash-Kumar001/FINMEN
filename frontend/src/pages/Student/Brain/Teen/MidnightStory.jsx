@@ -70,42 +70,42 @@ const MidnightStory = () => {
       id: 2,
       text: "What happens when you scroll on your phone until late at night?",
       choices: [
-        { id: 'b', text: 'You sleep better' },
-        { id: 'a', text: 'Sleep quality decreases and you feel tired' },
+        { id: 'a', text: 'You sleep better' },
+        { id: 'b', text: 'Sleep quality decreases and you feel tired' },
         { id: 'c', text: 'It has no effect on sleep' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'Late-night scrolling exposes you to blue light and mental stimulation, both of which interfere with natural sleep and leave you tired!'
     },
     {
       id: 3,
       text: "What's the best practice for phone use at night?",
       choices: [
-        { id: 'b', text: 'Use phone until you fall asleep' },
-        { id: 'c', text: 'Keep scrolling all night' },
-        { id: 'a', text: 'Stop using phone 1 hour before bedtime' }
+        { id: 'a', text: 'Use phone until you fall asleep' },
+        { id: 'b', text: 'Keep scrolling all night' },
+        { id: 'c', text: 'Stop using phone 1 hour before bedtime' }
       ],
-      correct: 'a',
+      correct: 'c',
       explanation: 'Stopping phone use 1 hour before bedtime allows your brain to wind down and promotes better sleep quality!'
     },
     {
       id: 4,
       text: "How does late-night scrolling affect your next day?",
       choices: [
-        { id: 'b', text: 'Increases energy and alertness' },
+        { id: 'a', text: 'Increases energy and alertness' },
+        { id: 'b', text: 'Reduces energy, focus, and productivity' },
         { id: 'c', text: 'Has no effect on the next day' },
-        { id: 'a', text: 'Reduces energy, focus, and productivity' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'Late-night scrolling disrupts sleep, leading to reduced energy, poor focus, and decreased productivity the next day!'
     },
     {
       id: 5,
       text: "What should you do instead of scrolling until 1 AM?",
       choices: [
+        { id: 'a', text: 'Set a phone curfew and engage in relaxing activities' },
         { id: 'b', text: 'Keep scrolling until you\'re exhausted' },
         { id: 'c', text: 'Use phone with bright lights on' },
-        { id: 'a', text: 'Set a phone curfew and engage in relaxing activities' }
       ],
       correct: 'a',
       explanation: 'Setting a phone curfew and doing relaxing activities like reading or meditation helps you wind down and sleep better!'

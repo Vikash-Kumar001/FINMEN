@@ -56,7 +56,7 @@ const GrowthMindsetQuiz = () => {
   const questions = [
     {
       id: 1,
-      text: "Which is growth mindset? (a) \"I can't do it,\" (b) \"I'll improve.\" Correct = \"I'll improve.\"",
+      text: "Which is growth mindset? ",
       choices: [
         { id: 'a', text: '"I\'ll improve"' },
         { id: 'b', text: '"I can\'t do it"' },

@@ -46,8 +46,8 @@ const JournalOfWasteAudit = () => {
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Journal of Waste Audit game completed! Score: ${score}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+    if (gameFinished) {
+      console.log(`🎮 Journal of Waste Audit game completed! Score: ${coins}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       if (nextGameId && window.history && window.history.replaceState) {
         const currentState = window.history.state || {};
         window.history.replaceState({
@@ -56,7 +56,7 @@ const JournalOfWasteAudit = () => {
         }, '');
       }
     }
-  }, [showResult, score, gameId, nextGamePath, nextGameId]);
+  }, [gameFinished, coins, gameId, nextGamePath, nextGameId]);
 
   const stages = [
     { question: 'Write: "Today I generated waste from ___."', minLength: 15 },
@@ -122,7 +122,6 @@ const JournalOfWasteAudit = () => {
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      currentLevel={currentPromptIndex + 1}
       totalLevels={stages.length}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}

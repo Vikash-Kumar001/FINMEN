@@ -55,7 +55,7 @@ const PuzzleOfBalanceHabits = () => {
   // Left items (habits/actions)
   const leftItems = [
     { id: 1, text: "Sleep Early", emoji: "😴" },
-    { id: 2, text: "Midnight Phone", emoji: "📱🌙" },
+    { id: 2, text: "Midnight Phone", emoji: "🌙" },
     { id: 3, text: "Regular Breaks", emoji: "⏸️" },
     { id: 4, text: "Screen All Day", emoji: "📱" },
     { id: 5, text: "Digital Detox", emoji: "🧘" }

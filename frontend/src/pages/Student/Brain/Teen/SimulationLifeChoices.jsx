@@ -56,7 +56,7 @@ const SimulationLifeChoices = () => {
   const questions = [
     {
       id: 1,
-      text: "Fail in sports selection. Options: (a) Quit, (b) Practice harder. Correct = Practice harder.",
+      text: "Fail in sports selection. What's the best response?",
       options: [
         { id: 'practice', text: 'Practice harder', description: 'Shows growth mindset', isCorrect: true },
         { id: 'quit', text: 'Quit', description: 'Gives up', isCorrect: false },

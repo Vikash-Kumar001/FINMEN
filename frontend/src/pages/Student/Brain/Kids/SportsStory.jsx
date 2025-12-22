@@ -119,19 +119,20 @@ const SportsStory = () => {
       id: 3,
       text: "When you feel angry after losing, what should you do?",
       options: [
-        { 
-          id: "breathe", 
-          text: "Take deep breaths and calm down", 
-          emoji: "🌬️", 
-          description: "Calming down helps you think clearly",
-          isCorrect: true
-        },
+        
         { 
           id: "scream", 
           text: "Scream and throw things", 
           emoji: "😱", 
           description: "This makes you more upset",
           isCorrect: false
+        },
+        { 
+          id: "breathe", 
+          text: "Take deep breaths and calm down", 
+          emoji: "🌬️", 
+          description: "Calming down helps you think clearly",
+          isCorrect: true
         },
         { 
           id: "cry", 
@@ -146,13 +147,7 @@ const SportsStory = () => {
       id: 4,
       text: "What's the best way to handle losing?",
       options: [
-        { 
-          id: "learn", 
-          text: "Learn from it and try again", 
-          emoji: "💪", 
-          description: "Every loss teaches you something",
-          isCorrect: true
-        },
+        
         { 
           id: "forget", 
           text: "Forget about it completely", 
@@ -166,7 +161,14 @@ const SportsStory = () => {
           emoji: "😤", 
           description: "Complaining doesn't help",
           isCorrect: false
-        }
+        },
+        { 
+          id: "learn", 
+          text: "Learn from it and try again", 
+          emoji: "💪", 
+          description: "Every loss teaches you something",
+          isCorrect: true
+        },
       ]
     },
     {

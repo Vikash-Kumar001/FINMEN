@@ -31,19 +31,20 @@ const TestStory = () => {
       id: 1,
       text: "Kid fails spelling test. Best response?",
       options: [
-        { 
-          id: "study", 
-          text: "Study and try again", 
-          emoji: "📚", 
-          description: "Learn and practice more",
-          isCorrect: true
-        },
+        
         { 
           id: "give", 
           text: "Give up on spelling", 
           emoji: "🏳️", 
           description: "Stop trying",
           isCorrect: false
+        },
+        { 
+          id: "study", 
+          text: "Study and try again", 
+          emoji: "📚", 
+          description: "Learn and practice more",
+          isCorrect: true
         },
         { 
           id: "blame", 
@@ -58,13 +59,7 @@ const TestStory = () => {
       id: 2,
       text: "Kid gets low score on math. What should they do?",
       options: [
-        { 
-          id: "practice", 
-          text: "Practice more and retake", 
-          emoji: "✏️", 
-          description: "Work harder",
-          isCorrect: true
-        },
+       
         { 
           id: "quit", 
           text: "Quit math class", 
@@ -78,26 +73,34 @@ const TestStory = () => {
           emoji: "😢", 
           description: "Get upset",
           isCorrect: false
-        }
+        },
+         { 
+          id: "practice", 
+          text: "Practice more and retake", 
+          emoji: "✏️", 
+          description: "Work harder",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 3,
       text: "Kid fails science quiz. Best approach?",
       options: [
-        { 
-          id: "review", 
-          text: "Review mistakes and study", 
-          emoji: "🔬", 
-          description: "Learn from errors",
-          isCorrect: true
-        },
+        
         { 
           id: "ignore", 
           text: "Ignore the result", 
           emoji: "😑", 
           description: "Pretend it didn't happen",
           isCorrect: false
+        },
+        { 
+          id: "review", 
+          text: "Review mistakes and study", 
+          emoji: "🔬", 
+          description: "Learn from errors",
+          isCorrect: true
         },
         { 
           id: "angry", 
@@ -112,13 +115,7 @@ const TestStory = () => {
       id: 4,
       text: "Kid doesn't pass reading test. What's right?",
       options: [
-        { 
-          id: "read", 
-          text: "Read more and practice", 
-          emoji: "📖", 
-          description: "Improve skills",
-          isCorrect: true
-        },
+        
         { 
           id: "stop", 
           text: "Stop reading", 
@@ -132,7 +129,14 @@ const TestStory = () => {
           emoji: "📚", 
           description: "Make excuses",
           isCorrect: false
-        }
+        },
+        { 
+          id: "read", 
+          text: "Read more and practice", 
+          emoji: "📖", 
+          description: "Improve skills",
+          isCorrect: true
+        },
       ]
     },
     {

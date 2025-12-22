@@ -57,7 +57,7 @@ const SimulationExamPrep = () => {
   const questions = [
     {
       id: 1,
-      text: "Choices: (a) Study till 3 AM, (b) Sleep 8 hrs + study next day. Correct = Sleep + study.",
+      text: "Choices: (a) Study till 3 AM, (b) Sleep 8 hrs + study next day.",
       options: [
         { id: 'sleep', text: 'Sleep 8 hrs + study next day', description: 'Prioritize rest, then study', isCorrect: true },
         { id: 'study', text: 'Study till 3 AM', description: 'Sacrifice sleep for study', isCorrect: false },

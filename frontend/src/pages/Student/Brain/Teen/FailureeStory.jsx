@@ -93,8 +93,8 @@ const FailureeStory = () => {
       text: "After failing, should you seek feedback?",
       choices: [
         { id: 'b', text: 'No, avoid feedback' },
+        { id: 'a', text: 'Yes, feedback helps you improve' },
         { id: 'c', text: 'Only from friends, not teachers' },
-        { id: 'a', text: 'Yes, feedback helps you improve' }
       ],
       correct: 'a',
       explanation: 'Constructive feedback helps identify areas for improvement and guides your learning journey!'
@@ -103,9 +103,9 @@ const FailureeStory = () => {
       id: 5,
       text: "Have successful people experienced failure?",
       choices: [
+        { id: 'a', text: 'Yes, many successful people failed first' },
         { id: 'b', text: 'No, successful people never fail' },
         { id: 'c', text: 'Only in unimportant areas' },
-        { id: 'a', text: 'Yes, many successful people failed first' }
       ],
       correct: 'a',
       explanation: 'Many successful people, like Thomas Edison and J.K. Rowling, experienced multiple failures before achieving success!'

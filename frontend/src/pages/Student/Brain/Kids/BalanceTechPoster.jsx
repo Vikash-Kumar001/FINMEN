@@ -29,43 +29,43 @@ const BalanceTechPoster = () => {
 
   const stages = [
     {
-      question: 'Which poster best shows "Screens in Balance"?',
+      question: 'Which poster best demonstrates healthy screen time habits?',
       choices: [
-        { text: "Poster: 'Screens in Balance' with monitor and outdoor play", correct: true, emoji: "📱🌳" },
-        { text: "Poster: 'Screens All Day' with only devices", correct: false, emoji: "📱" },
-        { text: "Poster: 'No Screens Ever' with crossed out devices", correct: false, emoji: "🚫" }
+        { text: "Poster showing diverse activities with moderate device usage", correct: true, emoji: "📱🌳" },
+        { text: "Poster filled exclusively with various electronic devices", correct: false, emoji: "📱" },
+        { text: "Poster depicting broken electronics with warning signs", correct: false, emoji: "🚫" }
       ]
     },
     {
-      question: 'Which poster best shows "Balance Your Day"?',
+      question: 'Which poster illustrates effective daily routine management?',
       choices: [
-        { text: "Poster: 'Only Screens' with multiple devices", correct: false, emoji: "📱" },
-        { text: "Poster: 'Balance Your Day' with screen time and nature", correct: true, emoji: "⚖️🌳" },
-        { text: "Poster: 'Screens Forever' with endless scrolling", correct: false, emoji: "📱" }
+        { text: "Poster displaying scheduled blocks for different activities", correct: true, emoji: "⚖️🌳" },
+        { text: "Poster with overlapping chaotic activity schedules", correct: false, emoji: "📱" },
+        { text: "Poster showing only entertainment-focused activities", correct: false, emoji: "📱" }
       ]
     },
     {
-      question: 'Which poster best shows "Tech in Check"?',
+      question: 'Which poster represents responsible technology usage?',
       choices: [
-        { text: "Poster: 'Tech in Check' with limited screen and outdoor fun", correct: true, emoji: "✅🌳" },
-        { text: "Poster: 'More Screens' with increasing devices", correct: false, emoji: "📱" },
-        { text: "Poster: 'Screens Only' with no other activities", correct: false, emoji: "📱" }
+        { text: "Poster balancing digital engagement with physical activities", correct: true, emoji: "✅🌳" },
+        { text: "Poster promoting continuous consumption of digital media", correct: false, emoji: "📱" },
+        { text: "Poster restricting all non-digital recreational options", correct: false, emoji: "📱" }
       ]
     },
     {
-      question: 'Which poster best shows "Screen Smart"?',
+      question: 'Which poster exemplifies mindful digital consumption?',
       choices: [
-        { text: "Poster: 'Unlimited Screens' with no limits", correct: false, emoji: "📱" },
-        { text: "Poster: 'Screen Smart' with balanced tech use", correct: true, emoji: "🧠⚖️" },
-        { text: "Poster: 'Screens 24/7' with constant use", correct: false, emoji: "📱" }
+        { text: "Poster emphasizing quality over quantity in tech use", correct: true, emoji: "🧠⚖️" },
+        { text: "Poster encouraging unlimited unrestricted access", correct: false, emoji: "📱" },
+        { text: "Poster advocating for constant connectivity", correct: false, emoji: "📱" }
       ]
     },
     {
-      question: 'Which poster best shows "Tech Harmony"?',
+      question: 'Which poster showcases integrated lifestyle wellness?',
       choices: [
-        { text: "Poster: 'Tech Harmony' with screens and activities balanced", correct: true, emoji: "🎵⚖️" },
-        { text: "Poster: 'Only Screens' with devices only", correct: false, emoji: "📱" },
-        { text: "Poster: 'Screens Always' with no breaks", correct: false, emoji: "📱" }
+        { text: "Poster harmonizing technological and non-tech elements", correct: true, emoji: "🎵⚖️" },
+        { text: "Poster focusing solely on digital achievements", correct: false, emoji: "📱" },
+        { text: "Poster eliminating all traditional activities", correct: false, emoji: "📱" }
       ]
     }
   ];
@@ -95,7 +95,7 @@ const BalanceTechPoster = () => {
 
   return (
     <GameShell
-      title="Poster: Balance Tech"
+      title="Poster: Balance Tech Challenge"
       subtitle={!showResult ? `Stage ${currentStage + 1} of ${stages.length}` : "Poster Complete!"}
       score={score}
       currentLevel={currentStage + 1}

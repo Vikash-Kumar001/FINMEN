@@ -6,7 +6,7 @@ import { getGameDataById } from "../../../../utils/getGameData";
 import { Zap, Eye, Brain, Coffee, Target } from 'lucide-react';
 
 const TOTAL_ROUNDS = 5;
-const ROUND_TIME = 8;
+const ROUND_TIME = 10;
 
 const ReflexQuickAttention = () => {
   const location = useLocation();
@@ -27,63 +27,77 @@ const ReflexQuickAttention = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   
   const [gameState, setGameState] = useState("ready"); // ready, playing, finished
-  const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [answered, setAnswered] = useState(false);
   const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
   const questions = [
     {
       id: 1,
-      question: "Is 'Quick Focus' a good attention skill?",
-      action: "Quick Focus",
-      type: "good",
-      emoji: "⚡",
-      icon: <Zap className="w-8 h-8" />
+      question: "Which is a good attention skill?",
+      correctAnswer: "Quick Focus",
+      options: [
+        { text: "Quick Focus", isCorrect: true, emoji: "⚡" },
+        { text: "Getting Distracted", isCorrect: false, emoji: "😵" },
+        { text: "Losing Concentration", isCorrect: false, emoji: "💭" },
+        { text: "Daydreaming", isCorrect: false, emoji: "💭" }
+      ]
     },
     {
       id: 2,
-      question: "Is 'Getting Distracted' a good attention skill?",
-      action: "Getting Distracted",
-      type: "bad",
-      emoji: "😵",
-      icon: <Coffee className="w-8 h-8" />
+      question: "Which is a bad attention skill?",
+      correctAnswer: "Getting Distracted",
+      options: [
+        { text: "Staying Alert", isCorrect: false, emoji: "👁️" },
+        { text: "Getting Distracted", isCorrect: true, emoji: "😵" },
+        { text: "Quick Response", isCorrect: false, emoji: "🎯" },
+        { text: "Focused Listening", isCorrect: false, emoji: "👂" }
+      ]
     },
     {
       id: 3,
-      question: "Is 'Staying Alert' a good attention skill?",
-      action: "Staying Alert",
-      type: "good",
-      emoji: "👁️",
-      icon: <Eye className="w-8 h-8" />
+      question: "Which helps you pay better attention?",
+      correctAnswer: "Staying Alert",
+      options: [
+        { text: "Multitasking", isCorrect: false, emoji: "🔄" },
+        { text: "Staying Alert", isCorrect: true, emoji: "👁️" },
+        { text: "Fidgeting", isCorrect: false, emoji: "👋" },
+        { text: "Interrupting", isCorrect: false, emoji: "🗣️" }
+      ]
     },
     {
       id: 4,
-      question: "Is 'Losing Concentration' a good attention skill?",
-      action: "Losing Concentration",
-      type: "bad",
-      emoji: "💭",
-      icon: <Coffee className="w-8 h-8" />
+      question: "Which should you avoid for better attention?",
+      correctAnswer: "Losing Concentration",
+      options: [
+        { text: "Taking Notes", isCorrect: false, emoji: "📝" },
+        { text: "Asking Questions", isCorrect: false, emoji: "❓" },
+        { text: "Losing Concentration", isCorrect: true, emoji: "💭" },
+        { text: "Active Listening", isCorrect: false, emoji: "👂" }
+      ]
     },
     {
       id: 5,
-      question: "Is 'Quick Response' a good attention skill?",
-      action: "Quick Response",
-      type: "good",
-      emoji: "🎯",
-      icon: <Target className="w-8 h-8" />
+      question: "Which is a helpful attention skill?",
+      correctAnswer: "Quick Response",
+      options: [
+        { text: "Ignoring Instructions", isCorrect: false, emoji: "🙉" },
+        { text: "Quick Response", isCorrect: true, emoji: "🎯" },
+        { text: "Rushing Without Thinking", isCorrect: false, emoji: "🏃" },
+        { text: "Tuning Out", isCorrect: false, emoji: "🔇" }
+      ]
     }
   ];
 
-  const handleTimeUp = useCallback(() => {
-    if (currentRound < TOTAL_ROUNDS) {
-      setCurrentRound(prev => prev + 1);
-    } else {
-      setGameState("finished");
-    }
+  // Update ref when currentRound changes
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
   }, [currentRound]);
 
+  // Reset timer when round changes
   useEffect(() => {
     if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
       setTimeLeft(ROUND_TIME);
@@ -91,34 +105,61 @@ const ReflexQuickAttention = () => {
     }
   }, [currentRound, gameState]);
 
-  // Timer effect
-  useEffect(() => {
-    if (gameState === "playing" && !answered && timeLeft > 0 && currentRound > 0) {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
+  // Handle time up - move to next question or show results
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
+    resetFeedback();
 
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          const newTime = prev - 1;
-          if (newTime <= 0) {
-            if (timerRef.current) {
-              clearInterval(timerRef.current);
-              timerRef.current = null;
-            }
-            handleTimeUp();
-            return 0;
-          }
-          return newTime;
-        });
-      }, 1000);
-    } else {
+    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
+
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 1000);
+  }, [resetFeedback]);
+
+  // Timer effect - countdown from 10 seconds for each question
+  useEffect(() => {
+    if (gameState !== "playing") {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
+      return;
     }
+
+    // Check if game should be finished
+    if (currentRoundRef.current > TOTAL_ROUNDS) {
+      setGameState("finished");
+      return;
+    }
+
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // Start countdown timer
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          // Time's up for this round
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          handleTimeUp();
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
 
     return () => {
       if (timerRef.current) {
@@ -126,7 +167,7 @@ const ReflexQuickAttention = () => {
         timerRef.current = null;
       }
     };
-  }, [gameState, answered, timeLeft, currentRound, handleTimeUp]);
+  }, [gameState, handleTimeUp]);
 
   const startGame = () => {
     setGameState("playing");
@@ -137,72 +178,80 @@ const ReflexQuickAttention = () => {
     resetFeedback();
   };
 
-  const handleAnswer = (answerType) => {
+  const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
-    
+
+    // Clear the timer immediately when user answers
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    
+
     setAnswered(true);
     resetFeedback();
-    
-    const currentQuestion = questions[currentRound - 1];
-    const isCorrect = answerType === currentQuestion.type;
-    const isLastQuestion = currentRound === TOTAL_ROUNDS;
-    
+
+    const isCorrect = option.isCorrect;
+    const isLastQuestion = currentRound === questions.length;
+
     if (isCorrect) {
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    
+
+    // Move to next round or show results after a short delay
     setTimeout(() => {
       if (isLastQuestion) {
         setGameState("finished");
       } else {
         setCurrentRound((prev) => prev + 1);
+        setAnswered(false);
       }
     }, 500);
   };
 
+  const finalScore = score;
   const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Quick Attention"
-      score={score}
-      subtitle={gameState === "playing" ? `Round ${currentRound} of ${TOTAL_ROUNDS}` : gameState === "finished" ? "Game Complete!" : "Test your quick attention reflexes"}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={gameState === "finished"}
-      gameId={gameId}
-      gameType="brain"
-      totalLevels={TOTAL_ROUNDS}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your attention reflexes!` : "Test your attention reflexes!"}
       currentLevel={currentRound}
-      maxScore={TOTAL_ROUNDS}
-      showConfetti={gameState === "finished" && score >= 3}
+      totalLevels={TOTAL_ROUNDS}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="brain"
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
-      <div className="space-y-8">
+      <div className="text-center text-white space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h3 className="text-2xl font-bold text-white mb-4">Test Your Quick Attention!</h3>
-            <p className="text-white/80 mb-6 text-lg">Tap quickly for good attention skills, avoid bad ones</p>
+            <div className="text-5xl mb-6">⚡</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Ready to Test Your Attention Skills?</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Identify good and bad attention skills.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
             <button
               onClick={startGame}
-              className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105"
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
             >
               Start Game
             </button>
-            <p className="text-white/60 mt-4">You'll have {ROUND_TIME} seconds per round</p>
           </div>
         )}
 
         {gameState === "playing" && currentQuestion && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <div className="text-white">
                 <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
@@ -211,7 +260,7 @@ const ReflexQuickAttention = () => {
                 <span className="text-white">Time:</span> {timeLeft}s
               </div>
               <div className="text-white">
-                <span className="font-bold">Score:</span> {score}/{TOTAL_ROUNDS}
+                <span className="font-bold">Score:</span> {score}
               </div>
             </div>
 
@@ -219,45 +268,18 @@ const ReflexQuickAttention = () => {
               <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
                 {currentQuestion.question}
               </h3>
-              
-              <div className="mb-8">
-                <div className="inline-block p-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl shadow-lg">
-                  <div className="text-white text-6xl mb-4">
-                    {currentQuestion.emoji}
-                  </div>
-                  <div className="text-3xl font-bold text-white">
-                    {currentQuestion.action}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button
-                  onClick={() => handleAnswer('good')}
-                  disabled={answered}
-                  className="p-6 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex flex-col items-center shadow-lg"
-                >
-                  <Zap className="w-8 h-8 mb-2" />
-                  <span className="font-bold text-lg">Good Skill!</span>
-                </button>
-                
-                <button
-                  onClick={() => handleAnswer('neutral')}
-                  disabled={answered}
-                  className="p-6 bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white rounded-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex flex-col items-center shadow-lg"
-                >
-                  <Brain className="w-8 h-8 mb-2" />
-                  <span className="font-bold text-lg">Neutral</span>
-                </button>
-                
-                <button
-                  onClick={() => handleAnswer('bad')}
-                  disabled={answered}
-                  className="p-6 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex flex-col items-center shadow-lg"
-                >
-                  <Coffee className="w-8 h-8 mb-2" />
-                  <span className="font-bold text-lg">Bad Skill!</span>
-                </button>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

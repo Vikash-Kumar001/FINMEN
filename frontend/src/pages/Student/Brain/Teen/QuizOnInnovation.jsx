@@ -56,7 +56,7 @@ const QuizOnInnovation = () => {
   const questions = [
     {
       id: 1,
-      text: "Who is an innovator? (a) Creates new ideas, (b) Copies, (c) Quits). Correct = Creates new ideas.",
+      text: "Who is an innovator?",
       choices: [
         { id: 'a', text: 'Creates new ideas' },
         { id: 'b', text: 'Copies others' },

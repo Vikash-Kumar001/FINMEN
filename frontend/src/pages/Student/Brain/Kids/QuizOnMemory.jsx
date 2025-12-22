@@ -31,19 +31,20 @@ const QuizOnMemory = () => {
       id: 1,
       text: "What helps memory?",
       options: [
-        { 
-          id: "a", 
-          text: "Sleep", 
-          emoji: "😴", 
-          description: "Sleep helps memory formation",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Skipping food", 
           emoji: "🍽️", 
           description: "Nutrition is important for memory",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Sleep", 
+          emoji: "😴", 
+          description: "Sleep helps memory formation",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -112,13 +113,7 @@ const QuizOnMemory = () => {
       id: 4,
       text: "How can you remember things better?",
       options: [
-        { 
-          id: "a", 
-          text: "Write them down and review", 
-          emoji: "📝", 
-          description: "Writing and reviewing helps",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Never write anything", 
@@ -132,26 +127,34 @@ const QuizOnMemory = () => {
           emoji: "😴", 
           description: "This won't help",
           isCorrect: false
-        }
+        },
+        { 
+          id: "a", 
+          text: "Write them down and review", 
+          emoji: "📝", 
+          description: "Writing and reviewing helps",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 5,
       text: "Does exercise help memory?",
       options: [
-        { 
-          id: "a", 
-          text: "Yes, exercise improves brain function", 
-          emoji: "💪", 
-          description: "Exercise benefits memory",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "No, exercise doesn't help", 
           emoji: "❌", 
           description: "Exercise does help",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Yes, exercise improves brain function", 
+          emoji: "💪", 
+          description: "Exercise benefits memory",
+          isCorrect: true
         },
         { 
           id: "c", 

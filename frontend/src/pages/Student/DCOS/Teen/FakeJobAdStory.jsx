@@ -26,135 +26,138 @@ const FakeJobAdStory = () => {
   const questions = [
     {
       id: 1,
-      text: "A job ad says 'Pay ₹5000 for a guaranteed job.' What should you do?",
+      text: "A job ad promises 'Work from home, flexible hours, ₹40,000-80,000/month' but requires you to purchase a 'starter kit' worth ₹15,000. What should you do?",
       options: [
+       
         { 
-          id: "scam-real", 
-          text: "It's a scam - real jobs don't ask for payment", 
+          id: "buy-starter-kit", 
+          text: "Buy the starter kit to start the job", 
+          emoji: "💰", 
+          description: "Invest in the starter kit to begin working",
+          isCorrect: false
+        },
+         { 
+          id: "scam-starter-kit", 
+          text: "It's a scam - be wary of starter kit requirements", 
           emoji: "🚫", 
-          description: "Recognize this is a scam and avoid it",
+          description: "Legitimate jobs don't require purchasing starter kits",
           isCorrect: true
         },
         { 
-          id: "pay-opportunity", 
-          text: "Pay the money - it's a good opportunity", 
-          emoji: "💰", 
-          description: "Pay to secure this job opportunity",
-          isCorrect: false
-        },
-        { 
-          id: "ask-info", 
-          text: "Ask for more information first", 
+          id: "inquire-more", 
+          text: "Inquire more about the starter kit details", 
           emoji: "❓", 
-          description: "Request more details before deciding",
+          description: "Learn more about what the starter kit includes",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "An ad promises 'Easy money job - just pay ₹3000 to start.' What's your response?",
+      text: "You see an ad for a 'Social Media Manager' role offering ₹60,000/month with 'no experience required' but asks for a ₹25,000 'training fee'. How do you respond?",
       options: [
         { 
-          id: "ask-info", 
-          text: "Ask for more information first", 
-          emoji: "❓", 
-          description: "Request more details before deciding",
-          isCorrect: false
-        },
-        { 
-          id: "scam-ignore-ad", 
-          text: "It's a scam - ignore it", 
+          id: "training-fee-scam", 
+          text: "It's likely a scam - be cautious of training fees", 
           emoji: "🚫", 
-          description: "Recognize it's a scam and ignore the ad",
+          description: "Legitimate employers don't charge for training",
           isCorrect: true
         },
         { 
-          id: "pay-start-job", 
-          text: "Pay to get started", 
-          emoji: "💰", 
-          description: "Pay the money to begin the job",
+          id: "pay-training", 
+          text: "Pay the training fee to get the job", 
+          emoji: "💳", 
+          description: "Invest in training to secure the position",
+          isCorrect: false
+        },
+        { 
+          id: "negotiate-fee", 
+          text: "Try to negotiate a lower training fee", 
+          emoji: "🤝", 
+          description: "See if the training fee can be reduced",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "A job posting asks you to pay ₹2000 as 'application fee.' What do you do?",
+      text: "An ad claims you can earn ₹1,00,000/month as a 'Data Entry Operator' working 2 hours daily. They ask for ₹8,000 as 'processing fee' to begin. What is the wisest action?",
       options: [
+       
         { 
-          id: "check-legitimate", 
-          text: "Check if it's legitimate first", 
+          id: "pay-processing", 
+          text: "Pay the processing fee to start", 
+          emoji: "💸", 
+          description: "Pay the fee to get started quickly",
+          isCorrect: false
+        },
+        { 
+          id: "verify-company", 
+          text: "Verify the company independently", 
           emoji: "🔍", 
-          description: "Verify the company before making payment",
+          description: "Research the company before proceeding",
           isCorrect: false
         },
-        { 
-          id: "pay-apply", 
-          text: "Pay the fee to apply", 
-          emoji: "💰", 
-          description: "Pay the application fee to submit your application",
-          isCorrect: false
-        },
-        { 
-          id: "scam-no-fee", 
-          text: "It's a scam - real jobs don't charge fees", 
-          emoji: "🚫", 
-          description: "Understand that legitimate jobs don't charge application fees",
+         { 
+          id: "too-good-scam", 
+          text: "It's a scam - pay too good to be true", 
+          emoji: "⚠️", 
+          description: "High pay for minimal work is a red flag",
           isCorrect: true
-        }
+        },
       ]
     },
     {
       id: 4,
-      text: "An ad promises 'Guaranteed job if you pay ₹5000.' What should you do?",
+      text: "A company offers you a 'Project Manager' role with ₹75,000/month and asks for your bank account details and PAN card upfront for 'verification.' What should you do?",
       options: [
         { 
-          id: "ask-company-info", 
-          text: "Ask for company details", 
-          emoji: "❓", 
-          description: "Request information about the company",
-          isCorrect: false
-        },
-        { 
-          id: "pay-guarantee", 
-          text: "Pay for guaranteed job", 
-          emoji: "💰", 
-          description: "Pay to secure the guaranteed position",
-          isCorrect: false
-        },
-        { 
-          id: "scam-no-guarantee", 
-          text: "It's a scam - no job is guaranteed", 
-          emoji: "🚫", 
-          description: "Recognize that no legitimate job can be guaranteed",
+          id: "sensitive-info-scam", 
+          text: "Be cautious - never share sensitive details upfront", 
+          emoji: "🔒", 
+          description: "Legitimate companies don't ask for sensitive info early",
           isCorrect: true
+        },
+        { 
+          id: "provide-details", 
+          text: "Provide the details for verification", 
+          emoji: "📋", 
+          description: "Share details to complete the verification",
+          isCorrect: false
+        },
+        { 
+          id: "partial-details", 
+          text: "Provide only basic details first", 
+          emoji: "📝", 
+          description: "Share minimal information initially",
+          isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "A post offers 'Work from home - pay ₹4000 to get started.' What's the right action?",
+      text: "A 'Digital Marketing' job ad promises ₹50,000/month and asks you to pay ₹12,000 for 'company equipment' that you'll supposedly get back after 3 months. What's your approach?",
       options: [
+        
         { 
-          id: "scam-jobs-pay", 
-          text: "It's a scam - real jobs pay you, not the other way", 
-          emoji: "🚫", 
-          description: "Understand that legitimate jobs pay employees, not the reverse",
-          isCorrect: true
-        },
-        { 
-          id: "share-others", 
-          text: "Share with others", 
-          emoji: "📤", 
-          description: "Share the opportunity with others",
+          id: "pay-equipment", 
+          text: "Pay for the equipment with refund promise", 
+          emoji: "💳", 
+          description: "Invest in equipment with refund guarantee",
           isCorrect: false
         },
         { 
-          id: "pay-start-work", 
-          text: "Pay to start working", 
-          emoji: "💰", 
-          description: "Pay the money to begin working from home",
+          id: "equipment-payment-scam", 
+          text: "It's a scam - be wary of upfront equipment payments", 
+          emoji: "📦", 
+          description: "Real employers provide equipment at no cost",
+          isCorrect: true
+        },
+        { 
+          id: "buy-own-equip", 
+          text: "Buy your own equipment instead", 
+          emoji: "🛒", 
+          description: "Purchase your own equipment for the role",
           isCorrect: false
         }
       ]

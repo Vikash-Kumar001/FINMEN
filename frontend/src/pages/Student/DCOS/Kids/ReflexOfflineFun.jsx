@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -8,16 +8,22 @@ const TOTAL_ROUNDS = 5;
 const ROUND_TIME = 10;
 
 const ReflexOfflineFun = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "dcos-kids-95";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("dcos-kids-95");
+  const gameId = gameData?.id || "dcos-kids-95";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for ReflexOfflineFun, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1; // 1 coin per question
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5; // Total coins for all questions
+  const totalXp = gameData?.xp || location.state?.totalXp || 10; // Total XP for all questions
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   
   const [gameState, setGameState] = useState("ready"); // ready, playing, finished
@@ -31,58 +37,83 @@ const ReflexOfflineFun = () => {
   const questions = [
     {
       id: 1,
-      question: "Cartoon says: 'Next episode starting in 5 seconds!' 📺 - What should you do?",
-      correctAnswer: "Play Outside",
+      question: "You've been playing video games for two hours. What should you do next?",
+      emoji: "🎮",
+      correctAnswer: "Take a break and go outside",
       options: [
-        { text: "Play Outside", isCorrect: true, emoji: "🏃‍♀️" },
-        { text: "Keep Watching", isCorrect: false, emoji: "📺" },
-        { text: "Watch just one more", isCorrect: false, emoji: "⏰" },
-        { text: "Set timer for later", isCorrect: false, emoji: "⏱️" }
-      ]
+        { text: "Play for another hour", isCorrect: false },
+        { text: "Take a break and go outside", isCorrect: true },
+        { text: "Skip dinner to keep playing", isCorrect: false },
+        { text: "Ignore your parents calling you", isCorrect: false }
+      ],
+      feedback: {
+        correct: "Excellent! Taking breaks and going outside is important for your health!",
+        incorrect: "Remember: It's important to take regular breaks and spend time outdoors."
+      }
     },
     {
       id: 2,
-      question: "A friend texts: 'Let's play outside!' ⚽ - What should you do?",
-      correctAnswer: "Play Outside",
+      question: "Your friends invite you to play soccer in the park. What should you do?",
+      emoji: "⚽",
+      correctAnswer: "Go play soccer with your friends",
       options: [
-        { text: "Play Outside", isCorrect: true, emoji: "🏃‍♀️" },
-        { text: "Keep Watching", isCorrect: false, emoji: "📺" },
-        { text: "Reply later", isCorrect: false, emoji: "💬" },
-        { text: "Ignore the text", isCorrect: false, emoji: "😴" }
-      ]
+        { text: "Tell them to come to your house instead", isCorrect: false },
+        { text: "Say you're too busy gaming", isCorrect: false },
+        { text: "Ask them to play online games instead", isCorrect: false },
+        { text: "Go play soccer with your friends", isCorrect: true },
+      ],
+      feedback: {
+        correct: "Great choice! Playing sports with friends is good for your body and mind!",
+        incorrect: "Playing sports and activities outdoors with friends is a healthy choice."
+      }
     },
     {
       id: 3,
-      question: "Cartoon: 'Watch our behind-the-scenes special!' 🎬 - What should you do?",
-      correctAnswer: "Play Outside",
+      question: "You have free time after finishing homework. What's the best activity?",
+      emoji: "⏰",
+      correctAnswer: "Go for a bike ride or walk",
       options: [
-        { text: "Play Outside", isCorrect: true, emoji: "🏃‍♀️" },
-        { text: "Keep Watching", isCorrect: false, emoji: "📺" },
-        { text: "Watch just this one", isCorrect: false, emoji: "👀" },
-        { text: "Save for later", isCorrect: false, emoji: "💾" }
-      ]
+        { text: "Spend all time on your tablet", isCorrect: false },
+        { text: "Watch TV all day", isCorrect: false },
+        { text: "Go for a bike ride or walk", isCorrect: true },
+        { text: "Skip physical activity today", isCorrect: false }
+      ],
+      feedback: {
+        correct: "Perfect! Physical activity keeps you healthy and energized!",
+        incorrect: "Physical activities like walking or biking are important for your health."
+      }
     },
     {
       id: 4,
-      question: "Cartoon: 'This is the last episode of the day!' 🎞️ - What should you do?",
-      correctAnswer: "Keep Watching",
+      question: "It's a beautiful sunny day. What should you do during your break?",
+      emoji: "☀️",
+      correctAnswer: "Go outside and enjoy the fresh air",
       options: [
-        { text: "Play Outside", isCorrect: false, emoji: "🏃‍♀️" },
-        { text: "Keep Watching", isCorrect: true, emoji: "📺" },
-        { text: "Turn it off", isCorrect: false, emoji: "🚫" },
-        { text: "Skip it", isCorrect: false, emoji: "⏭️" }
-      ]
+        { text: "Go outside and enjoy the fresh air", isCorrect: true },
+        { text: "Stay inside and use your phone", isCorrect: false },
+        { text: "Keep watching videos indoors", isCorrect: false },
+        { text: "Play video games all day", isCorrect: false }
+      ],
+      feedback: {
+        correct: "Well done! Fresh air and sunshine are great for your wellbeing!",
+        incorrect: "Going outside for fresh air and sunshine is beneficial for your health."
+      }
     },
     {
       id: 5,
-      question: "Mom says: 'It's sunny outside, come play!' 🌞 - What should you do?",
-      correctAnswer: "Play Outside",
+      question: "Your family is planning a hiking trip this weekend. What should you do?",
+      emoji: "🥾",
+      correctAnswer: "Join the hiking trip with your family",
       options: [
-        { text: "Play Outside", isCorrect: true, emoji: "🏃‍♀️" },
-        { text: "Keep Watching", isCorrect: false, emoji: "📺" },
-        { text: "Finish episode first", isCorrect: false, emoji: "⏰" },
-        { text: "Ignore mom", isCorrect: false, emoji: "😶" }
-      ]
+        { text: "Stay home and game instead", isCorrect: false },
+        { text: "Join the hiking trip with your family", isCorrect: true },
+        { text: "Ask to bring your tablet on the trip", isCorrect: false },
+        { text: "Say you're too tired for outdoor activities", isCorrect: false }
+      ],
+      feedback: {
+        correct: "Excellent! Family outdoor activities create great memories and keep you active!",
+        incorrect: "Outdoor family activities are fun and important for your physical health."
+      }
     }
   ];
 
@@ -148,10 +179,11 @@ const ReflexOfflineFun = () => {
     setAnswered(true);
     resetFeedback();
     
+    const currentQuestion = questions[currentRound - 1];
     const isCorrect = option.isCorrect;
     
     if (isCorrect) {
-      setScore((prev) => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
@@ -169,22 +201,29 @@ const ReflexOfflineFun = () => {
   const finalScore = score;
 
   const currentQuestion = questions[currentRound - 1];
+  
+  const handleNext = () => {
+    navigate("/games/dcos/kids");
+  };
 
   return (
     <GameShell
       title="Reflex Offline Fun"
       subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your offline fun reflexes!` : "Test your offline fun reflexes!"}
-      currentLevel={currentRound}
-      totalLevels={TOTAL_ROUNDS}
-      coinsPerLevel={coinsPerLevel}
+      onNext={handleNext}
+      nextEnabled={gameState === "finished"}
       showGameOver={gameState === "finished"}
-      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
       score={finalScore}
       gameId={gameId}
       gameType="dcos"
-      maxScore={TOTAL_ROUNDS}
+      totalLevels={TOTAL_ROUNDS}
+      currentLevel={currentRound}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
+      flashPoints={flashPoints}
+      backPath="/games/dcos/kids"
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={TOTAL_ROUNDS} // Max score is total number of questions (all correct)
+      coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
       <div className="text-center text-white space-y-8">
@@ -227,6 +266,10 @@ const ReflexOfflineFun = () => {
                 {currentQuestion.question}
               </h3>
               
+              <div className="bg-gray-800/50 rounded-xl p-12 mb-6 flex justify-center items-center">
+                <div className="text-9xl animate-pulse">{currentQuestion.emoji}</div>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentQuestion.options.map((option, index) => (
                   <button
@@ -235,10 +278,41 @@ const ReflexOfflineFun = () => {
                     disabled={answered}
                     className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                    {option.text}
                   </button>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+        
+        {gameState === "finished" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <h2 className="text-3xl font-bold text-white mb-4">Game Over!</h2>
+            <p className="text-xl text-white/80 mb-2">Your final score: <span className="text-yellow-400 font-bold">{finalScore}</span>/{TOTAL_ROUNDS}</p>
+            <p className="text-white/80 mb-6">You earned {finalScore} coins!</p>
+            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl p-4 border border-white/10">
+              <h3 className="text-lg font-semibold text-white mb-2">How did you do?</h3>
+              <p className="text-white/80">
+                {finalScore >= 4 ? "Excellent job! You know how to balance screen time with outdoor fun!" : 
+                 finalScore >= 3 ? "Good work! Keep learning about offline fun activities!" : 
+                 "Keep practicing good habits with screen time and outdoor activities!"}
+              </p>
+            </div>
+            
+            <div className="flex justify-center gap-4 mt-6">
+              <button
+                onClick={startGame}
+                className="bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-full transition-all"
+              >
+                Play Again
+              </button>
+              <button
+                onClick={handleNext}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-full transition-all shadow-lg"
+              >
+                Next Game
+              </button>
             </div>
           </div>
         )}

@@ -29,7 +29,7 @@ const SuccessStorySimulation = () => {
         { 
           id: "balance", 
           text: "Exercise, study, then limited tech", 
-          emoji: "✅", 
+          emoji: "🏋️‍♂️📚", 
           description: "Balance activities wisely",
           isCorrect: true
         },
@@ -45,6 +45,13 @@ const SuccessStorySimulation = () => {
           text: "Skip everything, just relax", 
           emoji: "😴", 
           description: "Don't do anything",
+          isCorrect: false
+        },
+        { 
+          id: "plan-morning", 
+          text: "Make a morning schedule with priorities", 
+          emoji: "📅", 
+          description: "Plan your morning activities",
           isCorrect: false
         }
       ]
@@ -63,7 +70,7 @@ const SuccessStorySimulation = () => {
         { 
           id: "study-first", 
           text: "Study first, tech as reward", 
-          emoji: "✅", 
+          emoji: "📚", 
           description: "Prioritize studies, then tech",
           isCorrect: true
         },
@@ -72,6 +79,13 @@ const SuccessStorySimulation = () => {
           text: "Just use tech, study later", 
           emoji: "😑", 
           description: "Use tech first",
+          isCorrect: false
+        },
+        { 
+          id: "study-focused", 
+          text: "Focus only on studying, no distractions", 
+          emoji: "🎯", 
+          description: "Complete focus on studies",
           isCorrect: false
         }
       ]
@@ -88,23 +102,23 @@ const SuccessStorySimulation = () => {
           isCorrect: false
         },
         { 
-          id: "both-same", 
+          id: "both-simultaneously", 
           text: "Do both at the same time", 
-          emoji: "😐", 
+          emoji: "🤔", 
           description: "Try to do both simultaneously",
           isCorrect: false
         },
         { 
           id: "practice-first", 
           text: "Go to practice, tech after", 
-          emoji: "✅", 
+          emoji: "⚽", 
           description: "Prioritize practice",
           isCorrect: true
         },
         { 
-          id: "both-same", 
-          text: "Do both at the same time", 
-          emoji: "😐", 
+          id: "both-together", 
+          text: "Do both together", 
+          emoji: "🤷", 
           description: "Try to do both together",
           isCorrect: false
         }
@@ -121,20 +135,28 @@ const SuccessStorySimulation = () => {
           description: "Spend evening on tech only",
           isCorrect: false
         },
-        { 
-          id: "mix-activities", 
-          text: "Mix tech with family time and hobbies", 
-          emoji: "✅", 
-          description: "Balance tech with other activities",
-          isCorrect: true
-        },
+       
         { 
           id: "ignore", 
           text: "Ignore everything else", 
           emoji: "😑", 
           description: "Focus only on tech",
           isCorrect: false
-        }
+        },
+        { 
+          id: "family-first", 
+          text: "Spend time with family first, then tech", 
+          emoji: "👨‍👩‍👧‍👦", 
+          description: "Family time is priority",
+          isCorrect: false
+        },
+         { 
+          id: "mix-activities", 
+          text: "Mix tech with family time and hobbies", 
+          emoji: "🤗", 
+          description: "Balance tech with other activities",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -151,7 +173,7 @@ const SuccessStorySimulation = () => {
         { 
           id: "prioritize", 
           text: "Prioritize important tasks, limit tech", 
-          emoji: "✅", 
+          emoji: "🧠", 
           description: "Balance priorities wisely",
           isCorrect: true
         },
@@ -160,6 +182,13 @@ const SuccessStorySimulation = () => {
           text: "Do everything randomly", 
           emoji: "😐", 
           description: "No planning",
+          isCorrect: false
+        },
+        { 
+          id: "balanced-approach", 
+          text: "Take a balanced approach to all activities", 
+          emoji: "⚖️", 
+          description: "Balance all activities equally",
           isCorrect: false
         }
       ]

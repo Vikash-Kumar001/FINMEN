@@ -54,10 +54,10 @@ const ReflexFairPlay = () => {
       question: "You and your friend both want the last cookie. What's fair?",
       correctAnswer: "Share it equally",
       options: [
-        { text: "Share it equally", isCorrect: true, emoji: "🍪" },
         { text: "Take it for yourself", isCorrect: false, emoji: "😏" },
         { text: "Hide it from your friend", isCorrect: false, emoji: "🙈" },
-        { text: "Eat it quickly", isCorrect: false, emoji: "😋" }
+        { text: "Eat it quickly", isCorrect: false, emoji: "😋" },
+        { text: "Share it equally", isCorrect: true, emoji: "🍪" },
       ]
     },
     {
@@ -76,8 +76,8 @@ const ReflexFairPlay = () => {
       question: "Your team is winning by a lot. What's the fair thing to do?",
       correctAnswer: "Play fairly and let everyone participate",
       options: [
-        { text: "Play unfairly to make it harder", isCorrect: false, emoji: "😈" },
         { text: "Play fairly and let everyone participate", isCorrect: true, emoji: "⚖️" },
+        { text: "Play unfairly to make it harder", isCorrect: false, emoji: "😈" },
         { text: "Stop playing", isCorrect: false, emoji: "🛑" },
         { text: "Make fun of the losing team", isCorrect: false, emoji: "😅" }
       ]
@@ -88,8 +88,8 @@ const ReflexFairPlay = () => {
       correctAnswer: "Politely remind them to wait their turn",
       options: [
         { text: "Push them out of line", isCorrect: false, emoji: "👊" },
-        { text: "Politely remind them to wait their turn", isCorrect: true, emoji: "🙋" },
         { text: "Cut in line too", isCorrect: false, emoji: "🏃" },
+        { text: "Politely remind them to wait their turn", isCorrect: true, emoji: "🙋" },
         { text: "Ignore it", isCorrect: false, emoji: "😐" }
       ]
     },

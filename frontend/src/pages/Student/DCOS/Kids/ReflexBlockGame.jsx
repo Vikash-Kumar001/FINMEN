@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -8,16 +8,22 @@ const TOTAL_ROUNDS = 5;
 const ROUND_TIME = 10;
 
 const ReflexBlockGame = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "dcos-kids-49";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("dcos-kids-49");
+  const gameId = gameData?.id || "dcos-kids-49";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for ReflexBlockGame, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1; // 1 coin per question
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5; // Total coins for all questions
+  const totalXp = gameData?.xp || location.state?.totalXp || 10; // Total XP for all questions
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   
   const [gameState, setGameState] = useState("ready"); // ready, playing, finished
@@ -31,58 +37,83 @@ const ReflexBlockGame = () => {
   const questions = [
     {
       id: 1,
-      question: "You see a Spam Call! 📞 - What should you do?",
-      correctAnswer: "Block",
+      question: "What should you do when you receive a suspicious email asking for your password?",
+      emoji: "📧",
+      correctAnswer: "Delete it immediately",
       options: [
-        { text: "Block", isCorrect: true, emoji: "🚫" },
-        { text: "Ignore", isCorrect: false, emoji: "✅" },
-        { text: "Answer it", isCorrect: false, emoji: "📞" },
-        { text: "Call back", isCorrect: false, emoji: "🔄" }
-      ]
+        { text: "Reply to the email", isCorrect: false },
+        { text: "Click on any links", isCorrect: false },
+        { text: "Forward to friends", isCorrect: false },
+        { text: "Delete it immediately", isCorrect: true }
+      ],
+      feedback: {
+        correct: "Excellent! Never share your password with anyone, even if the email looks official!",
+        incorrect: "Remember: legitimate organizations will never ask for your password via email. Always delete suspicious emails."
+      }
     },
     {
       id: 2,
-      question: "You get a Message from Friend 💬 - What should you do?",
-      correctAnswer: "Ignore",
+      question: "You get a friend request from someone you don't know on social media. What's the best action?",
+      emoji: "👤",
+      correctAnswer: "Ignore the request",
       options: [
-        { text: "Block", isCorrect: false, emoji: "🚫" },
-        { text: "Ignore", isCorrect: true, emoji: "✅" },
-        { text: "Delete", isCorrect: false, emoji: "🗑️" },
-        { text: "Report", isCorrect: false, emoji: "📢" }
-      ]
+        { text: "Accept immediately", isCorrect: false },
+        { text: "Ignore the request", isCorrect: true },
+        { text: "Accept and ask for personal info", isCorrect: false },
+        { text: "Share your location with them", isCorrect: false }
+      ],
+      feedback: {
+        correct: "Great choice! Only accept friend requests from people you actually know in real life!",
+        incorrect: "Always be cautious with unknown contacts. Never share personal information with strangers online."
+      }
     },
     {
       id: 3,
-      question: "You see another Spam Call! 📞 - What should you do?",
-      correctAnswer: "Block",
+      question: "A website asks for your credit card information but the URL doesn't start with 'https://'. What should you do?",
+      emoji: "💳",
+      correctAnswer: "Leave the website immediately",
       options: [
-        { text: "Block", isCorrect: true, emoji: "🚫" },
-        { text: "Ignore", isCorrect: false, emoji: "✅" },
-        { text: "Answer it", isCorrect: false, emoji: "📞" },
-        { text: "Save number", isCorrect: false, emoji: "💾" }
-      ]
+        { text: "Enter your details", isCorrect: false },
+        { text: "Share the website with friends", isCorrect: false },
+        { text: "Leave the website immediately", isCorrect: true },
+        { text: "Give your details over the phone instead", isCorrect: false }
+      ],
+      feedback: {
+        correct: "Perfect! Always look for 'https://' and a lock icon before entering sensitive information!",
+        incorrect: "Never enter financial information on unsecured websites. Always check for 'https://' and a lock icon."
+      }
     },
     {
       id: 4,
-      question: "You get a Game Invite 🎮 - What should you do?",
-      correctAnswer: "Ignore",
+      question: "You receive a text message claiming you've won a prize but need to pay a fee to claim it. What's the right response?",
+      emoji: "🏆",
+      correctAnswer: "Delete the message",
       options: [
-        { text: "Block", isCorrect: false, emoji: "🚫" },
-        { text: "Ignore", isCorrect: true, emoji: "✅" },
-        { text: "Delete", isCorrect: false, emoji: "🗑️" },
-        { text: "Report", isCorrect: false, emoji: "📢" }
-      ]
+        { text: "Pay the fee immediately", isCorrect: false },
+        { text: "Reply to ask more details", isCorrect: false },
+        { text: "Give your bank details", isCorrect: false },
+        { text: "Delete the message", isCorrect: true }
+      ],
+      feedback: {
+        correct: "Well done! Legitimate prizes don't require fees to claim. This is a common scam!",
+        incorrect: "Remember: if something seems too good to be true, it probably is. Never pay fees to claim prizes."
+      }
     },
     {
       id: 5,
-      question: "You see another Spam Call! 📞 - What should you do?",
-      correctAnswer: "Block",
+      question: "You're asked to share your location with an app you just downloaded. What should you consider first?",
+      emoji: "📍",
+      correctAnswer: "Check if the app needs location for its function",
       options: [
-        { text: "Block", isCorrect: true, emoji: "🚫" },
-        { text: "Ignore", isCorrect: false, emoji: "✅" },
-        { text: "Answer it", isCorrect: false, emoji: "📞" },
-        { text: "Forward to friends", isCorrect: false, emoji: "📤" }
-      ]
+        { text: "Check if the app needs location for its function", isCorrect: true },
+        { text: "Always share your location", isCorrect: false },
+        { text: "Share with all apps", isCorrect: false },
+        { text: "Share with strangers", isCorrect: false }
+      ],
+      feedback: {
+        correct: "Smart thinking! Only share location with apps that truly need it for their service!",
+        incorrect: "Always be cautious about sharing your location. Only grant location access when necessary for app functionality."
+      }
     }
   ];
 
@@ -148,10 +179,11 @@ const ReflexBlockGame = () => {
     setAnswered(true);
     resetFeedback();
     
+    const currentQuestion = questions[currentRound - 1];
     const isCorrect = option.isCorrect;
     
     if (isCorrect) {
-      setScore((prev) => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
@@ -169,31 +201,38 @@ const ReflexBlockGame = () => {
   const finalScore = score;
 
   const currentQuestion = questions[currentRound - 1];
+  
+  const handleNext = () => {
+    navigate("/games/dcos/kids");
+  };
 
   return (
     <GameShell
       title="Reflex Block Game"
-      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your spam blocking reflexes!` : "Test your spam blocking reflexes!"}
-      currentLevel={currentRound}
-      totalLevels={TOTAL_ROUNDS}
-      coinsPerLevel={coinsPerLevel}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your digital safety reflexes!` : "Test your digital safety reflexes!"}
+      onNext={handleNext}
+      nextEnabled={gameState === "finished"}
       showGameOver={gameState === "finished"}
-      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
       score={finalScore}
       gameId={gameId}
       gameType="dcos"
-      maxScore={TOTAL_ROUNDS}
+      totalLevels={TOTAL_ROUNDS}
+      currentLevel={currentRound}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
+      flashPoints={flashPoints}
+      backPath="/games/dcos/kids"
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={TOTAL_ROUNDS} // Max score is total number of questions (all correct)
+      coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
       <div className="text-center text-white space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-5xl mb-6">📞</div>
+            <div className="text-5xl mb-6">🛡️💻📱</div>
             <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
             <p className="text-white/90 text-lg mb-6">
-              Answer questions about blocking spam!<br />
+              Answer questions about digital safety!<br />
               You have {ROUND_TIME} seconds for each question.
             </p>
             <p className="text-white/80 mb-6">
@@ -227,6 +266,10 @@ const ReflexBlockGame = () => {
                 {currentQuestion.question}
               </h3>
               
+              <div className="bg-gray-800/50 rounded-xl p-12 mb-6 flex justify-center items-center">
+                <div className="text-9xl animate-pulse">{currentQuestion.emoji}</div>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentQuestion.options.map((option, index) => (
                   <button
@@ -235,10 +278,41 @@ const ReflexBlockGame = () => {
                     disabled={answered}
                     className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                    {option.text}
                   </button>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+        
+        {gameState === "finished" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <h2 className="text-3xl font-bold text-white mb-4">Game Over!</h2>
+            <p className="text-xl text-white/80 mb-2">Your final score: <span className="text-yellow-400 font-bold">{finalScore}</span>/{TOTAL_ROUNDS}</p>
+            <p className="text-white/80 mb-6">You earned {finalScore} coins!</p>
+            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl p-4 border border-white/10">
+              <h3 className="text-lg font-semibold text-white mb-2">How did you do?</h3>
+              <p className="text-white/80">
+                {finalScore >= 4 ? "Excellent job! You're a digital safety expert!" : 
+                 finalScore >= 3 ? "Good work! Keep learning about digital safety!" : 
+                 "Keep practicing digital safety habits and you'll improve!"}
+              </p>
+            </div>
+            
+            <div className="flex justify-center gap-4 mt-6">
+              <button
+                onClick={startGame}
+                className="bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-full transition-all"
+              >
+                Play Again
+              </button>
+              <button
+                onClick={handleNext}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-full transition-all shadow-lg"
+              >
+                Next Game
+              </button>
             </div>
           </div>
         )}

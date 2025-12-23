@@ -55,122 +55,125 @@ const DeepfakeVideoQuiz = () => {
   const questions = [
     {
       id: 1,
-      text: "Watch this video. Is it Real or Deepfake?",
+      text: "You see a video of your favorite celebrity saying something shocking. The video has slight lighting inconsistencies around their face. What should you do?",
       options: [
         { 
-          id: "b", 
-          text: "Real - it looks authentic", 
-          description: "Deepfakes can look very authentic - always verify with official sources",
+          id: "a", 
+          text: "Share it immediately - it's breaking news!", 
+          description: "Never share unverified videos, especially of celebrities",
           isCorrect: false
         },
         { 
-          id: "a", 
-          text: "Deepfake - verify with official sources", 
-          description: "Always verify suspicious videos with official sources before believing or sharing",
+          id: "b", 
+          text: "Check for signs of deepfake and verify with official sources", 
+          description: "Lighting inconsistencies can be a sign of deepfake manipulation",
           isCorrect: true
         },
         { 
           id: "c", 
-          text: "Not sure - share anyway", 
-          description: "Never share videos you're unsure about - verify first",
+          text: "Ignore it - celebrities often do strange things",
+          description: "It's important to learn how to identify deepfakes, not ignore them",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "A video shows a politician making controversial statements. Real or Deepfake?",
+      text: "You receive a video of a friend asking for money urgently. The audio and video seem slightly out of sync. What should you do?",
       options: [
+         { 
+          id: "b", 
+          text: "Call your friend directly to verify if they sent this video", 
+          description: "Out of sync audio/video can indicate deepfake or other manipulation",
+          isCorrect: true
+        },
         { 
           id: "a", 
-          text: "Real - politicians say things", 
-          description: "Politicians' statements should be verified through official channels",
+          text: "Send the money immediately - they need help!", 
+          description: "Always verify identity through another channel when asked for money",
           isCorrect: false
         },
+       
         { 
           id: "c", 
-          text: "Share it - it's interesting", 
-          description: "Never share unverified videos, especially of public figures",
+          text: "Ignore it - probably spam",
+          description: "While it might be spam, it's important to verify identity properly",
           isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Deepfake - check official sources", 
-          description: "Always check official sources to verify politician statements before believing",
-          isCorrect: true
         }
       ]
     },
     {
       id: 3,
-      text: "A video shows someone doing something impossible. Real or Deepfake?",
+      text: "You see a video of a natural disaster in your area that wasn't reported by local news. The video shows unusual shadows and lighting. What's the best approach?",
       options: [
         { 
           id: "a", 
-          text: "Real - technology is amazing", 
-          description: "If something seems impossible, it's likely a deepfake or manipulation",
+          text: "Share it to warn others about the disaster",
+          description: "Sharing unverified disaster information can cause panic and misinformation",
+          isCorrect: false
+        },
+        
+        { 
+          id: "b", 
+          text: "Assume it's fake since it wasn't on the news",
+          description: "While verification is important, don't assume all unreported videos are fake",
           isCorrect: false
         },
         { 
           id: "c", 
-          text: "Deepfake - verify before believing", 
-          description: "Videos showing impossible things are likely deepfakes - always verify",
+          text: "Check multiple reliable news sources to confirm the event",
+          description: "Unusual shadows and lighting could indicate video manipulation",
           isCorrect: true
         },
-        { 
-          id: "b", 
-          text: "Forward it - it's cool", 
-          description: "Never forward unverified videos, especially if they seem impossible",
-          isCorrect: false
-        }
       ]
     },
     {
       id: 4,
-      text: "A video shows a news anchor saying something unusual. Real or Deepfake?",
+      text: "You find a video of a scientific breakthrough that seems too good to be true. The video has minor artifacts around the edges and the audio doesn't match the speaker's lip movements. What should you do?",
       options: [
         { 
-          id: "b", 
-          text: "Real - news is news", 
-          description: "News videos can be deepfaked - verify with official news sources",
+          id: "a", 
+          text: "Share it with your science class - it's revolutionary!",
+          description: "Always verify scientific claims with reputable sources before sharing",
           isCorrect: false
         },
         { 
-          id: "a", 
-          text: "Deepfake - check official news sources", 
-          description: "Always verify news videos with official news sources before believing",
+          id: "b", 
+          text: "Look for peer-reviewed research papers on the topic",
+          description: "Artifacts and lip-sync issues are common signs of deepfake manipulation",
           isCorrect: true
         },
         { 
           id: "c", 
-          text: "Share it - it's news", 
-          description: "Never share unverified news videos - check official sources first",
+          text: "Assume it's real since it's about science",
+          description: "Even science-related videos can be manipulated or taken out of context",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "A video shows someone's face moving strangely. Real or Deepfake?",
+      text: "You see a video of your school principal making an announcement that seems odd. The video has inconsistent lighting on the face and unusual eye reflections. What's the best action?",
       options: [
         { 
           id: "a", 
-          text: "Real - people move weird sometimes", 
-          description: "Unnatural face movements are a sign of deepfake manipulation",
+          text: "Forward it to all your friends",
+          description: "Never forward potentially fake videos without verification",
+          isCorrect: false
+        },
+        
+        { 
+          id: "b", 
+          text: "Assume it's fake because it seems odd",
+          description: "Always verify with official sources rather than making assumptions",
           isCorrect: false
         },
         { 
           id: "c", 
-          text: "Deepfake - verify the source", 
-          description: "Unnatural face movements indicate deepfake - always verify the source",
+          text: "Check your school's official website or contact them directly",
+          description: "Inconsistent lighting and eye reflections are common signs of deepfakes",
           isCorrect: true
         },
-        { 
-          id: "b", 
-          text: "Share it - looks funny", 
-          description: "Never share videos with suspicious movements without verifying",
-          isCorrect: false
-        }
       ]
     }
   ];

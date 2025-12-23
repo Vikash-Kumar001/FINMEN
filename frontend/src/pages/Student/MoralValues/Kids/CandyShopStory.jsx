@@ -54,13 +54,7 @@ const CandyShopStory = () => {
       id: 2,
       text: "You find a wallet in the park. What should you do?",
       options: [
-        { 
-          id: "find", 
-          text: "Try to find the owner or give it to an adult", 
-          emoji: "🔎", 
-          description: "Return it properly",
-          isCorrect: true
-        },
+        
         { 
           id: "keep", 
           text: "Keep the money and throw the wallet", 
@@ -74,7 +68,14 @@ const CandyShopStory = () => {
           emoji: "🚶", 
           description: "Leave it behind",
           isCorrect: false
-        }
+        },
+        { 
+          id: "find", 
+          text: "Try to find the owner or give it to an adult", 
+          emoji: "🔎", 
+          description: "Return it properly",
+          isCorrect: true
+        },
       ]
     },
     {

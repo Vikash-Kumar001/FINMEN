@@ -34,11 +34,11 @@ const PuzzleRespectMatch = () => {
 
   // Outcomes - reordered so correct matches are in different positions
   const rightItems = [
-    { id: 1, name: "Respect", emoji: "🙏", description: "Shows honor and value" },
     { id: 2, name: "Hurt", emoji: "💔", description: "Causes pain and sadness" },
-    { id: 3, name: "Trust", emoji: "🤝", description: "Builds confidence and belief" },
+    { id: 5, name: "Care", emoji: "💖", description: "Shows love and concern" },
     { id: 4, name: "Lonely", emoji: "😢", description: "Makes others feel left out" },
-    { id: 5, name: "Care", emoji: "💖", description: "Shows love and concern" }
+    { id: 3, name: "Trust", emoji: "🤝", description: "Builds confidence and belief" },
+    { id: 1, name: "Respect", emoji: "🙏", description: "Shows honor and value" },
   ];
 
   // Correct matches (with reordered right items)

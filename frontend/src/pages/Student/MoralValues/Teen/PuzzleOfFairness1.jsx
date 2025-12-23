@@ -32,10 +32,10 @@ const PuzzleOfFairness1 = () => {
   // Right items with clearer, more intuitive meanings
   const rightItems = [
     { id: 1, name: "Balanced Treatment", emoji: "⚖️", description: "Treating everyone the same" },
+    { id: 5, name: "Biased Preference", emoji: "🎭", description: "Showing favor to some over others" },
     { id: 2, name: "Harm to Others", emoji: "😢", description: "Causing pain or suffering" },
     { id: 3, name: "Unfair Advantage", emoji: "⚠️", description: "Getting ahead through wrong means" },
     { id: 4, name: "Generous Sharing", emoji: "🤲", description: "Giving to others willingly" },
-    { id: 5, name: "Biased Preference", emoji: "🎭", description: "Showing favor to some over others" },
   ];
 
   const correctMatches = [

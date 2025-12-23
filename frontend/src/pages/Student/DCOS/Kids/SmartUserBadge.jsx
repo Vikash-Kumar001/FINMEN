@@ -92,11 +92,7 @@ const SmartUserBadge = () => {
           emoji: "📺", 
           isCorrect: false
         },
-        { 
-          text: "Created something using tech (drawing, coding, etc.)", 
-          emoji: "💻", 
-          isCorrect: true
-        },
+        
         { 
           text: "Never create anything", 
           emoji: "🚫", 
@@ -106,7 +102,12 @@ const SmartUserBadge = () => {
           text: "Only watch others create", 
           emoji: "👀", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Created something using tech (drawing, coding, etc.)", 
+          emoji: "💻", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -115,15 +116,16 @@ const SmartUserBadge = () => {
       question: "How can technology help others?",
       options: [
         { 
+          text: "Help someone by using technology", 
+          emoji: "🤝", 
+          isCorrect: true
+        },
+        { 
           text: "Use tech only for yourself", 
           emoji: "👤", 
           isCorrect: false
         },
-        { 
-          text: "Helped someone using technology", 
-          emoji: "🤝", 
-          isCorrect: true
-        },
+        
         { 
           text: "Never help others", 
           emoji: "🙈", 
@@ -146,15 +148,16 @@ const SmartUserBadge = () => {
           emoji: "📱", 
           isCorrect: false
         },
-        { 
-          text: "Used screen time wisely and took breaks", 
-          emoji: "🕒", 
-          isCorrect: true
-        },
+       
         { 
           text: "Never take breaks", 
           emoji: "⏰", 
           isCorrect: false
+        },
+         { 
+          text: "Used screen time wisely and took breaks", 
+          emoji: "🕒", 
+          isCorrect: true
         },
         { 
           text: "Use screens until very late", 

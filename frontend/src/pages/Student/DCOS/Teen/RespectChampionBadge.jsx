@@ -29,7 +29,7 @@ const RespectChampionBadge = () => {
       question: "What should you do when you see different opinions?",
       options: [
         { 
-          text: "Respected different opinions and beliefs", 
+          text: "Respect different opinions and beliefs", 
           emoji: "🤝", 
           isCorrect: true
         },
@@ -55,11 +55,7 @@ const RespectChampionBadge = () => {
       title: "Standing Against Hate",
       question: "What should you do when you see hateful comments?",
       options: [
-        { 
-          text: "Stood up against hateful comments", 
-          emoji: "🛡️", 
-          isCorrect: true
-        },
+       
         { 
           text: "Join in the hate", 
           emoji: "😡", 
@@ -69,6 +65,11 @@ const RespectChampionBadge = () => {
           text: "Ignore hateful comments", 
           emoji: "😐", 
           isCorrect: false
+        },
+         { 
+          text: "Stand up against hateful comments", 
+          emoji: "🛡️", 
+          isCorrect: true
         },
         { 
           text: "Share hateful comments", 
@@ -82,15 +83,16 @@ const RespectChampionBadge = () => {
       title: "Inclusive Behavior",
       question: "How should you treat others online?",
       options: [
-        { 
-          text: "Included everyone respectfully", 
-          emoji: "👥", 
-          isCorrect: true
-        },
+        
         { 
           text: "Exclude certain people", 
           emoji: "🚫", 
           isCorrect: false
+        },
+        { 
+          text: "Include everyone respectfully", 
+          emoji: "👥", 
+          isCorrect: true
         },
         { 
           text: "Be disrespectful to others", 
@@ -109,11 +111,7 @@ const RespectChampionBadge = () => {
       title: "Promoting Respect",
       question: "What should you do to promote respect?",
       options: [
-        { 
-          text: "Promoted respect in online spaces", 
-          emoji: "🌟", 
-          isCorrect: true
-        },
+        
         { 
           text: "Promote disrespect", 
           emoji: "😡", 
@@ -123,6 +121,11 @@ const RespectChampionBadge = () => {
           text: "Ignore respect", 
           emoji: "😐", 
           isCorrect: false
+        },
+        { 
+          text: "Promote respect in online spaces", 
+          emoji: "🌟", 
+          isCorrect: true
         },
         { 
           text: "Share disrespectful content", 
@@ -137,7 +140,7 @@ const RespectChampionBadge = () => {
       question: "How can you help build a respectful community?",
       options: [
         { 
-          text: "Helped build a respectful online community", 
+          text: "Help build a respectful online community", 
           emoji: "🤝", 
           isCorrect: true
         },

@@ -37,8 +37,8 @@ const PuzzleActsOfKindness = () => {
     { id: 1, name: "Tears", emoji: "😢", description: "Causes sadness and hurt" },
     { id: 2, name: "Smile", emoji: "😊", description: "Brings happiness to faces" },
     { id: 3, name: "Happiness", emoji: "😄", description: "Creates joy and cheer" },
-    { id: 4, name: "Sadness", emoji: "😔", description: "Makes others feel alone" },
-    { id: 5, name: "Joy", emoji: "✨", description: "Spreads positive feelings" }
+    { id: 5, name: "Sadness", emoji: "😔", description: "Makes others feel alone" },
+    { id: 4, name: "Joy", emoji: "✨", description: "Spreads positive feelings" }
   ];
 
   // Correct matches (with reordered right items)

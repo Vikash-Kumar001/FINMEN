@@ -36,6 +36,14 @@ const LateNightPartyStory = () => {
           description: "Join your friends for the party",
           isCorrect: false
         },
+        
+        { 
+          id: "short", 
+          text: "Go for just one hour", 
+          emoji: "⏰", 
+          description: "Attend briefly then leave early",
+          isCorrect: false
+        },
         { 
           id: "study", 
           text: "Stay home and study", 
@@ -43,13 +51,6 @@ const LateNightPartyStory = () => {
           description: "Prioritize your exam preparation",
           isCorrect: true
         },
-        { 
-          id: "short", 
-          text: "Go for just one hour", 
-          emoji: "⏰", 
-          description: "Attend briefly then leave early",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -57,19 +58,20 @@ const LateNightPartyStory = () => {
       text: "Friends plan a party the night before your big test. How do you respond?",
       options: [
         { 
-          id: "join", 
-          text: "Join them for fun", 
-          emoji: "💃", 
-          description: "Attend the party with your friends",
-          isCorrect: false
-        },
-        { 
           id: "decline", 
           text: "Politely decline and revise", 
           emoji: "✍️", 
           description: "Refuse politely and focus on studying",
           isCorrect: true
         },
+        { 
+          id: "join", 
+          text: "Join them for fun", 
+          emoji: "💃", 
+          description: "Attend the party with your friends",
+          isCorrect: false
+        },
+        
         { 
           id: "compromise", 
           text: "Go but leave early", 
@@ -90,20 +92,21 @@ const LateNightPartyStory = () => {
           description: "Join them for late-night snacks",
           isCorrect: false
         },
-        { 
-          id: "stay", 
-          text: "Stay focused and prepare", 
-          emoji: "📖", 
-          description: "Remain home and study for your exam",
-          isCorrect: true
-        },
+       
         { 
           id: "quick", 
           text: "Go for a quick snack", 
           emoji: "🍔", 
           description: "Join briefly for a short snack break",
           isCorrect: false
-        }
+        },
+         { 
+          id: "stay", 
+          text: "Stay focused and prepare", 
+          emoji: "📖", 
+          description: "Remain home and study for your exam",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -157,7 +160,8 @@ const LateNightPartyStory = () => {
           emoji: "🥤", 
           description: "Have one drink then leave quickly",
           isCorrect: false
-        }
+        },
+        
       ]
     }
   ];

@@ -81,13 +81,7 @@ const CheatingStory = () => {
       id: 3,
       text: "Your classmate forgot their homework and wants to copy yours. What should you do?",
       options: [
-        { 
-          id: "help", 
-          text: "Say no, but help them learn", 
-          emoji: "🤝", 
-          description: "Support without cheating",
-          isCorrect: true
-        },
+        
         { 
           id: "copy", 
           text: "Let them copy quickly", 
@@ -101,7 +95,14 @@ const CheatingStory = () => {
           emoji: "🙄", 
           description: "Don't help at all",
           isCorrect: false
-        }
+        },
+        { 
+          id: "help", 
+          text: "Say no, but help them learn", 
+          emoji: "🤝", 
+          description: "Support without cheating",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -135,19 +136,20 @@ const CheatingStory = () => {
       id: 5,
       text: "You worked hard on a project, but your team takes all the credit. What should you do?",
       options: [
-        { 
-          id: "talk", 
-          text: "Talk calmly with the teacher", 
-          emoji: "🗣️", 
-          description: "Discuss it respectfully",
-          isCorrect: true
-        },
+        
         { 
           id: "argue", 
           text: "Argue and get angry", 
           emoji: "😠", 
           description: "React with anger",
           isCorrect: false
+        },
+        { 
+          id: "talk", 
+          text: "Talk calmly with the teacher", 
+          emoji: "🗣️", 
+          description: "Discuss it respectfully",
+          isCorrect: true
         },
         { 
           id: "nothing", 

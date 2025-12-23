@@ -34,7 +34,7 @@ const ProductivityHeroBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Used tech for learning and skill-building", 
+          text: "Use tech for learning and skill-building", 
           emoji: "📚", 
           isCorrect: true
         },
@@ -66,7 +66,7 @@ const ProductivityHeroBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Enrolled in productive online courses", 
+          text: "Enroll in productive online courses", 
           emoji: "🎓", 
           isCorrect: true
         },
@@ -88,7 +88,7 @@ const ProductivityHeroBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Used productive apps for growth", 
+          text: "Use productive apps for growth", 
           emoji: "📱", 
           isCorrect: true
         },
@@ -114,15 +114,16 @@ const ProductivityHeroBadge = () => {
           emoji: "⏳", 
           isCorrect: false
         },
-        { 
-          text: "Managed tech time productively", 
-          emoji: "⏰", 
-          isCorrect: true
-        },
+       
         { 
           text: "Use tech without limits", 
           emoji: "📱", 
           isCorrect: false
+        },
+         { 
+          text: "Manage tech time productively", 
+          emoji: "⏰", 
+          isCorrect: true
         },
         { 
           text: "Ignore time management", 
@@ -152,10 +153,10 @@ const ProductivityHeroBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Focused on growth and productivity", 
+          text: "Focus on growth and productivity", 
           emoji: "📈", 
           isCorrect: true
-        }
+        },
       ]
     }
   ];

@@ -33,7 +33,7 @@ const IdentityBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Posted a positive achievement", 
+          text: "Post a positive achievement", 
           isCorrect: true
         },
         { 
@@ -60,7 +60,7 @@ const IdentityBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Shared an encouraging message", 
+          text: "Share an encouraging message", 
           isCorrect: true
         },
         { 
@@ -79,7 +79,7 @@ const IdentityBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Avoided posting negative content", 
+          text: "Avoid posting negative content", 
           isCorrect: true
         },
         { 
@@ -98,13 +98,14 @@ const IdentityBadge = () => {
       question: "How should you build your online presence?",
       options: [
         { 
+          text: "Build a respectful online presence", 
+          isCorrect: true
+        },
+        { 
           text: "Build a negative presence", 
           isCorrect: false
         },
-        { 
-          text: "Built a respectful online presence", 
-          isCorrect: true
-        },
+        
         { 
           text: "Post disrespectful content", 
           isCorrect: false
@@ -129,7 +130,7 @@ const IdentityBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Helped others build positive identity", 
+          text: "Help others build positive identity", 
           isCorrect: true
         },
         { 

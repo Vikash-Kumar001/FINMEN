@@ -31,19 +31,19 @@ const FeelingsPuzzleMatch = () => {
 
   // Right items with correct matches in different positions: Q1: pos 1, Q2: pos 2, Q3: pos 3, Q4: pos 1, Q5: pos 2
   const rightItems = [
-    { id: 1, name: "Happy", emoji: "😄", description: "Joyful feeling" },
-    { id: 2, name: "Sad", emoji: "😔", description: "Unhappy feeling" },
     { id: 3, name: "Angry", emoji: "😡", description: "Mad feeling" },
-    { id: 4, name: "Scared", emoji: "😰", description: "Afraid feeling" },
+    { id: 2, name: "Sad", emoji: "😔", description: "Unhappy feeling" },
+    { id: 1, name: "Happy", emoji: "😄", description: "Joyful feeling" },
     { id: 5, name: "Excited", emoji: "🤩", description: "Thrilled feeling" },
+    { id: 4, name: "Scared", emoji: "😰", description: "Afraid feeling" },
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 5 }, // Smile → Excited
-    { leftId: 2, rightId: 3 }, // Tears → Angry
-    { leftId: 3, rightId: 2 }, // Frown → Sad
-    { leftId: 4, rightId: 1 }, // Shaking → Happy
-    { leftId: 5, rightId: 4 }  // Laughing → Scared
+    { leftId: 1, rightId: 1 }, // Smile → Happy
+    { leftId: 2, rightId: 2 }, // Tears → Sad
+    { leftId: 3, rightId: 3 }, // Frown → Angry
+    { leftId: 4, rightId: 4 }, // Shaking → Scared
+    { leftId: 5, rightId: 5 }  // Laughing → Excited
   ];
 
   const isRightItemMatched = (itemId) => {

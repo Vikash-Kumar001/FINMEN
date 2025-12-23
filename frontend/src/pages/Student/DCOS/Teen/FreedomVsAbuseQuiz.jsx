@@ -91,6 +91,14 @@ const FreedomVsAbuseQuiz = () => {
           description: "Spreading false rumors is defamation, not protected free speech",
           isCorrect: false
         },
+        
+        { 
+          id: "c", 
+          text: "Maybe - if it's true", 
+          emoji: "🤔", 
+          description: "False rumors are always harmful, regardless of intent",
+          isCorrect: false
+        },
         { 
           id: "b", 
           text: "No - it's defamation and harmful", 
@@ -98,13 +106,6 @@ const FreedomVsAbuseQuiz = () => {
           description: "Spreading false rumors is defamation and causes real harm - not free speech",
           isCorrect: true
         },
-        { 
-          id: "c", 
-          text: "Maybe - if it's true", 
-          emoji: "🤔", 
-          description: "False rumors are always harmful, regardless of intent",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -138,6 +139,13 @@ const FreedomVsAbuseQuiz = () => {
       id: 4,
       text: "Is cyberbullying protected as free speech?",
       options: [
+         { 
+          id: "b", 
+          text: "No - it causes real harm", 
+          emoji: "❌", 
+          description: "Cyberbullying causes real psychological harm and is not protected by free speech",
+          isCorrect: true
+        },
         { 
           id: "a", 
           text: "Yes - it's just online", 
@@ -145,13 +153,7 @@ const FreedomVsAbuseQuiz = () => {
           description: "Cyberbullying causes real harm and is not protected by free speech",
           isCorrect: false
         },
-        { 
-          id: "b", 
-          text: "No - it causes real harm", 
-          emoji: "❌", 
-          description: "Cyberbullying causes real psychological harm and is not protected by free speech",
-          isCorrect: true
-        },
+       
         { 
           id: "c", 
           text: "Maybe - depends on severity", 

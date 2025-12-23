@@ -35,20 +35,21 @@ const HateCommentStory = () => {
           description: "Stay out of it and don't respond",
           isCorrect: false
         },
-        { 
-          id: "report", 
-          text: "Report the hate comment", 
-          emoji: "🚫", 
-          description: "Report the hateful comment to the platform",
-          isCorrect: true
-        },
+       
         { 
           id: "reply", 
           text: "Reply with an insult", 
           emoji: "😡", 
           description: "Respond with a negative comment",
           isCorrect: false
-        }
+        },
+         { 
+          id: "report", 
+          text: "Report the hate comment", 
+          emoji: "🚫", 
+          description: "Report the hateful comment to the platform",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -56,19 +57,20 @@ const HateCommentStory = () => {
       text: "You see a comment saying 'People like you don't belong here.' What's the right action?",
       options: [
         { 
-          id: "scroll-past", 
-          text: "Scroll past it", 
-          emoji: "😐", 
-          description: "Just ignore it and move on",
-          isCorrect: false
-        },
-        { 
           id: "report-hate", 
           text: "Report it as hate speech", 
           emoji: "🚫", 
           description: "Report the hateful comment to moderators",
           isCorrect: true
         },
+        { 
+          id: "scroll-past", 
+          text: "Scroll past it", 
+          emoji: "😐", 
+          description: "Just ignore it and move on",
+          isCorrect: false
+        },
+        
         { 
           id: "like", 
           text: "Like it to show support", 
@@ -143,20 +145,21 @@ const HateCommentStory = () => {
           description: "It's just a stereotype, ignore it",
           isCorrect: false
         },
-        { 
-          id: "report-stereotype", 
-          text: "Report it - this is hateful stereotyping", 
-          emoji: "🚫", 
-          description: "Report this hateful and discriminatory comment",
-          isCorrect: true
-        },
+       
         { 
           id: "laugh", 
           text: "Laugh it off", 
           emoji: "😄", 
           description: "Treat it as a joke",
           isCorrect: false
-        }
+        },
+         { 
+          id: "report-stereotype", 
+          text: "Report it - this is hateful stereotyping", 
+          emoji: "🚫", 
+          description: "Report this hateful and discriminatory comment",
+          isCorrect: true
+        },
       ]
     }
   ];

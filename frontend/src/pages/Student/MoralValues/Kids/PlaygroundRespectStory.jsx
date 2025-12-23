@@ -27,13 +27,7 @@ const PlaygroundRespectStory = () => {
       id: 1,
       text: "A smaller child asks to join your game on the playground. What do you do?",
       options: [
-        { 
-          id: "allow", 
-          text: "Allow them to join and play together", 
-          emoji: "🤗", 
-          description: "Be inclusive",
-          isCorrect: true
-        },
+       
         { 
           id: "sayno", 
           text: "Say no - they're too small", 
@@ -47,7 +41,14 @@ const PlaygroundRespectStory = () => {
           emoji: "😐", 
           description: "Don't respond",
           isCorrect: false
-        }
+        },
+         { 
+          id: "allow", 
+          text: "Allow them to join and play together", 
+          emoji: "🤗", 
+          description: "Be inclusive",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -81,13 +82,7 @@ const PlaygroundRespectStory = () => {
       id: 3,
       text: "A friend falls while running. What should you do?",
       options: [
-        { 
-          id: "help", 
-          text: "Help them get up and ask if they're okay", 
-          emoji: "🤝", 
-          description: "Show care and concern",
-          isCorrect: true
-        },
+        
         { 
           id: "laugh", 
           text: "Laugh and keep running", 
@@ -101,26 +96,34 @@ const PlaygroundRespectStory = () => {
           emoji: "📣", 
           description: "Draw attention",
           isCorrect: false
-        }
+        },
+        { 
+          id: "help", 
+          text: "Help them get up and ask if they're okay", 
+          emoji: "🤝", 
+          description: "Show care and concern",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 4,
       text: "A new student joins your team. They seem nervous. What's kind?",
       options: [
-        { 
-          id: "include", 
-          text: "Smile, introduce yourself, and include them", 
-          emoji: "😄", 
-          description: "Make them welcome",
-          isCorrect: true
-        },
+        
         { 
           id: "ignore", 
           text: "Ignore them since they're new", 
           emoji: "😐", 
           description: "Don't interact",
           isCorrect: false
+        },
+        { 
+          id: "include", 
+          text: "Smile, introduce yourself, and include them", 
+          emoji: "😄", 
+          description: "Make them welcome",
+          isCorrect: true
         },
         { 
           id: "old", 

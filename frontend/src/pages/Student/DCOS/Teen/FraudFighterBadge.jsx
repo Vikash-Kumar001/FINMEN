@@ -33,7 +33,7 @@ const FraudFighterBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Ignored a phishing email", 
+          text: "Ignore suspicious emails", 
           isCorrect: true
         },
         { 
@@ -60,7 +60,7 @@ const FraudFighterBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Refused to share OTP", 
+          text: "Refuse to share OTP", 
           isCorrect: true
         },
         { 
@@ -79,7 +79,7 @@ const FraudFighterBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Avoided a fake job scam", 
+          text: "Avoid job offers that seem too good", 
           isCorrect: true
         },
         { 
@@ -98,13 +98,14 @@ const FraudFighterBadge = () => {
       question: "What should you do with suspicious pop-ups?",
       options: [
         { 
+          text: "Ignore suspicious pop-ups", 
+          isCorrect: true
+        },
+        { 
           text: "Click on suspicious pop-ups", 
           isCorrect: false
         },
-        { 
-          text: "Ignored a scam pop-up", 
-          isCorrect: true
-        },
+        
         { 
           text: "Enter information in pop-ups", 
           isCorrect: false
@@ -129,7 +130,7 @@ const FraudFighterBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Verified before sharing information", 
+          text: "Verify before sharing information", 
           isCorrect: true
         },
         { 

@@ -27,19 +27,20 @@ const RespectEldersStory = () => {
       id: 1,
       text: "Your grandpa asks for help carrying groceries. What do you do?",
       options: [
-        { 
-          id: "help", 
-          text: "Help grandpa right away", 
-          emoji: "💪", 
-          description: "Be helpful immediately",
-          isCorrect: true
-        },
+       
         { 
           id: "ignore", 
           text: "Keep playing and ignore him", 
           emoji: "🎮", 
           description: "Continue your activity",
           isCorrect: false
+        },
+         { 
+          id: "help", 
+          text: "Help grandpa right away", 
+          emoji: "💪", 
+          description: "Be helpful immediately",
+          isCorrect: true
         },
         { 
           id: "later", 
@@ -81,13 +82,7 @@ const RespectEldersStory = () => {
       id: 3,
       text: "You see your grandma crossing the road with heavy bags. What will you do?",
       options: [
-        { 
-          id: "offer", 
-          text: "Offer to carry her bags and walk with her", 
-          emoji: "👜", 
-          description: "Help her safely",
-          isCorrect: true
-        },
+       
         { 
           id: "wave", 
           text: "Just wave from far", 
@@ -101,7 +96,14 @@ const RespectEldersStory = () => {
           emoji: "⏳", 
           description: "Do nothing",
           isCorrect: false
-        }
+        },
+         { 
+          id: "offer", 
+          text: "Offer to carry her bags and walk with her", 
+          emoji: "👜", 
+          description: "Help her safely",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -135,19 +137,20 @@ const RespectEldersStory = () => {
       id: 5,
       text: "Your elder tells you not to be rude online. What do you do?",
       options: [
-        { 
-          id: "thank", 
-          text: "Say thank you and follow their advice", 
-          emoji: "🙏", 
-          description: "Accept the guidance",
-          isCorrect: true
-        },
+       
         { 
           id: "ignore", 
           text: "Ignore them and continue being rude", 
           emoji: "😠", 
           description: "Dismiss the advice",
           isCorrect: false
+        },
+         { 
+          id: "thank", 
+          text: "Say thank you and follow their advice", 
+          emoji: "🙏", 
+          description: "Accept the guidance",
+          isCorrect: true
         },
         { 
           id: "complain", 

@@ -27,19 +27,20 @@ const HomeworkStoryy = () => {
       id: 1,
       text: "You promised to finish your math homework. Do you do it or play instead?",
       options: [
-        { 
-          id: "finish", 
-          text: "Finish your homework", 
-          emoji: "📝", 
-          description: "Complete your work first",
-          isCorrect: true
-        },
+       
         { 
           id: "play", 
           text: "Play video games", 
           emoji: "🎮", 
           description: "Have fun instead",
           isCorrect: false
+        },
+         { 
+          id: "finish", 
+          text: "Finish your homework", 
+          emoji: "📝", 
+          description: "Complete your work first",
+          isCorrect: true
         },
         { 
           id: "delay", 
@@ -108,13 +109,7 @@ const HomeworkStoryy = () => {
       id: 4,
       text: "You have homework for multiple subjects. Do you procrastinate or finish it one by one?",
       options: [
-        { 
-          id: "onebyone", 
-          text: "Finish one by one", 
-          emoji: "📝", 
-          description: "Work systematically",
-          isCorrect: true
-        },
+        
         { 
           id: "procrastinate", 
           text: "Procrastinate", 
@@ -128,26 +123,34 @@ const HomeworkStoryy = () => {
           emoji: "✂️", 
           description: "Do partial work",
           isCorrect: false
-        }
+        },
+        { 
+          id: "onebyone", 
+          text: "Finish one by one", 
+          emoji: "📝", 
+          description: "Work systematically",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 5,
       text: "You're tempted to watch TV instead of homework. What's the right choice?",
       options: [
-        { 
-          id: "homework", 
-          text: "Do homework first", 
-          emoji: "📝", 
-          description: "Prioritize studies",
-          isCorrect: true
-        },
+       
         { 
           id: "tv", 
           text: "Watch TV", 
           emoji: "📺", 
           description: "Entertain yourself",
           isCorrect: false
+        },
+         { 
+          id: "homework", 
+          text: "Do homework first", 
+          emoji: "📝", 
+          description: "Prioritize studies",
+          isCorrect: true
         },
         { 
           id: "both", 

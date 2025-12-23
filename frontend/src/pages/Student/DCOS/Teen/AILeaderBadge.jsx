@@ -29,7 +29,7 @@ const AILeaderBadge = () => {
       question: "What should you do when you notice AI bias?",
       options: [
         { 
-          text: "Identified and reported AI bias", 
+          text: "Identify and report AI bias", 
           emoji: "🔍", 
           isCorrect: true
         },
@@ -55,11 +55,7 @@ const AILeaderBadge = () => {
       title: "AI in Exams",
       question: "What should you do when AI offers to help with exams?",
       options: [
-        { 
-          text: "Rejected AI help during exams", 
-          emoji: "🚫", 
-          isCorrect: true
-        },
+        
         { 
           text: "Use AI to cheat on exams", 
           emoji: "📝", 
@@ -69,6 +65,11 @@ const AILeaderBadge = () => {
           text: "Use AI for all answers", 
           emoji: "✅", 
           isCorrect: false
+        },
+        { 
+          text: "Reject AI help during exams", 
+          emoji: "🚫", 
+          isCorrect: true
         },
         { 
           text: "Share AI answers with others", 
@@ -83,7 +84,7 @@ const AILeaderBadge = () => {
       question: "What should you do with personal data in AI?",
       options: [
         { 
-          text: "Protected personal data when using AI", 
+          text: "Protect personal data when using AI", 
           emoji: "🔒", 
           isCorrect: true
         },
@@ -109,15 +110,16 @@ const AILeaderBadge = () => {
       title: "AI Ethics",
       question: "What should you consider when using AI?",
       options: [
-        { 
-          text: "Considered ethical implications of AI use", 
-          emoji: "⚖️", 
-          isCorrect: true
-        },
+        
         { 
           text: "Use AI without thinking", 
           emoji: "🤖", 
           isCorrect: false
+        },
+        { 
+          text: "Consider ethical implications of AI use", 
+          emoji: "⚖️", 
+          isCorrect: true
         },
         { 
           text: "Ignore ethics completely", 
@@ -136,14 +138,10 @@ const AILeaderBadge = () => {
       title: "AI Responsibility",
       question: "How should you use AI responsibly?",
       options: [
-        { 
-          text: "Used AI responsibly and ethically", 
-          emoji: "✅", 
-          isCorrect: true
-        },
+        
         { 
           text: "Use AI without responsibility", 
-          emoji: "🤖", 
+          emoji: "⛑️", 
           isCorrect: false
         },
         { 
@@ -155,7 +153,12 @@ const AILeaderBadge = () => {
           text: "Ignore AI responsibility", 
           emoji: "🙈", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Use AI responsibly and ethically", 
+          emoji: "🤖", 
+          isCorrect: true
+        },
       ]
     }
   ];

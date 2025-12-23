@@ -54,8 +54,8 @@ const ReflexEqualShare = () => {
       question: "Which shows equal sharing?",
       correctAnswer: "You get 2, friend gets 2",
       options: [
-        { text: "You get 2, friend gets 2", isCorrect: true, emoji: "🍬🍬" },
-        { text: "You take all 4, friend gets 0", isCorrect: false, emoji: "🍬🍬🍬🍬" },
+        { text: "You get 2, friend gets 2", isCorrect: true, emoji: "🍬" },
+        { text: "You take all 4, friend gets 0", isCorrect: false, emoji: "🍬" },
         { text: "You take entire chocolate", isCorrect: false, emoji: "🍫" },
         { text: "You keep everything", isCorrect: false, emoji: "😏" }
       ]
@@ -78,7 +78,7 @@ const ReflexEqualShare = () => {
       options: [
         { text: "Take all yourself", isCorrect: false, emoji: "😏" },
         { text: "Keep most", isCorrect: false, emoji: "😄" },
-        { text: "Share 3 apples equally", isCorrect: true, emoji: "🍎🍎🍎" },
+        { text: "Share 3 apples equally", isCorrect: true, emoji: "🍎" },
         { text: "Give nothing", isCorrect: false, emoji: "🚫" }
       ]
     },

@@ -54,19 +54,20 @@ const SharingStory = () => {
       id: 2,
       text: "You have a new toy, your friend has none. Do you let them play?",
       options: [
-        { 
-          id: "let", 
-          text: "Yes, let them play too", 
-          emoji: "🤗", 
-          description: "Share and play together",
-          isCorrect: true
-        },
+        
         { 
           id: "no", 
           text: "No, keep it to yourself", 
           emoji: "🙅‍♂️", 
           description: "Keep it private",
           isCorrect: false
+        },
+        { 
+          id: "let", 
+          text: "Yes, let them play too", 
+          emoji: "🤗", 
+          description: "Share and play together",
+          isCorrect: true
         },
         { 
           id: "break", 
@@ -81,19 +82,20 @@ const SharingStory = () => {
       id: 3,
       text: "Your friend forgot their pencil. Do you lend one?",
       options: [
-        { 
-          id: "lend", 
-          text: "Yes, lend your pencil", 
-          emoji: "✌️", 
-          description: "Help them out",
-          isCorrect: true
-        },
+       
         { 
           id: "no", 
           text: "No, they should buy one", 
           emoji: "🚫", 
           description: "Refuse to help",
           isCorrect: false
+        },
+         { 
+          id: "lend", 
+          text: "Yes, lend your pencil", 
+          emoji: "✌️", 
+          description: "Help them out",
+          isCorrect: true
         },
         { 
           id: "hide", 
@@ -108,13 +110,7 @@ const SharingStory = () => {
       id: 4,
       text: "You have extra snack. Your friend is hungry. Do you share?",
       options: [
-        { 
-          id: "share", 
-          text: "Share with your friend", 
-          emoji: "🤲", 
-          description: "Give them some",
-          isCorrect: true
-        },
+       
         { 
           id: "eat", 
           text: "Eat it all yourself", 
@@ -128,7 +124,14 @@ const SharingStory = () => {
           emoji: "🗑️", 
           description: "Waste the food",
           isCorrect: false
-        }
+        },
+         { 
+          id: "share", 
+          text: "Share with your friend", 
+          emoji: "🤲", 
+          description: "Give them some",
+          isCorrect: true
+        },
       ]
     },
     {

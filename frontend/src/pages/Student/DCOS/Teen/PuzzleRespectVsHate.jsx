@@ -62,22 +62,22 @@ const PuzzleRespectVsHate = () => {
     { id: 5, name: "Kindness", emoji: "💝", description: "Being friendly and caring" }
   ];
 
-  // Outcomes - shuffled order to make it harder
+  // Outcomes - distinct options to make it harder
   const rightItems = [
-    { id: 1, name: "Hurt", emoji: "💔", description: "Causes emotional pain" },
-    { id: 2, name: "Inclusion", emoji: "🌈", description: "Welcomes everyone" },
-    { id: 3, name: "Hurt", emoji: "💔", description: "Causes emotional pain" },
-    { id: 4, name: "Inclusion", emoji: "🌈", description: "Welcomes everyone" },
-    { id: 5, name: "Inclusion", emoji: "🌈", description: "Welcomes everyone" }
+    { id: 3, name: "Belonging", emoji: "🤗", description: "Feeling accepted and valued" },
+    { id: 4, name: "Isolation", emoji: "👤", description: "Being alone and separated" },
+    { id: 1, name: "Inclusion", emoji: "🌈", description: "Welcomes everyone" },
+    { id: 5, name: "Love", emoji: "❤️", description: "Deep affection and care" },
+    { id: 2, name: "Hurt", emoji: "💔", description: "Causes emotional pain" },
   ];
 
   // Correct matches
   const correctMatches = [
-    { leftId: 1, rightId: 2 }, // Respect → Inclusion
-    { leftId: 2, rightId: 1 }, // Hate → Hurt
-    { leftId: 3, rightId: 4 }, // Inclusion → Inclusion
-    { leftId: 4, rightId: 3 }, // Exclusion → Hurt
-    { leftId: 5, rightId: 5 }  // Kindness → Inclusion
+    { leftId: 1, rightId: 1 }, // Respect → Inclusion
+    { leftId: 2, rightId: 2 }, // Hate → Hurt
+    { leftId: 3, rightId: 3 }, // Inclusion → Belonging
+    { leftId: 4, rightId: 4 }, // Exclusion → Isolation
+    { leftId: 5, rightId: 5 }  // Kindness → Love
   ];
 
   // Check if a right item is already matched

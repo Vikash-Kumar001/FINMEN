@@ -27,19 +27,20 @@ const LostBallStory = () => {
       id: 1,
       text: "You find a classmate's ball in the playground. What should you do?",
       options: [
-        { 
-          id: "return", 
-          text: "Return it to your classmate", 
-          emoji: "🙋", 
-          description: "Give it back",
-          isCorrect: true
-        },
+       
         { 
           id: "keep", 
           text: "Keep it for yourself", 
           emoji: "😏", 
           description: "Take it",
           isCorrect: false
+        },
+         { 
+          id: "return", 
+          text: "Return it to your classmate", 
+          emoji: "🙋", 
+          description: "Give it back",
+          isCorrect: true
         },
         { 
           id: "leave", 
@@ -108,13 +109,7 @@ const LostBallStory = () => {
       id: 4,
       text: "A classmate left their notebook on the desk. What do you do?",
       options: [
-        { 
-          id: "polite", 
-          text: "Return it to them politely", 
-          emoji: "💌", 
-          description: "Give it back nicely",
-          isCorrect: true
-        },
+        
         { 
           id: "hide", 
           text: "Hide it", 
@@ -128,26 +123,34 @@ const LostBallStory = () => {
           emoji: "📝", 
           description: "Take it",
           isCorrect: false
-        }
+        },
+        { 
+          id: "polite", 
+          text: "Return it to them politely", 
+          emoji: "💌", 
+          description: "Give it back nicely",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 5,
       text: "You find someone's lunchbox outside. How should you respond?",
       options: [
-        { 
-          id: "owner", 
-          text: "Return it to the owner", 
-          emoji: "🖐️", 
-          description: "Give it back",
-          isCorrect: true
-        },
+        
         { 
           id: "eat", 
           text: "Eat it secretly", 
           emoji: "😋", 
           description: "Take the food",
           isCorrect: false
+        },
+        { 
+          id: "owner", 
+          text: "Return it to the owner", 
+          emoji: "🖐️", 
+          description: "Give it back",
+          isCorrect: true
         },
         { 
           id: "throw", 

@@ -25,6 +25,8 @@ const RoleplayGoodTeammate = () => {
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const questions = [
     {
@@ -169,11 +171,15 @@ const RoleplayGoodTeammate = () => {
     }
   ];
 
-  const handleAnswer = (isCorrect) => {
-    if (answered) return;
+  const handleAnswer = (optionId) => {
+    if (showFeedback || showResult) return;
     
-    setAnswered(true);
+    setSelectedOption(optionId);
     resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -181,7 +187,9 @@ const RoleplayGoodTeammate = () => {
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-
+    
+    setShowFeedback(true);
+    
     const isLastQuestion = currentQuestion === questions.length - 1;
     
     setTimeout(() => {
@@ -189,9 +197,11 @@ const RoleplayGoodTeammate = () => {
         setShowResult(true);
       } else {
         setCurrentQuestion(prev => prev + 1);
-        setAnswered(false);
+        setSelectedOption(null);
+        setShowFeedback(false);
+        resetFeedback();
       }
-    }, 500);
+    }, isCorrect ? 1000 : 800);
   };
 
   const handleTryAgain = () => {
@@ -199,6 +209,8 @@ const RoleplayGoodTeammate = () => {
     setCurrentQuestion(0);
     setScore(0);
     setAnswered(false);
+    setSelectedOption(null);
+    setShowFeedback(false);
     resetFeedback();
   };
 
@@ -220,7 +232,7 @@ const RoleplayGoodTeammate = () => {
       gameId={gameId}
       gameType="moral"
     >
-      <div className="space-y-8 max-w-2xl mx-auto">
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         {!showResult && questions[currentQuestion] ? (
           <div>
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
@@ -235,30 +247,47 @@ const RoleplayGoodTeammate = () => {
                 {questions[currentQuestion].text}
               </h3>
               
-              <div className="grid grid-cols-1 gap-4">
-                {questions[currentQuestion].options.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleAnswer(option.isCorrect)}
-                    disabled={answered}
-                    className={`w-full text-left p-4 rounded-xl transition-all transform ${
-                      answered
-                        ? option.isCorrect
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && option.isCorrect;
+                  const showIncorrect = showFeedback && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={showFeedback}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
                           ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
-                        : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                    } ${answered ? "cursor-not-allowed" : ""}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">{option.emoji}</span>
-                      <div className="flex-1">
-                        <div className="font-semibold text-lg">{option.text}</div>
-                        <div className="text-sm opacity-90">{option.description}</div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    </button>
+                  );
+                })}
               </div>
+              
+              {showFeedback && (
+                <div className={`rounded-lg p-5 mt-6 ${
+                  questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                    ? "bg-green-500/20"
+                    : "bg-red-500/20"
+                }`}>
+                  <p className="text-white whitespace-pre-line">
+                    {questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "Great job! That's exactly right! 🎉"
+                      : "Not quite right. Try again next time!"}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         ) : (

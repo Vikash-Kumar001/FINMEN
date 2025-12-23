@@ -57,19 +57,20 @@ const ClassroomStory2 = () => {
       text: "A student is accused of copying your homework, but you know they didn't. Do you clarify?",
       options: [
         { 
-          id: "ignore", 
-          text: "Ignore it", 
-          emoji: "🙈", 
-          description: "Stay out of the situation",
-          isCorrect: false
-        },
-        { 
           id: "explain", 
           text: "Explain the truth", 
           emoji: "🗣️", 
           description: "Speak up and clarify the misunderstanding",
           isCorrect: true
         },
+        { 
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "🙈", 
+          description: "Stay out of the situation",
+          isCorrect: false
+        },
+        
         { 
           id: "later", 
           text: "Tell them later privately", 
@@ -90,6 +91,14 @@ const ClassroomStory2 = () => {
           description: "Don't get involved in the argument",
           isCorrect: false
         },
+        
+        { 
+          id: "support", 
+          text: "Support the punished student later", 
+          emoji: "🤝", 
+          description: "Comfort them after class",
+          isCorrect: false
+        },
         { 
           id: "facts", 
           text: "Tell the teacher the correct facts", 
@@ -97,13 +106,6 @@ const ClassroomStory2 = () => {
           description: "Provide accurate information to the teacher",
           isCorrect: true
         },
-        { 
-          id: "support", 
-          text: "Support the punished student later", 
-          emoji: "🤝", 
-          description: "Comfort them after class",
-          isCorrect: false
-        }
       ]
     },
     {

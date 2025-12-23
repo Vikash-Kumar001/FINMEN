@@ -34,7 +34,7 @@ const RightsDefenderBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Asked for consent before sharing", 
+          text: "Ask for consent before sharing", 
           emoji: "💬", 
           isCorrect: true
         },
@@ -56,6 +56,11 @@ const RightsDefenderBadge = () => {
       question: "What should you do with personal information?",
       options: [
         { 
+          text: "Protect personal information", 
+          emoji: "🔒", 
+          isCorrect: true
+        },
+        { 
           text: "Share personal information publicly", 
           emoji: "🌐", 
           isCorrect: false
@@ -65,11 +70,7 @@ const RightsDefenderBadge = () => {
           emoji: "📤", 
           isCorrect: false
         },
-        { 
-          text: "Protected personal information", 
-          emoji: "🔒", 
-          isCorrect: true
-        },
+        
         { 
           text: "Ignore privacy concerns", 
           emoji: "🙈", 
@@ -93,7 +94,7 @@ const RightsDefenderBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Respected content ownership", 
+          text: "Respect content ownership", 
           emoji: "©️", 
           isCorrect: true
         },
@@ -115,7 +116,7 @@ const RightsDefenderBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Used privacy settings", 
+          text: "Use privacy settings", 
           emoji: "⚙️", 
           isCorrect: true
         },
@@ -147,7 +148,7 @@ const RightsDefenderBadge = () => {
           isCorrect: false
         },
         { 
-          text: "Helped others learn about privacy", 
+          text: "Help others learn about privacy", 
           emoji: "🤝", 
           isCorrect: true
         },

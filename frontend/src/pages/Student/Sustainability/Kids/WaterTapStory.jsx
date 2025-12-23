@@ -103,7 +103,7 @@ const WaterTapStory = () => {
       options: [
         { id: "run", text: "Leave it running", emoji: "💧", isCorrect: false },
         { id: "check", text: "Check it's fully closed", emoji: "✅", isCorrect: true },
-        { id: "play", text: "Play with the water", emoji: "玩耍", isCorrect: false }
+        { id: "play", text: "Play with the water", emoji: "💦", isCorrect: false }
       ]
     },
     {

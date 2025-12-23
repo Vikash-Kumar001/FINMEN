@@ -33,6 +33,14 @@ const GroupChatSimulation = () => {
           description: "Participate in the mocking",
           isCorrect: false
         },
+        
+        { 
+          id: "exit", 
+          text: "Exit the group chat", 
+          emoji: "🚪", 
+          description: "Leave the group",
+          isCorrect: false
+        },
         { 
           id: "defend", 
           text: "Defend the classmate", 
@@ -40,13 +48,6 @@ const GroupChatSimulation = () => {
           description: "Stand up and defend them",
           isCorrect: true
         },
-        { 
-          id: "exit", 
-          text: "Exit the group chat", 
-          emoji: "🚪", 
-          description: "Leave the group",
-          isCorrect: true
-        }
       ]
     },
     {
@@ -72,7 +73,7 @@ const GroupChatSimulation = () => {
           text: "Leave the chat", 
           emoji: "🚪", 
           description: "Exit the group",
-          isCorrect: true
+          isCorrect: false
         }
       ]
     },
@@ -80,14 +81,7 @@ const GroupChatSimulation = () => {
       id: 3,
       text: "Group makes fun of someone's beliefs. What do you do?",
       options: [
-        { 
-          id: "stay-silent", 
-          text: "Stay silent", 
-          emoji: "😶", 
-          description: "Don't say anything",
-          isCorrect: false
-        },
-        { 
+         { 
           id: "stand-up", 
           text: "Stand up for them", 
           emoji: "🛡️", 
@@ -95,11 +89,19 @@ const GroupChatSimulation = () => {
           isCorrect: true
         },
         { 
+          id: "stay-silent", 
+          text: "Stay silent", 
+          emoji: "😶", 
+          description: "Don't say anything",
+          isCorrect: false
+        },
+       
+        { 
           id: "exit-group", 
           text: "Exit the group", 
           emoji: "🚪", 
           description: "Leave the group chat",
-          isCorrect: true
+          isCorrect: false
         }
       ]
     },
@@ -126,7 +128,7 @@ const GroupChatSimulation = () => {
           text: "Leave the group", 
           emoji: "🚪", 
           description: "Exit the chat",
-          isCorrect: true
+          isCorrect: false
         }
       ]
     },
@@ -141,20 +143,21 @@ const GroupChatSimulation = () => {
           description: "Take no action",
           isCorrect: false
         },
+       
         { 
+          id: "exit-hate", 
+          text: "Exit the group chat", 
+          emoji: "🚪", 
+          description: "Leave the group",
+          isCorrect: false
+        },
+         { 
           id: "defend-hate", 
           text: "Defend them and report", 
           emoji: "🛡️", 
           description: "Stand up and report hate",
           isCorrect: true
         },
-        { 
-          id: "exit-hate", 
-          text: "Exit the group chat", 
-          emoji: "🚪", 
-          description: "Leave the group",
-          isCorrect: true
-        }
       ]
     }
   ];

@@ -63,15 +63,16 @@ const NutritionProBadge = () => {
           isCorrect: false
         },
         {
-          text: "Candy",
-          emoji: "🍭",
-          isCorrect: false
-        },
-        {
           text: "Complex Carbs",
           emoji: "🌾",
           isCorrect: true
         },
+        {
+          text: "Candy",
+          emoji: "🍭",
+          isCorrect: false
+        },
+        
         {
           text: "Ice Cream",
           emoji: "🍦",
@@ -101,12 +102,12 @@ const NutritionProBadge = () => {
         {
           text: "Water",
           emoji: "💧",
-          isCorrect: false
+          isCorrect: true
         },
         {
           text: "Milk",
           emoji: "🥛",
-          isCorrect: true
+          isCorrect: false
         }
       ],
       feedback: {
@@ -129,16 +130,17 @@ const NutritionProBadge = () => {
           emoji: "🧂",
           isCorrect: false
         },
-        {
-          text: "Calcium",
-          emoji: "🦴",
-          isCorrect: false
-        },
+       
         {
           text: "Vitamin D",
           emoji: "🌞",
+          isCorrect: false
+        },
+         {
+          text: "Calcium",
+          emoji: "🦴",
           isCorrect: true
-        }
+        },
       ],
       feedback: {
         correct: "Right! Calcium builds strong bones.",
@@ -151,6 +153,11 @@ const NutritionProBadge = () => {
       text: "How often should you eat junk food?",
       options: [
         {
+          text: "In moderation",
+          emoji: "⚖️",
+          isCorrect: true
+        },
+        {
           text: "Every day",
           emoji: "🔁",
           isCorrect: false
@@ -160,11 +167,7 @@ const NutritionProBadge = () => {
           emoji: "🚫",
           isCorrect: false
         },
-        {
-          text: "In moderation",
-          emoji: "⚖️",
-          isCorrect: true
-        },
+        
         {
           text: "Weekly",
           emoji: "📅",

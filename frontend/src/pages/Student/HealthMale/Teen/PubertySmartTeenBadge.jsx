@@ -36,16 +36,17 @@ const PubertySmartTeenBadge = () => {
           emoji: "☀️",
           isCorrect: false
         },
+        
+        {
+          text: "Music",
+          emoji: "🎵",
+          isCorrect: false
+        },
         {
           text: "Hormones",
           emoji: "🧪",
           isCorrect: true
         },
-        {
-          text: "Music",
-          emoji: "🎵",
-          isCorrect: false
-        }
       ],
       feedback: {
         correct: "Correct! Hormones are the chemical messengers.",
@@ -94,6 +95,11 @@ const PubertySmartTeenBadge = () => {
           isCorrect: false
         },
         {
+          text: "Consult a dermatologist",
+          emoji: "👨‍⚕️",
+          isCorrect: true
+        },
+        {
           text: "Scrub hard",
           emoji: "🧽",
           isCorrect: false
@@ -103,11 +109,7 @@ const PubertySmartTeenBadge = () => {
           emoji: "🧴",
           isCorrect: false
         },
-        {
-          text: "Consult a dermatologist",
-          emoji: "👨‍⚕️",
-          isCorrect: true
-        }
+        
       ],
       feedback: {
         correct: "Exactly! Be gentle with your skin.",
@@ -119,6 +121,11 @@ const PubertySmartTeenBadge = () => {
       title: "Emotions",
       text: "Are mood swings normal?",
       options: [
+        {
+          text: "Very common",
+          emoji: "📊",
+          isCorrect: true
+        },
         {
           text: "No",
           emoji: "❌",
@@ -134,11 +141,7 @@ const PubertySmartTeenBadge = () => {
           emoji: "✅",
           isCorrect: false
         },
-        {
-          text: "Very common",
-          emoji: "📊",
-          isCorrect: true
-        }
+        
       ],
       feedback: {
         correct: "Right! It's part of growing up.",

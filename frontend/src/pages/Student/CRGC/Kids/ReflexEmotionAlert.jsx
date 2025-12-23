@@ -75,7 +75,7 @@ const ReflexEmotionAlert = () => {
     {
       id: 4,
       question: "What should you do when you notice a friend seems upset?",
-      emoji: "关心",
+      emoji: "🤷",
       correctAnswer: "Ask them kindly what's wrong and listen",
       options: [
         { text: "Mind your own business completely", isCorrect: false },

@@ -65,8 +65,8 @@ const QuizSavingEnergy = () => {
       id: 1,
       text: "What saves energy?",
       options: [
-        { id: "a", text: "Turn off TV when not watching", emoji: "📺", isCorrect: true },
         { id: "b", text: "Leave all lights on", emoji: "💡", isCorrect: false },
+        { id: "a", text: "Turn off TV when not watching", emoji: "📺", isCorrect: true },
         { id: "c", text: "Keep AC on all day", emoji: "❄️", isCorrect: false }
       ]
     },
@@ -83,17 +83,17 @@ const QuizSavingEnergy = () => {
       id: 3,
       text: "Why is saving energy important?",
       options: [
-        { id: "a", text: "Helps protect our planet", emoji: "🌍", isCorrect: true },
         { id: "b", text: "It doesn't matter", emoji: "😐", isCorrect: false },
-        { id: "c", text: "Makes more pollution", emoji: "🏭", isCorrect: false }
+        { id: "c", text: "Makes more pollution", emoji: "🏭", isCorrect: false },
+        { id: "a", text: "Helps protect our planet", emoji: "🌍", isCorrect: true },
       ]
     },
     {
       id: 4,
       text: "Which appliance uses the most energy?",
       options: [
-        { id: "a", text: "Refrigerator", emoji: "🧊", isCorrect: false },
         { id: "b", text: "Air conditioner", emoji: "❄️", isCorrect: true },
+        { id: "a", text: "Refrigerator", emoji: "🧊", isCorrect: false },
         { id: "c", text: "LED light bulb", emoji: "💡", isCorrect: false }
       ]
     },
@@ -163,8 +163,8 @@ const QuizSavingEnergy = () => {
       showConfetti={showResult && finalScore === questions.length}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
+      flashPoints={flashPoints}
     >
-      {flashPoints}
       {!showResult ? (
         <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         <div className="space-y-6">

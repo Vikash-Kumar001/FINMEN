@@ -120,17 +120,18 @@ const HomeworkStory = () => {
       text: "Ravi's parents give his sister a smaller allowance because 'she won't need as much money as a boy.' What is the right approach?",
       options: [
         {
-          id: "a",
-          text: "Accept that boys need more money than girls",
-          emoji: "💰",
-          isCorrect: false
-        },
-        {
           id: "b",
           text: "Give both children equal allowance for equal responsibilities",
           emoji: "⚖️",
           isCorrect: true
         },
+        {
+          id: "a",
+          text: "Accept that boys need more money than girls",
+          emoji: "💰",
+          isCorrect: false
+        },
+        
         {
           id: "c",
           text: "Give neither child an allowance",

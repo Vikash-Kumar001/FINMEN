@@ -1,61 +1,25 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getSustainabilityKidsGames } from "../../../../pages/Games/GameCategories/Sustainability/kidGamesData";
 
 const PosterSaveWater = () => {
-  const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "sustainability-kids-16";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1;
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 25;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [currentStage, setCurrentStage] = useState(0);
   const [selectedPoster, setSelectedPoster] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [coins, setCoins] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
-  // Find next game path and ID if not provided in location.state
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getSustainabilityKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  // Log when game completes and update location state with nextGameId
-  useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Poster: Save Water game completed! Score: ${coins}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
-      if (nextGameId && window.history && window.history.replaceState) {
-        const currentState = window.history.state || {};
-        window.history.replaceState({
-          ...currentState,
-          nextGameId: nextGameId
-        }, '');
-      }
-    }
-  }, [showResult, coins, gameId, nextGamePath, nextGameId]);
 
   const stages = [
     {
@@ -128,7 +92,7 @@ const PosterSaveWater = () => {
           id: 2,
           title: "Ignore Dripping Taps",
           description: "A poster showing ignoring dripping taps",
-          emoji: "无视💧",
+          emoji: "💧",
           isCorrect: false
         },
         {
@@ -200,102 +164,160 @@ const PosterSaveWater = () => {
     }
   ];
 
+  const currentStageData = stages[currentStage];
+  const posters = currentStageData?.posters || [];
+
   const handlePosterSelect = (poster) => {
-    if (showResult) return;
-    setSelectedPoster(poster);
+    setSelectedPoster(poster.id);
+    
     if (poster.isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setTimeout(() => {
-        if (currentStage < stages.length - 1) {
-          setCurrentStage(prev => prev + 1);
+      
+      // Check if this is the last stage
+      const isLastStage = currentStage === stages.length - 1;
+      
+      if (isLastStage) {
+        // Last stage - show result and game over modal
+        setShowResult(true);
+      } else {
+        // Automatically move to next question after showing feedback
+        setTimeout(() => {
+          setCurrentStage(currentStage + 1);
           setSelectedPoster(null);
-        } else {
-          setShowResult(true);
-          showAnswerConfetti();
-        }
-      }, 2000);
+          setShowResult(false);
+          resetFeedback();
+        }, 1500);
+      }
+    } else {
+      // For incorrect answer, still show feedback but allow retry
+      showCorrectAnswerFeedback(0, false);
+      
+      // Still move to next question after delay, just like correct answers
+      const isLastStage = currentStage === stages.length - 1;
+      
+      if (isLastStage) {
+        setShowResult(true);
+      } else {
+        setTimeout(() => {
+          setCurrentStage(currentStage + 1);
+          setSelectedPoster(null);
+          setShowResult(false);
+          resetFeedback();
+        }, 1500);
+      }
     }
   };
 
   const handleNext = () => {
-    navigate("/student/sustainability/kids/journal-green-habits");
+    if (currentStage < stages.length - 1) {
+      // Move to next question
+      setCurrentStage(currentStage + 1);
+      setSelectedPoster(null);
+      setShowResult(false);
+      resetFeedback();
+    }
   };
+
+  const handleTryAgain = () => {
+    setSelectedPoster(null);
+    setShowResult(false);
+    resetFeedback();
+  };
+
+  const isLastStage = currentStage === stages.length - 1;
+  const selectedPosterData = selectedPoster ? posters.find(p => p.id === selectedPoster) : null;
+  const isCorrect = selectedPosterData?.isCorrect || false;
 
   return (
     <GameShell
       title="Poster: Save Water"
-      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Choose the best poster!` : "Poster Complete!"}
+      subtitle={`Question ${currentStage + 1} of ${stages.length}`}
       currentLevel={currentStage + 1}
       totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
+      onNext={handleNext}
+      nextEnabled={showResult && selectedPoster && isCorrect && !isLastStage}
+      showGameOver={showResult && isLastStage && isCorrect}
       score={coins}
-      showGameOver={showResult}
       gameId={gameId}
       gameType="sustainability"
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       maxScore={stages.length}
-      showConfetti={showResult && coins === stages.length}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
-      {flashPoints}
-      {!showResult ? (
-        <div className="space-y-6">
-          <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-2xl p-6 border border-blue-400/30">
-            <h3 className="text-xl font-bold text-white mb-6 text-center">
-              {stages[currentStage].question}
-            </h3>
-            <div className="grid grid-cols-1 gap-4">
-              {stages[currentStage].posters.map((poster) => (
-                <button
-                  key={poster.id}
-                  onClick={() => handlePosterSelect(poster)}
-                  className={`bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl p-6 border-2 transition-all transform hover:scale-105 text-left ${
-                    selectedPoster?.id === poster.id
-                      ? poster.isCorrect
-                        ? "border-green-400"
-                        : "border-red-400"
-                      : "border-white/20"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="text-5xl">{poster.emoji}</span>
-                    <div className="flex-1">
-                      <div className="font-semibold text-white text-lg mb-2">{poster.title}</div>
-                      <div className="text-sm text-gray-300">{poster.description}</div>
-                    </div>
-                  </div>
-                </button>
-              ))}
+      <div className="space-y-8">
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <p className="text-white text-xl font-bold mb-6 text-center">
+                Question {currentStage + 1}: {currentStageData?.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {posters.map(poster => (
+                  <button
+                    key={poster.id}
+                    onClick={() => handlePosterSelect(poster)}
+                    disabled={showResult}
+                    className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 ${
+                      selectedPoster === poster.id
+                        ? "ring-4 ring-yellow-400 bg-gradient-to-r from-blue-500 to-indigo-600"
+                        : "bg-gradient-to-r from-green-500 to-emerald-600"
+                    } ${showResult ? "opacity-75 cursor-not-allowed" : "hover:scale-105"}`}
+                  >
+                    <div className="text-4xl mb-4 text-center">{poster.emoji}</div>
+                    <h3 className="font-bold text-xl text-white mb-2 text-center">{poster.title}</h3>
+                    <p className="text-white/90 text-center">{poster.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-            {selectedPoster && (
-              <div className={`mt-4 p-4 rounded-lg ${
-                selectedPoster.isCorrect ? "bg-green-500/20 border border-green-400" : "bg-red-500/20 border border-red-400"
-              }`}>
-                <p className="text-white font-semibold">
-                  {selectedPoster.isCorrect ? stages[currentStage].correctFeedback : "Not quite! Try again."}
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {isCorrect ? (
+              <div>
+                <div className="text-5xl mb-4">🎨</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Creative Choice!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  {currentStageData?.correctFeedback}
                 </p>
-                {selectedPoster.isCorrect && (
-                  <p className="text-gray-300 text-sm mt-2">{stages[currentStage].explanation}</p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+1 Coin</span>
+                </div>
+                <p className="text-white/80 mb-4">
+                  {currentStageData?.explanation}
+                </p>
+                {!isLastStage && (
+                  <p className="text-white/70 text-sm mt-4">
+                    Question {currentStage + 1} of {stages.length} completed!
+                  </p>
                 )}
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">🤔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Think About It!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  {currentStageData?.correctFeedback || "That's not quite right. Try again!"}
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Continue
+                </button>
+                <p className="text-white/80 text-sm">
+                  {currentStageData?.explanation || "Look for the poster that promotes good water conservation habits."}
+                </p>
               </div>
             )}
           </div>
-        </div>
-      ) : (
-        <div className="text-center space-y-6">
-          <div className="text-6xl mb-4">🎨</div>
-          <h3 className="text-2xl font-bold text-white">Great job!</h3>
-          <p className="text-gray-300">
-            You selected {coins} out of {stages.length} correct posters!
-          </p>
-          <p className="text-green-400 font-semibold">
-            You earned {coins} coins! Keep promoting water conservation! 💧
-          </p>
-        </div>
-      )}
+        )}
+      </div>
     </GameShell>
   );
 };

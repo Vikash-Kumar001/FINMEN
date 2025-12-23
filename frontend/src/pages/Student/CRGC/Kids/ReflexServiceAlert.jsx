@@ -59,7 +59,7 @@ const ReflexServiceAlert = () => {
     {
       id: 3,
       question: "What's the best way to address a broken playground in your neighborhood?",
-      emoji: "游乐场",
+      emoji: "🛝",
       correctAnswer: "Contact local authorities and organize repair fundraising",
       options: [
         { text: "Assume someone else will fix it", isCorrect: false },

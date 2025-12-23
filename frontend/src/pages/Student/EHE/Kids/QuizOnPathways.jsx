@@ -61,21 +61,28 @@ const QuizOnPathways = () => {
           id: "a",
           text: "Vocational training",
           emoji: "🔧",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Partially correct. Vocational training is indeed a career path, but it's not the only one."
         },
         {
           id: "b",
           text: "Higher education",
           emoji: "🎓",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Partially correct. Higher education is indeed a career path, but it's not the only one."
         },
         {
           id: "c",
           text: "Both",
           emoji: "🤝",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Both vocational training and higher education are valid career paths."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Career paths can take many forms, including vocational training and higher education.",
+        incorrect: "There are multiple valid career paths, including both vocational training and higher education."
+      }
     },
     {
       id: 2,
@@ -86,21 +93,28 @@ const QuizOnPathways = () => {
           id: "b",
           text: "Only theoretical knowledge",
           emoji: "📚",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Vocational training emphasizes hands-on skills rather than just theory."
         },
         {
           id: "c",
           text: "Only playing games",
           emoji: "🎮",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. While engaging, vocational training focuses on developing job-specific skills."
         },
         {
           id: "a",
           text: "Practical skills for specific jobs",
           emoji: "🛠️",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Vocational training prepares individuals with hands-on skills for specific careers."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Vocational training focuses on practical, job-specific skills that prepare individuals for particular careers.",
+        incorrect: "Vocational training emphasizes hands-on learning and practical skills for specific occupations."
+      }
     },
     {
       id: 3,
@@ -111,22 +125,29 @@ const QuizOnPathways = () => {
           id: "a",
           text: "Deeper theoretical knowledge",
           emoji: "🧠",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Higher education provides in-depth understanding of subjects and critical thinking skills."
         },
         {
           id: "b",
           text: "No need to study hard",
           emoji: "😴",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Higher education typically requires significant effort and dedication."
         },
         {
           id: "c",
           text: "Automatic job guarantee",
           emoji: "💼",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. While higher education can improve job prospects, it doesn't guarantee employment."
         },
         
-      ]
+      ],
+      feedback: {
+        correct: "Higher education develops critical thinking, analytical skills, and deep subject matter expertise.",
+        incorrect: "Higher education offers benefits like expanded knowledge, research skills, and career opportunities."
+      }
     },
     {
       id: 4,
@@ -137,22 +158,29 @@ const QuizOnPathways = () => {
           id: "c",
           text: "No, college is absolutely necessary",
           emoji: "❌",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Success can be achieved through various paths, not just college."
         },
          {
           id: "a",
           text: "Yes, through skills and dedication",
           emoji: "✅",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Many successful people have built careers through skills, dedication, and alternative education."
         },
         {
           id: "b",
           text: "Only with family wealth",
           emoji: "💰",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. While resources can help, success depends more on skills, effort, and opportunity."
         },
-       
-      ]
+              
+      ],
+      feedback: {
+        correct: "Success comes in many forms and can be achieved through various paths including entrepreneurship, trades, and self-education.",
+        incorrect: "Multiple pathways can lead to success, including vocational training, apprenticeships, and entrepreneurship."
+      }
     },
     {
       id: 5,
@@ -163,21 +191,28 @@ const QuizOnPathways = () => {
           id: "b",
           text: "Only what friends are doing",
           emoji: "👥",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. While friends' choices can be informative, your personal factors matter more."
         },
         {
           id: "c",
           text: "Only the shortest duration",
           emoji: "⏱️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Quick completion is helpful but shouldn't be the only consideration."
         },
         {
           id: "a",
           text: "Your interests, skills, and goals",
           emoji: "🎯",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Aligning your path with your interests, skills, and goals increases satisfaction and success."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Choosing a career path should align with your personal interests, strengths, and long-term objectives.",
+        incorrect: "Effective career planning considers multiple factors including personal interests, market demand, and growth potential."
+      }
     }
   ];
 
@@ -280,9 +315,25 @@ const QuizOnPathways = () => {
               {answered && (
                 <div className={`rounded-lg p-5 mt-6 ${
                   currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
-                    ? "bg-green-500/20"
-                    : "bg-red-500/20"
-                 } `}>
+                    ? "bg-green-500/20 border border-green-500"
+                    : "bg-red-500/20 border border-red-500"
+                }`}>
+                  <p className="text-lg font-semibold text-center">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "✅ Correct! "
+                      : "❌ Not quite! "}
+                  </p>
+                  <p className="text-center mt-2">
+                    {(() => {
+                      const selectedOptionData = currentQuestionData.options.find(opt => opt.id === selectedOption);
+                      if (selectedOptionData?.feedback) {
+                        return selectedOptionData.feedback;
+                      }
+                      return selectedOptionData?.isCorrect 
+                        ? currentQuestionData.feedback?.correct 
+                        : currentQuestionData.feedback?.incorrect;
+                    })()}
+                  </p>
                 </div>
               )}
             </div>

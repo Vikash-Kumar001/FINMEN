@@ -42,8 +42,8 @@ const PubertyAwkwardDebateTeen = () => {
           emoji: "🤐"
         }
       ],
-      correctAnswer: "c",
-      explanation: "Don't silence yourself. Everyone goes through it, and no need to hide."
+      correctAnswer: "a",
+      explanation: "Voice cracks are natural during puberty. Don't worry about it, and everyone goes through it."
     },
     {
       id: 2,

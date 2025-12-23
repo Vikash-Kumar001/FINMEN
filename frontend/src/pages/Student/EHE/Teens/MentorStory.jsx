@@ -14,8 +14,8 @@ const MentorStory = () => {
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1; // 1 coin per correct answer
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5; // Total coins for completing all questions
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
   const [coins, setCoins] = useState(0);
@@ -150,10 +150,10 @@ const MentorStory = () => {
     resetFeedback();
     
     if (option.correct) {
-      const newCoins = coins + coinsPerLevel;
+      const newCoins = coins + 1; // Give 1 coin per correct answer instead of coinsPerLevel
       setCoins(newCoins);
       setFinalScore(finalScore + 1);
-      showCorrectAnswerFeedback(newCoins);
+      showCorrectAnswerFeedback(1, true);
     }
     
     setTimeout(() => {
@@ -210,13 +210,10 @@ const MentorStory = () => {
                     className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
                   >
                     <div className="flex items-center">
-                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        {option.id}
+                      <span className="text-2xl mr-3 flex-shrink-0">
+                        {option.emoji}
                       </span>
-                      <div>
-                        <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
-                        <span className="font-medium">{option.text}</span>
-                      </div>
+                      <span className="font-medium">{option.text}</span>
                     </div>
                   </button>
                 ))}

@@ -12,7 +12,7 @@ const QuizHigherStudies = () => {
   const totalCoins = location.state?.totalCoins || 5;
   const totalXp = location.state?.totalXp || 10;
   
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback, flashPoints } = useGameFeedback();
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -28,7 +28,7 @@ const QuizHigherStudies = () => {
         {
           id: "a",
           text: "All of the above (Arts, Science, Commerce)",
-          emoji: "✅",
+          emoji: "🎨",
           isCorrect: true
         },
         {
@@ -50,12 +50,7 @@ const QuizHigherStudies = () => {
       text: "What should guide higher education stream selection?",
       emoji: "🧭",
       options: [
-        {
-          id: "a",
-          text: "Interests, strengths, and career goals",
-          emoji: "🎯",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Parental expectations only",
@@ -67,7 +62,13 @@ const QuizHigherStudies = () => {
           text: "Peer choices only",
           emoji: "👥",
           isCorrect: false
-        }
+        },
+         {
+          id: "a",
+          text: "Interests, strengths, and career goals",
+          emoji: "🎯",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -75,17 +76,18 @@ const QuizHigherStudies = () => {
       text: "Why is researching higher education streams important?",
       emoji: "🔍",
       options: [
-        {
-          id: "a",
-          text: "Make informed decisions about future",
-          emoji: "🧠",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Follow trends without thinking",
           emoji: "🌪️",
           isCorrect: false
+        },
+         {
+          id: "a",
+          text: "Make informed decisions about future",
+          emoji: "🧠",
+          isCorrect: true
         },
         {
           id: "c",
@@ -100,12 +102,7 @@ const QuizHigherStudies = () => {
       text: "What is a benefit of choosing the right stream?",
       emoji: "⭐",
       options: [
-        {
-          id: "a",
-          text: "Better alignment with career aspirations",
-          emoji: "✅",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "No impact on future",
@@ -117,7 +114,13 @@ const QuizHigherStudies = () => {
           text: "Less valuable than random choice",
           emoji: "🎲",
           isCorrect: false
-        }
+        },
+         {
+          id: "a",
+          text: "Better alignment with career aspirations",
+          emoji: "🏆",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -202,7 +205,9 @@ const QuizHigherStudies = () => {
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+    >
       <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         {!gameFinished && currentQuestionData ? (
           <div className="space-y-6">

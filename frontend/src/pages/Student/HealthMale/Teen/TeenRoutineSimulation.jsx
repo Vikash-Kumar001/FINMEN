@@ -29,13 +29,13 @@ const TeenRoutineSimulation = () => {
           id: "a",
           text: "Quick shower",
           emoji: "🚿",
-          isCorrect: false
+          isCorrect: true
         },
         {
           id: "b",
           text: "Skip shower",
           emoji: "🏃",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "c",
@@ -72,13 +72,13 @@ const TeenRoutineSimulation = () => {
           id: "c",
           text: "Wear it anyway",
           emoji: "👕",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "d",
           text: "Choose a different clean shirt",
           emoji: "👕",
-          isCorrect: false
+          isCorrect: true
         }
       ]
     },
@@ -91,7 +91,7 @@ const TeenRoutineSimulation = () => {
           id: "a",
           text: "Wash face and change",
           emoji: "🧼",
-          isCorrect: false
+          isCorrect: true
         },
         {
           id: "b",
@@ -103,7 +103,7 @@ const TeenRoutineSimulation = () => {
           id: "c",
           text: "Go to sleep",
           emoji: "😴",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "d",

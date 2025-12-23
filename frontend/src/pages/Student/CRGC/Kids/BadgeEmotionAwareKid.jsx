@@ -56,10 +56,7 @@ const BadgeEmotionAwareKid = () => {
       title: "Healthy Expression",
       question: "It's healthy to express your emotions appropriately.",
       options: [
-        { 
-          text: "True", 
-          isCorrect: true
-        },
+       
         { 
           text: "False", 
           isCorrect: false
@@ -71,7 +68,11 @@ const BadgeEmotionAwareKid = () => {
         { 
           text: "Never express emotions", 
           isCorrect: false
-        }
+        },
+         { 
+          text: "True", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Yes! Expressing emotions appropriately is a key part of emotional intelligence.",
@@ -141,13 +142,14 @@ const BadgeEmotionAwareKid = () => {
           text: "Break something", 
           isCorrect: false
         },
-        { 
-          text: "Take a break and reassess", 
-          isCorrect: true
-        },
+        
         { 
           text: "Blame others for your problems", 
           isCorrect: false
+        },
+        { 
+          text: "Take a break and reassess", 
+          isCorrect: true
         },
         { 
           text: "Give up completely", 

@@ -12,7 +12,7 @@ const QuizTeenPaths = () => {
   const totalCoins = location.state?.totalCoins || 5;
   const totalXp = location.state?.totalXp || 10;
   
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback, flashPoints } = useGameFeedback();
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -34,7 +34,7 @@ const QuizTeenPaths = () => {
         {
           id: "b",
           text: "Both college and vocational training",
-          emoji: "✅",
+          emoji: "🎓",
           isCorrect: true
         },
         {
@@ -56,18 +56,19 @@ const QuizTeenPaths = () => {
           emoji: "👪",
           isCorrect: false
         },
+        
+        {
+          id: "c",
+          text: "Peer choices only",
+          emoji: "👥",
+          isCorrect: false
+        },
         {
           id: "b",
           text: "Interests, skills, and market demand",
           emoji: "🎯",
           isCorrect: true
         },
-        {
-          id: "c",
-          text: "Peer choices only",
-          emoji: "👥",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -75,18 +76,19 @@ const QuizTeenPaths = () => {
       text: "Why is researching career paths important?",
       emoji: "🔍",
       options: [
+         {
+          id: "b",
+          text: "Make informed decisions about the future",
+          emoji: "🧠",
+          isCorrect: true
+        },
         {
           id: "a",
           text: "Follow trends without thinking",
           emoji: "🌪️",
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Make informed decisions about the future",
-          emoji: "🧠",
-          isCorrect: true
-        },
+       
         {
           id: "c",
           text: "Avoid all planning",
@@ -109,7 +111,7 @@ const QuizTeenPaths = () => {
         {
           id: "b",
           text: "Practical skills for specific jobs",
-          emoji: "✅",
+          emoji: "🛠️",
           isCorrect: true
         },
         {
@@ -131,18 +133,19 @@ const QuizTeenPaths = () => {
           emoji: "🙈",
           isCorrect: false
         },
+        
+        {
+          id: "c",
+          text: "Stick to one idea only",
+          emoji: "📌",
+          isCorrect: false
+        },
         {
           id: "b",
           text: "Internships, job shadowing, and career fairs",
           emoji: "🏢",
           isCorrect: true
         },
-        {
-          id: "c",
-          text: "Stick to one idea only",
-          emoji: "📌",
-          isCorrect: false
-        }
       ]
     }
   ];
@@ -202,7 +205,9 @@ const QuizTeenPaths = () => {
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+    >
       <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         {!gameFinished && currentQuestionData ? (
           <div className="space-y-6">

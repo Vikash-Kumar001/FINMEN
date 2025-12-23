@@ -13,8 +13,8 @@ const FreelanceStory = () => {
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1; // 1 coin per correct answer
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5; // Total coins for completing all questions
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -28,45 +28,45 @@ const FreelanceStory = () => {
       id: 1,
       text: "A teen learns coding and works online. What is this called?",
       options: [
-        { id: "a", text: "Freelancing", correct: true },
-        { id: "b", text: "Traditional job", correct: false },
-        { id: "c", text: "Unemployment", correct: false }
+        { id: "b", text: "Traditional job", correct: false, emoji: "🏢" },
+        { id: "a", text: "Freelancing", correct: true, emoji: "💼" },
+        { id: "c", text: "Unemployment", correct: false, emoji: "❌" }
       ]
     },
     {
       id: 2,
       text: "What are benefits of freelancing for young people?",
       options: [
-        { id: "a", text: "Flexible schedule and skill development", correct: true },
-        { id: "b", text: "Fixed hours only", correct: false },
-        { id: "c", text: "No learning opportunities", correct: false }
+        { id: "b", text: "Fixed hours only", correct: false, emoji: "⏱️" },
+        { id: "c", text: "No learning opportunities", correct: false, emoji: "📉" },
+        { id: "a", text: "Flexible schedule and skill development", correct: true, emoji: "⏰" },
       ]
     },
     {
       id: 3,
       text: "What skills are important for successful freelancing?",
       options: [
-        { id: "a", text: "Technical skills and communication", correct: true },
-        { id: "b", text: "Just technical skills", correct: false },
-        { id: "c", text: "Just communication", correct: false }
+        { id: "b", text: "Just technical skills", correct: false, emoji: "💻" },
+        { id: "a", text: "Technical skills and communication", correct: true, emoji: "🛠️" },
+        { id: "c", text: "Just communication", correct: false, emoji: "💬" }
       ]
     },
     {
       id: 4,
       text: "Why is time management crucial for freelancers?",
       options: [
-        { id: "a", text: "Must balance multiple projects and deadlines", correct: true },
-        { id: "b", text: "Not important at all", correct: false },
-        { id: "c", text: "Someone else manages time", correct: false }
+        { id: "b", text: "Not important at all", correct: false, emoji: "😴" },
+        { id: "c", text: "Someone else manages time", correct: false, emoji: "🤷" },
+        { id: "a", text: "Must balance multiple projects and deadlines", correct: true, emoji: "📅" },
       ]
     },
     {
       id: 5,
       text: "How can freelancing prepare teens for the future of work?",
       options: [
-        { id: "a", text: "Develops independence and adaptability", correct: true },
-        { id: "b", text: "Makes them dependent", correct: false },
-        { id: "c", text: "Limits opportunities", correct: false }
+        { id: "a", text: "Develops independence and adaptability", correct: true, emoji: "🚀" },
+        { id: "b", text: "Makes them dependent", correct: false, emoji: "🔗" },
+        { id: "c", text: "Limits opportunities", correct: false, emoji: "🚫" }
       ]
     }
   ];
@@ -75,10 +75,10 @@ const FreelanceStory = () => {
     resetFeedback();
     
     if (option.correct) {
-      const newCoins = coins + coinsPerLevel;
+      const newCoins = coins + 1; // Give 1 coin per correct answer instead of coinsPerLevel
       setCoins(newCoins);
       setFinalScore(finalScore + 1);
-      showCorrectAnswerFeedback(newCoins);
+      showCorrectAnswerFeedback(1, true);
     }
     
     setTimeout(() => {
@@ -135,8 +135,8 @@ const FreelanceStory = () => {
                     className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
                   >
                     <div className="flex items-center">
-                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        {option.id}
+                      <span className="text-2xl mr-3 flex-shrink-0">
+                        {option.emoji}
                       </span>
                       <span className="font-medium">{option.text}</span>
                     </div>

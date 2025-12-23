@@ -61,21 +61,28 @@ const QuizOnSocialImpact = () => {
           id: "a",
           text: "Helping society + business",
           emoji: "🏢",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Social entrepreneurship combines business practices with social impact."
         },
         {
           id: "b",
           text: "Only money",
           emoji: "💰",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. While financial sustainability is important, social impact is the primary goal."
         },
         {
           id: "c",
           text: "Ignoring community needs",
           emoji: "🚫",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Social entrepreneurship specifically focuses on addressing community needs."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Social entrepreneurship combines business strategies with creating positive social impact.",
+        incorrect: "Social entrepreneurship focuses on creating positive change while maintaining business sustainability."
+      }
     },
     {
       id: 2,
@@ -87,21 +94,28 @@ const QuizOnSocialImpact = () => {
           id: "b",
           text: "Only charity organization",
           emoji: "💝",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Social enterprises are businesses that aim to solve social problems."
         },
          {
           id: "a",
           text: "Business that solves social problems",
           emoji: "💼",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Social enterprises are businesses that focus on solving social problems."
         },
         {
           id: "c",
           text: "Government agency",
           emoji: "🏛️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Social enterprises are typically private organizations, not government entities."
         }
-      ]
+      ],
+      feedback: {
+        correct: "A social enterprise is a business that aims to solve social problems while being financially sustainable.",
+        incorrect: "Social enterprises are businesses with a primary mission of creating social impact."
+      }
     },
     {
       id: 3,
@@ -113,21 +127,28 @@ const QuizOnSocialImpact = () => {
           id: "b",
           text: "Only financial profit",
           emoji: "📈",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Financial profit is a business measure, not social impact."
         },
         {
           id: "c",
           text: "Negative consequences",
           emoji: "⚠️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Social impact refers to positive effects on society, not negative ones."
         },
          {
           id: "a",
           text: "Positive effect on society",
           emoji: "✨",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Social impact refers to positive effects on society and communities."
         },
-      ]
+      ],
+      feedback: {
+        correct: "Social impact refers to positive changes that benefit society and communities.",
+        incorrect: "Social impact is the positive change created by actions or programs on society."
+      }
     },
     {
       id: 4,
@@ -139,21 +160,28 @@ const QuizOnSocialImpact = () => {
           id: "b",
           text: "Only personal gain",
           emoji: "👤",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Social entrepreneurs prioritize community benefit over personal gain."
         },
         {
           id: "c",
           text: "Copying others",
           emoji: "📋",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Social entrepreneurs innovate to address social challenges."
         },
         {
           id: "a",
           text: "Solving social problems",
           emoji: "🔧",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Social entrepreneurs focus on solving social problems through innovative solutions."
         },
-      ]
+      ],
+      feedback: {
+        correct: "Social entrepreneurs focus on solving social problems and creating positive change.",
+        incorrect: "Social entrepreneurs prioritize addressing social challenges over personal gain."
+      }
     },
     {
       id: 5,
@@ -164,21 +192,28 @@ const QuizOnSocialImpact = () => {
           id: "a",
           text: "Creates sustainable solutions",
           emoji: "🌍",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Social entrepreneurship creates sustainable solutions to social problems."
         },
         {
           id: "b",
           text: "Only creates jobs",
           emoji: "💼",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. While it creates jobs, the primary benefit is solving social problems."
         },
         {
           id: "c",
           text: "Has no benefits",
           emoji: "❌",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Social entrepreneurship creates significant positive benefits for society."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Social entrepreneurship is important because it creates sustainable solutions to social problems.",
+        incorrect: "Social entrepreneurship addresses social challenges through sustainable, business-based approaches."
+      }
     }
   ];
 
@@ -281,9 +316,25 @@ const QuizOnSocialImpact = () => {
               {answered && (
                 <div className={`rounded-lg p-5 mt-6 ${
                   currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
-                    ? "bg-green-500/20"
-                    : "bg-red-500/20"
-                 } `}>
+                    ? "bg-green-500/20 border border-green-500"
+                    : "bg-red-500/20 border border-red-500"
+                }`}>
+                  <p className="text-lg font-semibold text-center">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "✅ Correct! "
+                      : "❌ Not quite! "}
+                  </p>
+                  <p className="text-center mt-2">
+                    {(() => {
+                      const selectedOptionData = currentQuestionData.options.find(opt => opt.id === selectedOption);
+                      if (selectedOptionData?.feedback) {
+                        return selectedOptionData.feedback;
+                      }
+                      return selectedOptionData?.isCorrect 
+                        ? currentQuestionData.feedback?.correct 
+                        : currentQuestionData.feedback?.incorrect;
+                    })()}
+                  </p>
                 </div>
               )}
             </div>

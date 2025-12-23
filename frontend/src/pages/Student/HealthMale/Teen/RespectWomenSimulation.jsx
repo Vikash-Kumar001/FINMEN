@@ -51,23 +51,24 @@ const RespectWomenSimulation = () => {
       id: 2,
       text: "How should you respond to disrespectful comments about women?",
       options: [
+                {
+          id: "b",
+          text: "Change the subject respectfully",
+          emoji: "💬",
+          isCorrect: true
+        },
         {
           id: "a",
           text: "Call them out directly",
           emoji: "🗣️",
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Change the subject respectfully",
-          emoji: "💬",
-          isCorrect: false
-        },
+,
         {
           id: "c",
           text: "Laugh along",
           emoji: "😂",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "d",
@@ -85,7 +86,7 @@ const RespectWomenSimulation = () => {
           id: "a",
           text: "Opening doors for them",
           emoji: "🚪",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "b",
@@ -97,7 +98,7 @@ const RespectWomenSimulation = () => {
           id: "c",
           text: "Listening to their opinions",
           emoji: "👂",
-          isCorrect: false
+          isCorrect: true
         },
         {
           id: "d",

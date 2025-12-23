@@ -60,13 +60,14 @@ const BadgeVolunteerLeaderTeen = () => {
           text: "Tell them what to do without explanation", 
           isCorrect: false
         },
-        { 
-          text: "Listen to their interests and guide them to suitable opportunities", 
-          isCorrect: true
-        },
+       
         { 
           text: "Assign them the tasks you don't want to do", 
           isCorrect: false
+        },
+         { 
+          text: "Listen to their interests and guide them to suitable opportunities", 
+          isCorrect: true
         },
         { 
           text: "Compare them to experienced volunteers", 
@@ -83,14 +84,15 @@ const BadgeVolunteerLeaderTeen = () => {
       title: "Fundraising Leadership",
       question: "What is crucial for leading a successful fundraising campaign?",
       options: [
+         { 
+          text: "Clearly communicating the purpose and building trust with supporters", 
+          isCorrect: true
+        },
         { 
           text: "Setting unrealistic financial goals", 
           isCorrect: false
         },
-        { 
-          text: "Clearly communicating the purpose and building trust with supporters", 
-          isCorrect: true
-        },
+       
         { 
           text: "Pressuring people to donate", 
           isCorrect: false
@@ -114,10 +116,7 @@ const BadgeVolunteerLeaderTeen = () => {
           text: "Shouting about it on social media", 
           isCorrect: false
         },
-        { 
-          text: "Educating others and inspiring positive action through example", 
-          isCorrect: true
-        },
+        
         { 
           text: "Criticizing those who disagree", 
           isCorrect: false
@@ -125,7 +124,11 @@ const BadgeVolunteerLeaderTeen = () => {
         { 
           text: "Making it about personal popularity", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Educating others and inspiring positive action through example", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Education and positive example inspire genuine understanding and lasting commitment to causes.",

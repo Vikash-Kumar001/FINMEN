@@ -61,21 +61,28 @@ const QuizOnCreativity = () => {
           id: "a",
           text: "Solving problems in new ways",
           emoji: "🛠️",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Exactly! Innovation involves finding fresh approaches to challenges."
         },
         {
           id: "b",
           text: "Copying others",
           emoji: "📋",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Copying others is imitation, not innovation."
         },
         {
           id: "c",
           text: "Doing nothing",
           emoji: "😴",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Innovation requires active problem-solving, not inaction."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Innovation means creating new solutions to problems or improving existing ones.",
+        incorrect: "Innovation involves original thinking and creative problem-solving."
+      }
     },
     {
       id: 2,
@@ -86,21 +93,28 @@ const QuizOnCreativity = () => {
           id: "c",
           text: "Being afraid to try",
           emoji: "😨",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Fear blocks creativity by preventing experimentation."
         },
         {
           id: "a",
           text: "Asking 'what if?' questions",
           emoji: "❓",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! 'What if?' questions open up new possibilities and pathways."
         },
         {
           id: "b",
           text: "Following the same routine",
           emoji: "🔁",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Rigid routines limit exposure to new ideas and experiences."
         }
-      ]
+      ],
+      feedback: {
+        correct: "\"What if?\" questions stimulate imagination and lead to creative breakthroughs.",
+        incorrect: "Creativity flourishes when we challenge assumptions and explore possibilities."
+      }
     },
     {
       id: 3,
@@ -111,21 +125,28 @@ const QuizOnCreativity = () => {
           id: "b",
           text: "Give up immediately",
           emoji: "🏳️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Mistakes are learning opportunities, not reasons to quit."
         },
         {
           id: "c",
           text: "Hide it from others",
           emoji: "🙈",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Sharing mistakes can lead to valuable feedback and support."
         },
         {
           id: "a",
           text: "Learn from it and try a different approach",
           emoji: "📚",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Exactly! Mistakes are stepping stones to improvement and innovation."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Smart innovators treat mistakes as valuable learning experiences.",
+        incorrect: "Successful creators view mistakes as opportunities for growth and refinement."
+      }
     },
     {
       id: 4,
@@ -136,21 +157,28 @@ const QuizOnCreativity = () => {
           id: "b",
           text: "To prove you're smarter",
           emoji: "👑",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Collaboration isn't about proving superiority but about collective growth."
         },
         {
           id: "c",
           text: "To copy their ideas",
           emoji: "📸",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Brainstorming is about generating new ideas together, not copying."
         },
         {
           id: "a",
           text: "To combine different perspectives",
           emoji: "🤝",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Exactly! Different viewpoints spark creative solutions neither person might reach alone."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Diverse perspectives fuel innovation by challenging assumptions.",
+        incorrect: "Effective brainstorming creates synergy from combining unique viewpoints."
+      }
     },
     {
       id: 5,
@@ -161,21 +189,28 @@ const QuizOnCreativity = () => {
           id: "c",
           text: "To avoid all risks",
           emoji: "🛡️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Entrepreneurship inherently involves risk-taking and creative problem-solving."
         },
         {
           id: "b",
           text: "To do everything alone",
           emoji: "👤",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Successful entrepreneurs often collaborate and delegate."
         },
         {
           id: "a",
           text: "To find unique solutions and opportunities",
           emoji: "🎯",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Exactly! Creative thinking helps entrepreneurs spot gaps and develop innovative offerings."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Entrepreneurial creativity drives competitive advantage and market disruption.",
+        incorrect: "Entrepreneurs use creativity to solve problems and capitalize on opportunities."
+      }
     }
   ];
 
@@ -278,9 +313,25 @@ const QuizOnCreativity = () => {
               {answered && (
                 <div className={`rounded-lg p-5 mt-6 ${
                   currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
-                    ? "bg-green-500/20"
-                    : "bg-red-500/20"
+                    ? "bg-green-500/20 border border-green-500"
+                    : "bg-red-500/20 border border-red-500"
                 }`}>
+                  <p className="text-lg font-semibold text-center">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "✅ Correct! "
+                      : "❌ Not quite! "}
+                  </p>
+                  <p className="text-center mt-2">
+                    {(() => {
+                      const selectedOptionData = currentQuestionData.options.find(opt => opt.id === selectedOption);
+                      if (selectedOptionData?.feedback) {
+                        return selectedOptionData.feedback;
+                      }
+                      return selectedOptionData?.isCorrect 
+                        ? currentQuestionData.feedback?.correct 
+                        : currentQuestionData.feedback?.incorrect;
+                    })()}
+                  </p>
                 </div>
               )}
             </div>

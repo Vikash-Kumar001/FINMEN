@@ -19,20 +19,20 @@ const PuzzleFamousTeens = () => {
 
   // Teen Entrepreneurs (left side) - 5 items
   const entrepreneurs = [
-    { id: 1, name: "Moziah Bridges", emoji: "👔", description: "Started a bow tie business at age 9" },
-    { id: 2, name: "Cory Nieves", emoji: "🍪", description: "Founded Mr. Cory's Cookies at age 11" },
-    { id: 3, name: "Alina Morse", emoji: "🍬", description: "Created Zollipops at age 13" },
-    { id: 4, name: "Kylie Jenner", emoji: "💄", description: "Built a cosmetics empire as a teenager" },
-    { id: 5, name: "Ben Pasternak", emoji: "🎮", description: "Developed apps and sold his company at 15" }
+    { id: 1, name: "Moziah Bridges",   },
+    { id: 2, name: "Cory Nieves",   },
+    { id: 3, name: "Alina Morse",   },
+    { id: 4, name: "Kylie Jenner",   },
+    { id: 5, name: "Ben Pasternak",   },
   ];
 
   // Businesses (right side) - 5 items
   const businesses = [
-    { id: 1, name: "Tie Business", emoji: "👔", description: "Fashion accessories company specializing in bow ties" },
-    { id: 5, name: "App Development", emoji: "📱", description: "Mobile application creation and tech solutions" },
-    { id: 2, name: "Cookies", emoji: "🍪", description: "Gourmet cookie baking and delivery service" },
-    { id: 4, name: "Cosmetics Brand", emoji: "💄", description: "Luxury makeup and skincare products" },
-    { id: 3, name: "Candy", emoji: "🍬", description: "Healthy lollipop brand with vitamins" },
+    { id: 5, name: "App Development", emoji: "📱",  },
+    { id: 1, name: "Tie Business", emoji: "👔",  },
+    { id: 2, name: "Cookies", emoji: "🍪",  },
+    { id: 4, name: "Cosmetics Brand", emoji: "💄",  },
+    { id: 3, name: "Candy", emoji: "🍬",  },
   ];
 
   // Correct matches

@@ -13,8 +13,8 @@ const FashionStory = () => {
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1; // 1 coin per correct answer
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5; // Total coins for completing all questions
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -28,45 +28,45 @@ const FashionStory = () => {
       id: 1,
       text: "A 16-year-old starts a clothing brand. What did she show?",
       options: [
-        { id: "a", text: "Just copying others", correct: false },
-        { id: "b", text: "Creativity & Business Mind", correct: true },
-        { id: "c", text: "Playing games all day", correct: false }
+        { id: "a", text: "Just copying others", correct: false, emoji: "📚" },
+        { id: "c", text: "Playing games all day", correct: false, emoji: "🎮" },
+        { id: "b", text: "Creativity & Business Mind", correct: true, emoji: "💡" },
       ]
     },
     {
       id: 2,
       text: "What skills are important for fashion entrepreneurs?",
       options: [
-        { id: "a", text: "Just watching TV", correct: false },
-        { id: "b", text: "Design sense and market awareness", correct: true },
-        { id: "c", text: "Sleeping", correct: false }
+        { id: "a", text: "Just watching TV", correct: false, emoji: "📺" },
+        { id: "b", text: "Design sense and market awareness", correct: true, emoji: "🎨" },
+        { id: "c", text: "Sleeping", correct: false, emoji: "😴" }
       ]
     },
     {
       id: 3,
       text: "What makes teen fashion businesses unique?",
       options: [
-        { id: "a", text: "Copying adult fashion", correct: false },
-        { id: "b", text: "Understanding youth trends and preferences", correct: true },
-        { id: "c", text: "Ignoring market needs", correct: false }
+        { id: "b", text: "Understanding youth trends and preferences", correct: true, emoji: "🎯" },
+        { id: "a", text: "Copying adult fashion", correct: false, emoji: "🎭" },
+        { id: "c", text: "Ignoring market needs", correct: false, emoji: "❌" }
       ]
     },
     {
       id: 4,
       text: "Why is creativity important in fashion business?",
       options: [
-        { id: "a", text: "Makes everything the same", correct: false },
-        { id: "b", text: "Creates unique products that stand out", correct: true },
-        { id: "c", text: "Wastes resources", correct: false }
+        { id: "a", text: "Makes everything the same", correct: false, emoji: "🔄" },
+        { id: "c", text: "Wastes resources", correct: false, emoji: "💸" },
+        { id: "b", text: "Creates unique products that stand out", correct: true, emoji: "✨" },
       ]
     },
     {
       id: 5,
       text: "What can fashion entrepreneurs learn from their customers?",
       options: [
-        { id: "a", text: "Nothing useful", correct: false },
-        { id: "b", text: "Preferences and feedback for improvement", correct: true },
-        { id: "c", text: "To ignore them", correct: false }
+        { id: "a", text: "Nothing useful", correct: false, emoji: "❌" },
+        { id: "b", text: "Preferences and feedback for improvement", correct: true, emoji: "💬" },
+        { id: "c", text: "To ignore them", correct: false, emoji: "🙉" }
       ]
     }
   ];
@@ -75,10 +75,10 @@ const FashionStory = () => {
     resetFeedback();
     
     if (option.correct) {
-      const newCoins = coins + coinsPerLevel;
+      const newCoins = coins + 1; // Give 1 coin per correct answer instead of coinsPerLevel
       setCoins(newCoins);
       setFinalScore(finalScore + 1);
-      showCorrectAnswerFeedback(newCoins);
+      showCorrectAnswerFeedback(1, true);
     }
     
     setTimeout(() => {
@@ -135,8 +135,8 @@ const FashionStory = () => {
                     className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
                   >
                     <div className="flex items-center">
-                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        {option.id}
+                      <span className="text-2xl mr-3 flex-shrink-0">
+                        {option.emoji}
                       </span>
                       <span className="font-medium">{option.text}</span>
                     </div>

@@ -61,21 +61,18 @@ const QuizOnJobs = () => {
           id: "c",
           text: "Farmer",
           emoji: "🚜",
-          description: "Farmers grow crops and take care of animals!",
           isCorrect: false
         },
         {
           id: "a",
           text: "Teacher",
           emoji: "📖",
-          description: "Correct! Teachers help students learn new things!",
           isCorrect: true
         },
         {
           id: "b",
           text: "Driver",
           emoji: "🚗",
-          description: "Drivers operate vehicles to transport people!",
           isCorrect: false
         }
       ]
@@ -89,14 +86,12 @@ const QuizOnJobs = () => {
           id: "c",
           text: "Farmer",
           emoji: "🚜",
-          description: "Correct! Farmers grow the food we eat!",
           isCorrect: true
         },
         {
           id: "a",
           text: "Chef",
           emoji: "👨‍🍳",
-          description: "Chefs cook delicious food!",
           isCorrect: false
         },
         
@@ -104,7 +99,6 @@ const QuizOnJobs = () => {
           id: "b",
           text: "Doctor",
           emoji: "👨‍⚕️",
-          description: "Doctors help sick people feel better!",
           isCorrect: false
         }
       ]
@@ -118,21 +112,18 @@ const QuizOnJobs = () => {
           id: "b",
           text: "Police Officer",
           emoji: "👮",
-          description: "Police officers help keep people safe!",
           isCorrect: false
         },
         {
           id: "a",
           text: "Pilot",
           emoji: "👨‍✈️",
-          description: "Correct! Pilots fly airplanes safely!",
           isCorrect: true
         },
         {
           id: "c",
           text: "Firefighter",
           emoji: "🚒",
-          description: "Firefighters put out fires and save people!",
           isCorrect: false
         }
       ]
@@ -146,7 +137,6 @@ const QuizOnJobs = () => {
           id: "c",
           text: "Nurse",
           emoji: "👩‍⚕️",
-          description: "Nurses take care of patients in hospitals!",
           isCorrect: false
         },
         
@@ -154,14 +144,12 @@ const QuizOnJobs = () => {
           id: "b",
           text: "Builder",
           emoji: "🏗️",
-          description: "Builders construct houses and buildings!",
           isCorrect: false
         },
         {
           id: "a",
           text: "Chef",
           emoji: "👨‍🍳",
-          description: "Correct! Chefs create tasty meals!",
           isCorrect: true
         },
       ]
@@ -175,14 +163,12 @@ const QuizOnJobs = () => {
           id: "a",
           text: "Police Officer",
           emoji: "👮",
-          description: "Correct! Police officers help protect people!",
           isCorrect: true
         },
         {
           id: "c",
           text: "Scientist",
           emoji: "🔬",
-          description: "Scientists do experiments and research!",
           isCorrect: false
         },
         
@@ -190,7 +176,6 @@ const QuizOnJobs = () => {
           id: "b",
           text: "Artist",
           emoji: "🎨",
-          description: "Artists create beautiful paintings and drawings!",
           isCorrect: false
         }
       ]
@@ -288,23 +273,13 @@ const QuizOnJobs = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
+                      
                     </button>
                   );
                 })}
               </div>
               
-              {answered && (
-                <div className={`rounded-lg p-5 mt-6 ${
-                  currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
-                    ? "bg-green-500/20"
-                    : "bg-red-500/20"
-                }`}>
-                  <p className="text-white whitespace-pre-line">
-                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.description}
-                  </p>
-                </div>
-              )}
+
             </div>
           </div>
         ) : null}

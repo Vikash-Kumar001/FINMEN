@@ -23,7 +23,7 @@ const PuzzleCommunityHelpers = () => {
     { id: 2, name: "Firefighter", emoji: "👨‍🚒", description: "Emergency responder who fights fires" },
     { id: 3, name: "Teacher", emoji: "👩‍🏫", description: "Educator who teaches students" },
     { id: 4, name: "Police Officer", emoji: "👮", description: "Law enforcement officer who maintains order" },
-    { id: 5, name: "Volunteer", emoji: " volunte️", description: "Person who helps others without payment" }
+    { id: 5, name: "Volunteer", emoji: "👩‍🦳", description: "Person who helps others without payment" }
   ];
 
   // Roles (right side) - 5 items

@@ -84,9 +84,9 @@ const BadgeClimateActivist = () => {
       item: "Renewable Energy",
       options: [
         { id: "a", text: "Coal", correct: false, emoji: "⛽", coins: 0 },
-        { id: "b", text: "Solar power", correct: false, emoji: "☀️", coins: 0 },
+        { id: "b", text: "Solar power", correct: true, emoji: "☀️", coins: 1 },
         { id: "c", text: "Natural gas", correct: false, emoji: "🔥", coins: 0 },
-        { id: "d", text: "Nuclear power", correct: true, emoji: "☢️", coins: 1 }
+        { id: "d", text: "Nuclear power", correct: false, emoji: "☢️", coins: 0 }
       ],
       feedback: { 
         correct: "Excellent! Solar is renewable!", 
@@ -102,8 +102,8 @@ const BadgeClimateActivist = () => {
       options: [
         { id: "a", text: "Drive alone everywhere", correct: false, emoji: "🚗", coins: 0 },
         { id: "b", text: "Waste energy", correct: false, emoji: "💡", coins: 0 },
-        { id: "c", text: "Use public transport", correct: false, emoji: "🚌", coins: 0 },
-        { id: "d", text: "Leave electronics on", correct: true, emoji: "🔌", coins: 1 }
+        { id: "c", text: "Use public transport", correct: true, emoji: "🚌", coins: 1 },
+        { id: "d", text: "Leave electronics on", correct: false, emoji: "🔌", coins: 0 }
       ],
       feedback: { 
         correct: "Great! Public transport reduces emissions!", 
@@ -118,8 +118,8 @@ const BadgeClimateActivist = () => {
       item: "Sustainable Living",
       options: [
         { id: "a", text: "Buy single-use plastics", correct: false, emoji: "🛍️", coins: 0 },
-        { id: "b", text: "Eat locally sourced food", correct: false, emoji: "🥕", coins: 0 },
-        { id: "c", text: "Waste food regularly", correct: true, emoji: "🍕", coins: 1 },
+        { id: "b", text: "Eat locally sourced food", correct: true, emoji: "🥕", coins: 1 },
+        { id: "c", text: "Waste food regularly", correct: false, emoji: "🍕", coins: 0 },
         { id: "d", text: "Leave lights on all day", correct: false, emoji: "💡", coins: 0 }
       ],
       feedback: { 
@@ -136,8 +136,8 @@ const BadgeClimateActivist = () => {
       options: [
         { id: "a", text: "Ignore environmental issues", correct: false, emoji: "😑", coins: 0 },
         { id: "b", text: "Spread misinformation", correct: false, emoji: "❌", coins: 0 },
-        { id: "c", text: "Educate others and take action", correct: false, emoji: "📢", coins: 0 },
-        { id: "d", text: "Deny climate science", correct: true, emoji: "🤔", coins: 1 }
+        { id: "c", text: "Educate others and take action", correct: true, emoji: "📢", coins: 1 },
+        { id: "d", text: "Deny climate science", correct: false, emoji: "🤔", coins: 0 }
       ],
       feedback: { 
         correct: "Wonderful! You're a true Climate Activist!", 

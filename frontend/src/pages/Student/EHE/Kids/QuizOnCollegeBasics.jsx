@@ -61,21 +61,28 @@ const QuizOnCollegeBasics = () => {
           id: "a",
           text: "Place for higher studies",
           emoji: "🎓",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Universities are institutions for higher education and research."
         },
         {
           id: "b",
           text: "Playground",
           emoji: "🛝",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. A playground is for recreation, not for higher education."
         },
         {
           id: "c",
           text: "Shopping mall",
           emoji: "🛍️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Shopping malls are for retail, not for higher education."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Universities are institutions that provide higher education and conduct research.",
+        incorrect: "Universities are institutions dedicated to higher education and academic research."
+      }
     },
     {
       id: 2,
@@ -87,21 +94,28 @@ const QuizOnCollegeBasics = () => {
           id: "b",
           text: "Only play games",
           emoji: "🎮",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. While recreation is part of college life, studying is the primary focus."
         },
         {
           id: "a",
           text: "Study specialized subjects",
           emoji: "📖",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! College students study specialized subjects in their chosen fields."
         },
         {
           id: "c",
           text: "Sleep all day",
           emoji: "😴",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. While rest is important, college involves active learning and study."
         }
-      ]
+      ],
+      feedback: {
+        correct: "College students focus on studying specialized subjects in their chosen fields of study.",
+        incorrect: "College is primarily about academic learning, though it also includes other experiences."
+      }
     },
     {
       id: 3,
@@ -113,21 +127,28 @@ const QuizOnCollegeBasics = () => {
           id: "b",
           text: "To avoid working",
           emoji: "🛌",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. College typically prepares people for better career opportunities."
         },
         {
           id: "c",
           text: "Just for parties",
           emoji: "🎉",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. While social life is part of college, the main purpose is education."
         },
         {
           id: "a",
           text: "To gain knowledge and skills",
           emoji: "🧠",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! People go to college to gain knowledge, develop skills, and advance their careers."
         },
-      ]
+      ],
+      feedback: {
+        correct: "People go to college to gain knowledge, develop skills, and improve career prospects.",
+        incorrect: "College provides opportunities to gain knowledge, skills, and qualifications for careers."
+      }
     },
     {
       id: 4,
@@ -138,21 +159,28 @@ const QuizOnCollegeBasics = () => {
           id: "a",
           text: "Science, Arts, Commerce",
           emoji: "🔬",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! College offers diverse fields of study including Science, Arts, Commerce, and many more."
         },
         {
           id: "b",
           text: "Only sports",
           emoji: "⚽",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. While sports programs exist, colleges offer many other academic disciplines too."
         },
         {
           id: "c",
           text: "Nothing useful",
           emoji: "❌",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. College offers many valuable and useful fields of study."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Colleges offer diverse academic programs across science, arts, commerce, and many other fields.",
+        incorrect: "College provides numerous academic disciplines and professional programs to choose from."
+      }
     },
     {
       id: 5,
@@ -164,21 +192,28 @@ const QuizOnCollegeBasics = () => {
           id: "b",
           text: "Free money",
           emoji: "💸",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. College requires investment and doesn't guarantee free money."
         },
         {
           id: "a",
           text: "Better career opportunities",
           emoji: "🌟",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! College education often leads to better career prospects and opportunities."
         },
         {
           id: "c",
           text: "No benefits",
           emoji: "🚫",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. College education provides many benefits including knowledge and career prospects."
         }
-      ]
+      ],
+      feedback: {
+        correct: "College education typically leads to better career opportunities and higher earning potential.",
+        incorrect: "College education provides valuable knowledge, skills, and often better career prospects."
+      }
     }
   ];
 
@@ -281,9 +316,25 @@ const QuizOnCollegeBasics = () => {
               {answered && (
                 <div className={`rounded-lg p-5 mt-6 ${
                   currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
-                    ? "bg-green-500/20"
-                    : "bg-red-500/20"
+                    ? "bg-green-500/20 border border-green-500"
+                    : "bg-red-500/20 border border-red-500"
                 }`}>
+                  <p className="text-lg font-semibold text-center">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "✅ Correct! "
+                      : "❌ Not quite! "}
+                  </p>
+                  <p className="text-center mt-2">
+                    {(() => {
+                      const selectedOptionData = currentQuestionData.options.find(opt => opt.id === selectedOption);
+                      if (selectedOptionData?.feedback) {
+                        return selectedOptionData.feedback;
+                      }
+                      return selectedOptionData?.isCorrect 
+                        ? currentQuestionData.feedback?.correct 
+                        : currentQuestionData.feedback?.incorrect;
+                    })()}
+                  </p>
                 </div>
               )}
             </div>

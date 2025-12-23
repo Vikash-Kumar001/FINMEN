@@ -167,7 +167,7 @@ const BadgePathExplorerKid = () => {
         },
         { 
           text: "Only focus on one option", 
-          emoji: " tunnel vision", 
+          emoji: "👁️‍🗨️", 
           isCorrect: false
         },
         

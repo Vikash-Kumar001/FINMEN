@@ -19,20 +19,20 @@ const PuzzleMatchCareers = () => {
 
   // Careers (left side) - 5 items
   const careers = [
-    { id: 1, name: "Farmer", emoji: "🌾", description: "Grows crops and manages agricultural land" },
-    { id: 2, name: "Engineer", emoji: "⚙️", description: "Designs and builds machines, structures, or systems" },
-    { id: 3, name: "Chef", emoji: "👨‍🍳", description: "Prepares and cooks food in restaurants or other establishments" },
-    { id: 4, name: "Doctor", emoji: "👨‍⚕️", description: "Diagnoses and treats illnesses and injuries" },
-    { id: 5, name: "Artist", emoji: "🎨", description: "Creates visual or performing art" }
+    { id: 1, name: "Farmer", emoji: "🌾" },
+    { id: 2, name: "Engineer", emoji: "⚙️" },
+    { id: 3, name: "Chef", emoji: "👨‍🍳" },
+    { id: 4, name: "Doctor", emoji: "👨‍⚕️" },
+    { id: 5, name: "Artist", emoji: "🎨" }
   ];
 
   // Schools (right side) - 5 items
   const schools = [
-    { id: 2, name: "College", emoji: "🏛️", description: "Higher education institution offering various degree programs" },
-    { id: 5, name: "Art School", emoji: "🎭", description: "Educational institution focused on visual or performing arts" },
-    { id: 1, name: "Agriculture School", emoji: "🚜", description: "Educational institution focused on farming and agricultural sciences" },
-    { id: 3, name: "Culinary School", emoji: "🔪", description: "Specialized school for learning cooking and food preparation" },
-    { id: 4, name: "Medical School", emoji: "🏥", description: "University program for training future doctors" },
+    { id: 2, name: "College", emoji: "🏛️" },
+    { id: 5, name: "Art School", emoji: "🎭" },
+    { id: 1, name: "Agriculture School", emoji: "🚜" },
+    { id: 3, name: "Culinary School", emoji: "🔪" },
+    { id: 4, name: "Medical School", emoji: "🏥" },
   ];
 
   // Correct matches
@@ -165,7 +165,6 @@ const PuzzleMatchCareers = () => {
                       <div className="text-2xl mr-3">{career.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{career.name}</h4>
-                        <p className="text-white/80 text-sm">{career.description}</p>
                       </div>
                     </div>
                   </button>
@@ -220,7 +219,6 @@ const PuzzleMatchCareers = () => {
                       <div className="text-2xl mr-3">{school.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{school.name}</h4>
-                        <p className="text-white/80 text-sm">{school.description}</p>
                       </div>
                     </div>
                   </button>

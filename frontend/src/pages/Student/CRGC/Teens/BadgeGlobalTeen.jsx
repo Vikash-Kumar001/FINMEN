@@ -33,10 +33,7 @@ const BadgeGlobalTeen = () => {
           text: "To prove your superiority over other cultures", 
           isCorrect: false
         },
-        { 
-          text: "To develop understanding and appreciation for diversity", 
-          isCorrect: true
-        },
+        
         { 
           text: "To copy other cultures without understanding", 
           isCorrect: false
@@ -44,7 +41,11 @@ const BadgeGlobalTeen = () => {
         { 
           text: "To find reasons to criticize other cultures", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "To develop understanding and appreciation for diversity", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Learning about different cultures develops understanding and appreciation for diversity, fostering global citizenship.",
@@ -87,13 +88,14 @@ const BadgeGlobalTeen = () => {
           text: "By focusing only on local issues", 
           isCorrect: false
         },
-        { 
-          text: "By recognizing interconnected global challenges and contributing to solutions", 
-          isCorrect: true
-        },
+        
         { 
           text: "By expecting something in return for support", 
           isCorrect: false
+        },
+        { 
+          text: "By recognizing interconnected global challenges and contributing to solutions", 
+          isCorrect: true
         },
         { 
           text: "By supporting only causes in your own country", 
@@ -138,13 +140,14 @@ const BadgeGlobalTeen = () => {
       question: "Why is staying informed about international events important for global citizenship?",
       options: [
         { 
-          text: "To gossip about other countries", 
-          isCorrect: false
-        },
-        { 
           text: "To understand global connections and your role in the world", 
           isCorrect: true
         },
+        { 
+          text: "To gossip about other countries", 
+          isCorrect: false
+        },
+        
         { 
           text: "To feel superior to other nations", 
           isCorrect: false

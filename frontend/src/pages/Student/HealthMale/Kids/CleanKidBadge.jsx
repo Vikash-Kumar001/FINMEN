@@ -131,7 +131,7 @@ const CleanKidBadge = () => {
         },
         {
           text: "Hide them",
-          emoji: "弆",
+          emoji: "👕",
           isCorrect: false
         },
         {

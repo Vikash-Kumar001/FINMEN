@@ -13,8 +13,8 @@ const IdeaStory = () => {
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1; // 1 coin per correct answer
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5; // Total coins for completing all questions
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -28,45 +28,45 @@ const IdeaStory = () => {
       id: 1,
       text: "A teen notices waste in canteen. What should she do?",
       options: [
-        { id: "a", text: "Think of waste-reduction ideas", correct: true },
-        { id: "b", text: "Ignore the problem", correct: false },
-        { id: "c", text: "Complain without acting", correct: false }
+        { id: "b", text: "Ignore the problem", correct: false, emoji: "🙈" },
+        { id: "a", text: "Think of waste-reduction ideas", correct: true, emoji: "💡" },
+        { id: "c", text: "Complain without acting", correct: false, emoji: "🗣️" }
       ]
     },
     {
       id: 2,
       text: "Why is identifying problems the first step in innovation?",
       options: [
-        { id: "a", text: "Solutions must address real needs", correct: true },
-        { id: "b", text: "Problems complicate life", correct: false },
-        { id: "c", text: "Ignoring problems is better", correct: false }
+        { id: "a", text: "Solutions must address real needs", correct: true, emoji: "🎯" },
+        { id: "b", text: "Problems complicate life", correct: false, emoji: "😰" },
+        { id: "c", text: "Ignoring problems is better", correct: false, emoji: "🤷" }
       ]
     },
     {
       id: 3,
       text: "What makes a good innovative idea?",
       options: [
-        { id: "a", text: "Addresses a real problem practically", correct: true },
-        { id: "b", text: "Sounds impressive only", correct: false },
-        { id: "c", text: "Is complicated", correct: false }
+        { id: "b", text: "Sounds impressive only", correct: false, emoji: "🎭" },
+        { id: "c", text: "Is complicated", correct: false, emoji: "😵" },
+        { id: "a", text: "Addresses a real problem practically", correct: true, emoji: "✅" },
       ]
     },
     {
       id: 4,
       text: "How can observation lead to innovation?",
       options: [
-        { id: "a", text: "Reveals unnoticed problems and opportunities", correct: true },
-        { id: "b", text: "Creates more problems", correct: false },
-        { id: "c", text: "Makes things confusing", correct: false }
+        { id: "a", text: "Reveals unnoticed problems and opportunities", correct: true, emoji: "🔍" },
+        { id: "b", text: "Creates more problems", correct: false, emoji: "💥" },
+        { id: "c", text: "Makes things confusing", correct: false, emoji: "🤯" }
       ]
     },
     {
       id: 5,
       text: "What should you do after identifying a problem?",
       options: [
-        { id: "a", text: "Brainstorm possible solutions", correct: true },
-        { id: "b", text: "Give up immediately", correct: false },
-        { id: "c", text: "Blame others", correct: false }
+        { id: "b", text: "Give up immediately", correct: false, emoji: "❌" },
+        { id: "a", text: "Brainstorm possible solutions", correct: true, emoji: "💭" },
+        { id: "c", text: "Blame others", correct: false, emoji: "😠" }
       ]
     }
   ];
@@ -75,10 +75,10 @@ const IdeaStory = () => {
     resetFeedback();
     
     if (option.correct) {
-      const newCoins = coins + coinsPerLevel;
+      const newCoins = coins + 1; // Give 1 coin per correct answer instead of coinsPerLevel
       setCoins(newCoins);
       setFinalScore(finalScore + 1);
-      showCorrectAnswerFeedback(newCoins);
+      showCorrectAnswerFeedback(1, true);
     }
     
     setTimeout(() => {
@@ -135,8 +135,8 @@ const IdeaStory = () => {
                     className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
                   >
                     <div className="flex items-center">
-                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        {option.id}
+                      <span className="text-2xl mr-3 flex-shrink-0">
+                        {option.emoji}
                       </span>
                       <span className="font-medium">{option.text}</span>
                     </div>

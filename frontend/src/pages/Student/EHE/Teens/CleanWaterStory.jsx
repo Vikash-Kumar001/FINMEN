@@ -13,8 +13,8 @@ const CleanWaterStory = () => {
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1; // 1 coin per correct answer
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5; // Total coins for completing all questions
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -28,45 +28,45 @@ const CleanWaterStory = () => {
       id: 1,
       text: "A teen designs a filter for clean water in villages. What problem is solved?",
       options: [
-        { id: "a", text: "More pollution", correct: false },
-        { id: "b", text: "Safe drinking water", correct: true },
-        { id: "c", text: "Worse health", correct: false }
+        { id: "a", text: "More pollution", correct: false, emoji: "⚠️" },
+        { id: "c", text: "Worse health", correct: false, emoji: "🤒" },
+        { id: "b", text: "Safe drinking water", correct: true, emoji: "💧" },
       ]
     },
     {
       id: 2,
       text: "Why is access to clean water important for communities?",
       options: [
-        { id: "a", text: "Makes no difference", correct: false },
-        { id: "b", text: "Prevents diseases and improves health", correct: true },
-        { id: "c", text: "Causes more problems", correct: false }
+        { id: "b", text: "Prevents diseases and improves health", correct: true, emoji: "🏥" },
+        { id: "a", text: "Makes no difference", correct: false, emoji: "🤷" },
+        { id: "c", text: "Causes more problems", correct: false, emoji: "❌" }
       ]
     },
     {
       id: 3,
       text: "What skills did the teen likely use to design the water filter?",
       options: [
-        { id: "a", text: "Just imagination", correct: false },
-        { id: "b", text: "Engineering and problem-solving", correct: true },
-        { id: "c", text: "Copying others", correct: false }
+        { id: "a", text: "Just imagination", correct: false, emoji: "💭" },
+        { id: "c", text: "Copying others", correct: false, emoji: "📝" },
+        { id: "b", text: "Engineering and problem-solving", correct: true, emoji: "🔧" },
       ]
     },
     {
       id: 4,
       text: "How can innovation help solve social problems?",
       options: [
-        { id: "a", text: "Makes problems worse", correct: false },
-        { id: "b", text: "Creates practical solutions for real needs", correct: true },
-        { id: "c", text: "Doesn't help at all", correct: false }
+        { id: "a", text: "Makes problems worse", correct: false, emoji: "📉" },
+        { id: "b", text: "Creates practical solutions for real needs", correct: true, emoji: "💡" },
+        { id: "c", text: "Doesn't help at all", correct: false, emoji: "🚫" }
       ]
     },
     {
       id: 5,
       text: "What can we learn from teens who solve community problems?",
       options: [
-        { id: "a", text: "They are not capable", correct: false },
-        { id: "b", text: "Young people can make a real difference", correct: true },
-        { id: "c", text: "Adults should do everything", correct: false }
+        { id: "a", text: "They are not capable", correct: false, emoji: "❌" },
+        { id: "c", text: "Adults should do everything", correct: false, emoji: "👨" },
+        { id: "b", text: "Young people can make a real difference", correct: true, emoji: "🌟" },
       ]
     }
   ];
@@ -75,10 +75,10 @@ const CleanWaterStory = () => {
     resetFeedback();
     
     if (option.correct) {
-      const newCoins = coins + coinsPerLevel;
+      const newCoins = coins + 1; // Give 1 coin per correct answer instead of coinsPerLevel
       setCoins(newCoins);
       setFinalScore(finalScore + 1);
-      showCorrectAnswerFeedback(newCoins);
+      showCorrectAnswerFeedback(1, true);
     }
     
     setTimeout(() => {
@@ -135,8 +135,8 @@ const CleanWaterStory = () => {
                     className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
                   >
                     <div className="flex items-center">
-                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        {option.id}
+                      <span className="text-2xl mr-3 flex-shrink-0">
+                        {option.emoji}
                       </span>
                       <span className="font-medium">{option.text}</span>
                     </div>

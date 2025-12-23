@@ -132,7 +132,7 @@ const PassionStory = () => {
         {
           id: "b",
           text: "Rely only on natural talent without development",
-          emoji: "ℕ",
+          emoji: "🏆",
           isCorrect: false
         },
         {

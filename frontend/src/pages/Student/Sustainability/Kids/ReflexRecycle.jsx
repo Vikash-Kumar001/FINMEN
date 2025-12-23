@@ -33,7 +33,7 @@ const questions = [
     id: 3,
     text: "Which material is easiest to recycle?",
     options: [
-      { id: 'a', text: " Aluminum Can", emoji: " Aluminum Can", isCorrect: false },
+      { id: 'a', text: " Aluminum Can", emoji: " 🥫", isCorrect: false },
       { id: 'b', text: " Glass Bottle", emoji: "📦", isCorrect: false },
       { id: 'c', text: " Newspaper", emoji: "📰", isCorrect: true },
       { id: 'd', text: " Plastic Container", emoji: "🧴", isCorrect: false }

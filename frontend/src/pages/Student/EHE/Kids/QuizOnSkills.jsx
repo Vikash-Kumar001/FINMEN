@@ -61,21 +61,28 @@ const QuizOnSkills = () => {
           id: "a",
           text: "Problem-solving",
           emoji: "🧠",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great job! Problem-solving is essential for entrepreneurs to find solutions to challenges."
         },
         {
           id: "b",
           text: "Sleeping late",
           emoji: "😴",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Sleeping late doesn't help solve problems - entrepreneurs need sharp minds!"
         },
         {
           id: "c",
           text: "Watching TV",
           emoji: "📺",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Watching TV is relaxing but doesn't help entrepreneurs solve problems!"
         }
-      ]
+      ],
+      feedback: {
+        correct: "Excellent! Problem-solving is crucial for entrepreneurs to overcome challenges and find innovative solutions.",
+        incorrect: "Remember, entrepreneurs need strong problem-solving skills to tackle business challenges."
+      }
     },
     {
       id: 2,
@@ -86,21 +93,28 @@ const QuizOnSkills = () => {
           id: "c",
           text: "Running fast",
           emoji: "🏃",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Running fast is good exercise but doesn't help understand customers!"
         },
         {
           id: "b",
           text: "Cooking",
           emoji: "🍳",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Cooking is a useful skill but doesn't help understand customer needs!"
         },
         {
           id: "a",
           text: "Communication",
           emoji: "💬",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great job! Communication helps entrepreneurs understand what customers want and need."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Perfect! Communication skills are essential for understanding customer needs and building strong relationships.",
+        incorrect: "Think about how entrepreneurs learn about customer needs - it's through communication!"
+      }
     },
     {
       id: 3,
@@ -111,21 +125,28 @@ const QuizOnSkills = () => {
           id: "c",
           text: "Drawing",
           emoji: "🎨",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Drawing is a creative skill but doesn't specifically help with teamwork!"
         },
         {
           id: "a",
           text: "Teamwork",
           emoji: "👥",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great job! Teamwork is the skill that helps you work well with others on a team."
         },
         {
           id: "b",
           text: "Singing",
           emoji: "🎤",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Singing is fun but doesn't specifically help with teamwork!"
         }
-      ]
+      ],
+      feedback: {
+        correct: "Excellent! Teamwork is essential for success in any collaborative environment.",
+        incorrect: "Remember, the ability to work well with others is called teamwork!"
+      }
     },
     {
       id: 4,
@@ -136,21 +157,28 @@ const QuizOnSkills = () => {
           id: "b",
           text: "Shopping",
           emoji: "🛍️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Shopping doesn't necessarily help generate new ideas!"
         },
         {
           id: "a",
           text: "Creativity",
           emoji: "✨",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great job! Creativity helps you come up with new ideas and think differently."
         },
         {
           id: "c",
           text: "Cleaning",
           emoji: "🧹",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Cleaning is helpful but doesn't help generate new ideas!"
         }
-      ]
+      ],
+      feedback: {
+        correct: "Wonderful! Creativity is the key to innovation and thinking outside the box.",
+        incorrect: "Consider which skill is most associated with generating new ideas and innovative thinking!"
+      }
     },
     {
       id: 5,
@@ -161,21 +189,28 @@ const QuizOnSkills = () => {
           id: "c",
           text: "Playing games",
           emoji: "🎮",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Playing games is fun but doesn't help you persist through challenges!"
         },
         {
           id: "b",
           text: "Eating sweets",
           emoji: "🍰",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Eating sweets might be enjoyable but doesn't build persistence!"
         },
         {
           id: "a",
           text: "Perseverance",
           emoji: "💪",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great job! Perseverance helps you keep going even when things get tough."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Fantastic! Perseverance is the ability to keep going despite difficulties and setbacks.",
+        incorrect: "Think about the skill that means continuing to work toward your goals even when facing challenges!"
+      }
     }
   ];
 
@@ -278,9 +313,25 @@ const QuizOnSkills = () => {
               {answered && (
                 <div className={`rounded-lg p-5 mt-6 ${
                   currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
-                    ? "bg-green-500/20"
-                    : "bg-red-500/20"
+                    ? "bg-green-500/20 border border-green-500"
+                    : "bg-red-500/20 border border-red-500"
                 }`}>
+                  <p className="text-lg font-semibold text-center">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "✅ Correct! "
+                      : "❌ Not quite! "}
+                  </p>
+                  <p className="text-center mt-2">
+                    {(() => {
+                      const selectedOptionData = currentQuestionData.options.find(opt => opt.id === selectedOption);
+                      if (selectedOptionData?.feedback) {
+                        return selectedOptionData.feedback;
+                      }
+                      return selectedOptionData?.isCorrect 
+                        ? currentQuestionData.feedback?.correct 
+                        : currentQuestionData.feedback?.incorrect;
+                    })()}
+                  </p>
                 </div>
               )}
             </div>

@@ -21,7 +21,7 @@ const EffectsPuzzle = () => {
   const activities = [
     { id: 1, name: "Smoking", emoji: "🚬", description: "Tobacco inhalation" },
     { id: 2, name: "Alcohol", emoji: "🍺", description: "Liquid consumption" },
-    { id: 3, name: "Drugs", emoji: "-pill", description: "Chemical substances" },
+    { id: 3, name: "Drugs", emoji: "💊", description: "Chemical substances" },
     { id: 4, name: "Vaping", emoji: "💨", description: "Inhalation device" },
     { id: 5, name: "Exercise", emoji: "🏃", description: "Physical activity" }
   ];
@@ -30,8 +30,8 @@ const EffectsPuzzle = () => {
   const effects = [
     { id: 3, name: "Brain Damage", emoji: "🧠", description: "Neural impairment" },
     { id: 5, name: "Heart Health", emoji: "❤️", description: "Cardiovascular benefit" },
+    { id: 4, name: "Respiratory Issues", emoji: "😮", description: "Breathing problems" },
     { id: 1, name: "Lung Damage", emoji: "🫁", description: "Respiratory harm" },
-    { id: 4, name: "Lung Damage", emoji: "🫁", description: "Respiratory harm" },
     { id: 2, name: "Liver Damage", emoji: "🫀", description: "Organ impairment" }
   ];
 

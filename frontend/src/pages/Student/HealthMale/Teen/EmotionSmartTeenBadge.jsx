@@ -98,15 +98,16 @@ const EmotionSmartTeenBadge = () => {
           isCorrect: false
         },
         {
-          text: "Give up forever",
-          emoji: "🏳️",
-          isCorrect: false
-        },
-        {
           text: "Accept and move on",
           emoji: "✅",
           isCorrect: true
         },
+        {
+          text: "Give up forever",
+          emoji: "🏳️",
+          isCorrect: false
+        },
+        
         {
           text: "Blame everyone else",
           emoji: "😠",
@@ -166,16 +167,17 @@ const EmotionSmartTeenBadge = () => {
           emoji: "🍟",
           isCorrect: false
         },
-        {
-          text: "Rest and hobbies",
-          emoji: "🛋️",
-          isCorrect: true
-        },
+       
         {
           text: "Ignoring problems",
           emoji: "🙈",
           isCorrect: false
-        }
+        },
+         {
+          text: "Rest and hobbies",
+          emoji: "🛋️",
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Absolutely! Self-care involves activities that restore and rejuvenate your mind and body.",

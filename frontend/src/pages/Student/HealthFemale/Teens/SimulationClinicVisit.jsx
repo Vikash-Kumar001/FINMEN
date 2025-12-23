@@ -96,18 +96,19 @@ const SimulationClinicVisit = () => {
           emoji: "🎭",
           isCorrect: false
         },
-        {
-          id: "c",
-          text: "Be honest and specific about symptoms and concerns",
-          emoji: "✅",
-          isCorrect: true
-        },
+       
         {
           id: "d",
           text: "Write down symptoms to ensure nothing is forgotten",
           emoji: "📋",
           isCorrect: false
-        }
+        },
+         {
+          id: "c",
+          text: "Be honest and specific about symptoms and concerns",
+          emoji: "🏆",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -115,6 +116,12 @@ const SimulationClinicVisit = () => {
       title: "Following Advice",
       description: "Doctor gives health advice and prescribes medication. What should the teen do?",
       options: [
+         {
+          id: "d",
+          text: "Ask questions to understand the treatment plan",
+          emoji: "❓",
+          isCorrect: true
+        },
         {
           id: "a",
           text: "Ignore advice and take medication irregularly",
@@ -133,12 +140,7 @@ const SimulationClinicVisit = () => {
           emoji: "⏰",
           isCorrect: false
         },
-        {
-          id: "d",
-          text: "Ask questions to understand the treatment plan",
-          emoji: "❓",
-          isCorrect: true
-        }
+       
       ]
     },
     {

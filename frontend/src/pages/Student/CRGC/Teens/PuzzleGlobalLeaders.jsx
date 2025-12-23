@@ -22,7 +22,7 @@ const PuzzleGlobalLeaders = () => {
     { id: 1, name: "UNICEF", emoji: "👧", description: "United Nations Children's Fund" },
     { id: 2, name: "WHO", emoji: "🩺", description: "World Health Organization" },
     { id: 3, name: "UNESCO", emoji: "📚", description: "United Nations Educational, Scientific and Cultural Organization" },
-    { id: 4, name: "UNHCR", emoji: "HomeAsylum", description: "UN Refugee Agency" },
+    { id: 4, name: "UNHCR", emoji: "🏡", description: "UN Refugee Agency" },
     { id: 5, name: "FAO", emoji: "🌾", description: "Food and Agriculture Organization" }
   ];
 

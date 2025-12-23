@@ -25,7 +25,7 @@ const SimulationCleanUpDrive = () => {
         {
           id: "a",
           text: "Organize a community clean-up event",
-          emoji: " volunte",
+          emoji: "🧹",
           isCorrect: true
         },
         {

@@ -71,12 +71,7 @@ const HungerStory = () => {
       id: 3,
       text: "How can schools help ensure all students have enough to eat?",
       options: [
-        {
-          id: "a",
-          text: "Provide free or reduced-price meals",
-          emoji: "🍽️",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Only allow wealthy students to eat",
@@ -88,24 +83,31 @@ const HungerStory = () => {
           text: "Ban students from bringing lunch",
           emoji: "🚫",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Provide free or reduced-price meals",
+          emoji: "🍽️",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 4,
       text: "Why is the right to food important for children?",
       options: [
+        
+        {
+          id: "b",
+          text: "It makes children eat more than others",
+          emoji: "🍔",
+          isCorrect: false
+        },
         {
           id: "a",
           text: "It helps children grow, learn, and stay healthy",
           emoji: "🧠",
           isCorrect: true
-        },
-        {
-          id: "b",
-          text: "It makes children eat more than others",
-          emoji: "overeating",
-          isCorrect: false
         },
         {
           id: "c",

@@ -132,7 +132,7 @@ const BadgeCareerPathFinder = () => {
         
         { 
           text: "To prove your existing knowledge is superior", 
-          emoji: " superior", 
+          emoji: "🧛", 
           isCorrect: false
         },
         { 

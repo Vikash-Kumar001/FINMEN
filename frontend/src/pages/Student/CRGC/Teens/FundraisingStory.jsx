@@ -99,7 +99,7 @@ const FundraisingStory = () => {
         {
           id: "a",
           text: "Use some for herself as reward for her effort",
-          emoji: "_SELF_",
+          emoji: "💰",
           isCorrect: false
         },
         {

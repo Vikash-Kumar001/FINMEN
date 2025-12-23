@@ -19,11 +19,11 @@ const PuzzleSocialLeaders = () => {
 
   // Social Leaders (left side) - 5 items
   const leaders = [
-    { id: 1, name: "Muhammad Yunus", emoji: "🇧🇩", description: "Bangladeshi economist and Nobel Peace Prize winner" },
-    { id: 2, name: "Bunker Roy", emoji: "🇮🇳", description: "Indian educator and social activist" },
-    { id: 3, name: "Kiran Mazumdar", emoji: "🇮🇳", description: "Indian entrepreneur in biotechnology" },
-    { id: 4, name: "Blake Mycoskie", emoji: "🇺🇸", description: "American entrepreneur and philanthropist" },
-    { id: 5, name: "William Drayton", emoji: "🇺🇸", description: "American social entrepreneur" }
+    { id: 1, name: "Muhammad Yunus",  description: "Bangladeshi economist and Nobel Peace Prize winner" },
+    { id: 2, name: "Bunker Roy",  description: "Indian educator and social activist" },
+    { id: 3, name: "Kiran Mazumdar",  description: "Indian entrepreneur in biotechnology" },
+    { id: 4, name: "Blake Mycoskie",  description: "American entrepreneur and philanthropist" },
+    { id: 5, name: "William Drayton",  description: "American social entrepreneur" }
   ];
 
   // Contributions (right side) - 5 items

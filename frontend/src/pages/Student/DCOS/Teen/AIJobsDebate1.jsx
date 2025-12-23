@@ -55,19 +55,20 @@ const AIJobsDebate1 = () => {
       text: "Should we be worried about AI replacing workers?",
       options: [
         { 
-          id: "yes-worried", 
-          text: "Yes - AI will replace everyone", 
-          emoji: "😰", 
-          description: "We should be very worried about AI replacing all workers",
-          isCorrect: false
-        },
-        { 
           id: "balance-fair", 
           text: "Balance change with fairness", 
           emoji: "✅", 
           description: "We should balance AI changes with fairness for workers",
           isCorrect: true
         },
+        { 
+          id: "yes-worried", 
+          text: "Yes - AI will replace everyone", 
+          emoji: "😰", 
+          description: "We should be very worried about AI replacing all workers",
+          isCorrect: false
+        },
+        
         { 
           id: "no-worried", 
           text: "No - nothing to worry about", 
@@ -88,20 +89,21 @@ const AIJobsDebate1 = () => {
           description: "We should ban AI from workplaces",
           isCorrect: false
         },
-        { 
-          id: "ethical-fair", 
-          text: "Use AI ethically and fairly", 
-          emoji: "✅", 
-          description: "Use AI ethically with fairness for all workers",
-          isCorrect: true
-        },
+       
         { 
           id: "use-all", 
           text: "Use AI everywhere without limits", 
           emoji: "🤖", 
           description: "Use AI everywhere without any restrictions",
           isCorrect: false
-        }
+        },
+         { 
+          id: "ethical-fair", 
+          text: "Use AI ethically and fairly", 
+          emoji: "✅", 
+          description: "Use AI ethically with fairness for all workers",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -142,6 +144,14 @@ const AIJobsDebate1 = () => {
           description: "AI should replace workers without protection",
           isCorrect: false
         },
+        
+        { 
+          id: "maybe", 
+          text: "Maybe - depends on the job", 
+          emoji: "🤔", 
+          description: "Protect only certain types of jobs",
+          isCorrect: false
+        },
         { 
           id: "yes-fair-transition", 
           text: "Yes - ensure fair transition", 
@@ -149,13 +159,6 @@ const AIJobsDebate1 = () => {
           description: "Protect workers and ensure fair transition to AI",
           isCorrect: true
         },
-        { 
-          id: "maybe", 
-          text: "Maybe - depends on the job", 
-          emoji: "🤔", 
-          description: "Protect only certain types of jobs",
-          isCorrect: false
-        }
       ]
     }
   ];

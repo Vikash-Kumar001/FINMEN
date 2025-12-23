@@ -12,7 +12,7 @@ const QuizOnCareers = () => {
   const totalCoins = location.state?.totalCoins || 5;
   const totalXp = location.state?.totalXp || 10;
   
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback, flashPoints } = useGameFeedback();
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -28,21 +28,22 @@ const QuizOnCareers = () => {
         {
           id: "a",
           text: "Teacher",
-          emoji: "chalkboard",
+          emoji: "✍️",
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Software Engineer",
-          emoji: "🖥️",
-          isCorrect: true
-        },
+       
         {
           id: "c",
           text: "Farmer",
           emoji: "🚜",
           isCorrect: false
-        }
+        },
+         {
+          id: "b",
+          text: "Software Engineer",
+          emoji: "🖥️",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -51,17 +52,18 @@ const QuizOnCareers = () => {
       emoji: "🧭",
       options: [
         {
-          id: "a",
-          text: "Parental pressure only",
-          emoji: "👪",
-          isCorrect: false
-        },
-        {
           id: "b",
           text: "Interests, skills, and market demand",
           emoji: "🎯",
           isCorrect: true
         },
+        {
+          id: "a",
+          text: "Parental pressure only",
+          emoji: "👪",
+          isCorrect: false
+        },
+        
         {
           id: "c",
           text: "Peer choices only",
@@ -131,18 +133,19 @@ const QuizOnCareers = () => {
           emoji: "🙈",
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Internships, job shadowing, and career fairs",
-          emoji: "🏢",
-          isCorrect: true
-        },
+       
         {
           id: "c",
           text: "Stick to one idea only",
           emoji: "📌",
           isCorrect: false
-        }
+        },
+         {
+          id: "b",
+          text: "Internships, job shadowing, and career fairs",
+          emoji: "🏢",
+          isCorrect: true
+        },
       ]
     }
   ];
@@ -202,7 +205,9 @@ const QuizOnCareers = () => {
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+    >
       <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         {!gameFinished && currentQuestionData ? (
           <div className="space-y-6">

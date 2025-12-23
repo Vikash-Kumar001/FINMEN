@@ -50,8 +50,8 @@ const RoleplayCalmReply = () => {
       emoji: "😠",
       approaches: [
         { id: 1, text: "Reply with an angry comment back", isCorrect: false },
+        { id: 3, text: "Delete your post", isCorrect: false },
         { id: 2, text: "Reply calmly or ignore it", isCorrect: true },
-        { id: 3, text: "Delete your post", isCorrect: false }
       ]
     },
     {
@@ -69,8 +69,8 @@ const RoleplayCalmReply = () => {
       situation: "A classmate makes a mean comment about your photo.",
       emoji: "📸",
       approaches: [
-        { id: 1, text: "Post mean comments about them", isCorrect: false },
         { id: 2, text: "Reply calmly or ignore", isCorrect: true },
+        { id: 1, text: "Post mean comments about them", isCorrect: false },
         { id: 3, text: "Delete all your photos", isCorrect: false }
       ]
     },
@@ -90,8 +90,8 @@ const RoleplayCalmReply = () => {
       emoji: "🏆",
       approaches: [
         { id: 1, text: "Respond with insults", isCorrect: false },
+        { id: 3, text: "Delete the achievement post", isCorrect: false },
         { id: 2, text: "Reply calmly or ignore", isCorrect: true },
-        { id: 3, text: "Delete the achievement post", isCorrect: false }
       ]
     }
   ];

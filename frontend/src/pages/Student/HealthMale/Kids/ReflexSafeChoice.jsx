@@ -54,7 +54,7 @@ const ReflexSafeChoice = () => {
       id: 3,
       instruction: "You want to have fun. What's the safest choice?",
       options: [
-        { id: 'a', text: "Take Drugs", emoji: "-pill", isCorrect: false },
+        { id: 'a', text: "Take Drugs", emoji: "💊", isCorrect: false },
         { id: 'b', text: "Play Sports", emoji: "⚽", isCorrect: true },
         { id: 'c', text: "Drink Alcohol", emoji: "🍺", isCorrect: false },
         { id: 'd', text: "Smoke", emoji: "🚬", isCorrect: false }

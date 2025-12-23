@@ -74,7 +74,7 @@ const LunchStory = () => {
         {
           id: "a",
           text: "Tell them to deal with it alone",
-          emoji: "-alone",
+          emoji: "😔",
           isCorrect: false
         },
         

@@ -35,20 +35,21 @@ const EntrepreneurStory = () => {
           description: "Give out your full address and phone number to everyone",
           isCorrect: false
         },
-        { 
-          id: "use-safe-platform", 
-          text: "Use a safe platform and protect your privacy", 
-          emoji: "🛡️", 
-          description: "Use trusted platforms and keep personal info private",
-          isCorrect: true
-        },
+       
         { 
           id: "meet-strangers", 
           text: "Meet buyers in person alone", 
           emoji: "👤", 
           description: "Meet strangers in private locations",
           isCorrect: false
-        }
+        },
+         { 
+          id: "use-safe-platform", 
+          text: "Use a safe platform and protect your privacy", 
+          emoji: "🛡️", 
+          description: "Use trusted platforms and keep personal info private",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -82,6 +83,13 @@ const EntrepreneurStory = () => {
       id: 3,
       text: "Someone wants to pay you outside the platform and asks for your bank details. What's the right choice?",
       options: [
+         { 
+          id: "use-platform-payment", 
+          text: "Use platform's secure payment system", 
+          emoji: "🛡️", 
+          description: "Stick to the platform's secure payment methods",
+          isCorrect: true
+        },
         { 
           id: "share-bank", 
           text: "Share bank details directly", 
@@ -89,13 +97,7 @@ const EntrepreneurStory = () => {
           description: "Give them your bank account information",
           isCorrect: false
         },
-        { 
-          id: "use-platform-payment", 
-          text: "Use platform's secure payment system", 
-          emoji: "🛡️", 
-          description: "Stick to the platform's secure payment methods",
-          isCorrect: true
-        },
+       
         { 
           id: "cash-only", 
           text: "Accept cash only", 
@@ -143,20 +145,21 @@ const EntrepreneurStory = () => {
           description: "Display all your personal details on your shop",
           isCorrect: false
         },
-        { 
-          id: "protect-privacy", 
-          text: "Protect your privacy and use safe practices", 
-          emoji: "🛡️", 
-          description: "Keep personal info private and use secure methods",
-          isCorrect: true
-        },
+       
         { 
           id: "trust-everyone", 
           text: "Trust everyone who contacts you", 
           emoji: "🤝", 
           description: "Trust all buyers and share information freely",
           isCorrect: false
-        }
+        },
+         { 
+          id: "protect-privacy", 
+          text: "Protect your privacy and use safe practices", 
+          emoji: "🛡️", 
+          description: "Keep personal info private and use secure methods",
+          isCorrect: true
+        },
       ]
     }
   ];

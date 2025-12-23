@@ -108,7 +108,7 @@ const BadgeHigherEdReadyTeen = () => {
         },
         { 
           text: "To test unrelated life skills", 
-          emoji: " unrelated", 
+          emoji: "🤷‍♂️", 
           isCorrect: false
         }
       ],

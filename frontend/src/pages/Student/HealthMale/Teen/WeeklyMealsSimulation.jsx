@@ -32,6 +32,12 @@ const WeeklyMealsSimulation = () => {
           isCorrect: false
         },
         {
+          id: "d",
+          text: "Oatmeal with fruits",
+          emoji: "🥣",
+          isCorrect: true
+        },
+        {
           id: "b",
           text: "Skip it",
           emoji: "🏃",
@@ -44,12 +50,7 @@ const WeeklyMealsSimulation = () => {
           emoji: "☕",
           isCorrect: false
         },
-        {
-          id: "d",
-          text: "Oatmeal with fruits",
-          emoji: "🥣",
-          isCorrect: true
-        }
+        
       ]
     },
     {
@@ -59,8 +60,8 @@ const WeeklyMealsSimulation = () => {
       options: [
         {
           id: "a",
-          text: "Sandwich & Fruit",
-          emoji: "🥪",
+          text: "Burger & Fries",
+          emoji: "🍔",
           isCorrect: false
         },
         {
@@ -89,9 +90,15 @@ const WeeklyMealsSimulation = () => {
       situation: "Mid-day hunger.",
       options: [
         {
-          id: "a",
+          id: "d",
           text: "Yogurt",
           emoji: "🥣",
+          isCorrect: true
+        },
+        {
+          id: "a",
+          text: "Nuts",
+          emoji: "🥜",
           isCorrect: false
         },
         {
@@ -106,12 +113,7 @@ const WeeklyMealsSimulation = () => {
           emoji: "🥤",
           isCorrect: false
         },
-        {
-          id: "d",
-          text: "Yogurt",
-          emoji: "🥣",
-          isCorrect: true
-        }
+        
       ]
     },
     {
@@ -121,8 +123,8 @@ const WeeklyMealsSimulation = () => {
       options: [
         {
           id: "a",
-          text: "Grilled Fish & Veggies",
-          emoji: "🐟",
+          text: "Burger & Fries",
+          emoji: "🍔",
           isCorrect: false
         },
         {
@@ -131,18 +133,19 @@ const WeeklyMealsSimulation = () => {
           emoji: "🍕",
           isCorrect: false
         },
+         {
+          id: "d",
+          text: "Grilled Fish & Veggies",
+          emoji: "🐟",
+          isCorrect: true
+        },
         {
           id: "c",
           text: "Eat in room alone",
           emoji: "🚪",
           isCorrect: false
         },
-        {
-          id: "d",
-          text: "Grilled Fish & Veggies",
-          emoji: "🐟",
-          isCorrect: true
-        }
+       
       ]
     },
     {

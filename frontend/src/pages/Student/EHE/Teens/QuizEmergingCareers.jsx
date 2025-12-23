@@ -12,7 +12,7 @@ const QuizEmergingCareers = () => {
   const totalCoins = location.state?.totalCoins || 5;
   const totalXp = location.state?.totalXp || 10;
   
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback, flashPoints } = useGameFeedback();
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -25,17 +25,18 @@ const QuizEmergingCareers = () => {
       text: "Which is an emerging field?",
       emoji: "🚀",
       options: [
-        {
-          id: "a",
-          text: "AI & Data Science",
-          emoji: "🤖",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Basket Weaving only",
           emoji: "🧺",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "AI & Data Science",
+          emoji: "🤖",
+          isCorrect: true
         },
         {
           id: "c",
@@ -75,17 +76,18 @@ const QuizEmergingCareers = () => {
       text: "What drives emergence of new careers?",
       emoji: "🌱",
       options: [
-        {
-          id: "a",
-          text: "Technological innovation and societal needs",
-          emoji: "🔧",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Random chance",
           emoji: "🎲",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Technological innovation and societal needs",
+          emoji: "🔧",
+          isCorrect: true
         },
         {
           id: "c",
@@ -100,12 +102,7 @@ const QuizEmergingCareers = () => {
       text: "How can teens prepare for future careers?",
       emoji: "📘",
       options: [
-        {
-          id: "a",
-          text: "Continuous learning and adaptability",
-          emoji: "🔄",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Sticking to old methods",
@@ -117,7 +114,13 @@ const QuizEmergingCareers = () => {
           text: "Avoiding technology",
           emoji: "📴",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Continuous learning and adaptability",
+          emoji: "🔄",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -202,7 +205,9 @@ const QuizEmergingCareers = () => {
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+    >
       <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         {!gameFinished && currentQuestionData ? (
           <div className="space-y-6">

@@ -50,17 +50,18 @@ const SimulationTeenBusiness = () => {
       id: 2,
       text: "How should she handle customer complaints?",
       options: [
-        {
-          id: "a",
-          text: "Listen and resolve issues professionally",
-          emoji: "👂",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Argue with customers",
           emoji: "😠",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Listen and resolve issues professionally",
+          emoji: "👂",
+          isCorrect: true
         },
         {
           id: "c",
@@ -80,12 +81,7 @@ const SimulationTeenBusiness = () => {
       id: 3,
       text: "What approach should she take to pricing?",
       options: [
-        {
-          id: "a",
-          text: "Research market rates and stay competitive",
-          emoji: "📊",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Price randomly",
@@ -97,6 +93,12 @@ const SimulationTeenBusiness = () => {
           text: "Always undercut competitors",
           emoji: "📉",
           isCorrect: false
+        },
+         {
+          id: "a",
+          text: "Research market rates and stay competitive",
+          emoji: "📊",
+          isCorrect: true
         },
         {
           id: "d",
@@ -110,12 +112,7 @@ const SimulationTeenBusiness = () => {
       id: 4,
       text: "How should she manage finances?",
       options: [
-        {
-          id: "a",
-          text: "Track income and expenses carefully",
-          emoji: "💰",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Spend without records",
@@ -133,7 +130,13 @@ const SimulationTeenBusiness = () => {
           text: "Overspend consistently",
           emoji: "💸",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Track income and expenses carefully",
+          emoji: "💰",
+          isCorrect: true
+        },
       ]
     },
     {

@@ -87,9 +87,9 @@ const QuizOnCarbonFootprint = () => {
       id: 3,
       text: "How can you reduce your carbon footprint?",
       options: [
-        { id: "a", text: "Use public transport", emoji: "🚌", isCorrect: false },
         { id: "b", text: "Eat more meat", emoji: "🥩", isCorrect: false },
-        { id: "c", text: "Drive alone everywhere", emoji: "🚗", isCorrect: true }
+        { id: "c", text: "Drive alone everywhere", emoji: "🚗", isCorrect: false },
+        { id: "a", text: "Use public transport", emoji: "🚌", isCorrect: true },
       ]
     },
     {

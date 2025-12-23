@@ -53,7 +53,7 @@ const questions = [
     id: 5,
     text: "Which protects ocean ecosystems?",
     options: [
-      { id: 'a', text: " Marine Reserves", emoji: "MZ", isCorrect: true },
+      { id: 'a', text: " Marine Reserves", emoji: "🚣", isCorrect: true },
       { id: 'b', text: " Coastal Development", emoji: "🏖️", isCorrect: false },
       { id: 'c', text: " Cruise Ships", emoji: "🛳️", isCorrect: false },
       { id: 'd', text: " Sponge Fishing", emoji: "🧽", isCorrect: false }

@@ -58,19 +58,20 @@ const DeepfakeQuiz = () => {
       text: "AI video shows politician saying false words. Real or Fake?",
       options: [
         { 
-          id: "a", 
-          text: "Real - politicians say things", 
-          emoji: "✅", 
-          description: "AI-generated videos of politicians can be very convincing deepfakes",
-          isCorrect: false
-        },
-        { 
           id: "b", 
           text: "Fake - verify with official sources", 
           emoji: "⚠️", 
           description: "AI videos showing politicians saying false words are likely deepfakes - always verify with official sources",
           isCorrect: true
         },
+        { 
+          id: "a", 
+          text: "Real - politicians say things", 
+          emoji: "✅", 
+          description: "AI-generated videos of politicians can be very convincing deepfakes",
+          isCorrect: false
+        },
+        
         { 
           id: "c", 
           text: "Share it - it's interesting", 
@@ -118,6 +119,14 @@ const DeepfakeQuiz = () => {
           description: "Unnatural face movements are a sign of deepfake manipulation",
           isCorrect: false
         },
+        
+        { 
+          id: "c", 
+          text: "Not sure - share anyway", 
+          emoji: "📤", 
+          description: "Never share videos you're unsure about - verify first",
+          isCorrect: false
+        },
         { 
           id: "b", 
           text: "Fake - unnatural movements indicate deepfake", 
@@ -125,19 +134,19 @@ const DeepfakeQuiz = () => {
           description: "Unnatural face movements are a key indicator of deepfake videos",
           isCorrect: true
         },
-        { 
-          id: "c", 
-          text: "Not sure - share anyway", 
-          emoji: "📤", 
-          description: "Never share videos you're unsure about - verify first",
-          isCorrect: false
-        }
       ]
     },
     {
       id: 4,
       text: "An AI video shows a news anchor saying something controversial. Real or Fake?",
       options: [
+         { 
+          id: "b", 
+          text: "Fake - verify with official news sources", 
+          emoji: "⚠️", 
+          description: "Always verify news videos with official news sources - they may be deepfakes",
+          isCorrect: true
+        },
         { 
           id: "a", 
           text: "Real - news anchors say things", 
@@ -145,13 +154,7 @@ const DeepfakeQuiz = () => {
           description: "AI videos of news anchors can be deepfakes - verify with official news sources",
           isCorrect: false
         },
-        { 
-          id: "b", 
-          text: "Fake - verify with official news sources", 
-          emoji: "⚠️", 
-          description: "Always verify news videos with official news sources - they may be deepfakes",
-          isCorrect: true
-        },
+       
         { 
           id: "c", 
           text: "Share it - it's news", 

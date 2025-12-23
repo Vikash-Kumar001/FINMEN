@@ -44,8 +44,8 @@ const ReflexSmartHygiene43 = () => {
       question: "You are going to school. Smell good!",
       correctAnswer: "Deodorant",
       options: [
-        { text: "Garlic", isCorrect: false, emoji: "🧄" },
         { text: "Deodorant", isCorrect: true, emoji: "🧴" },
+        { text: "Garlic", isCorrect: false, emoji: "🧄" },
         { text: "Mud", isCorrect: false, emoji: "💩" },
         { text: "Onion", isCorrect: false, emoji: "🧅" }
       ]
@@ -56,8 +56,8 @@ const ReflexSmartHygiene43 = () => {
       correctAnswer: "Brush",
       options: [
         { text: "Eat Candy", isCorrect: false, emoji: "🍬" },
-        { text: "Brush", isCorrect: true, emoji: "🪥" },
         { text: "Drink Soda", isCorrect: false, emoji: "🥤" },
+        { text: "Brush", isCorrect: true, emoji: "🪥" },
         { text: "Sleep", isCorrect: false, emoji: "😴" }
       ]
     },
@@ -78,9 +78,9 @@ const ReflexSmartHygiene43 = () => {
       correctAnswer: "Shower",
       options: [
         { text: "Stay Sweaty", isCorrect: false, emoji: "🥵" },
-        { text: "Shower", isCorrect: true, emoji: "🚿" },
         { text: "More Perfume", isCorrect: false, emoji: "🌸" },
-        { text: "Run More", isCorrect: false, emoji: "🏃" }
+        { text: "Run More", isCorrect: false, emoji: "🏃" },
+        { text: "Shower", isCorrect: true, emoji: "🚿" },
       ]
     }
   ];

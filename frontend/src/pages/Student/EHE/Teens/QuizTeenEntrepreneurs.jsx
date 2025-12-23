@@ -12,7 +12,7 @@ const QuizTeenEntrepreneurs = () => {
   const totalCoins = location.state?.totalCoins || 5;
   const totalXp = location.state?.totalXp || 10;
   
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback, flashPoints } = useGameFeedback();
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -50,12 +50,7 @@ const QuizTeenEntrepreneurs = () => {
       text: "What motivates teen entrepreneurs?",
       emoji: "💡",
       options: [
-        {
-          id: "a",
-          text: "Solving problems and creating value",
-          emoji: "🔧",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Avoiding responsibility",
@@ -67,7 +62,13 @@ const QuizTeenEntrepreneurs = () => {
           text: "Copying others",
           emoji: "📎",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Solving problems and creating value",
+          emoji: "🔧",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -75,17 +76,18 @@ const QuizTeenEntrepreneurs = () => {
       text: "Why is creativity important for teen entrepreneurs?",
       emoji: "🎨",
       options: [
-        {
-          id: "a",
-          text: "To develop unique solutions",
-          emoji: "✨",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "To copy existing ideas",
           emoji: "📋",
           isCorrect: false
+        },
+         {
+          id: "a",
+          text: "To develop unique solutions",
+          emoji: "✨",
+          isCorrect: true
         },
         {
           id: "c",
@@ -125,12 +127,7 @@ const QuizTeenEntrepreneurs = () => {
       text: "What is a benefit of teen entrepreneurship?",
       emoji: "⭐",
       options: [
-        {
-          id: "a",
-          text: "Early financial literacy and experience",
-          emoji: "💰",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Reduced learning opportunities",
@@ -142,7 +139,13 @@ const QuizTeenEntrepreneurs = () => {
           text: "Limited skill development",
           emoji: "🚧",
           isCorrect: false
-        }
+        },
+         {
+          id: "a",
+          text: "Early financial literacy and experience",
+          emoji: "💰",
+          isCorrect: true
+        },
       ]
     }
   ];
@@ -202,7 +205,9 @@ const QuizTeenEntrepreneurs = () => {
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      flashPoints={flashPoints}
+    >
       <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         {!gameFinished && currentQuestionData ? (
           <div className="space-y-6">

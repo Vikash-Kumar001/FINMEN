@@ -106,6 +106,11 @@ const PreventiveHealthTeenBadge = () => {
       question: "What role does a balanced diet play?",
       options: [
         {
+          text: "It prevents lifestyle diseases",
+          emoji: "🥗",
+          isCorrect: true
+        },
+        {
           text: "It tastes bad",
           emoji: "🥦",
           isCorrect: false
@@ -120,11 +125,7 @@ const PreventiveHealthTeenBadge = () => {
           emoji: "💰",
           isCorrect: false
         },
-        {
-          text: "It prevents lifestyle diseases",
-          emoji: "🥗",
-          isCorrect: true
-        }
+        
       ]
     },
     {

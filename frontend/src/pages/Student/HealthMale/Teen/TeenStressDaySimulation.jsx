@@ -71,8 +71,8 @@ const TeenStressDaySimulation = () => {
         },
         {
           id: "d",
-          text: "Take a 10-minute break",
-          emoji: "⏸️",
+          text: "Ask for help",
+          emoji: "🤝",
           isCorrect: true
         }
       ]
@@ -161,8 +161,8 @@ const TeenStressDaySimulation = () => {
         },
         {
           id: "d",
-          text: "Understand and reschedule",
-          emoji: "🤝",
+          text: "Communicate and plan ahead",
+          emoji: "💬",
           isCorrect: true
         }
       ]

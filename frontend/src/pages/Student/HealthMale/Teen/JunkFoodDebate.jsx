@@ -45,8 +45,8 @@ const JunkFoodDebate = () => {
           emoji: "🍔"
         }
       ],
-      correctAnswer: "c",
-      explanation: "That's unhealthy. Treats are fine occasionally, and too strict can lead to binges."
+      correctAnswer: "a",
+      explanation: "Eating junk food in moderation is okay. That's too strict, and too restrictive can lead to binges."
     },
     {
       id: 2,

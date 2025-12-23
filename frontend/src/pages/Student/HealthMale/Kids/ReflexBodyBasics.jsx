@@ -49,7 +49,7 @@ const ReflexBodyBasics = () => {
       options: [
         { text: "Breathes", emoji: "💨", isCorrect: false },
         { text: "Digests Food", emoji: "🍎", isCorrect: false },
-        { text: "Pumps Blood", emoji: "", isCorrect: true }, // Position C
+        { text: "Pumps Blood", emoji: "🩸", isCorrect: true }, // Position C
         { text: "Thinks", emoji: "", isCorrect: false }
       ]
     },
@@ -81,9 +81,9 @@ const ReflexBodyBasics = () => {
       question: "What does the brain do?",
       options: [
         { text: "Pumps", emoji: "💓", isCorrect: false },
-        { text: "Controls Body", emoji: "", isCorrect: true }, // Position B
-        { text: "Digests", emoji: "", isCorrect: false },
-        { text: "Walks", emoji: "", isCorrect: false },
+        { text: "Controls Body", emoji: "🎮", isCorrect: true }, // Position B
+        { text: "Digests", emoji: "🍎", isCorrect: false },
+        { text: "Walks", emoji: "🚶", isCorrect: false },
       ]
     }
   ];

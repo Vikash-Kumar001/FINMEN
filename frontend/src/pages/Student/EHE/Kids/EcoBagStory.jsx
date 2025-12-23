@@ -137,7 +137,7 @@ const EcoBagStory = () => {
         {
           id: "c",
           text: "Use more plastic",
-          emoji: "层出不穷",
+          emoji: "♻️",
           isCorrect: false
         }
       ]

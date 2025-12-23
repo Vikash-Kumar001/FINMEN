@@ -56,14 +56,15 @@ const BadgeInclusionLeader = () => {
       title: "Standing Against Exclusion",
       question: "What should you do if you notice someone being left out of a group activity?",
       options: [
+         { 
+          text: "Invite the excluded person to join your group", 
+          isCorrect: true
+        },
         { 
           text: "Join the group that's excluding others", 
           isCorrect: false
         },
-        { 
-          text: "Invite the excluded person to join your group", 
-          isCorrect: true
-        },
+       
         { 
           text: "Ignore the situation", 
           isCorrect: false
@@ -114,13 +115,14 @@ const BadgeInclusionLeader = () => {
           text: "Let the loudest voices dominate", 
           isCorrect: false
         },
-        { 
-          text: "Give everyone a chance to contribute and share ideas", 
-          isCorrect: true
-        },
+       
         { 
           text: "Exclude quieter members", 
           isCorrect: false
+        },
+         { 
+          text: "Give everyone a chance to contribute and share ideas", 
+          isCorrect: true
         },
         { 
           text: "Make all decisions yourself", 
@@ -141,10 +143,7 @@ const BadgeInclusionLeader = () => {
           text: "Insist that your opinion is the only correct one", 
           isCorrect: false
         },
-        { 
-          text: "Listen respectfully and try to understand their perspective", 
-          isCorrect: true
-        },
+        
         { 
           text: "Mock their viewpoint", 
           isCorrect: false
@@ -152,7 +151,11 @@ const BadgeInclusionLeader = () => {
         { 
           text: "Avoid all discussions about differing opinions", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Listen respectfully and try to understand their perspective", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Listening respectfully to different opinions promotes understanding and inclusive dialogue.",

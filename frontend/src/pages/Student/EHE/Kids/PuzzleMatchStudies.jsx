@@ -19,20 +19,20 @@ const PuzzleMatchStudies = () => {
 
   // Professions (left side) - 5 items
   const professions = [
-    { id: 1, name: "Doctor", emoji: "👨‍⚕️", description: "Diagnoses and treats illnesses and injuries" },
-    { id: 2, name: "Lawyer", emoji: "👨‍⚖️", description: "Provides legal advice and represents clients in court" },
-    { id: 3, name: "Artist", emoji: "🎨", description: "Creates visual or performing art" },
-    { id: 4, name: "Engineer", emoji: "⚙️", description: "Designs and builds machines, structures, or systems" },
-    { id: 5, name: "Chef", emoji: "👨‍🍳", description: "Prepares and cooks food in restaurants or other establishments" }
+    { id: 1, name: "Doctor", emoji: "👨‍⚕️" },
+    { id: 2, name: "Lawyer", emoji: "👨‍⚖️" },
+    { id: 3, name: "Artist", emoji: "🎨" },
+    { id: 4, name: "Engineer", emoji: "⚙️" },
+    { id: 5, name: "Chef", emoji: "👨‍🍳" }
   ];
 
   // Colleges (right side) - 5 items
   const colleges = [
-    { id: 1, name: "Medical College", emoji: "🏥", description: "Educational institution focused on medicine and healthcare" },
-    { id: 5, name: "Culinary School", emoji: "🔪", description: "Specialized school for learning cooking and food preparation" },
-    { id: 3, name: "Design College", emoji: "🎭", description: "Educational institution focused on visual or performing arts" },
-    { id: 2, name: "Law College", emoji: "⚖️", description: "Educational institution focused on legal studies" },
-    { id: 4, name: "Engineering College", emoji: "🏗️", description: "Educational institution focused on engineering disciplines" },
+    { id: 1, name: "Medical College", emoji: "🏥" },
+    { id: 5, name: "Culinary School", emoji: "🔪" },
+    { id: 3, name: "Design College", emoji: "🎭" },
+    { id: 2, name: "Law College", emoji: "⚖️" },
+    { id: 4, name: "Engineering College", emoji: "🏗️" },
   ];
 
   // Correct matches
@@ -165,7 +165,6 @@ const PuzzleMatchStudies = () => {
                       <div className="text-2xl mr-3">{profession.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{profession.name}</h4>
-                        <p className="text-white/80 text-sm">{profession.description}</p>
                       </div>
                     </div>
                   </button>
@@ -220,7 +219,6 @@ const PuzzleMatchStudies = () => {
                       <div className="text-2xl mr-3">{college.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{college.name}</h4>
-                        <p className="text-white/80 text-sm">{college.description}</p>
                       </div>
                     </div>
                   </button>

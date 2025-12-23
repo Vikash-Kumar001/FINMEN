@@ -13,8 +13,8 @@ const GreenEnergyStory = () => {
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1; // 1 coin per correct answer
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5; // Total coins for completing all questions
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -28,45 +28,45 @@ const GreenEnergyStory = () => {
       id: 1,
       text: "A teen sees solar panels. What career works in this field?",
       options: [
-        { id: "a", text: "Renewable Energy Engineer", correct: true },
-        { id: "b", text: "Traditional Energy Worker", correct: false },
-        { id: "c", text: "Oil Industry Specialist", correct: false }
+        { id: "b", text: "Traditional Energy Worker", correct: false, emoji: "🏭" },
+        { id: "a", text: "Renewable Energy Engineer", correct: true, emoji: "🔧" },
+        { id: "c", text: "Oil Industry Specialist", correct: false, emoji: "🛢️" }
       ]
     },
     {
       id: 2,
       text: "Why is green energy important for our future?",
       options: [
-        { id: "a", text: "Reduces pollution and climate change", correct: true },
-        { id: "b", text: "Creates more pollution", correct: false },
-        { id: "c", text: "Is not important", correct: false }
+        { id: "b", text: "Creates more pollution", correct: false, emoji: "☁️" },
+        { id: "a", text: "Reduces pollution and climate change", correct: true, emoji: "🌍" },
+        { id: "c", text: "Is not important", correct: false, emoji: "❌" }
       ]
     },
     {
       id: 3,
       text: "What skills are needed for careers in renewable energy?",
       options: [
-        { id: "a", text: "Science, technology, and environmental knowledge", correct: true },
-        { id: "b", text: "Just physical strength", correct: false },
-        { id: "c", text: "No special skills", correct: false }
+        { id: "b", text: "Just physical strength", correct: false, emoji: "💪" },
+        { id: "c", text: "No special skills", correct: false, emoji: "🤷" },
+        { id: "a", text: "Science, technology, and environmental knowledge", correct: true, emoji: "🎓" },
       ]
     },
     {
       id: 4,
       text: "How can young people contribute to green energy solutions?",
       options: [
-        { id: "a", text: "Study relevant fields and innovate", correct: true },
-        { id: "b", text: "Ignore environmental issues", correct: false },
-        { id: "c", text: "Stick to old technologies", correct: false }
+        { id: "b", text: "Ignore environmental issues", correct: false, emoji: "🙈" },
+        { id: "a", text: "Study relevant fields and innovate", correct: true, emoji: "💡" },
+        { id: "c", text: "Stick to old technologies", correct: false, emoji: "🔄" }
       ]
     },
     {
       id: 5,
       text: "What opportunities exist in the green energy sector?",
       options: [
-        { id: "a", text: "Growing job market and innovation potential", correct: true },
-        { id: "b", text: "Declining industry", correct: false },
-        { id: "c", text: "No opportunities", correct: false }
+        { id: "b", text: "Declining industry", correct: false, emoji: "📉" },
+        { id: "a", text: "Growing job market and innovation potential", correct: true, emoji: "📈" },
+        { id: "c", text: "No opportunities", correct: false, emoji: "❌" }
       ]
     }
   ];
@@ -75,10 +75,10 @@ const GreenEnergyStory = () => {
     resetFeedback();
     
     if (option.correct) {
-      const newCoins = coins + coinsPerLevel;
+      const newCoins = coins + 1; // Give 1 coin per correct answer instead of coinsPerLevel
       setCoins(newCoins);
       setFinalScore(finalScore + 1);
-      showCorrectAnswerFeedback(newCoins);
+      showCorrectAnswerFeedback(1, true);
     }
     
     setTimeout(() => {
@@ -135,8 +135,8 @@ const GreenEnergyStory = () => {
                     className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
                   >
                     <div className="flex items-center">
-                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        {option.id}
+                      <span className="text-2xl mr-3 flex-shrink-0">
+                        {option.emoji}
                       </span>
                       <span className="font-medium">{option.text}</span>
                     </div>

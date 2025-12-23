@@ -19,20 +19,20 @@ const PuzzleMatchFutureJobs = () => {
 
   // Jobs (left side) - 5 items
   const jobs = [
-    { id: 1, name: "Game Designer", emoji: "🎮", description: "Create concepts, rules, and experiences for video games" },
-    { id: 2, name: "Drone Pilot", emoji: "🚁", description: "Operate unmanned aerial vehicles for various purposes" },
-    { id: 3, name: "Data Scientist", emoji: "📊", description: "Analyze complex data sets to find patterns and make predictions" },
-    { id: 4, name: "AI Engineer", emoji: "🤖", description: "Develop intelligent systems that can learn and make decisions" },
-    { id: 5, name: "Renewable Energy Technician", emoji: "⚡", description: "Install and maintain solar panels, wind turbines, and clean energy systems" }
+    { id: 1, name: "Game Designer", emoji: "🎮" },
+    { id: 2, name: "Drone Pilot", emoji: "🚁" },
+    { id: 3, name: "Data Scientist", emoji: "📊" },
+    { id: 4, name: "AI Engineer", emoji: "🤖" },
+    { id: 5, name: "Renewable Energy Technician", emoji: "⚡" }
   ];
 
   // Fields (right side) - 5 items
   const fields = [
-    { id: 4, name: "Artificial Intelligence", emoji: "🧠", description: "Development of intelligent machines that can perform human-like tasks" },
-    { id: 3, name: "Numbers", emoji: "🔢", description: "Mathematical analysis and statistical interpretation" },
-    { id: 2, name: "Flying Robots", emoji: "🤖", description: "Unmanned aerial vehicles for commercial and recreational use" },
-    { id: 5, name: "Green Energy", emoji: "🌿", description: "Sustainable energy sources like solar, wind, and hydro power" },
-    { id: 1, name: "Games", emoji: "🕹️", description: "Entertainment industry focused on interactive experiences" },
+    { id: 4, name: "Artificial Intelligence", emoji: "🧠" },
+    { id: 3, name: "Numbers", emoji: "🔢" },
+    { id: 2, name: "Flying Robots", emoji: "🤖" },
+    { id: 5, name: "Green Energy", emoji: "🌿" },
+    { id: 1, name: "Games", emoji: "🕹️" },
   ];
 
   // Correct matches
@@ -165,7 +165,6 @@ const PuzzleMatchFutureJobs = () => {
                       <div className="text-2xl mr-3">{job.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{job.name}</h4>
-                        <p className="text-white/80 text-sm">{job.description}</p>
                       </div>
                     </div>
                   </button>
@@ -220,7 +219,6 @@ const PuzzleMatchFutureJobs = () => {
                       <div className="text-2xl mr-3">{field.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{field.name}</h4>
-                        <p className="text-white/80 text-sm">{field.description}</p>
                       </div>
                     </div>
                   </button>

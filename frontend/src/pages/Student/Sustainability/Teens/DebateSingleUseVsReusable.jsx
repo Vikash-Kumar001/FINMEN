@@ -111,6 +111,11 @@ const DebateSingleUseVsReusable = () => {
       text: "How can we reduce single-use plastic?",
       options: [
         {
+          id: "c",
+          text: "Use alternatives",
+          emoji: "🌱"
+        },
+        {
           id: "a",
           text: "Use more plastic",
           emoji: "🥤"
@@ -120,14 +125,10 @@ const DebateSingleUseVsReusable = () => {
           text: "Do nothing",
           emoji: "🤷"
         },
-        {
-          id: "c",
-          text: "Use alternatives",
-          emoji: "🌱"
-        }
+        
       ],
-      correctAnswer: "a",
-      explanation: "Use more plastic. Increases waste, but action is needed. Find reusable options."
+      correctAnswer: "c",
+      explanation: "Use alternatives. Reduces waste, but action is needed. Find reusable options."
     },
     {
       id: 4,

@@ -91,7 +91,7 @@ const ReflexServiceMindset = () => {
     {
       id: 5,
       question: "How should you respond when you have the opportunity to volunteer for a community service project?",
-      emoji: " volunteerman",
+      emoji: "💪",
       correctAnswer: "Participate actively and encourage friends to join",
       options: [
         { text: "Make excuses to avoid participation", isCorrect: false },

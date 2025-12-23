@@ -13,8 +13,8 @@ const SocialBusinessStory = () => {
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1; // 1 coin per correct answer
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5; // Total coins for completing all questions
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -28,45 +28,45 @@ const SocialBusinessStory = () => {
       id: 1,
       text: "A teen creates an app to connect farmers to buyers. What is this?",
       options: [
-        { id: "a", text: "Social business", correct: true },
-        { id: "b", text: "Traditional business", correct: false },
-        { id: "c", text: "Non-profit organization", correct: false }
+        { id: "b", text: "Traditional business", correct: false, emoji: "🏢" },
+        { id: "a", text: "Social business", correct: true, emoji: "🤝" },
+        { id: "c", text: "Non-profit organization", correct: false, emoji: "💝" }
       ]
     },
     {
       id: 2,
       text: "What is the primary goal of a social business?",
       options: [
-        { id: "a", text: "Solve social problems while being sustainable", correct: true },
-        { id: "b", text: "Maximize profits only", correct: false },
-        { id: "c", text: "Create losses intentionally", correct: false }
+        { id: "b", text: "Maximize profits only", correct: false, emoji: "💰" },
+        { id: "c", text: "Create losses intentionally", correct: false, emoji: "📉" },
+        { id: "a", text: "Solve social problems while being sustainable", correct: true, emoji: "🌍" },
       ]
     },
     {
       id: 3,
       text: "How does a social business differ from a traditional business?",
       options: [
-        { id: "a", text: "Focuses on social impact alongside profit", correct: true },
-        { id: "b", text: "Only focuses on profit", correct: false },
-        { id: "c", text: "Doesn't aim to be sustainable", correct: false }
+        { id: "a", text: "Focuses on social impact alongside profit", correct: true, emoji: "⚖️" },
+        { id: "b", text: "Only focuses on profit", correct: false, emoji: "🎯" },
+        { id: "c", text: "Doesn't aim to be sustainable", correct: false, emoji: "❌" }
       ]
     },
     {
       id: 4,
       text: "Why are social businesses important for society?",
       options: [
-        { id: "a", text: "Address critical problems innovatively", correct: true },
-        { id: "b", text: "Create more problems", correct: false },
-        { id: "c", text: "Make no difference", correct: false }
+        { id: "b", text: "Create more problems", correct: false, emoji: "⚠️" },
+        { id: "a", text: "Address critical problems innovatively", correct: true, emoji: "💡" },
+        { id: "c", text: "Make no difference", correct: false, emoji: "😶" }
       ]
     },
     {
       id: 5,
       text: "What can young entrepreneurs learn from social businesses?",
       options: [
-        { id: "a", text: "Combine passion with purpose for impact", correct: true },
-        { id: "b", text: "Focus only on money", correct: false },
-        { id: "c", text: "Ignore social issues", correct: false }
+        { id: "b", text: "Focus only on money", correct: false, emoji: "💸" },
+        { id: "c", text: "Ignore social issues", correct: false, emoji: "🙈" },
+        { id: "a", text: "Combine passion with purpose for impact", correct: true, emoji: "🚀" },
       ]
     }
   ];
@@ -75,10 +75,10 @@ const SocialBusinessStory = () => {
     resetFeedback();
     
     if (option.correct) {
-      const newCoins = coins + coinsPerLevel;
+      const newCoins = coins + 1; // Give 1 coin per correct answer instead of coinsPerLevel
       setCoins(newCoins);
       setFinalScore(finalScore + 1);
-      showCorrectAnswerFeedback(newCoins);
+      showCorrectAnswerFeedback(1, true);
     }
     
     setTimeout(() => {
@@ -135,8 +135,8 @@ const SocialBusinessStory = () => {
                     className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
                   >
                     <div className="flex items-center">
-                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        {option.id}
+                      <span className="text-2xl mr-3 flex-shrink-0">
+                        {option.emoji}
                       </span>
                       <span className="font-medium">{option.text}</span>
                     </div>

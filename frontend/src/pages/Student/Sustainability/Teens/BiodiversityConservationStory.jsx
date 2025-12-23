@@ -94,7 +94,7 @@ const BiodiversityConservationStory = () => {
       options: [
         { id: "simple", text: "Simple systems are better", emoji: "📉", isCorrect: false },
         { id: "stable", text: "It makes ecosystems more stable", emoji: "🌿", isCorrect: true },
-        { id: "unnecessary", text: "It's not really necessary", emoji: "-dismiss", isCorrect: false }
+        { id: "unnecessary", text: "It's not really necessary", emoji: "⛔", isCorrect: false }
       ]
     },
     {

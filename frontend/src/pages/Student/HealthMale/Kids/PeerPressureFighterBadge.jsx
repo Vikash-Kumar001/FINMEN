@@ -58,6 +58,11 @@ const PeerPressureFighterBadge = () => {
       text: "Someone dares you to do something dangerous. What's your move?",
       options: [
         {
+          text: "Refuse the dangerous dare",
+          emoji: "✋",
+          isCorrect: true
+        },
+        {
           text: "Do it to look cool",
           emoji: "😎",
           isCorrect: false
@@ -67,11 +72,7 @@ const PeerPressureFighterBadge = () => {
           emoji: "👥",
           isCorrect: false
         },
-        {
-          text: "Refuse the dangerous dare",
-          emoji: "✋",
-          isCorrect: true
-        },
+        
         {
           text: "Record it for social media",
           emoji: "📱",
@@ -94,15 +95,16 @@ const PeerPressureFighterBadge = () => {
           isCorrect: false
         },
         {
-          text: "Ignore it completely",
-          emoji: "🙈",
-          isCorrect: false
-        },
-        {
           text: "Stand up for them or tell an adult",
           emoji: "🦸",
           isCorrect: true
         },
+        {
+          text: "Ignore it completely",
+          emoji: "🙈",
+          isCorrect: false
+        },
+        
         {
           text: "Laugh at the situation",
           emoji: "😂",
@@ -129,16 +131,17 @@ const PeerPressureFighterBadge = () => {
           emoji: "🤥",
           isCorrect: false
         },
+        
+        {
+          text: "Change the subject",
+          emoji: "🔀",
+          isCorrect: false
+        },
         {
           text: "Say 'Please respect my privacy'",
           emoji: "🔒",
           isCorrect: true
         },
-        {
-          text: "Change the subject",
-          emoji: "🔀",
-          isCorrect: false
-        }
       ],
       feedback: {
         correct: "Perfect! Everyone has the right to privacy and boundaries!",

@@ -32,7 +32,7 @@ const PuzzleKindActs = () => {
     { id: 3, name: "Listen", emoji: "💬", description: "Give attention to someone's concerns" },
     { id: 1, name: "Carry Bags", emoji: "🛍️", description: "Help with heavy shopping items" },
     { id: 5, name: "Plant Trees", emoji: "🌳", description: "Grow plants to clean the air" },
-    { id: 4, name: "Check On", emoji: "CallCheck On", description: "Visit to see if they need help" },
+    { id: 4, name: "Check On", emoji: "🏁", description: "Visit to see if they need help" },
   ];
 
   // Correct matches

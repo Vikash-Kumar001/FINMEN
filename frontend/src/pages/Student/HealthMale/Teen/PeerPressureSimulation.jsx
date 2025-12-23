@@ -31,7 +31,7 @@ const PeerPressureSimulation = () => {
           id: "b",
           text: "Say No",
           emoji: "✋",
-          isCorrect: false
+          isCorrect: true
         },
         {
           id: "c",
@@ -43,7 +43,7 @@ const PeerPressureSimulation = () => {
           id: "d",
           text: "Suggest a non-alcoholic alternative",
           emoji: "🥤",
-          isCorrect: true
+          isCorrect: false
         }
       ]
     },
@@ -67,13 +67,13 @@ const PeerPressureSimulation = () => {
           id: "c",
           text: "Say 'I don't want to'",
           emoji: "✋",
-          isCorrect: false
+          isCorrect: true
         },
         {
           id: "d",
           text: "Question why they smoke",
           emoji: "🤔",
-          isCorrect: true
+          isCorrect: false
         }
       ]
     },
@@ -85,7 +85,7 @@ const PeerPressureSimulation = () => {
           id: "a",
           text: "Tell a teacher",
           emoji: "📞",
-          isCorrect: false
+          isCorrect: true
         },
         {
           id: "b",
@@ -103,7 +103,7 @@ const PeerPressureSimulation = () => {
           id: "d",
           text: "Leave the area",
           emoji: "🚪",
-          isCorrect: true
+          isCorrect: false
         }
       ]
     },
@@ -127,13 +127,13 @@ const PeerPressureSimulation = () => {
           id: "c",
           text: "Block and report",
           emoji: "🚫",
-          isCorrect: false
+          isCorrect: true
         },
         {
           id: "d",
           text: "Talk to a trusted adult",
           emoji: "👨‍🏫",
-          isCorrect: true
+          isCorrect: false
         }
       ]
     },
@@ -151,7 +151,7 @@ const PeerPressureSimulation = () => {
           id: "b",
           text: "Having clear personal values",
           emoji: "💪",
-          isCorrect: false
+          isCorrect: true
         },
         {
           id: "c",
@@ -163,7 +163,7 @@ const PeerPressureSimulation = () => {
           id: "d",
           text: "Practicing refusal skills",
           emoji: "🏋️",
-          isCorrect: true
+          isCorrect: false
         }
       ]
     }

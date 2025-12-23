@@ -19,20 +19,20 @@ const PuzzleSocialExamples = () => {
 
   // Solutions (left side) - 5 items
   const solutions = [
-    { id: 1, name: "Solar Lamps", emoji: "💡", description: "Provide clean, affordable lighting to villages without electricity" },
-    { id: 2, name: "Clean Water", emoji: "💧", description: "Improve health and quality of life in rural communities" },
-    { id: 3, name: "Microloans", emoji: "💰", description: "Help poor families start businesses and improve their livelihoods" },
-    { id: 4, name: "Recycling Programs", emoji: "♻️", description: "Reduce waste and create jobs in urban areas" },
-    { id: 5, name: "Mobile Health Clinics", emoji: "🚑", description: "Bring healthcare services to remote regions with limited access" }
+    { id: 1, name: "Solar Lamps", emoji: "💡" },
+    { id: 2, name: "Clean Water", emoji: "💧" },
+    { id: 3, name: "Microloans", emoji: "💰" },
+    { id: 4, name: "Recycling Programs", emoji: "♻️" },
+    { id: 5, name: "Mobile Health Clinics", emoji: "🚑" }
   ];
 
   // Areas (right side) - 5 items
   const areas = [
-    { id: 2, name: "Rural Areas", emoji: "🌾", description: "Communities far from urban centers with limited infrastructure" },
-    { id: 1, name: "Villages", emoji: "🏘️", description: "Rural communities without reliable access to electricity" },
-    { id: 5, name: "Remote Regions", emoji: "🗺️", description: "Geographically isolated areas with limited access to services" },
-    { id: 3, name: "Poor Families", emoji: "👨‍👩‍👧‍👦", description: "Households with limited financial resources" },
-    { id: 4, name: "Urban Communities", emoji: "🏙️", description: "Cities and towns with significant waste management challenges" },
+    { id: 2, name: "Rural Areas", emoji: "🌾" },
+    { id: 1, name: "Villages", emoji: "🏘️" },
+    { id: 5, name: "Remote Regions", emoji: "🗺️" },
+    { id: 3, name: "Poor Families", emoji: "👨‍👩‍👧‍👦" },
+    { id: 4, name: "Urban Communities", emoji: "🏙️" },
   ];
 
   // Correct matches
@@ -165,7 +165,6 @@ const PuzzleSocialExamples = () => {
                       <div className="text-2xl mr-3">{solution.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{solution.name}</h4>
-                        <p className="text-white/80 text-sm">{solution.description}</p>
                       </div>
                     </div>
                   </button>
@@ -220,7 +219,6 @@ const PuzzleSocialExamples = () => {
                       <div className="text-2xl mr-3">{area.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{area.name}</h4>
-                        <p className="text-white/80 text-sm">{area.description}</p>
                       </div>
                     </div>
                   </button>

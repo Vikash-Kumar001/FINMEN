@@ -61,21 +61,28 @@ const QuizOnFutureJobs = () => {
           id: "a",
           text: "AI Engineer",
           emoji: "🤖",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! AI Engineering is a growing field with increasing demand."
         },
         {
           id: "b",
           text: "Dinosaur Hunter",
           emoji: "🦖",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Dinosaurs are extinct, so there are no dinosaur hunters in reality."
         },
         {
           id: "c",
           text: "Telegraph Operator",
           emoji: "📠",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Telegraph operators were common in the past, but this job has become obsolete."
         }
-      ]
+      ],
+      feedback: {
+        correct: "AI Engineer is an emerging career in artificial intelligence and machine learning.",
+        incorrect: "New careers are typically in emerging fields like technology, sustainability, and digital services."
+      }
     },
     {
       id: 2,
@@ -86,21 +93,28 @@ const QuizOnFutureJobs = () => {
           id: "a",
           text: "Analyze complex data",
           emoji: "📈",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Data Scientists analyze large datasets to extract meaningful insights."
         },
         {
           id: "b",
           text: "Only play games",
           emoji: "🎮",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Data Scientists work with data analysis, not gaming."
         },
         {
           id: "c",
           text: "Teach dancing",
           emoji: "💃",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. That would be a dance instructor, not a Data Scientist."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Data Scientists analyze complex datasets to find patterns and insights that inform decisions.",
+        incorrect: "Data Scientists specialize in extracting insights from large datasets using statistical methods."
+      }
     },
     {
       id: 3,
@@ -111,21 +125,28 @@ const QuizOnFutureJobs = () => {
           id: "a",
           text: "Digital Artist",
           emoji: "💻",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Digital Artists create artwork using digital tools and technology."
         },
         {
           id: "b",
           text: "Traditional Painter",
           emoji: "🖌️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Traditional painters work with physical materials like canvas and paint."
         },
         {
           id: "c",
           text: "Musician",
           emoji: "🎵",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Musicians create music, not visual art."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Digital Artists use technology to create visual art, animations, and digital illustrations.",
+        incorrect: "Digital art creation requires specialized skills in software and digital tools."
+      }
     },
     {
       id: 4,
@@ -137,21 +158,28 @@ const QuizOnFutureJobs = () => {
           id: "b",
           text: "Drives buses",
           emoji: "🚌",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Bus drivers operate ground vehicles, not aircraft."
         },
         {
           id: "a",
           text: "Flies unmanned aircraft",
           emoji: "🛩️",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Drone Pilots operate remote-controlled or autonomous aircraft."
         },
         {
           id: "c",
           text: "Sails boats",
           emoji: "⛵",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Sailors operate water vessels, not aerial vehicles."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Drone Pilots operate unmanned aerial vehicles for various purposes like photography, delivery, and surveillance.",
+        incorrect: "Drone Pilots specialize in operating unmanned aircraft remotely."
+      }
     },
     {
       id: 5,
@@ -163,21 +191,28 @@ const QuizOnFutureJobs = () => {
           id: "b",
           text: "Coal Miner",
           emoji: "⛏️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Coal mining is related to fossil fuels, not renewable energy."
         },
         {
           id: "c",
           text: "Oil Driller",
           emoji: "🛢️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Oil drilling is related to fossil fuels, not renewable energy."
         },
         {
           id: "a",
           text: "Solar Panel Technician",
           emoji: "☀️",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Solar Panel Technicians install and maintain solar energy systems."
         },
-      ]
+      ],
+      feedback: {
+        correct: "Solar Panel Technicians work with renewable energy by installing and maintaining solar power systems.",
+        incorrect: "Renewable energy careers focus on sustainable energy sources like solar, wind, and hydroelectric power."
+      }
     }
   ];
 
@@ -280,9 +315,25 @@ const QuizOnFutureJobs = () => {
               {answered && (
                 <div className={`rounded-lg p-5 mt-6 ${
                   currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
-                    ? "bg-green-500/20"
-                    : "bg-red-500/20"
+                    ? "bg-green-500/20 border border-green-500"
+                    : "bg-red-500/20 border border-red-500"
                 }`}>
+                  <p className="text-lg font-semibold text-center">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "✅ Correct! "
+                      : "❌ Not quite! "}
+                  </p>
+                  <p className="text-center mt-2">
+                    {(() => {
+                      const selectedOptionData = currentQuestionData.options.find(opt => opt.id === selectedOption);
+                      if (selectedOptionData?.feedback) {
+                        return selectedOptionData.feedback;
+                      }
+                      return selectedOptionData?.isCorrect 
+                        ? currentQuestionData.feedback?.correct 
+                        : currentQuestionData.feedback?.incorrect;
+                    })()}
+                  </p>
                 </div>
               )}
             </div>

@@ -61,21 +61,28 @@ const QuizOnLifelongLearning = () => {
           id: "a",
           text: "After school",
           emoji: "🏫",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Learning continues throughout life, not just during formal schooling."
         },
         {
           id: "b",
           text: "Never",
           emoji: "♾️",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Learning is a lifelong process that continues throughout our entire lives."
         },
         {
           id: "c",
           text: "At age 30",
           emoji: "🎂",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. People can learn and grow at any age throughout their lives."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Learning is a lifelong process that continues throughout our entire lives.",
+        incorrect: "Learning doesn't stop at any particular point in life - it's a continuous journey."
+      }
     },
     {
       id: 2,
@@ -86,21 +93,28 @@ const QuizOnLifelongLearning = () => {
           id: "a",
           text: "Adapt to changes in the world",
           emoji: "🔄",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Lifelong learning helps us adapt to changes in technology, society, and our careers."
         },
         {
           id: "b",
           text: "Stay stuck in old ways",
           emoji: "🛑",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Lifelong learning helps us grow and adapt, not stay stuck."
         },
         {
           id: "c",
           text: "Avoid challenges",
           emoji: "😴",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Lifelong learning actually helps us face challenges better."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Lifelong learning helps us adapt to changes in technology, society, and our careers.",
+        incorrect: "Lifelong learning helps us grow and adapt to an ever-changing world."
+      }
     },
     {
       id: 3,
@@ -111,21 +125,28 @@ const QuizOnLifelongLearning = () => {
           id: "a",
           text: "Learning to cook new recipes as an adult",
           emoji: "👨‍🍳",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Learning new skills like cooking at any age is a perfect example of lifelong learning."
         },
         {
           id: "b",
           text: "Only learning what's taught in school",
           emoji: "📘",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Lifelong learning goes beyond formal schooling to include learning throughout life."
         },
         {
           id: "c",
           text: "Never trying new things",
           emoji: "❌",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Lifelong learning involves actively seeking new knowledge and experiences."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Learning new skills at any stage of life, like cooking, is an example of lifelong learning.",
+        incorrect: "Lifelong learning involves actively seeking new knowledge and experiences throughout life."
+      }
     },
     {
       id: 4,
@@ -137,21 +158,28 @@ const QuizOnLifelongLearning = () => {
           id: "b",
           text: "Once you get a job, you don't need to learn more",
           emoji: "🛋️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Careers require continuous learning as technology and methods evolve."
         },
         {
           id: "c",
           text: "It's not important",
           emoji: "🤔",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Lifelong learning is crucial for career advancement and adaptability."
         },
         {
           id: "a",
           text: "Jobs and skills change over time",
           emoji: "📈",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Jobs and required skills evolve over time, making continuous learning essential."
         },
-      ]
+      ],
+      feedback: {
+        correct: "Jobs and required skills constantly evolve, making continuous learning essential for career success.",
+        incorrect: "Continuous learning is crucial for career growth and adaptability in a changing job market."
+      }
     },
     {
       id: 5,
@@ -162,21 +190,28 @@ const QuizOnLifelongLearning = () => {
           id: "a",
           text: "Read books, take courses, or learn new hobbies",
           emoji: "📖",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Reading, taking courses, and exploring hobbies are all ways to practice lifelong learning."
         },
         {
           id: "b",
           text: "Avoid new experiences and challenges",
           emoji: "🔒",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Lifelong learning involves embracing new experiences and challenges."
         },
         {
           id: "c",
           text: "Stop learning after graduation",
           emoji: "🏁",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Learning continues throughout life, not just during formal education."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Reading books, taking courses, and learning new hobbies are all ways to practice lifelong learning.",
+        incorrect: "Lifelong learning involves actively seeking new experiences and knowledge throughout life."
+      }
     }
   ];
 
@@ -279,9 +314,25 @@ const QuizOnLifelongLearning = () => {
               {answered && (
                 <div className={`rounded-lg p-5 mt-6 ${
                   currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
-                    ? "bg-green-500/20"
-                    : "bg-red-500/20"
-                 } `}>
+                    ? "bg-green-500/20 border border-green-500"
+                    : "bg-red-500/20 border border-red-500"
+                }`}>
+                  <p className="text-lg font-semibold text-center">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "✅ Correct! "
+                      : "❌ Not quite! "}
+                  </p>
+                  <p className="text-center mt-2">
+                    {(() => {
+                      const selectedOptionData = currentQuestionData.options.find(opt => opt.id === selectedOption);
+                      if (selectedOptionData?.feedback) {
+                        return selectedOptionData.feedback;
+                      }
+                      return selectedOptionData?.isCorrect 
+                        ? currentQuestionData.feedback?.correct 
+                        : currentQuestionData.feedback?.incorrect;
+                    })()}
+                  </p>
                 </div>
               )}
             </div>

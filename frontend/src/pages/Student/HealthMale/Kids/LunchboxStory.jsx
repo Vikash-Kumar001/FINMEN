@@ -33,21 +33,20 @@ const LunchboxStory = () => {
           id: "b",
           text: "Burger",
           emoji: "🍔",
-          description: "Burger has too much fat and processed meat",
+          
           isCorrect: false
         },
         {
           id: "a",
           text: "Homemade sandwich",
           emoji: "🥪",
-          description: "Homemade sandwich is fresh and nutritious",
+          
           isCorrect: true
         },
         {
           id: "c",
           text: "Neither",
           emoji: "😕",
-          description: "Homemade sandwich is the healthy choice",
           isCorrect: false
         }
       ]
@@ -60,21 +59,18 @@ const LunchboxStory = () => {
           id: "a",
           text: "Vegetable wrap",
           emoji: "🥬",
-          description: "Vegetable wrap gives you vitamins and fiber",
           isCorrect: true
         },
         {
           id: "b",
           text: "Pizza",
           emoji: "🍕",
-          description: "Pizza has too much cheese and processed dough",
           isCorrect: false
         },
         {
           id: "c",
           text: "Both",
           emoji: "🤝",
-          description: "Vegetable wrap is much healthier",
           isCorrect: false
         }
       ]
@@ -86,22 +82,19 @@ const LunchboxStory = () => {
         {
           id: "c",
           text: "Mix both",
-          emoji: "🍪",
-          description: "Fruit salad is natural and full of nutrients",
+          emoji: "🍪+🍓",
           isCorrect: false
         },
         {
           id: "b",
           text: "Cookies",
           emoji: "🍪",
-          description: "Cookies have lots of sugar and no nutrition",
           isCorrect: false
         },
         {
           id: "a",
           text: "Fruit salad",
           emoji: "🍓",
-          description: "Fruit salad gives you natural vitamins",
           isCorrect: true
         }
       ]
@@ -114,21 +107,18 @@ const LunchboxStory = () => {
           id: "b",
           text: "Hot dog",
           emoji: "🌭",
-          description: "Hot dog is processed meat with lots of salt",
           isCorrect: false
         },
         {
           id: "c",
           text: "Both equally",
           emoji: "🤷",
-          description: "Veggie sticks are fresh and healthy",
           isCorrect: false
         },
         {
           id: "a",
           text: "Veggie sticks with hummus",
           emoji: "🥕",
-          description: "Vegetables and hummus give protein and vitamins",
           isCorrect: true
         }
       ]
@@ -141,21 +131,18 @@ const LunchboxStory = () => {
           id: "b",
           text: "Cake",
           emoji: "🍰",
-          description: "Cake has too much sugar and frosting",
           isCorrect: false
         },
         {
           id: "a",
           text: "Yogurt with berries",
           emoji: "🫐",
-          description: "Yogurt and berries are nutritious and delicious",
           isCorrect: true
         },
         {
           id: "c",
           text: "Skip lunch",
           emoji: "😴",
-          description: "Yogurt with berries is the healthy option",
           isCorrect: false
         }
       ]

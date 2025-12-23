@@ -53,8 +53,8 @@ const TimeManagementSimulation = () => {
       options: [
         {
           id: "a",
-          text: "Make a schedule",
-          emoji: "📅",
+          text: "Focus on one task",
+          emoji: "🎯",
           isCorrect: false
         },
         {
@@ -82,9 +82,15 @@ const TimeManagementSimulation = () => {
       text: "What helps with time management for schoolwork?",
       options: [
         {
-          id: "a",
+          id: "d",
           text: "Daily study routine",
           emoji: "📖",
+          isCorrect: true
+        },
+        {
+          id: "a",
+          text: "Study with friends",
+          emoji: "👥",
           isCorrect: false
         },
         {
@@ -99,12 +105,7 @@ const TimeManagementSimulation = () => {
           emoji: "📚",
           isCorrect: false
         },
-        {
-          id: "d",
-          text: "Daily study routine",
-          emoji: "📖",
-          isCorrect: true
-        }
+        
       ]
     },
     {
@@ -113,8 +114,8 @@ const TimeManagementSimulation = () => {
       options: [
         {
           id: "a",
-          text: "Prioritize important tasks",
-          emoji: "⭐",
+          text: "Discuss with friends",
+          emoji: "💬",
           isCorrect: false
         },
         {
@@ -149,14 +150,8 @@ const TimeManagementSimulation = () => {
         },
         {
           id: "b",
-          text: "Consistency and planning",
-          emoji: "📋",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Working all the time",
-          emoji: "💼",
+          text: "Flexible scheduling",
+          emoji: "📅",
           isCorrect: false
         },
         {
@@ -164,7 +159,14 @@ const TimeManagementSimulation = () => {
           text: "Consistency and planning",
           emoji: "📋",
           isCorrect: true
-        }
+        },
+        {
+          id: "c",
+          text: "Working all the time",
+          emoji: "💼",
+          isCorrect: false
+        },
+        
       ]
     }
   ];

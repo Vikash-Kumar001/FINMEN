@@ -60,13 +60,14 @@ const BadgeJusticeTeen = () => {
           text: "Ignore it to avoid conflict", 
           isCorrect: false
         },
-        { 
-          text: "Support the victim and report the incident appropriately", 
-          isCorrect: true
-        },
+        
         { 
           text: "Join in with the discriminatory behavior", 
           isCorrect: false
+        },
+        { 
+          text: "Support the victim and report the incident appropriately", 
+          isCorrect: true
         },
         { 
           text: "Tell others about it for entertainment", 
@@ -87,18 +88,20 @@ const BadgeJusticeTeen = () => {
           text: "Force your views on others without discussion", 
           isCorrect: false
         },
-        { 
-          text: "Share factual information and encourage thoughtful dialogue", 
-          isCorrect: true
-        },
+        
         { 
           text: "Only discuss issues on social media anonymously", 
           isCorrect: false
         },
+        
         { 
           text: "Avoid all conversations about controversial topics", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Share factual information and encourage thoughtful dialogue", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Sharing factual information and encouraging dialogue helps others understand issues and form informed opinions.",
@@ -111,13 +114,14 @@ const BadgeJusticeTeen = () => {
       question: "What is an effective way to support organizations working on social justice?",
       options: [
         { 
-          text: "Only provide financial support when convenient", 
-          isCorrect: false
-        },
-        { 
           text: "Donate time, resources, or skills based on your abilities", 
           isCorrect: true
         },
+        { 
+          text: "Only provide financial support when convenient", 
+          isCorrect: false
+        },
+        
         { 
           text: "Expect recognition for your contributions", 
           isCorrect: false

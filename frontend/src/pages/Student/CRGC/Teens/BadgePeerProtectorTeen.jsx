@@ -60,10 +60,7 @@ const BadgePeerProtectorTeen = () => {
           text: "Avoid them to stay out of drama", 
           isCorrect: false
         },
-        { 
-          text: "Include them in conversations and activities", 
-          isCorrect: true
-        },
+        
         { 
           text: "Make fun of them with others", 
           isCorrect: false
@@ -71,7 +68,11 @@ const BadgePeerProtectorTeen = () => {
         { 
           text: "Tell them to be more outgoing", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Include them in conversations and activities", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Including excluded peers helps them feel valued and creates a more welcoming environment.",
@@ -87,10 +88,7 @@ const BadgePeerProtectorTeen = () => {
           text: "Share the posts to get more attention", 
           isCorrect: false
         },
-        { 
-          text: "Report the harassment to platform moderators or trusted adults", 
-          isCorrect: true
-        },
+        
         { 
           text: "Ignore it since it's just online", 
           isCorrect: false
@@ -111,13 +109,14 @@ const BadgePeerProtectorTeen = () => {
       question: "How should you stand up for someone being targeted by bullies?",
       options: [
         { 
-          text: "Confront the bullies aggressively", 
-          isCorrect: false
-        },
-        { 
           text: "Support the victim privately and seek help from adults", 
           isCorrect: true
         },
+        { 
+          text: "Confront the bullies aggressively", 
+          isCorrect: false
+        },
+        
         { 
           text: "Stay neutral to avoid conflict", 
           isCorrect: false
@@ -141,13 +140,14 @@ const BadgePeerProtectorTeen = () => {
           text: "Let popular students decide who participates", 
           isCorrect: false
         },
-        { 
-          text: "Create welcoming opportunities for everyone to join", 
-          isCorrect: true
-        },
+        
         { 
           text: "Exclude students who are different", 
           isCorrect: false
+        },
+        { 
+          text: "Create welcoming opportunities for everyone to join", 
+          isCorrect: true
         },
         { 
           text: "Focus only on your close friends", 

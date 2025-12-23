@@ -30,8 +30,8 @@ const ShavingProBadgeTeen = () => {
             icon: UserCheck,
             options: [
                 { id: "a", text: "Just Water", emoji: "💧", correct: false },
-                { id: "b", text: "Dry Razor", emoji: "🪒", correct: false },
                 { id: "c", text: "Shaving Cream", emoji: "🧴", correct: true },
+                { id: "b", text: "Dry Razor", emoji: "🪒", correct: false },
                 { id: "d", text: "Soap", emoji: "🧼", correct: false }
             ],
             feedback: {
@@ -45,10 +45,10 @@ const ShavingProBadgeTeen = () => {
             question: "Which way to shave?",
             icon: Shield,
             options: [
+                { id: "c", text: "With Grain", emoji: "✅", correct: true },
                 { id: "a", text: "Against Grain", emoji: "❌", correct: false },
                 { id: "b", text: "Sideways", emoji: "↔️", correct: false },
-                { id: "c", text: "With Grain", emoji: "✅", correct: false },
-                { id: "d", text: "In Circles", emoji: "🌀", correct: true }
+                { id: "d", text: "In Circles", emoji: "🌀", correct: false }
             ],
             feedback: {
                 correct: "Yes! Follow hair growth.",
@@ -63,8 +63,8 @@ const ShavingProBadgeTeen = () => {
             options: [
                 { id: "a", text: "Sometimes", emoji: "⏰", correct: false },
                 { id: "b", text: "With Family", emoji: "👨‍👩‍👧‍👦", correct: false },
-                { id: "c", text: "Never", emoji: "🚫", correct: false },
-                { id: "d", text: "Only With Friends", emoji: "👥", correct: true }
+                { id: "c", text: "Never", emoji: "🚫", correct: true },
+                { id: "d", text: "Only With Friends", emoji: "👥", correct: false }
             ],
             feedback: {
                 correct: "Exactly! It's unsanitary.",
@@ -79,8 +79,8 @@ const ShavingProBadgeTeen = () => {
             options: [
                 { id: "a", text: "Rub Hard", emoji: "💪", correct: false },
                 { id: "b", text: "Nothing", emoji: "😶", correct: false },
+                { id: "d", text: "Wash With Hot Water", emoji: "🔥", correct: false },
                 { id: "c", text: "Moisturize", emoji: "🧴", correct: true },
-                { id: "d", text: "Wash With Hot Water", emoji: "🔥", correct: false }
             ],
             feedback: {
                 correct: "Right! Soothe the skin.",

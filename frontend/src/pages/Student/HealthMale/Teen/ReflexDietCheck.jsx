@@ -117,19 +117,13 @@ const ReflexDietCheck = () => {
     }, 1000);
   }, []);
 
-  // Timer effect - countdown from 5 seconds for each question
+  // Timer effect - countdown from 10 seconds for each question
   useEffect(() => {
-    if (gameState !== "playing") {
+    if (gameState !== "playing" || currentRound === 0 || currentRound > TOTAL_ROUNDS) {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      return;
-    }
-
-    // Check if game should be finished
-    if (currentRoundRef.current > TOTAL_ROUNDS) {
-      setGameState("finished");
       return;
     }
 
@@ -162,7 +156,7 @@ const ReflexDietCheck = () => {
         timerRef.current = null;
       }
     };
-  }, [gameState, handleTimeUp]);
+  }, [gameState, currentRound, handleTimeUp]);
 
   const startGame = () => {
     setGameState("playing");

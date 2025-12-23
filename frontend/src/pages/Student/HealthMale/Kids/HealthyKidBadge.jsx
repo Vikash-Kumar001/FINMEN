@@ -64,7 +64,7 @@ const HealthyKidBadge = () => {
         },
         {
           text: "Nothing at all",
-          emoji: "EmptyEntries",
+          emoji: "🌱",
           isCorrect: false
         },
         {
@@ -167,7 +167,7 @@ const HealthyKidBadge = () => {
         },
         {
           text: "To show off",
-          emoji: "炫耀",
+          emoji: "🏆",
           isCorrect: false
         }
       ],

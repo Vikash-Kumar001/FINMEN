@@ -61,20 +61,21 @@ const DebateStage2 = () => {
           description: "Hate speech is protected under free speech",
           isCorrect: false
         },
-        { 
-          id: "no-harmful", 
-          text: "No - it causes real harm", 
-          emoji: "❌", 
-          description: "Hate speech causes real harm and shouldn't be protected",
-          isCorrect: true
-        },
+
         { 
           id: "sometimes", 
           text: "Sometimes - if it's not too extreme", 
           emoji: "🤷", 
           description: "Only if it's not extremely hateful",
           isCorrect: false
-        }
+        },
+                { 
+          id: "no-harmful", 
+          text: "No - it causes real harm", 
+          emoji: "❌", 
+          description: "Hate speech causes real harm and shouldn't be protected",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -82,19 +83,20 @@ const DebateStage2 = () => {
       text: "Should platforms allow hate speech?",
       options: [
         { 
-          id: "yes-platforms", 
-          text: "Yes - platforms should allow it", 
-          emoji: "🌐", 
-          description: "Online platforms should allow all speech including hate",
-          isCorrect: false
-        },
-        { 
           id: "no-moderation", 
           text: "No - platforms should moderate", 
           emoji: "❌", 
           description: "Platforms should moderate and remove hate speech",
           isCorrect: true
         },
+        { 
+          id: "yes-platforms", 
+          text: "Yes - platforms should allow it", 
+          emoji: "🌐", 
+          description: "Online platforms should allow all speech including hate",
+          isCorrect: false
+        },
+        
         { 
           id: "maybe", 
           text: "Maybe - only moderate extreme cases", 
@@ -115,6 +117,14 @@ const DebateStage2 = () => {
           description: "Hate speech is just words with no real consequences",
           isCorrect: false
         },
+        
+        { 
+          id: "maybe", 
+          text: "Maybe - only for some people", 
+          emoji: "🤷", 
+          description: "Only affects sensitive people",
+          isCorrect: false
+        },
         { 
           id: "yes-serious", 
           text: "Yes - it has serious consequences", 
@@ -122,13 +132,6 @@ const DebateStage2 = () => {
           description: "Hate speech has serious real-world consequences",
           isCorrect: true
         },
-        { 
-          id: "maybe", 
-          text: "Maybe - only for some people", 
-          emoji: "🤷", 
-          description: "Only affects sensitive people",
-          isCorrect: false
-        }
       ]
     },
     {

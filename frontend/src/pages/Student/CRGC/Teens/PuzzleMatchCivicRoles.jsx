@@ -28,7 +28,7 @@ const PuzzleMatchCivicRoles = () => {
 
   // Responsibilities (right side) - 5 items
   const responsibilities = [
-    { id: 3, name: "Democracy", emoji: "선거", description: "Participate in government decisions" },
+    { id: 3, name: "Democracy", emoji: "⚖️", description: "Participate in government decisions" },
     { id: 2, name: "Safety", emoji: "🛡️", description: "Protect people and property" },
     { id: 4, name: "Education", emoji: "🎓", description: "Provide knowledge and skills" },
     { id: 5, name: "Responsibility", emoji: "📋", description: "Duties and obligations to society" },

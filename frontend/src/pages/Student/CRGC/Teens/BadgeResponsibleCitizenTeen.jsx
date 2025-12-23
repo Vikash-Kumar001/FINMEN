@@ -33,13 +33,14 @@ const BadgeResponsibleCitizenTeen = () => {
           text: "To get recognition from others", 
           isCorrect: false
         },
-        { 
-          text: "To contribute to the betterment of your community", 
-          isCorrect: true
-        },
+        
         { 
           text: "To avoid paying taxes", 
           isCorrect: false
+        },
+        { 
+          text: "To contribute to the betterment of your community", 
+          isCorrect: true
         },
         { 
           text: "To gain advantages over others", 
@@ -87,10 +88,7 @@ const BadgeResponsibleCitizenTeen = () => {
           text: "Voting the same way as your friends", 
           isCorrect: false
         },
-        { 
-          text: "Researching candidates and issues before making informed decisions", 
-          isCorrect: true
-        },
+        
         { 
           text: "Voting randomly without consideration", 
           isCorrect: false
@@ -98,7 +96,11 @@ const BadgeResponsibleCitizenTeen = () => {
         { 
           text: "Skipping elections to save time", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Researching candidates and issues before making informed decisions", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Researching candidates and issues leads to informed voting decisions that reflect your values and interests.",
@@ -111,13 +113,14 @@ const BadgeResponsibleCitizenTeen = () => {
       question: "Why is it important to follow laws and regulations consistently?",
       options: [
         { 
-          text: "To avoid all personal responsibility", 
-          isCorrect: false
-        },
-        { 
           text: "To maintain order and protect the rights and safety of all citizens", 
           isCorrect: true
         },
+        { 
+          text: "To avoid all personal responsibility", 
+          isCorrect: false
+        },
+        
         { 
           text: "To blindly obey authority", 
           isCorrect: false
@@ -141,10 +144,7 @@ const BadgeResponsibleCitizenTeen = () => {
           text: "By shouting down opposing viewpoints", 
           isCorrect: false
         },
-        { 
-          text: "Through respectful dialogue and evidence-based reasoning", 
-          isCorrect: true
-        },
+        
         { 
           text: "By avoiding all civic conversations", 
           isCorrect: false
@@ -152,7 +152,11 @@ const BadgeResponsibleCitizenTeen = () => {
         { 
           text: "By spreading misinformation", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Through respectful dialogue and evidence-based reasoning", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Respectful dialogue and evidence-based reasoning promote understanding and constructive civic engagement.",

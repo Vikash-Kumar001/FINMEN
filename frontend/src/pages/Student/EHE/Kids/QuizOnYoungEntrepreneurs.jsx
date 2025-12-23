@@ -61,21 +61,28 @@ const QuizOnYoungEntrepreneurs = () => {
           id: "a",
           text: "Laziness",
           emoji: "😴",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Young entrepreneurs are known for their hard work and initiative."
         },
         {
           id: "b",
           text: "Creativity and Courage",
           emoji: "💡",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Young entrepreneurs demonstrate creativity in solving problems and courage to take risks."
         },
         {
           id: "c",
           text: "Fear of trying new things",
           emoji: "😨",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Young entrepreneurs are willing to try new things and take risks."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Young entrepreneurs show creativity and courage in starting and running their businesses.",
+        incorrect: "Young entrepreneurs are characterized by their initiative, creativity, and willingness to take risks."
+      }
     },
     {
       id: 2,
@@ -86,22 +93,29 @@ const QuizOnYoungEntrepreneurs = () => {
           id: "c",
           text: "Avoiding all risks",
           emoji: "🛡️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Entrepreneurs need to take calculated risks to succeed."
         },
         
         {
           id: "b",
           text: "Waiting for others to solve problems",
           emoji: "⏳",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Entrepreneurs are proactive and take initiative to solve problems."
         },
         {
           id: "a",
           text: "Problem-solving",
           emoji: "🧩",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Problem-solving is crucial for entrepreneurs to overcome challenges."
         },
-      ]
+      ],
+      feedback: {
+        correct: "Problem-solving is essential for entrepreneurs to identify opportunities and overcome challenges.",
+        incorrect: "Entrepreneurs need to be proactive in identifying and solving problems."
+      }
     },
     {
       id: 3,
@@ -112,21 +126,28 @@ const QuizOnYoungEntrepreneurs = () => {
           id: "b",
           text: "To avoid learning new skills",
           emoji: "📚",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Entrepreneurs often learn many new skills as they build their businesses."
         },
         {
           id: "c",
           text: "To copy others without thinking",
           emoji: "📋",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Entrepreneurs create original solutions to problems."
         },
         {
           id: "a",
           text: "To create solutions and earn money",
           emoji: "🚀",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Entrepreneurs identify needs and create solutions while earning money."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Young entrepreneurs start businesses to create solutions to problems and generate income.",
+        incorrect: "Entrepreneurs identify opportunities and create solutions that add value to society."
+      }
     },
     {
       id: 4,
@@ -137,22 +158,29 @@ const QuizOnYoungEntrepreneurs = () => {
           id: "a",
           text: "Learn from failures and keep trying",
           emoji: "🔄",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Resilience and learning from mistakes are key to entrepreneurial success."
         },
         {
           id: "c",
           text: "Give up immediately",
           emoji: "🏳️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Successful entrepreneurs persist through challenges and learn from setbacks."
         },
         {
           id: "b",
           text: "Blame others for their problems",
           emoji: "😠",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Entrepreneurs take responsibility and focus on solutions."
         },
         
-      ]
+      ],
+      feedback: {
+        correct: "Successful entrepreneurs learn from failures and persist through challenges.",
+        incorrect: "Entrepreneurs need resilience and a growth mindset to overcome challenges."
+      }
     },
     {
       id: 5,
@@ -163,21 +191,28 @@ const QuizOnYoungEntrepreneurs = () => {
           id: "b",
           text: "Never listen to feedback",
           emoji: "🙉",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Feedback is essential for improving products and services."
         },
         {
           id: "c",
           text: "Stick to the first version forever",
           emoji: "🔒",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Entrepreneurs continuously improve their ideas based on market needs."
         },
         {
           id: "a",
           text: "Test, get feedback, and iterate",
           emoji: "🧪",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great! Testing and iterating based on feedback is key to improving ideas."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Entrepreneurs improve their ideas by testing them, getting feedback, and iterating.",
+        incorrect: "Continuous improvement through testing and feedback is essential for entrepreneurial success."
+      }
     }
   ];
 
@@ -281,11 +316,24 @@ const QuizOnYoungEntrepreneurs = () => {
               {answered && (
                 <div className={`rounded-lg p-5 mt-6 ${
                   currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
-                    ? "bg-green-500/20"
-                    : "bg-red-500/20"
+                    ? "bg-green-500/20 border border-green-500"
+                    : "bg-red-500/20 border border-red-500"
                 }`}>
-                  <p className="text-white whitespace-pre-line">
-
+                  <p className="text-lg font-semibold text-center">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "✅ Correct! "
+                      : "❌ Not quite! "}
+                  </p>
+                  <p className="text-center mt-2">
+                    {(() => {
+                      const selectedOptionData = currentQuestionData.options.find(opt => opt.id === selectedOption);
+                      if (selectedOptionData?.feedback) {
+                        return selectedOptionData.feedback;
+                      }
+                      return selectedOptionData?.isCorrect 
+                        ? currentQuestionData.feedback?.correct 
+                        : currentQuestionData.feedback?.incorrect;
+                    })()}
                   </p>
                 </div>
               )}

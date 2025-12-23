@@ -15,7 +15,7 @@ const QuizOnRecycling = () => {
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || questions.length;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -75,17 +75,18 @@ const QuizOnRecycling = () => {
       id: 1,
       text: "What goes in recycling?",
       options: [
-        { 
-          id: "a", 
-          text: "Plastic bottle", 
-          emoji: "🥤", 
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Banana peel", 
           emoji: "🍌", 
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Plastic bottle", 
+          emoji: "🥤", 
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -123,16 +124,11 @@ const QuizOnRecycling = () => {
       id: 3,
       text: "What does recycling help?",
       options: [
-        { 
-          id: "a", 
-          text: "Saves our planet", 
-          emoji: "🌍", 
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Makes more trash", 
-          emoji: "🗑️", 
+          emoji: "�️", 
           isCorrect: false
         },
         { 
@@ -140,7 +136,13 @@ const QuizOnRecycling = () => {
           text: "Does nothing", 
           emoji: "😐", 
           isCorrect: false
-        }
+        },
+        { 
+          id: "a", 
+          text: "Saves our planet", 
+          emoji: "🌍", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -171,22 +173,23 @@ const QuizOnRecycling = () => {
       id: 5,
       text: "Why should we recycle?",
       options: [
-        { 
-          id: "a", 
-          text: "To protect animals", 
-          emoji: "🐾", 
-          isCorrect: true
-        },
+       
         { 
           id: "b", 
           text: "To make more trash", 
-          emoji: "🗑️", 
+          emoji: "�️", 
           isCorrect: false
+        },
+         { 
+          id: "a", 
+          text: "To protect animals", 
+          emoji: "�", 
+          isCorrect: true
         },
         { 
           id: "c", 
           text: "It doesn't matter", 
-          emoji: "😕", 
+          emoji: "�", 
           isCorrect: false
         }
       ]
@@ -202,8 +205,10 @@ const QuizOnRecycling = () => {
     const newChoices = [...choices, option];
     setChoices(newChoices);
     
+    let newCoins = coins;
     if (option.isCorrect) {
-      setCoins(prev => prev + 1);
+      newCoins += 1;
+      setCoins(newCoins);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
@@ -218,9 +223,11 @@ const QuizOnRecycling = () => {
         setShowFeedback(false);
         resetFeedback();
       } else {
-        setFinalScore(newChoices.filter(c => c.isCorrect).length);
+        const correctCount = newChoices.filter(c => c.isCorrect).length;
+        setFinalScore(correctCount);
+        setCoins(newCoins); // Ensure coins state is updated
         setShowResult(true);
-        if (newChoices.filter(c => c.isCorrect).length === questions.length) {
+        if (correctCount === questions.length) {
           showAnswerConfetti();
         }
       }
@@ -236,7 +243,7 @@ const QuizOnRecycling = () => {
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      score={finalScore}
+      score={coins}
       showGameOver={showResult}
       gameId={gameId}
       gameType="sustainability"

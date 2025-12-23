@@ -33,21 +33,19 @@ const GrowingTallerStory = () => {
           id: "b",
           text: "No, something's wrong",
           emoji: "😟",
-          description: "Growing taller is completely normal during childhood",
+          
           isCorrect: false
         },
         {
           id: "a",
           text: "Yes, it's normal",
-          emoji: "✅",
-          description: "Children grow taller every year as they develop",
+          emoji: "🙂",
           isCorrect: true
         },
         {
           id: "c",
           text: "Only sometimes",
           emoji: "🤷",
-          description: "Growth is a natural part of growing up",
           isCorrect: false
         }
       ]
@@ -60,21 +58,18 @@ const GrowingTallerStory = () => {
           id: "a",
           text: "Get new bigger clothes",
           emoji: "👕",
-          description: "Getting new clothes is the right response to growth",
           isCorrect: true
         },
         {
           id: "b",
           text: "Stop growing",
           emoji: "🛑",
-          description: "You can't control natural growth",
           isCorrect: false
         },
         {
           id: "c",
           text: "Wear tight clothes",
           emoji: "😣",
-          description: "Tight clothes are uncomfortable and restrict movement",
           isCorrect: false
         }
       ]
@@ -87,21 +82,18 @@ const GrowingTallerStory = () => {
           id: "c",
           text: "Tell them to grow faster",
           emoji: "📏",
-          description: "Everyone grows at their own pace",
           isCorrect: false
         },
         {
           id: "b",
           text: "Yes, it's a problem",
           emoji: "😰",
-          description: "Different growth rates are completely normal",
           isCorrect: false
         },
         {
           id: "a",
           text: "No, everyone grows differently",
           emoji: "🌱",
-          description: "Each child has their own unique growth pattern",
           isCorrect: true
         }
       ]
@@ -114,21 +106,18 @@ const GrowingTallerStory = () => {
           id: "b",
           text: "Your feet are shrinking",
           emoji: "🦶",
-          description: "Feet only grow bigger, never smaller",
           isCorrect: false
         },
         {
           id: "c",
           text: "Nothing important",
           emoji: "😴",
-          description: "This shows you're growing and need new shoes",
           isCorrect: false
         },
         {
           id: "a",
           text: "You're growing taller",
           emoji: "📈",
-          description: "Growing feet are a sign of normal development",
           isCorrect: true
         }
       ]
@@ -141,21 +130,18 @@ const GrowingTallerStory = () => {
           id: "b",
           text: "Scared of the results",
           emoji: "😨",
-          description: "Height measurement is just to track normal growth",
           isCorrect: false
         },
         {
           id: "a",
           text: "Excited to see growth",
           emoji: "😊",
-          description: "It's exciting to see how much you've grown",
           isCorrect: true
         },
         {
           id: "c",
           text: "Don't care at all",
           emoji: "😐",
-          description: "Growth tracking helps understand development",
           isCorrect: false
         }
       ]

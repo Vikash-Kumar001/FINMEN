@@ -94,7 +94,7 @@ const BadgeTeenInnovator = () => {
       options: [
         { 
           text: "Focusing on only one obvious solution", 
-          emoji: " tunnel vision", 
+          emoji: "🔍", 
           isCorrect: false
         },
        

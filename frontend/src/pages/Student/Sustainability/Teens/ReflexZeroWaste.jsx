@@ -15,7 +15,7 @@ const questions = [
     options: [
       { id: 'a', text: " Plastic Bottle", emoji: "🥤", isCorrect: false },
       { id: 'b', text: " Reusable Bottle", emoji: "🧃", isCorrect: true },
-      { id: 'c', text: " Disposable Cup", emoji: "🥤", isCorrect: false },
+      { id: 'c', text: " Disposable Cup", emoji: "☕", isCorrect: false },
       { id: 'd', text: " Plastic Bag", emoji: "🛍️", isCorrect: false }
     ]
   },
@@ -24,9 +24,9 @@ const questions = [
     text: "Which bag is eco-friendly?",
     options: [
       { id: 'a', text: " Plastic Bag", emoji: "🛍️", isCorrect: false },
-      { id: 'b', text: " Paper Bag", emoji: "🛍️", isCorrect: false },
+      { id: 'b', text: " Paper Bag", emoji: "📄", isCorrect: false },
       { id: 'c', text: " Cloth Bag", emoji: "🧵", isCorrect: true },
-      { id: 'd', text: " Styrofoam Bag", emoji: "🛒", isCorrect: false }
+      { id: 'd', text: " Styrofoam Bag", emoji: "📦", isCorrect: false }
     ]
   },
   {
@@ -34,9 +34,9 @@ const questions = [
     text: "Which straw is sustainable?",
     options: [
       { id: 'a', text: " Plastic Straw", emoji: "🥤", isCorrect: false },
-      { id: 'b', text: " Paper Straw", emoji: "🥤", isCorrect: false },
-      { id: 'c', text: " Glass Straw", emoji: "🥤", isCorrect: false },
-      { id: 'd', text: " Metal Straw", emoji: "🥤", isCorrect: true }
+      { id: 'b', text: " Paper Straw", emoji: "🧻", isCorrect: false },
+      { id: 'c', text: " Glass Straw", emoji: "🍷", isCorrect: false },
+      { id: 'd', text: " Metal Straw", emoji: "⚙️", isCorrect: true }
     ]
   },
   {
@@ -45,8 +45,8 @@ const questions = [
     options: [
       { id: 'a', text: " Takeout Container", emoji: "🥡", isCorrect: false },
       { id: 'b', text: " Cardboard Box", emoji: "📦", isCorrect: false },
+      { id: 'd', text: " Glass Jar", emoji: "🍯", isCorrect: true },
       { id: 'c', text: " Disposable Chopsticks", emoji: "🥢", isCorrect: false },
-      { id: 'd', text: " Glass Jar", emoji: "🍯", isCorrect: true }
     ]
   },
   {

@@ -13,8 +13,8 @@ const AbroadStudyStory = () => {
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1; // 1 coin per correct answer
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5; // Total coins for completing all questions
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -28,45 +28,45 @@ const AbroadStudyStory = () => {
       id: 1,
       text: "A teen dreams of studying abroad. What is needed?",
       options: [
-        { id: "a", text: "Preparation + exams + funds", correct: true },
-        { id: "b", text: "Just dreaming", correct: false },
-        { id: "c", text: "Doing nothing", correct: false }
+        { id: "b", text: "Just dreaming", correct: false, emoji: "💭" },
+        { id: "a", text: "Preparation + exams + funds", correct: true, emoji: "📋" },
+        { id: "c", text: "Doing nothing", correct: false, emoji: "😴" }
       ]
     },
     {
       id: 2,
       text: "What are important preparations for studying abroad?",
       options: [
-        { id: "a", text: "Language skills and academic qualifications", correct: true },
-        { id: "b", text: "Just packing clothes", correct: false },
-        { id: "c", text: "Playing video games", correct: false }
+        { id: "a", text: "Language skills and academic qualifications", correct: true, emoji: "🎓" },
+        { id: "b", text: "Just packing clothes", correct: false, emoji: "👕" },
+        { id: "c", text: "Playing video games", correct: false, emoji: "🎮" }
       ]
     },
     {
       id: 3,
       text: "What challenges might students face when studying abroad?",
       options: [
-        { id: "a", text: "Everything is easy", correct: false },
-        { id: "b", text: "Cultural adjustment and homesickness", correct: true },
-        { id: "c", text: "No challenges at all", correct: false }
+        { id: "a", text: "Everything is easy", correct: false, emoji: "😊" },
+        { id: "c", text: "No challenges at all", correct: false, emoji: "🤷" },
+        { id: "b", text: "Cultural adjustment and homesickness", correct: true, emoji: "🌍" },
       ]
     },
     {
       id: 4,
       text: "Why is financial planning important for abroad study?",
       options: [
-        { id: "a", text: "Covers tuition, living expenses, and emergencies", correct: true },
-        { id: "b", text: "Not important", correct: false },
-        { id: "c", text: "Money grows on trees", correct: false }
+        { id: "b", text: "Not important", correct: false, emoji: "❌" },
+        { id: "a", text: "Covers tuition, living expenses, and emergencies", correct: true, emoji: "💰" },
+        { id: "c", text: "Money grows on trees", correct: false, emoji: "🌳" }
       ]
     },
     {
       id: 5,
       text: "What benefits can students gain from studying abroad?",
       options: [
-        { id: "a", text: "Nothing valuable", correct: false },
-        { id: "b", text: "Global perspective and independence", correct: true },
-        { id: "c", text: "Just extra expenses", correct: false }
+        { id: "b", text: "Global perspective and independence", correct: true, emoji: "🌐" },
+        { id: "a", text: "Nothing valuable", correct: false, emoji: "❌" },
+        { id: "c", text: "Just extra expenses", correct: false, emoji: "💸" }
       ]
     }
   ];
@@ -75,10 +75,10 @@ const AbroadStudyStory = () => {
     resetFeedback();
     
     if (option.correct) {
-      const newCoins = coins + coinsPerLevel;
+      const newCoins = coins + 1; // Give 1 coin per correct answer instead of coinsPerLevel
       setCoins(newCoins);
       setFinalScore(finalScore + 1);
-      showCorrectAnswerFeedback(newCoins);
+      showCorrectAnswerFeedback(1, true);
     }
     
     setTimeout(() => {
@@ -135,8 +135,8 @@ const AbroadStudyStory = () => {
                     className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
                   >
                     <div className="flex items-center">
-                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        {option.id}
+                      <span className="text-2xl mr-3 flex-shrink-0">
+                        {option.emoji}
                       </span>
                       <span className="font-medium">{option.text}</span>
                     </div>

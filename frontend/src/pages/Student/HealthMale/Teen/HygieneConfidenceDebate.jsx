@@ -45,8 +45,8 @@ const HygieneConfidenceDebate = () => {
           emoji: "💰"
         }
       ],
-      correctAnswer: "c",
-      explanation: "Cleanliness matters more than brands. People see you take care of yourself, and hygiene shows respect for yourself and others."
+      correctAnswer: "a",
+      explanation: "Looking clean and hygienic definitely helps make a good first impression. Cleanliness shows respect for yourself and others."
     },
     {
       id: 2,
@@ -91,8 +91,8 @@ const HygieneConfidenceDebate = () => {
           emoji: "🚶"
         }
       ],
-      correctAnswer: "c",
-      explanation: "Body odor can push people away. Definitely not, and people prefer being around fresh scents."
+      correctAnswer: "a",
+      explanation: "Bad hygiene can definitely push people away. People prefer being around others who maintain good hygiene practices."
     },
     {
       id: 4,

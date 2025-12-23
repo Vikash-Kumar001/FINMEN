@@ -95,12 +95,7 @@ const PeerPressureStory = () => {
       id: 4,
       text: "How can you help friends avoid smoking?",
       options: [
-        {
-          id: "a",
-          text: "Share facts about smoking dangers",
-          emoji: "📊",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Force them to stop",
@@ -112,7 +107,13 @@ const PeerPressureStory = () => {
           text: "Ignore their smoking",
           emoji: "🙈",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Share facts about smoking dangers",
+          emoji: "📊",
+          isCorrect: true
+        },
       ]
     },
     {

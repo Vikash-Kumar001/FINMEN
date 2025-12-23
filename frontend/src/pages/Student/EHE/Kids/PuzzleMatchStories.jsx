@@ -19,20 +19,20 @@ const PuzzleMatchStories = () => {
 
   // Stories (left side) - 5 items
   const stories = [
-    { id: 1, name: "Girl Sells Crafts", emoji: "🎨", description: "Creating and selling handmade crafts shows creativity and artistic skills" },
-    { id: 2, name: "Boy Runs App", emoji: "💻", description: "Developing and managing an app requires technical and digital skills" },
-    { id: 3, name: "Teen Sells Cakes", emoji: "🎂", description: "Baking and selling cakes demonstrates culinary expertise" },
-    { id: 4, name: "Kid Repairs Toys", emoji: "🔧", description: "Fixing broken toys shows technical knowledge and problem-solving abilities" },
-    { id: 5, name: "Student Teaches Peers", emoji: "📚", description: "Teaching others requires leadership and communication skills" }
+    { id: 1, name: "Girl Sells Crafts", emoji: "🎨" },
+    { id: 2, name: "Boy Runs App", emoji: "💻" },
+    { id: 3, name: "Teen Sells Cakes", emoji: "🎂" },
+    { id: 4, name: "Kid Repairs Toys", emoji: "🔧" },
+    { id: 5, name: "Student Teaches Peers", emoji: "📚" }
   ];
 
   // Skills (right side) - 5 items
   const skills = [
-    { id: 4, name: "Problem-solving", emoji: "🧩", description: "The process of finding solutions to difficult challenges" },
-    { id: 3, name: "Cooking", emoji: "👩‍🍳", description: "The skill of preparing food through various techniques" },
-    { id: 2, name: "Tech", emoji: "🖥️", description: "Knowledge and skills related to technology and computers" },
-    { id: 1, name: "Creativity", emoji: "💡", description: "The ability to create original ideas or solutions" },
-    { id: 5, name: "Leadership", emoji: "👑", description: "The ability to guide and influence others toward goals" },
+    { id: 4, name: "Problem-solving", emoji: "🧩" },
+    { id: 3, name: "Cooking", emoji: "👩‍🍳" },
+    { id: 2, name: "Tech", emoji: "🖥️" },
+    { id: 1, name: "Creativity", emoji: "💡" },
+    { id: 5, name: "Leadership", emoji: "👑" },
   ];
 
   // Correct matches
@@ -165,7 +165,6 @@ const PuzzleMatchStories = () => {
                       <div className="text-2xl mr-3">{story.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{story.name}</h4>
-                        <p className="text-white/80 text-sm">{story.description}</p>
                       </div>
                     </div>
                   </button>
@@ -220,7 +219,6 @@ const PuzzleMatchStories = () => {
                       <div className="text-2xl mr-3">{skill.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{skill.name}</h4>
-                        <p className="text-white/80 text-sm">{skill.description}</p>
                       </div>
                     </div>
                   </button>

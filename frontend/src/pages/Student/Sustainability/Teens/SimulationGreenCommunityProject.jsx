@@ -43,8 +43,8 @@ const SimulationGreenCommunityProject = () => {
   }, [location.state, gameId]);
 
   useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Simulation: Green Community Project game completed! Score: ${score}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+    if (gameFinished) {
+      console.log(`🎮 Simulation: Green Community Project game completed! Score: ${coins}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       if (nextGameId && window.history && window.history.replaceState) {
         const currentState = window.history.state || {};
         window.history.replaceState({
@@ -53,7 +53,7 @@ const SimulationGreenCommunityProject = () => {
         }, '');
       }
     }
-  }, [showResult, score, gameId, nextGamePath, nextGameId]);
+  }, [gameFinished, coins, gameId, nextGamePath, nextGameId]);
 
   const questions = [
     {
@@ -72,17 +72,17 @@ const SimulationGreenCommunityProject = () => {
       options: [
         { id: "a", text: "Exclude community members", emoji: "🚫", isCorrect: false },
         { id: "b", text: "Dictate the plan", emoji: "📢", isCorrect: false },
-        { id: "c", text: "Involve everyone in planning", emoji: "👥", isCorrect: false },
-        { id: "d", text: "Work in isolation", emoji: "👤", isCorrect: true }
+        { id: "c", text: "Involve everyone in planning", emoji: "👥", isCorrect: true },
+        { id: "d", text: "Work in isolation", emoji: "👤", isCorrect: false }
       ]
     },
     {
       id: 3,
       text: "What makes a community project sustainable?",
       options: [
-        { id: "a", text: "Quick fixes only", emoji: "⚡", isCorrect: true },
+        { id: "a", text: "Quick fixes only", emoji: "⚡", isCorrect: false },
         { id: "b", text: "Ignore maintenance", emoji: "🔧", isCorrect: false },
-        { id: "c", text: "Long-term impact and maintenance", emoji: "🌱", isCorrect: false },
+        { id: "c", text: "Long-term impact and maintenance", emoji: "🌱", isCorrect: true },
         { id: "d", text: "High cost materials", emoji: "💰", isCorrect: false }
       ]
     },
@@ -92,17 +92,17 @@ const SimulationGreenCommunityProject = () => {
       options: [
         { id: "a", text: "Ignore results", emoji: "😶", isCorrect: false },
         { id: "b", text: "Guess the impact", emoji: "🎲", isCorrect: false },
-        { id: "c", text: "Track environmental metrics", emoji: "📈", isCorrect: false },
-        { id: "d", text: "Count complaints", emoji: "📉", isCorrect: true }
+        { id: "c", text: "Track environmental metrics", emoji: "📈", isCorrect: true },
+        { id: "d", text: "Count complaints", emoji: "📉", isCorrect: false }
       ]
     },
     {
       id: 5,
       text: "What should you do after project completion?",
       options: [
-        { id: "a", text: "Forget about it", emoji: "-dismiss", isCorrect: false },
-        { id: "b", text: "Evaluate and document outcomes", emoji: "📝", isCorrect: false },
-        { id: "c", text: "Start a new project immediately", emoji: "🚀", isCorrect: true },
+        { id: "a", text: "Forget about it", emoji: "🗑️", isCorrect: false },
+        { id: "b", text: "Evaluate and document outcomes", emoji: "📝", isCorrect: true },
+        { id: "c", text: "Start a new project immediately", emoji: "🚀", isCorrect: false },
         { id: "d", text: "Stop all maintenance", emoji: "🛑", isCorrect: false }
       ]
     }

@@ -27,7 +27,7 @@ const ReflexTeenDuty = () => {
     {
       id: 1,
       question: "What should you do if you notice your neighbor's property is being vandalized?",
-      emoji: "🇮🇳",
+      emoji: "⚖️",
       correctAnswer: "Report the incident to local authorities and offer to be a witness if needed",
       options: [
         { text: "Join in the vandalism to fit in with the group", isCorrect: false },

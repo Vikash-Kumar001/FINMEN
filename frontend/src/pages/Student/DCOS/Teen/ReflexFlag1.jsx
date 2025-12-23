@@ -39,8 +39,8 @@ const ReflexFlag1 = () => {
       question: "A comment says 'Go back to your country!'. What should you do?",
       correctAnswer: "Flag Hate Comment",
       options: [
-        { text: "Like It", isCorrect: false, emoji: "👍" },
         { text: "Flag Hate Comment", isCorrect: true, emoji: "🚩" },
+        { text: "Like It", isCorrect: false, emoji: "👍" },
         { text: "Share It", isCorrect: false, emoji: "📤" },
         { text: "Ignore It", isCorrect: false, emoji: "🙈" }
       ]
@@ -51,8 +51,8 @@ const ReflexFlag1 = () => {
       correctAnswer: "Keep Positive Comment",
       options: [
         { text: "Flag It", isCorrect: false, emoji: "🚩" },
-        { text: "Keep Positive Comment", isCorrect: true, emoji: "👍" },
         { text: "Report It", isCorrect: false, emoji: "📢" },
+        { text: "Keep Positive Comment", isCorrect: true, emoji: "👍" },
         { text: "Delete It", isCorrect: false, emoji: "🗑️" }
       ]
     },
@@ -62,9 +62,9 @@ const ReflexFlag1 = () => {
       correctAnswer: "Flag Hate Comment",
       options: [
         { text: "Like It", isCorrect: false, emoji: "👍" },
-        { text: "Flag Hate Comment", isCorrect: true, emoji: "🚩" },
         { text: "Share It", isCorrect: false, emoji: "📤" },
-        { text: "Ignore It", isCorrect: false, emoji: "🙈" }
+        { text: "Ignore It", isCorrect: false, emoji: "🙈" },
+        { text: "Flag Hate Comment", isCorrect: true, emoji: "🚩" },
       ]
     },
     {
@@ -83,8 +83,8 @@ const ReflexFlag1 = () => {
       question: "A comment says 'People like you are the problem!'. What should you do?",
       correctAnswer: "Flag Hate Comment",
       options: [
-        { text: "Like It", isCorrect: false, emoji: "👍" },
         { text: "Flag Hate Comment", isCorrect: true, emoji: "🚩" },
+        { text: "Like It", isCorrect: false, emoji: "👍" },
         { text: "Share It", isCorrect: false, emoji: "📤" },
         { text: "Ignore It", isCorrect: false, emoji: "🙈" }
       ]

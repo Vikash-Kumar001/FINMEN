@@ -51,12 +51,12 @@ const questions = [
   },
   {
     id: 5,
-    text: "Which protects ecosystems?",
+    text: "Which directly supports pollination in ecosystems?",
     options: [
-      { id: 'a', text: " Support Beekeeping", emoji: "🐝", isCorrect: true },
-      { id: 'b', text: " Overfish Oceans", emoji: "🐟", isCorrect: false },
+      { id: 'd', text: " Protect Butterfly Gardens", emoji: "🦋", isCorrect: true },
+      { id: 'a', text: " Support Beekeeping", emoji: "🐝", isCorrect: false },
+      { id: 'b', text: " Use Pesticides", emoji: "🧪", isCorrect: false },
       { id: 'c', text: " Reduce Carbon Footprint", emoji: "🌍", isCorrect: false },
-      { id: 'd', text: " Protect Butterfly Gardens", emoji: "🦋", isCorrect: false }
     ]
   }
 ];

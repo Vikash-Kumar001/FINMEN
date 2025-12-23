@@ -16,7 +16,7 @@ const QuizOnDangers = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback, flashPoints } = useGameFeedback();
 
   const questions = [
     {
@@ -187,11 +187,15 @@ const QuizOnDangers = () => {
       score={coins}
       gameId="health-male-teen-82"
       gameType="health-male"
+      totalLevels={5}
+      currentLevel={82}
       showConfetti={gameFinished}
+      backPath="/games/health-male/teens"
       maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      flashPoints={flashPoints}
     >
       <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">

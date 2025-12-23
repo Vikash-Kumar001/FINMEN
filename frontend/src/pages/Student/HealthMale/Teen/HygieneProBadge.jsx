@@ -57,6 +57,11 @@ const HygieneProBadge = () => {
       title: "Sweat Control",
       text: "How do you handle puberty sweat?",
       options: [
+         {
+          text: "Deodorant & Wash",
+          emoji: "🧴",
+          isCorrect: true
+        },
         {
           text: "Ignore it",
           emoji: "👃",
@@ -67,11 +72,7 @@ const HygieneProBadge = () => {
           emoji: "🧥",
           isCorrect: false
         },
-        {
-          text: "Deodorant & Wash",
-          emoji: "🧴",
-          isCorrect: true
-        },
+       
         {
           text: "Use cologne",
           emoji: "👃",
@@ -98,16 +99,17 @@ const HygieneProBadge = () => {
           emoji: "✋",
           isCorrect: false
         },
+        
+        {
+          text: "Cover with makeup",
+          emoji: "💄",
+          isCorrect: false
+        },
         {
           text: "Gentle Wash",
           emoji: "🛁",
           isCorrect: true
         },
-        {
-          text: "Cover with makeup",
-          emoji: "💄",
-          isCorrect: false
-        }
       ],
       feedback: {
         correct: "Exactly! Gentle washing prevents irritation.",
@@ -125,15 +127,16 @@ const HygieneProBadge = () => {
           isCorrect: false
         },
         {
-          text: "Only mornings",
-          emoji: "🌅",
-          isCorrect: false
-        },
-        {
           text: "Twice a day",
           emoji: "🦷",
           isCorrect: true
         },
+        {
+          text: "Only mornings",
+          emoji: "🌅",
+          isCorrect: false
+        },
+        
         {
           text: "After every meal",
           emoji: "🍽️",

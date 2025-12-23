@@ -59,7 +59,7 @@ const ReflexJusticeCheck = () => {
     {
       id: 3,
       question: "What's the fairest way to select a class representative?",
-      emoji: "선거",
+      emoji: "🗳️",
       correctAnswer: "Hold a fair election where everyone can vote",
       options: [
         { text: "Let the teacher choose their favorite", isCorrect: false },

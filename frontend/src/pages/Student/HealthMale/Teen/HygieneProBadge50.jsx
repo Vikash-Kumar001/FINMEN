@@ -36,16 +36,17 @@ const HygieneProBadge50 = () => {
           emoji: "💧",
           isCorrect: false
         },
-        {
-          text: "Deodorant",
-          emoji: "🧴",
-          isCorrect: true
-        },
+       
         {
           text: "Powder",
           emoji: "⚪",
           isCorrect: false
-        }
+        },
+         {
+          text: "Deodorant",
+          emoji: "🧴",
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Correct! Deodorant or Antiperspirant.",
@@ -58,6 +59,11 @@ const HygieneProBadge50 = () => {
       text: "Brush teeth for how long?",
       options: [
         {
+          text: "2 minutes",
+          emoji: "🦷",
+          isCorrect: true
+        },
+        {
           text: "10 seconds",
           emoji: "⏱️",
           isCorrect: false
@@ -67,11 +73,7 @@ const HygieneProBadge50 = () => {
           emoji: "🕰️",
           isCorrect: false
         },
-        {
-          text: "2 minutes",
-          emoji: "🦷",
-          isCorrect: true
-        },
+        
         {
           text: "30 seconds",
           emoji: "⏱️",
@@ -124,16 +126,17 @@ const HygieneProBadge50 = () => {
           emoji: "📅",
           isCorrect: false
         },
+         {
+          text: "Daily",
+          emoji: "👕",
+          isCorrect: true
+        },
         {
           text: "Monthly",
           emoji: "📆",
           isCorrect: false
         },
-        {
-          text: "Daily",
-          emoji: "👕",
-          isCorrect: true
-        },
+       
         {
           text: "When smelly",
           emoji: "👃",

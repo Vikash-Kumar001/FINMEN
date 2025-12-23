@@ -33,21 +33,20 @@ const JunkFoodStory = () => {
           id: "b",
           text: "Yes, I want chips too",
           emoji: "🍟",
-          description: "Chips every day is not healthy for your body",
+         
           isCorrect: false
         },
         {
           id: "a",
           text: "No, I brought healthy snacks",
           emoji: "🥕",
-          description: "Bringing your own healthy snacks is smart",
+          
           isCorrect: true
         },
         {
           id: "c",
           text: "Maybe tomorrow",
           emoji: "⏰",
-          description: "It's better to choose healthy snacks today",
           isCorrect: false
         }
       ]
@@ -60,22 +59,19 @@ const JunkFoodStory = () => {
           id: "a",
           text: "Take one piece, then stop",
           emoji: "🍬",
-          description: "One piece is okay, but don't eat too much",
           isCorrect: true
         },
         {
           id: "b",
           text: "Eat as much as I want",
           emoji: "🍭",
-          description: "Too much candy can make you feel sick",
           isCorrect: false
         },
         {
           id: "c",
           text: "Don't eat any",
           emoji: "❌",
-          description: "One piece is okay as a treat",
-          isCorrect: false
+            isCorrect: false
         }
       ]
     },
@@ -87,21 +83,18 @@ const JunkFoodStory = () => {
           id: "c",
           text: "Drink the whole bottle",
           emoji: "🥤",
-          description: "Soda has lots of sugar, drink water instead",
           isCorrect: false
         },
         {
           id: "b",
           text: "Yes, soda is tasty",
           emoji: "😋",
-          description: "Soda is okay sometimes, but not every day",
-          isCorrect: false
+            isCorrect: false
         },
         {
           id: "a",
           text: "No, I'll drink water",
           emoji: "💧",
-          description: "Water is much healthier than sugary soda",
           isCorrect: true
         }
       ]
@@ -114,21 +107,18 @@ const JunkFoodStory = () => {
           id: "b",
           text: "Buy ice cream every day",
           emoji: "🍦",
-          description: "Ice cream every day is too much sugar",
           isCorrect: false
         },
         {
           id: "c",
           text: "Never eat ice cream",
           emoji: "😔",
-          description: "Ice cream is okay as an occasional treat",
           isCorrect: false
         },
         {
           id: "a",
           text: "Sometimes as a treat",
           emoji: "🎉",
-          description: "Ice cream is fine as an occasional treat",
           isCorrect: true
         }
       ]
@@ -141,21 +131,18 @@ const JunkFoodStory = () => {
           id: "b",
           text: "Always eat what friend eats",
           emoji: "👫",
-          description: "It's okay to make your own healthy choices",
           isCorrect: false
         },
         {
           id: "a",
           text: "Suggest healthy options together",
           emoji: "🥗",
-          description: "Sharing healthy choices with friends is great",
           isCorrect: true
         },
         {
           id: "c",
           text: "Stop being friends",
           emoji: "😠",
-          description: "You can stay friends and make healthy choices",
           isCorrect: false
         }
       ]

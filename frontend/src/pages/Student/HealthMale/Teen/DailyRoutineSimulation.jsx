@@ -89,12 +89,7 @@ const DailyRoutineSimulation = () => {
       time: "8:00 AM",
       situation: "Breakfast time. What do you eat?",
       options: [
-        {
-          id: "a",
-          text: "Balanced meal with protein",
-          emoji: "🥞",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Nothing",
@@ -105,14 +100,20 @@ const DailyRoutineSimulation = () => {
           id: "c",
           text: "Healthy breakfast",
           emoji: "🍳",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "d",
           text: "Just coffee",
           emoji: "☕",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Balanced meal with protein",
+          emoji: "🥞",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -120,12 +121,7 @@ const DailyRoutineSimulation = () => {
       time: "4:00 PM",
       situation: "Back from school. You feel sticky.",
       options: [
-        {
-          id: "a",
-          text: "Take a shower",
-          emoji: "🛁",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Go straight to homework",
@@ -138,11 +134,17 @@ const DailyRoutineSimulation = () => {
           emoji: "🛋️",
           isCorrect: false
         },
+         {
+          id: "a",
+          text: "Take a shower",
+          emoji: "🛁",
+          isCorrect: true
+        },
         {
           id: "d",
           text: "Wash face & change",
           emoji: "🚿",
-          isCorrect: true
+          isCorrect: false
         },
       ]
     },

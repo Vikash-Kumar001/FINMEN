@@ -38,7 +38,7 @@ const BoysShouldNotCryDebate = () => {
           emoji: "👧"
         }
       ],
-      correctAnswer: "c",
+      correctAnswer: "a",
       explanation: "Crying is a natural emotional response for everyone, regardless of gender. Expressing emotions is healthy and shows emotional intelligence."
     },
     {
@@ -61,8 +61,8 @@ const BoysShouldNotCryDebate = () => {
           emoji: "😞"
         }
       ],
-      correctAnswer: "a",
-      explanation: "Suppressing emotions might seem like a sign of strength, but it actually weakens mental resilience over time. Acknowledging and processing emotions is healthier."
+      correctAnswer: "b",
+      explanation: "Suppressing emotions can lead to mental health issues. Acknowledging and processing emotions is healthier."
     },
     {
       id: 3,
@@ -107,8 +107,8 @@ const BoysShouldNotCryDebate = () => {
           emoji: "🛑"
         }
       ],
-      correctAnswer: "b",
-      explanation: "Being supportive and empathetic toward friends who are struggling shows true strength and character. Laughing at someone in distress is hurtful and immature."
+      correctAnswer: "a",
+      explanation: "Being supportive and empathetic toward friends who are struggling shows true strength and character. Comforting friends in need builds stronger relationships."
     },
     {
       id: 5,
@@ -127,7 +127,7 @@ const BoysShouldNotCryDebate = () => {
         {
           id: "c",
           text: "Yes, it's a natural reaction",
-          emoji: "✅"
+          emoji: "😢"
         }
       ],
       correctAnswer: "c",

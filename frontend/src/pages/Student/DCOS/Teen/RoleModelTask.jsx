@@ -49,8 +49,8 @@ const RoleModelTask = () => {
       situation: "You want to help your peers with their studies. You can share a blog post with study tips.",
       emoji: "📚",
       approaches: [
-        { id: 1, text: "Keep it to yourself - they should figure it out", isCorrect: false },
         { id: 2, text: "Share the helpful blog post with your peers", isCorrect: true },
+        { id: 1, text: "Keep it to yourself - they should figure it out", isCorrect: false },
         { id: 3, text: "Only share with close friends", isCorrect: false }
       ]
     },
@@ -70,8 +70,8 @@ const RoleModelTask = () => {
       emoji: "📝",
       approaches: [
         { id: 1, text: "Keep your notes private", isCorrect: false },
+        { id: 3, text: "Charge money for your notes", isCorrect: false },
         { id: 2, text: "Share your notes to help classmates succeed", isCorrect: true },
-        { id: 3, text: "Charge money for your notes", isCorrect: false }
       ]
     },
     {
@@ -90,8 +90,8 @@ const RoleModelTask = () => {
       emoji: "⏰",
       approaches: [
         { id: 1, text: "Keep your productivity secrets", isCorrect: false },
+        { id: 3, text: "Share only with best friends", isCorrect: false },
         { id: 2, text: "Share productivity tips to help others", isCorrect: true },
-        { id: 3, text: "Share only with best friends", isCorrect: false }
       ]
     }
   ];

@@ -27,7 +27,7 @@ const ReflexCivicDuty = () => {
     {
       id: 1,
       question: "What should you do if you notice vandalism in your community?",
-      emoji: " graffiti",
+      emoji: " 🏛️",
       correctAnswer: "Report it to local authorities immediately",
       options: [
         { text: "Report it to local authorities immediately", isCorrect: true },

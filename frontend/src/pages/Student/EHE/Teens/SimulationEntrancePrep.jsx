@@ -21,12 +21,7 @@ const SimulationEntrancePrep = () => {
       id: 1,
       text: "Teen has an entrance exam. What approach should she take?",
       options: [
-        {
-          id: "a",
-          text: "Study regularly",
-          emoji: "📚",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Skip preparation",
@@ -38,6 +33,12 @@ const SimulationEntrancePrep = () => {
           text: "Last-minute panic",
           emoji: "😰",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Study regularly",
+          emoji: "📚",
+          isCorrect: true
         },
         {
           id: "d",
@@ -81,12 +82,7 @@ const SimulationEntrancePrep = () => {
       id: 3,
       text: "What resources should she use for preparation?",
       options: [
-        {
-          id: "a",
-          text: "Books, online courses, and coaching",
-          emoji: "📖",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Only social media",
@@ -98,6 +94,12 @@ const SimulationEntrancePrep = () => {
           text: "Copy others' notes",
           emoji: "📎",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Books, online courses, and coaching",
+          emoji: "📖",
+          isCorrect: true
         },
         {
           id: "d",
@@ -141,12 +143,7 @@ const SimulationEntrancePrep = () => {
       id: 5,
       text: "What should she do on exam day?",
       options: [
-        {
-          id: "a",
-          text: "Arrive early and stay calm",
-          emoji: "⏰",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Rush at the last minute",
@@ -158,6 +155,12 @@ const SimulationEntrancePrep = () => {
           text: "Panic about difficult questions",
           emoji: "😱",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Arrive early and stay calm",
+          emoji: "⏰",
+          isCorrect: true
         },
         {
           id: "d",

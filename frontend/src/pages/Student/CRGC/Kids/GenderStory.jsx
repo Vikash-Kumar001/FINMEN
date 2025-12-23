@@ -110,7 +110,7 @@ const GenderStory = () => {
         {
           id: "c",
           text: "Change the subject",
-          emoji: "话题",
+          emoji: "🤷",
           isCorrect: false
         }
       ]

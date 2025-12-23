@@ -95,7 +95,7 @@ const FreshKidBadge = () => {
         },
         {
           text: "Nothing",
-          emoji: "EmptyEntries",
+          emoji: "❌",
           isCorrect: false
         },
         {

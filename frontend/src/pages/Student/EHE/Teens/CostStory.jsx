@@ -13,8 +13,8 @@ const CostStory = () => {
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1; // 1 coin per correct answer
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5; // Total coins for completing all questions
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -28,45 +28,45 @@ const CostStory = () => {
       id: 1,
       text: "A teen starts a small business. What must she calculate before pricing products?",
       options: [
-        { id: "a", text: "Just guess prices", correct: false },
-        { id: "b", text: "Cost of materials and labor", correct: true },
-        { id: "c", text: "Copy competitors blindly", correct: false }
+        { id: "a", text: "Just guess prices", correct: false, emoji: "🤔" },
+        { id: "b", text: "Cost of materials and labor", correct: true, emoji: "📊" },
+        { id: "c", text: "Copy competitors blindly", correct: false, emoji: "👀" }
       ]
     },
     {
       id: 2,
       text: "Why is understanding costs important for business success?",
       options: [
-        { id: "a", text: "Ensures profitable pricing", correct: true },
-        { id: "b", text: "Makes no difference", correct: false },
-        { id: "c", text: "Complicates things", correct: false }
+        { id: "a", text: "Ensures profitable pricing", correct: true, emoji: "💰" },
+        { id: "b", text: "Makes no difference", correct: false, emoji: "❌" },
+        { id: "c", text: "Complicates things", correct: false, emoji: "😰" }
       ]
     },
     {
       id: 3,
       text: "What happens if a business sells products below cost?",
       options: [
-        { id: "a", text: "Makes more profit", correct: false },
-        { id: "b", text: "Loses money on each sale", correct: true },
-        { id: "c", text: "Nothing happens", correct: false }
+        { id: "a", text: "Makes more profit", correct: false, emoji: "📈" },
+        { id: "b", text: "Loses money on each sale", correct: true, emoji: "📉" },
+        { id: "c", text: "Nothing happens", correct: false, emoji: "🤷" }
       ]
     },
     {
       id: 4,
       text: "What is a fixed cost in business?",
       options: [
-        { id: "a", text: "Costs that change with production", correct: false },
-        { id: "b", text: "Money earned from sales", correct: false },
-        { id: "c", text: "Expenses that stay the same regardless of production", correct: true }
+        { id: "a", text: "Costs that change with production", correct: false, emoji: "🔄" },
+        { id: "b", text: "Money earned from sales", correct: false, emoji: "💰" },
+        { id: "c", text: "Expenses that stay the same regardless of production", correct: true, emoji: "🔒" }
       ]
     },
     {
       id: 5,
       text: "How can businesses reduce costs effectively?",
       options: [
-        { id: "a", text: "Lower product quality", correct: false },
-        { id: "b", text: "Charge more to customers", correct: false },
-        { id: "c", text: "Find better suppliers and streamline processes", correct: true }
+        { id: "a", text: "Lower product quality", correct: false, emoji: "📉" },
+        { id: "b", text: "Charge more to customers", correct: false, emoji: "💸" },
+        { id: "c", text: "Find better suppliers and streamline processes", correct: true, emoji: "✅" }
       ]
     }
   ];
@@ -75,10 +75,10 @@ const CostStory = () => {
     resetFeedback();
     
     if (option.correct) {
-      const newCoins = coins + coinsPerLevel;
+      const newCoins = coins + 1; // Give 1 coin per correct answer instead of coinsPerLevel
       setCoins(newCoins);
       setFinalScore(finalScore + 1);
-      showCorrectAnswerFeedback(newCoins);
+      showCorrectAnswerFeedback(1, true);
     }
     
     setTimeout(() => {
@@ -135,8 +135,8 @@ const CostStory = () => {
                     className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
                   >
                     <div className="flex items-center">
-                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        {option.id}
+                      <span className="text-2xl mr-3 flex-shrink-0">
+                        {option.emoji}
                       </span>
                       <span className="font-medium">{option.text}</span>
                     </div>

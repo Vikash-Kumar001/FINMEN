@@ -103,7 +103,7 @@ const SimulationRecyclingProgram = () => {
       text: "How often should bins be emptied?",
       options: [
         { id: "a", text: "Never", emoji: "🚫", isCorrect: false },
-        { id: "b", text: "Only when full", emoji: "满了", isCorrect: false },
+        { id: "b", text: "Only when full", emoji: "♻️", isCorrect: false },
         { id: "c", text: "On a regular schedule", emoji: "📅", isCorrect: true },
         { id: "d", text: "Once a year", emoji: "🗓️", isCorrect: false }
       ]

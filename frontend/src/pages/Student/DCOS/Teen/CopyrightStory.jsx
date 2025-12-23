@@ -35,6 +35,14 @@ const CopyrightStory = () => {
           description: "Since I used AI to create it, it's mine",
           isCorrect: false
         },
+        
+        { 
+          id: "maybe", 
+          text: "Maybe - depends on the AI", 
+          emoji: "🤔", 
+          description: "It depends on the AI tool's terms",
+          isCorrect: false
+        },
         { 
           id: "no-credit", 
           text: "No - you should credit AI or the original", 
@@ -42,13 +50,6 @@ const CopyrightStory = () => {
           description: "You should acknowledge AI was used or credit the source",
           isCorrect: true
         },
-        { 
-          id: "maybe", 
-          text: "Maybe - depends on the AI", 
-          emoji: "🤔", 
-          description: "It depends on the AI tool's terms",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -89,6 +90,14 @@ const CopyrightStory = () => {
           description: "Using AI is like using any other tool",
           isCorrect: false
         },
+        
+        { 
+          id: "depends", 
+          text: "Depends on the assignment", 
+          emoji: "🤔", 
+          description: "It depends on what the teacher allows",
+          isCorrect: false
+        },
         { 
           id: "not-ethical", 
           text: "No - you should disclose AI use", 
@@ -96,13 +105,6 @@ const CopyrightStory = () => {
           description: "You should be honest about using AI assistance",
           isCorrect: true
         },
-        { 
-          id: "depends", 
-          text: "Depends on the assignment", 
-          emoji: "🤔", 
-          description: "It depends on what the teacher allows",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -137,19 +139,20 @@ const CopyrightStory = () => {
       text: "You use AI to create a design, modify it slightly, and sell it as your original work. Is this ethical?",
       options: [
         { 
-          id: "ethical-sell", 
-          text: "Yes - I modified it", 
-          emoji: "✅", 
-          description: "Since I modified it, it's my original work",
-          isCorrect: false
-        },
-        { 
           id: "not-ethical-sell", 
           text: "No - you should credit AI and be transparent", 
           emoji: "🚫", 
           description: "You should acknowledge AI was used in creation",
           isCorrect: true
         },
+        { 
+          id: "ethical-sell", 
+          text: "Yes - I modified it", 
+          emoji: "✅", 
+          description: "Since I modified it, it's my original work",
+          isCorrect: false
+        },
+        
         { 
           id: "maybe-ethical", 
           text: "Maybe - if you changed it enough", 

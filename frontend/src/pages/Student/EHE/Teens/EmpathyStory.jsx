@@ -13,8 +13,8 @@ const EmpathyStory = () => {
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1; // 1 coin per correct answer
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5; // Total coins for completing all questions
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -28,45 +28,45 @@ const EmpathyStory = () => {
       id: 1,
       text: "A friend struggles to carry books. What's the first step in design thinking?",
       options: [
-        { id: "a", text: "Understand the problem (empathy)", correct: true },
-        { id: "b", text: "Jump to solutions", correct: false },
-        { id: "c", text: "Ignore the problem", correct: false }
+        { id: "b", text: "Jump to solutions", correct: false, emoji: "🏃" },
+        { id: "a", text: "Understand the problem (empathy)", correct: true, emoji: "🤝" },
+        { id: "c", text: "Ignore the problem", correct: false, emoji: "🙈" }
       ]
     },
     {
       id: 2,
       text: "Why is empathy important in problem-solving?",
       options: [
-        { id: "a", text: "Helps understand real needs and perspectives", correct: true },
-        { id: "b", text: "Makes problems more complicated", correct: false },
-        { id: "c", text: "Slows down the process", correct: false }
+        { id: "a", text: "Helps understand real needs and perspectives", correct: true, emoji: "🧠" },
+        { id: "b", text: "Makes problems more complicated", correct: false, emoji: "🤯" },
+        { id: "c", text: "Slows down the process", correct: false, emoji: "🐢" }
       ]
     },
     {
       id: 3,
       text: "How can observing others help in design thinking?",
       options: [
-        { id: "a", text: "Reveals unspoken needs and challenges", correct: true },
-        { id: "b", text: "Wastes time", correct: false },
-        { id: "c", text: "Creates more problems", correct: false }
+        { id: "b", text: "Wastes time", correct: false, emoji: "⏰" },
+        { id: "c", text: "Creates more problems", correct: false, emoji: "💥" },
+        { id: "a", text: "Reveals unspoken needs and challenges", correct: true, emoji: "🔍" },
       ]
     },
     {
       id: 4,
       text: "What is the benefit of putting yourself in someone else's shoes?",
       options: [
-        { id: "a", text: "Develops better, more human-centered solutions", correct: true },
-        { id: "b", text: "Makes you confused", correct: false },
-        { id: "c", text: "Has no benefit", correct: false }
+        { id: "b", text: "Makes you confused", correct: false, emoji: "😵" },
+        { id: "a", text: "Develops better, more human-centered solutions", correct: true, emoji: "💡" },
+        { id: "c", text: "Has no benefit", correct: false, emoji: "🤷" }
       ]
     },
     {
       id: 5,
       text: "How can empathy lead to innovation?",
       options: [
-        { id: "a", text: "Identifies overlooked problems and needs", correct: true },
-        { id: "b", text: "Prevents innovation", correct: false },
-        { id: "c", text: "Makes no difference", correct: false }
+        { id: "a", text: "Identifies overlooked problems and needs", correct: true, emoji: "🎯" },
+        { id: "b", text: "Prevents innovation", correct: false, emoji: "🚫" },
+        { id: "c", text: "Makes no difference", correct: false, emoji: "😐" }
       ]
     }
   ];
@@ -75,10 +75,10 @@ const EmpathyStory = () => {
     resetFeedback();
     
     if (option.correct) {
-      const newCoins = coins + coinsPerLevel;
+      const newCoins = coins + 1; // Give 1 coin per correct answer instead of coinsPerLevel
       setCoins(newCoins);
       setFinalScore(finalScore + 1);
-      showCorrectAnswerFeedback(newCoins);
+      showCorrectAnswerFeedback(1, true);
     }
     
     setTimeout(() => {
@@ -135,8 +135,8 @@ const EmpathyStory = () => {
                     className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
                   >
                     <div className="flex items-center">
-                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        {option.id}
+                      <span className="text-2xl mr-3 flex-shrink-0">
+                        {option.emoji}
                       </span>
                       <span className="font-medium">{option.text}</span>
                     </div>

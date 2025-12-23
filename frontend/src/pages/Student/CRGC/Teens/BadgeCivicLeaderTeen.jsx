@@ -60,13 +60,14 @@ const BadgeCivicLeaderTeen = () => {
           text: "Complain without offering solutions", 
           isCorrect: false
         },
-        { 
-          text: "Come prepared with research and constructive suggestions", 
-          isCorrect: true
-        },
+        
         { 
           text: "Avoid them entirely", 
           isCorrect: false
+        },
+        { 
+          text: "Come prepared with research and constructive suggestions", 
+          isCorrect: true
         },
         { 
           text: "Only contact them when you need something", 
@@ -114,10 +115,7 @@ const BadgeCivicLeaderTeen = () => {
           text: "Only participating when it's convenient", 
           isCorrect: false
         },
-        { 
-          text: "Staying informed and participating consistently in civic processes", 
-          isCorrect: true
-        },
+       
         { 
           text: "Following others without thinking critically", 
           isCorrect: false
@@ -125,7 +123,11 @@ const BadgeCivicLeaderTeen = () => {
         { 
           text: "Focusing only on personal benefits", 
           isCorrect: false
-        }
+        },
+         { 
+          text: "Staying informed and participating consistently in civic processes", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Staying informed and participating consistently in civic processes strengthens democratic institutions.",
@@ -138,13 +140,14 @@ const BadgeCivicLeaderTeen = () => {
       question: "What is the most effective approach to mentoring younger students?",
       options: [
         { 
-          text: "Doing everything for them", 
-          isCorrect: false
-        },
-        { 
           text: "Providing guidance while encouraging independence and growth", 
           isCorrect: true
         },
+        { 
+          text: "Doing everything for them", 
+          isCorrect: false
+        },
+        
         { 
           text: "Comparing them to other students", 
           isCorrect: false

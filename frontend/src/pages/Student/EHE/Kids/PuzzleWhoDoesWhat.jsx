@@ -19,20 +19,20 @@ const PuzzleWhoDoesWhat = () => {
 
   // Workers (left side) - 5 items
   const workers = [
-    { id: 1, name: "Farmer", emoji: "👨‍🌾", description: "Grows crops like wheat, rice, and vegetables" },
-    { id: 2, name: "Pilot", emoji: "👨‍✈️", description: "Flies airplanes to take people to different places" },
-    { id: 3, name: "Chef", emoji: "👨‍🍳", description: "Cooks delicious meals in restaurants and hotels" },
-    { id: 4, name: "Doctor", emoji: "👨‍⚕️", description: "Works in hospitals to treat sick patients" },
-    { id: 5, name: "Teacher", emoji: "👩‍🏫", description: "Helps students learn new things in school" }
+    { id: 1, name: "Farmer", emoji: "👨‍🌾" },
+    { id: 2, name: "Pilot", emoji: "👨‍✈️" },
+    { id: 3, name: "Chef", emoji: "👨‍🍳" },
+    { id: 4, name: "Doctor", emoji: "👨‍⚕️" },
+    { id: 5, name: "Teacher", emoji: "👩‍🏫" }
   ];
 
   // Jobs (right side) - 5 items
   const jobs = [
-    { id: 5, name: "Students", emoji: "📚", description: "People who learn in school" },
-    { id: 3, name: "Food", emoji: "🍲", description: "Meals prepared for eating" },
-    { id: 2, name: "Plane", emoji: "✈️", description: "Flying vehicle for transportation" },
-    { id: 4, name: "Hospital", emoji: "🏥", description: "Place where doctors work" },
-    { id: 1, name: "Crops", emoji: "🌾", description: "Plants grown for food" },
+    { id: 5, name: "Students", emoji: "📚" },
+    { id: 3, name: "Food", emoji: "🍲" },
+    { id: 2, name: "Plane", emoji: "✈️" },
+    { id: 4, name: "Hospital", emoji: "🏥" },
+    { id: 1, name: "Crops", emoji: "🌾" },
   ];
 
   // Correct matches
@@ -165,7 +165,6 @@ const PuzzleWhoDoesWhat = () => {
                       <div className="text-2xl mr-3">{worker.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{worker.name}</h4>
-                        <p className="text-white/80 text-sm">{worker.description}</p>
                       </div>
                     </div>
                   </button>
@@ -220,7 +219,6 @@ const PuzzleWhoDoesWhat = () => {
                       <div className="text-2xl mr-3">{job.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{job.name}</h4>
-                        <p className="text-white/80 text-sm">{job.description}</p>
                       </div>
                     </div>
                   </button>

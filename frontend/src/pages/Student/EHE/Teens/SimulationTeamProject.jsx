@@ -51,12 +51,7 @@ const SimulationTeamProject = () => {
       id: 2,
       text: "How should she contribute to team discussions?",
       options: [
-        {
-          id: "a",
-          text: "Share ideas and listen actively",
-          emoji: "👂",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Dominating conversations",
@@ -74,19 +69,20 @@ const SimulationTeamProject = () => {
           text: "Dismiss others' ideas",
           emoji: "👎",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Share ideas and listen actively",
+          emoji: "👂",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 3,
       text: "What approach should she take to deadlines?",
       options: [
-        {
-          id: "a",
-          text: "Meet deadlines and communicate delays",
-          emoji: "📅",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Ignore all timelines",
@@ -98,6 +94,12 @@ const SimulationTeamProject = () => {
           text: "Rush at the last minute",
           emoji: "😰",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Meet deadlines and communicate delays",
+          emoji: "📅",
+          isCorrect: true
         },
         {
           id: "d",
@@ -141,17 +143,18 @@ const SimulationTeamProject = () => {
       id: 5,
       text: "What should she do after project completion?",
       options: [
-        {
-          id: "a",
-          text: "Reflect on lessons and celebrate success",
-          emoji: "🎉",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Forget everything immediately",
           emoji: "🗑️",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Reflect on lessons and celebrate success",
+          emoji: "🎉",
+          isCorrect: true
         },
         {
           id: "c",

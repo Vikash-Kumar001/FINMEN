@@ -202,7 +202,7 @@ const TeenShavingSimulation = () => {
     return (
         <GameShell
             title="Shaving Simulation"
-            subtitle={`Scenario ${currentStep + 1} of ${steps.length}`}
+            subtitle={`Scenario ${currentScenario + 1} of ${steps.length}`}
             onNext={handleNext}
             nextEnabled={gameFinished}
             showGameOver={gameFinished}

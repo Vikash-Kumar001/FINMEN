@@ -61,21 +61,28 @@ const QuizOnMoneyUse = () => {
           id: "a",
           text: "Buying needs",
           emoji: "🛒",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great job! We use money to buy things we need like food, clothes, and shelter."
         },
         {
           id: "b",
           text: "Playing only",
           emoji: "🎮",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. While we can use money for entertainment, it's not the main purpose of money."
         },
         {
           id: "c",
           text: "Collecting rocks",
           emoji: "🪨",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Money isn't used for collecting rocks - we use money to buy goods and services."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Excellent! Money is used to purchase goods and services that we need and want.",
+        incorrect: "Remember, money is primarily used to buy goods and services we need and want."
+      }
     },
     {
       id: 2,
@@ -86,21 +93,28 @@ const QuizOnMoneyUse = () => {
           id: "c",
           text: "Designer shoes",
           emoji: "👠",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Designer shoes are a want, not a need - we can live without them."
         },
         {
           id: "a",
           text: "Food",
           emoji: "🍎",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great job! Food is a basic need that keeps us alive and healthy."
         },
         {
           id: "b",
           text: "Video games",
           emoji: "🎮",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Video games are fun but they're not essential for survival - they're a want."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Perfect! Food is one of our basic needs, along with shelter and clothing.",
+        incorrect: "Think about what is essential for survival - these are our needs."
+      }
     },
     {
       id: 3,
@@ -111,21 +125,28 @@ const QuizOnMoneyUse = () => {
           id: "a",
           text: "Save it in a bank",
           emoji: "🏦",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great job! Saving money in a bank is a smart financial habit that keeps it safe and can earn interest."
         },
         {
           id: "b",
           text: "Spend it all immediately",
           emoji: "💸",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Spending all money right away doesn't prepare for future needs or emergencies."
         },
         {
           id: "c",
           text: "Hide it under your bed",
           emoji: "🛏️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Hiding money at home isn't safe and it doesn't earn interest like it would in a bank."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Wonderful! Saving money for future needs is an important financial habit.",
+        incorrect: "Consider the safest and most beneficial way to keep money you're not currently using."
+      }
     },
     {
       id: 4,
@@ -136,21 +157,28 @@ const QuizOnMoneyUse = () => {
           id: "c",
           text: "To avoid doing chores",
           emoji: "🧹",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Earning money isn't about avoiding chores - it's about having resources for needs and wants."
         },
         {
           id: "a",
           text: "To buy things we need and want",
           emoji: "🛍️",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great job! We earn money to purchase goods and services that we need and want."
         },
         {
           id: "b",
           text: "To brag to friends",
           emoji: "📣",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. The main purpose of earning money is to meet our needs and wants, not to impress others."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Fantastic! Earning money allows us to purchase the things we need and want in life.",
+        incorrect: "Think about the main purpose of money - what do we use it for?"
+      }
     },
     {
       id: 5,
@@ -161,21 +189,28 @@ const QuizOnMoneyUse = () => {
           id: "b",
           text: "Wants are more important than needs",
           emoji: "👑",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. Needs are more important than wants because they are essential for survival."
         },
         {
           id: "a",
           text: "Needs are essential for survival, wants make life better",
           emoji: "💡",
-          isCorrect: true
+          isCorrect: true,
+          feedback: "Great job! Needs are essential for survival, while wants are things that make life more enjoyable."
         },
         {
           id: "c",
           text: "Needs are expensive, wants are cheap",
           emoji: "🏷️",
-          isCorrect: false
+          isCorrect: false,
+          feedback: "Not quite. The price doesn't determine if something is a need or want - it's about necessity."
         }
-      ]
+      ],
+      feedback: {
+        correct: "Perfect! Understanding the difference between needs and wants is crucial for smart financial decisions.",
+        incorrect: "Remember, needs are things essential for survival while wants are things that make life more comfortable."
+      }
     }
   ];
 
@@ -278,9 +313,25 @@ const QuizOnMoneyUse = () => {
               {answered && (
                 <div className={`rounded-lg p-5 mt-6 ${
                   currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
-                    ? "bg-green-500/20"
-                    : "bg-red-500/20"
+                    ? "bg-green-500/20 border border-green-500"
+                    : "bg-red-500/20 border border-red-500"
                 }`}>
+                  <p className="text-lg font-semibold text-center">
+                    {currentQuestionData.options.find(opt => opt.id === selectedOption)?.isCorrect
+                      ? "✅ Correct! "
+                      : "❌ Not quite! "}
+                  </p>
+                  <p className="text-center mt-2">
+                    {(() => {
+                      const selectedOptionData = currentQuestionData.options.find(opt => opt.id === selectedOption);
+                      if (selectedOptionData?.feedback) {
+                        return selectedOptionData.feedback;
+                      }
+                      return selectedOptionData?.isCorrect 
+                        ? currentQuestionData.feedback?.correct 
+                        : currentQuestionData.feedback?.incorrect;
+                    })()}
+                  </p>
                 </div>
               )}
             </div>

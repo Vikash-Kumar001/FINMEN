@@ -38,13 +38,18 @@ const CoolOrFoolDebate = () => {
           emoji: "⚠️"
         }
       ],
-      correctAnswer: "a",
+      correctAnswer: "c",
       explanation: "Real friends respect healthy choices. Making healthy decisions shows real strength and leads to more genuine friendships."
     },
     {
       id: 2,
       text: "What happens when teens use substances to seem cool?",
       options: [
+        {
+          id: "c",
+          text: "Creates health problems",
+          emoji: "🏥"
+        },
         {
           id: "b",
           text: "Gains real respect",
@@ -55,11 +60,7 @@ const CoolOrFoolDebate = () => {
           text: "Impresses everyone",
           emoji: "👏"
         },
-        {
-          id: "c",
-          text: "Creates health problems",
-          emoji: "🏥"
-        }
+        
       ],
       correctAnswer: "c",
       explanation: "Most people respect healthy, responsible choices. True confidence comes from making good decisions, not from impressing others with risky behaviors."
@@ -84,7 +85,7 @@ const CoolOrFoolDebate = () => {
           emoji: "👎"
         }
       ],
-      correctAnswer: "b",
+      correctAnswer: "c",
       explanation: "Healthy choices are more important than fitting in. Being true to your values is more important than peer pressure."
     },
     {

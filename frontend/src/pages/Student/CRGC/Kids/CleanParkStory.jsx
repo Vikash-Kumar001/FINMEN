@@ -129,7 +129,7 @@ const CleanParkStory = () => {
         {
           id: "a",
           text: "Lead by example and participate in cleanups",
-          emoji: " volunte️",
+          emoji: "👍",
           isCorrect: true
         },
         {

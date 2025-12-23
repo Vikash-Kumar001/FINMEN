@@ -31,21 +31,21 @@ const HealthyPlatePoster = () => {
           id: 1,
           title: "All Pizza Plate",
           description: "A poster showing a plate full of only pizza slices",
-          emoji: "🍕🍕",
+          emoji: "🍕",
           isCorrect: false
         },
         {
           id: 2,
           title: "Half Fruits & Veggies",
           description: "A poster showing half the plate with colorful fruits and vegetables",
-          emoji: "🍎🥦",
+          emoji: "🍎",
           isCorrect: true
         },
         {
           id: 3,
           title: "Meat Mountain",
           description: "A poster showing a plate piled high with only meat",
-          emoji: "🥩🍗",
+          emoji: "🥩",
           isCorrect: false
         }
       ],
@@ -59,21 +59,21 @@ const HealthyPlatePoster = () => {
           id: 1,
           title: "Soda All Day",
           description: "A poster promoting sugary soda with every meal",
-          emoji: "🥤🥤",
+          emoji: "🥤",
           isCorrect: false
         },
         {
           id: 3,
           title: "Juice Only",
           description: "A poster suggesting only fruit juice instead of water",
-          emoji: "🧃🧃",
+          emoji: "🧃",
           isCorrect: false
         },
         {
           id: 2,
           title: "Water is Best",
           description: "A poster showing a refreshing glass of water",
-          emoji: "💧💙",
+          emoji: "💧",
           isCorrect: true
         }
       ],
@@ -87,21 +87,21 @@ const HealthyPlatePoster = () => {
           id: 2,
           title: "Candy Mountain",
           description: "A poster showing a pile of candy and lollipops",
-          emoji: "🍬🍭",
+          emoji: "🍭",
           isCorrect: false
         },
         {
           id: 1,
           title: "Smart Snacks",
           description: "A poster showing carrots, apples, and nuts",
-          emoji: "🥕🍎",
+          emoji: "🥕",
           isCorrect: true
         },
         {
           id: 3,
           title: "Chip Champion",
           description: "A poster encouraging eating a whole bag of chips",
-          emoji: "🍟🍟",
+          emoji: "🍟",
           isCorrect: false
         }
       ],
@@ -115,21 +115,21 @@ const HealthyPlatePoster = () => {
           id: 3,
           title: "Donut Delight",
           description: "A poster showing only donuts for breakfast",
-          emoji: "🍩🍩",
+          emoji: "🍩",
           isCorrect: false
         },
         {
           id: 2,
           title: "Power Breakfast",
           description: "A poster showing eggs, toast, and milk",
-          emoji: "🍳🥛",
+          emoji: "🍳",
           isCorrect: true
         },
         {
           id: 1,
           title: "Skip Breakfast",
           description: "A poster saying breakfast is not important",
-          emoji: "🚫🍳",
+          emoji: "🚫",
           isCorrect: false
         }
       ],
@@ -143,14 +143,14 @@ const HealthyPlatePoster = () => {
           id: 2,
           title: "Taste the Rainbow",
           description: "A poster encouraging trying colorful new fruits and veggies",
-          emoji: "🌈🥗",
+          emoji: "🌈",
           isCorrect: true
         },
         {
           id: 1,
           title: "Eat Same Food",
           description: "A poster saying to only eat what you know",
-          emoji: "🔁🍕",
+          emoji: "🍕",
           isCorrect: false
         },
         {

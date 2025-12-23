@@ -13,8 +13,8 @@ const StreamChoiceStory = () => {
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1; // 1 coin per correct answer
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5; // Total coins for completing all questions
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -28,45 +28,45 @@ const StreamChoiceStory = () => {
       id: 1,
       text: "Teen loves biology. Which higher education path suits her?",
       options: [
-        { id: "a", text: "Engineering", correct: false },
-        { id: "b", text: "Medicine", correct: true },
-        { id: "c", text: "Arts", correct: false }
+        { id: "a", text: "Engineering", correct: false, emoji: "⚙️" },
+        { id: "b", text: "Medicine", correct: true, emoji: "⚕️" },
+        { id: "c", text: "Arts", correct: false, emoji: "🎨" }
       ]
     },
     {
       id: 2,
       text: "Why is aligning stream choice with interests important?",
       options: [
-        { id: "a", text: "Reduces options", correct: false },
-        { id: "b", text: "Enhances motivation and performance", correct: true },
-        { id: "c", text: "Limits career growth", correct: false }
+        { id: "b", text: "Enhances motivation and performance", correct: true, emoji: "📈" },
+        { id: "a", text: "Reduces options", correct: false, emoji: "📉" },
+        { id: "c", text: "Limits career growth", correct: false, emoji: "🚫" }
       ]
     },
     {
       id: 3,
       text: "What should students consider when choosing streams?",
       options: [
-        { id: "a", text: "Peer pressure only", correct: false },
-        { id: "b", text: "Interests, strengths, and future goals", correct: true },
-        { id: "c", text: "Parental expectations only", correct: false }
+        { id: "a", text: "Peer pressure only", correct: false, emoji: "👥" },
+        { id: "b", text: "Interests, strengths, and future goals", correct: true, emoji: "🎯" },
+        { id: "c", text: "Parental expectations only", correct: false, emoji: "👨‍👩‍👧" }
       ]
     },
     {
       id: 4,
       text: "What is a benefit of choosing the right stream?",
       options: [
-        { id: "a", text: "No benefits", correct: false },
-        { id: "b", text: "Better academic performance", correct: true },
-        { id: "c", text: "Reduced opportunities", correct: false }
+        { id: "a", text: "No benefits", correct: false, emoji: "❌" },
+        { id: "c", text: "Reduced opportunities", correct: false, emoji: "📉" },
+        { id: "b", text: "Better academic performance", correct: true, emoji: "📚" },
       ]
     },
     {
       id: 5,
       text: "How can students explore different streams?",
       options: [
-        { id: "a", text: "Avoid all exploration", correct: false },
-        { id: "b", text: "Subject counseling and trial courses", correct: true },
-        { id: "c", text: "Stick to one option", correct: false }
+        { id: "a", text: "Avoid all exploration", correct: false, emoji: "🚫" },
+        { id: "b", text: "Subject counseling and trial courses", correct: true, emoji: "🎓" },
+        { id: "c", text: "Stick to one option", correct: false, emoji: "🔒" }
       ]
     }
   ];
@@ -75,10 +75,10 @@ const StreamChoiceStory = () => {
     resetFeedback();
     
     if (option.correct) {
-      const newCoins = coins + coinsPerLevel;
+      const newCoins = coins + 1; // Give 1 coin per correct answer instead of coinsPerLevel
       setCoins(newCoins);
       setFinalScore(finalScore + 1);
-      showCorrectAnswerFeedback(newCoins);
+      showCorrectAnswerFeedback(1, true);
     }
     
     setTimeout(() => {
@@ -135,8 +135,8 @@ const StreamChoiceStory = () => {
                     className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
                   >
                     <div className="flex items-center">
-                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        {option.id}
+                      <span className="text-2xl mr-3 flex-shrink-0">
+                        {option.emoji}
                       </span>
                       <span className="font-medium">{option.text}</span>
                     </div>

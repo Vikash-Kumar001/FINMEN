@@ -38,7 +38,7 @@ const DoctorFearDebate = () => {
           emoji: "🚑"
         }
       ],
-      correctAnswer: "a",
+      correctAnswer: "b",
       explanation: "While it's normal to feel nervous about doctor visits, healthcare professionals are trained to provide safe, expert care. Doctors help prevent and treat health issues, making visits beneficial for your well-being."
     },
     {
@@ -61,7 +61,7 @@ const DoctorFearDebate = () => {
           emoji: "⚠️"
         }
       ],
-      correctAnswer: "b",
+      correctAnswer: "a",
       explanation: "Some medical procedures are necessary for good health. Medical procedures are designed to improve health and save lives, and most are safe when performed by qualified professionals."
     },
     {
@@ -84,7 +84,7 @@ const DoctorFearDebate = () => {
           emoji: "🤷"
         }
       ],
-      correctAnswer: "c",
+      correctAnswer: "b",
       explanation: "Being informed helps reduce anxiety about healthcare. Researching and preparing questions can make visits more productive, but going in without any preparation can still be valuable."
     },
     {

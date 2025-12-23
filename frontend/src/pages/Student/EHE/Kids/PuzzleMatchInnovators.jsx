@@ -19,20 +19,20 @@ const PuzzleMatchInnovators = () => {
 
   // Innovators (left side) - 5 items
   const innovators = [
-    { id: 1, name: "Edison", emoji: "💡", description: "Invented the practical incandescent light bulb" },
-    { id: 2, name: "Wright Brothers", emoji: "✈️", description: "Created the first successful airplane" },
-    { id: 3, name: "Jobs", emoji: "📱", description: "Revolutionized personal technology with the iPhone" },
-    { id: 4, name: "Tesla", emoji: "⚡", description: "Invented the alternating current motor" },
-    { id: 5, name: "Curie", emoji: "⚛️", description: "Discovered radium and advanced atomic research" }
+    { id: 1, name: "Edison", emoji: "💡" },
+    { id: 2, name: "Wright Brothers", emoji: "✈️" },
+    { id: 3, name: "Jobs", emoji: "📱" },
+    { id: 4, name: "Tesla", emoji: "⚡" },
+    { id: 5, name: "Curie", emoji: "⚛️" }
   ];
 
   // Inventions (right side) - 5 items
   const inventions = [
-    { id: 5, name: "Radium", emoji: "🔬", description: "Radioactive element discovered by Marie Curie" },
-    { id: 3, name: "iPhone", emoji: "📲", description: "Smartphone that changed mobile technology" },
-    { id: 2, name: "Plane", emoji: "🛩️", description: "Vehicle that flies through the air" },
-    { id: 1, name: "Bulb", emoji: "🔦", description: "Device that produces light when electricity passes through it" },
-    { id: 4, name: "AC Motor", emoji: "⚙️", description: "Motor that runs on alternating current" },
+    { id: 5, name: "Radium", emoji: "🔬" },
+    { id: 3, name: "iPhone", emoji: "📲" },
+    { id: 2, name: "Plane", emoji: "🛩️" },
+    { id: 1, name: "Bulb", emoji: "🔦" },
+    { id: 4, name: "AC Motor", emoji: "⚙️" },
   ];
 
   // Correct matches
@@ -165,7 +165,6 @@ const PuzzleMatchInnovators = () => {
                       <div className="text-2xl mr-3">{innovator.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{innovator.name}</h4>
-                        <p className="text-white/80 text-sm">{innovator.description}</p>
                       </div>
                     </div>
                   </button>
@@ -220,7 +219,6 @@ const PuzzleMatchInnovators = () => {
                       <div className="text-2xl mr-3">{invention.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{invention.name}</h4>
-                        <p className="text-white/80 text-sm">{invention.description}</p>
                       </div>
                     </div>
                   </button>

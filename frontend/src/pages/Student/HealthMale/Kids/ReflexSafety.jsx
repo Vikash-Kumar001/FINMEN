@@ -47,7 +47,7 @@ const ReflexSafety = () => {
         { id: 'a', text: "Don't Touch", emoji: "🚫", isCorrect: true },
         { id: 'b', text: "Drink It", emoji: "🥤", isCorrect: false },
         { id: 'c', text: "Smell It", emoji: "👃", isCorrect: false },
-        { id: 'd', text: "Pour It Out", emoji: "", isCorrect: false }
+        { id: 'd', text: "Pour It Out", emoji: "🫗", isCorrect: false }
       ]
     },
     {
@@ -77,7 +77,7 @@ const ReflexSafety = () => {
         { id: 'a', text: "Touch It", emoji: "👆", isCorrect: false },
         { id: 'b', text: "Put Hand Near", emoji: "🔥", isCorrect: false },
         { id: 'c', text: "Stay Away", emoji: "🚫", isCorrect: true },
-        { id: 'd', text: "Turn It Off", emoji: " knobs", isCorrect: false }
+        { id: 'd', text: "Turn It Off", emoji: " 📴", isCorrect: false }
       ]
     }
   ];

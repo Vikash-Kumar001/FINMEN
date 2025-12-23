@@ -84,8 +84,8 @@ const BadgePlanetProtectorKid = () => {
       item: "Energy Saving",
       options: [
         { id: "a", text: "Leave all lights on", emoji: "💡", correct: false, coins: 0 },
-        { id: "b", text: "Turn off lights", emoji: "🔌", correct: false, coins: 0 },
-        { id: "c", text: "Turn on more lights", emoji: "✨", correct: true, coins: 1 },
+        { id: "b", text: "Turn off lights", emoji: "🔌", correct: true, coins: 1 },
+        { id: "c", text: "Turn on more lights", emoji: "✨", correct: false, coins: 0 },
         { id: "d", text: "Ignore lights completely", emoji: "😴", correct: false, coins: 0 }
       ],
       feedback: {
@@ -102,8 +102,8 @@ const BadgePlanetProtectorKid = () => {
       options: [
         { id: "a", text: "Leave tap running", emoji: "🚰", correct: false, coins: 0 },
         { id: "b", text: "Use lots of water", emoji: "🌊", correct: false, coins: 0 },
-        { id: "c", text: "Turn off tap when brushing", emoji: "💧", correct: false, coins: 0 },
-        { id: "d", text: "Take longer showers", emoji: "🛁", correct: true, coins: 1 }
+        { id: "c", text: "Turn off tap when brushing", emoji: "💧", correct: true, coins: 1 },
+        { id: "d", text: "Take longer showers", emoji: "🛁", correct: false, coins: 0 }
       ],
       feedback: {
         correct: "Great! Turning off taps saves precious water!",
@@ -118,8 +118,8 @@ const BadgePlanetProtectorKid = () => {
       item: "Nature Care",
       options: [
         { id: "a", text: "Harm plants and animals", emoji: "🪓", correct: false, coins: 0 },
-        { id: "b", text: "Plant trees and care for them", emoji: "🌳", correct: false, coins: 0 },
-        { id: "c", text: "Ignore nature", emoji: "😒", correct: true, coins: 1 },
+        { id: "b", text: "Plant trees and care for them", emoji: "🌳", correct: true, coins: 1 },
+        { id: "c", text: "Ignore nature", emoji: "😒", correct: false, coins: 0 },
         { id: "d", text: "Pick all flowers", emoji: "🥀", correct: false, coins: 0 }
       ],
       feedback: {
@@ -136,8 +136,8 @@ const BadgePlanetProtectorKid = () => {
       options: [
         { id: "a", text: "Waste everything", emoji: "🗑️", correct: false, coins: 0 },
         { id: "b", text: "Ignore the environment", emoji: "😑", correct: false, coins: 0 },
-        { id: "c", text: "Recycle, save energy, and care for nature", emoji: "🌍", correct: false, coins: 0 },
-        { id: "d", text: "Use more plastic", emoji: "🥤", correct: true, coins: 1 }
+        { id: "d", text: "Use more plastic", emoji: "🥤", correct: false, coins: 0 },
+        { id: "c", text: "Recycle, save energy, and care for nature", emoji: "🌍", correct: true, coins: 1 },
       ],
       feedback: {
         correct: "Wonderful! You're a true Planet Protector Kid!",

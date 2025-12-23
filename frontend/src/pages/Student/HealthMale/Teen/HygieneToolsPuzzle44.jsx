@@ -32,7 +32,7 @@ const HygieneToolsPuzzle44 = () => {
 
   // Body Parts/Purposes (right side) - 5 items
   const bodyParts = [
-    { id: 3, name: "Underarms", emoji: " arms", description: "Sweat zone" },
+    { id: 3, name: "Underarms", emoji: "🦿", description: "Sweat zone" },
     { id: 5, name: "Back/Body", emoji: "🧼", description: "Full cleansing" },
     { id: 1, name: "Teeth/Mouth", emoji: "🦷", description: "Oral care" },
     { id: 4, name: "Fingers/Toes", emoji: "👐", description: "Nail area" },

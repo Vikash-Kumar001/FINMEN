@@ -81,11 +81,11 @@ const TreePlantingStory = () => {
     },
     {
       id: 2,
-      text: "Why are trees important?",
+      text: "Which is the most important reason trees are planted in cities?",
       options: [
         { id: "nothing", text: "They don't matter", emoji: "😐", isCorrect: false },
-        { id: "shade", text: "They provide shade", emoji: "🌳", isCorrect: true },
-        { id: "oxygen", text: "They give us oxygen", emoji: "🌬️", isCorrect: false }
+        { id: "oxygen", text: "They clean the air", emoji: "🌬️", isCorrect: true },
+        { id: "shade", text: "They provide shade", emoji: "🌳", isCorrect: false },
       ]
     },
     {

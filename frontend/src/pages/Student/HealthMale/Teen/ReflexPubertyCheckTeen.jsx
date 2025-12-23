@@ -114,19 +114,13 @@ const ReflexPubertyCheckTeen = () => {
     }, 1000);
   }, []);
 
-  // Timer effect - countdown from 5 seconds for each question
+  // Timer effect - countdown from 10 seconds for each question
   useEffect(() => {
-    if (gameState !== "playing") {
+    if (gameState !== "playing" || currentRound === 0 || currentRound > TOTAL_ROUNDS) {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      return;
-    }
-
-    // Check if game should be finished
-    if (currentRoundRef.current > TOTAL_ROUNDS) {
-      setGameState("finished");
       return;
     }
 
@@ -158,9 +152,8 @@ const ReflexPubertyCheckTeen = () => {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     };
-  }, [gameState, handleTimeUp]);
+  }, [gameState, currentRound, handleTimeUp]);
 
   const startGame = () => {
     setGameState("playing");

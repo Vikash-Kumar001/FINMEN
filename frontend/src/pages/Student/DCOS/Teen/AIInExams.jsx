@@ -60,6 +60,14 @@ const AIInExams = () => {
           description: "Use AI to solve questions",
           isCorrect: false
         },
+        
+        { 
+          id: "consider", 
+          text: "Consider it", 
+          emoji: "🤔", 
+          description: "Think about using it",
+          isCorrect: false
+        },
         { 
           id: "reject-help", 
           text: "Reject - it's cheating", 
@@ -67,13 +75,6 @@ const AIInExams = () => {
           description: "Refuse to cheat",
           isCorrect: true
         },
-        { 
-          id: "consider", 
-          text: "Consider it", 
-          emoji: "🤔", 
-          description: "Think about using it",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -114,20 +115,21 @@ const AIInExams = () => {
           description: "Use AI answers",
           isCorrect: false
         },
-        { 
-          id: "reject-suggestions", 
-          text: "Reject - it's academic dishonesty", 
-          emoji: "✅", 
-          description: "Refuse to cheat",
-          isCorrect: true
-        },
+       
         { 
           id: "think-about", 
           text: "Think about it", 
           emoji: "🤔", 
           description: "Consider using AI",
           isCorrect: false
-        }
+        },
+         { 
+          id: "reject-suggestions", 
+          text: "Reject - it's academic dishonesty", 
+          emoji: "✅", 
+          description: "Refuse to cheat",
+          isCorrect: true
+        },
       ]
     },
     {

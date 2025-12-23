@@ -21,17 +21,18 @@ const SimulationCareerDecision = () => {
       id: 1,
       text: "Teen has choices: Medicine / Engineering / Arts. What should she decide based on?",
       options: [
-        {
-          id: "a",
-          text: "Interests + research",
-          emoji: "🔍",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Parents only",
           emoji: "👨‍👩‍👧‍👦",
           isCorrect: false
+        },
+         {
+          id: "a",
+          text: "Interests + research",
+          emoji: "🔍",
+          isCorrect: true
         },
         {
           id: "c",
@@ -81,12 +82,7 @@ const SimulationCareerDecision = () => {
       id: 3,
       text: "What factors should influence her decision?",
       options: [
-        {
-          id: "a",
-          text: "Passion, market demand, and skills",
-          emoji: "🎯",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Only salary expectations",
@@ -104,7 +100,13 @@ const SimulationCareerDecision = () => {
           text: "Shortest study duration",
           emoji: "⏱️",
           isCorrect: false
-        }
+        },
+         {
+          id: "a",
+          text: "Passion, market demand, and skills",
+          emoji: "🎯",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -141,12 +143,7 @@ const SimulationCareerDecision = () => {
       id: 5,
       text: "What should she do after making a decision?",
       options: [
-        {
-          id: "a",
-          text: "Create an action plan and seek guidance",
-          emoji: "📝",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Never review the decision",
@@ -158,6 +155,12 @@ const SimulationCareerDecision = () => {
           text: "Ignore all advice",
           emoji: "🙉",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Create an action plan and seek guidance",
+          emoji: "📝",
+          isCorrect: true
         },
         {
           id: "d",

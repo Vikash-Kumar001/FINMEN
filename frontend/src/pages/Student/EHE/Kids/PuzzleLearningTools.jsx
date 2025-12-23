@@ -19,20 +19,20 @@ const PuzzleLearningTools = () => {
 
   // Tools (left side) - 5 items
   const tools = [
-    { id: 1, name: "Books", emoji: "📚", description: "Written materials containing knowledge and information" },
-    { id: 2, name: "Internet", emoji: "🌐", description: "Global network providing instant access to vast information" },
-    { id: 3, name: "Practice", emoji: "🏋️", description: "Repetitive exercises to develop and improve skills" },
-    { id: 4, name: "Videos", emoji: "🎥", description: "Visual media for demonstrating concepts and procedures" },
-    { id: 5, name: "Mentors", emoji: "👨‍🏫", description: "Experienced guides who provide wisdom and direction" }
+    { id: 1, name: "Books", emoji: "📚" },
+    { id: 2, name: "Internet", emoji: "🌐" },
+    { id: 3, name: "Practice", emoji: "🏋️" },
+    { id: 4, name: "Videos", emoji: "🎥" },
+    { id: 5, name: "Mentors", emoji: "👨‍🏫" }
   ];
 
   // Outcomes (right side) - 5 items
   const outcomes = [
-    { id: 3, name: "Skills", emoji: "🔧", description: "Practical abilities developed through training" },
-    { id: 2, name: "Information", emoji: "ℹ️", description: "Data and facts obtained from various sources" },
-    { id: 4, name: "Experience", emoji: "🌟", description: "Practical contact with and observation of events" },
-    { id: 1, name: "Knowledge", emoji: "🧠", description: "Understanding of facts, truths, and principles" },
-    { id: 5, name: "Wisdom", emoji: "🦉", description: "Deep understanding and good judgment gained through experience" }
+    { id: 3, name: "Skills", emoji: "🔧" },
+    { id: 2, name: "Information", emoji: "ℹ️" },
+    { id: 4, name: "Experience", emoji: "🌟" },
+    { id: 1, name: "Knowledge", emoji: "🧠" },
+    { id: 5, name: "Wisdom", emoji: "🦉" }
   ];
 
   // Correct matches
@@ -165,7 +165,6 @@ const PuzzleLearningTools = () => {
                       <div className="text-2xl mr-3">{tool.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{tool.name}</h4>
-                        <p className="text-white/80 text-sm">{tool.description}</p>
                       </div>
                     </div>
                   </button>
@@ -220,7 +219,6 @@ const PuzzleLearningTools = () => {
                       <div className="text-2xl mr-3">{outcome.emoji}</div>
                       <div>
                         <h4 className="font-bold text-white">{outcome.name}</h4>
-                        <p className="text-white/80 text-sm">{outcome.description}</p>
                       </div>
                     </div>
                   </button>

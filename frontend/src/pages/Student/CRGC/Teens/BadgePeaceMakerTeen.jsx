@@ -33,13 +33,14 @@ const BadgePeaceMakerTeen = () => {
           text: "Take sides based on your own opinion", 
           isCorrect: false
         },
-        { 
-          text: "Listen to both sides and help them find a compromise", 
-          isCorrect: true
-        },
+        
         { 
           text: "Tell them to stop arguing and figure it out themselves", 
           isCorrect: false
+        },
+        { 
+          text: "Listen to both sides and help them find a compromise", 
+          isCorrect: true
         },
         { 
           text: "Avoid the situation entirely", 
@@ -87,10 +88,7 @@ const BadgePeaceMakerTeen = () => {
           text: "Minimize their feelings by saying 'it could be worse'", 
           isCorrect: false
         },
-        { 
-          text: "Acknowledge their emotions and show you understand their perspective", 
-          isCorrect: true
-        },
+        
         { 
           text: "Tell them to get over it", 
           isCorrect: false
@@ -98,7 +96,11 @@ const BadgePeaceMakerTeen = () => {
         { 
           text: "Share a story about your own problems", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Acknowledge their emotions and show you understand their perspective", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Acknowledging emotions and showing understanding helps people feel heard and supported.",
@@ -141,13 +143,14 @@ const BadgePeaceMakerTeen = () => {
           text: "To speed up decision-making", 
           isCorrect: false
         },
-        { 
-          text: "To create an environment where all perspectives are valued", 
-          isCorrect: true
-        },
+        
         { 
           text: "To satisfy a requirement", 
           isCorrect: false
+        },
+        { 
+          text: "To create an environment where all perspectives are valued", 
+          isCorrect: true
         },
         { 
           text: "To avoid conflict", 

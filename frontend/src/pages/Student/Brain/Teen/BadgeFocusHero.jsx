@@ -62,11 +62,7 @@ const BadgeFocusHero = () => {
       color: "bg-blue-500",
       question: "What is the most effective way to maintain focus?",
       options: [
-        { 
-          text: "Single-tasking in a quiet environment", 
-          emoji: "🎯", 
-          isCorrect: true
-        },
+       
         { 
           text: "Multitasking with multiple devices", 
           emoji: "📱", 
@@ -76,6 +72,11 @@ const BadgeFocusHero = () => {
           text: "Studying with loud music", 
           emoji: "🔊", 
           isCorrect: false
+        },
+         { 
+          text: "Single-tasking in a quiet environment", 
+          emoji: "🎯", 
+          isCorrect: true
         },
         { 
           text: "Checking phone every few minutes", 
@@ -123,15 +124,16 @@ const BadgeFocusHero = () => {
       question: "Which technique improves attention span?",
       options: [
         { 
-          text: "Cramming for long hours", 
-          emoji: "📖", 
-          isCorrect: false
-        },
-        { 
           text: "Pomodoro Technique with breaks", 
           emoji: "⏰", 
           isCorrect: true
         },
+        { 
+          text: "Cramming for long hours", 
+          emoji: "📖", 
+          isCorrect: false
+        },
+        
         { 
           text: "No breaks during study", 
           emoji: "🚫", 
@@ -157,11 +159,7 @@ const BadgeFocusHero = () => {
           emoji: "☕", 
           isCorrect: false
         },
-        { 
-          text: "Quiet, organized study space", 
-          emoji: "📚", 
-          isCorrect: true
-        },
+        
         { 
           text: "Bedroom with music", 
           emoji: "🎵", 
@@ -171,7 +169,12 @@ const BadgeFocusHero = () => {
           text: "Living room with TV", 
           emoji: "📺", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Quiet, organized study space", 
+          emoji: "📚", 
+          isCorrect: true
+        },
       ]
     },
     {

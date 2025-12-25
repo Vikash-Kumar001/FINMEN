@@ -56,21 +56,18 @@ const RespectDebate = () => {
           id: "a", 
           text: "Respect means listening even when you disagree", 
           emoji: "👂",
-          description: "Shows true respect",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "I just think respect is good", 
           emoji: "🤷",
-          description: "Weak personal opinion",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Everyone should think the same way", 
           emoji: "🔄",
-          description: "Unrealistic and not respectful",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const RespectDebate = () => {
           id: "b", 
           text: "Shout your opinion louder", 
           emoji: "📢",
-          description: "Not respectful",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "You can disagree respectfully by acknowledging their view first", 
           emoji: "💬",
-          description: "Shows respect while maintaining your view",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Just ignore them", 
           emoji: "🙈",
-          description: "Doesn't address the disagreement",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const RespectDebate = () => {
           id: "a", 
           text: "Respect involves understanding different perspectives", 
           emoji: "🌍",
-          description: "Shows true respect",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "My friend said respect is important", 
           emoji: "👥",
-          description: "Not a strong argument",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Just agree with everything", 
           emoji: "✅",
-          description: "Not genuine respect",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const RespectDebate = () => {
           id: "b", 
           text: "Interrupt frequently", 
           emoji: "⏸️",
-          description: "Disrespectful",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Check phone during opponent's turn", 
           emoji: "📱",
-          description: "Shows lack of respect",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Maintain eye contact and ask clarifying questions", 
           emoji: "👀",
-          description: "Shows respect and engagement",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const RespectDebate = () => {
           id: "a", 
           text: "Acknowledge their point, then present your view respectfully", 
           emoji: "🤝",
-          description: "Balanced and respectful approach",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Tell them they're completely wrong", 
           emoji: "❌",
-          description: "Dismissive and disrespectful",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Pretend to agree", 
           emoji: "😐",
-          description: "Not honest or respectful",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const RespectDebate = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

@@ -56,21 +56,18 @@ const EmotionalCheckIn = () => {
           id: "a", 
           text: "Hurt or sad", 
           emoji: "😔",
-          description: "Accurate emotional response",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Happy and excited", 
           emoji: "😄",
-          description: "Doesn't match the situation",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Completely neutral", 
           emoji: "😐",
-          description: "May not reflect true feelings",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const EmotionalCheckIn = () => {
           id: "b", 
           text: "Sad and disappointed", 
           emoji: "😢",
-          description: "Doesn't match the situation",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Happy or proud", 
           emoji: "🏆",
-          description: "Accurate emotional response",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Angry", 
           emoji: "😠",
-          description: "Doesn't match the situation",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const EmotionalCheckIn = () => {
           id: "a", 
           text: "Frustrated or disappointed", 
           emoji: "😞",
-          description: "Accurate emotional response",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Ecstatic and joyful", 
           emoji: "🎉",
-          description: "Doesn't match the situation",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Completely unaffected", 
           emoji: "😑",
-          description: "May not reflect true feelings",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const EmotionalCheckIn = () => {
           id: "b", 
           text: "Ashamed", 
           emoji: "😳",
-          description: "Doesn't match the situation",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Angry", 
           emoji: "😠",
-          description: "Doesn't match the situation",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Grateful or proud", 
           emoji: "🙏",
-          description: "Accurate emotional response",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const EmotionalCheckIn = () => {
           id: "a", 
           text: "Defensive or hurt", 
           emoji: "🛡️",
-          description: "Accurate emotional response",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Overjoyed", 
           emoji: "😃",
-          description: "Doesn't match the situation",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Completely emotionless", 
           emoji: "😶",
-          description: "May not reflect true feelings",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const EmotionalCheckIn = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

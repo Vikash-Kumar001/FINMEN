@@ -56,21 +56,18 @@ const InterventionRoleplay = () => {
           id: "a", 
           text: "Challenge respectfully: 'Strength isn't determined by gender. Many people of all genders are strong in different ways.'", 
           emoji: "💪",
-          description: "Respectful and educational",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Yell: 'You're wrong!'", 
           emoji: "😠",
-          description: "Aggressive and unhelpful",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Just agree", 
           emoji: "👍",
-          description: "Doesn't address the bias",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const InterventionRoleplay = () => {
           id: "b", 
           text: "Tell them to shut up", 
           emoji: "🔇",
-          description: "Aggressive response",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Say: 'Communication is valuable for everyone, regardless of gender.'", 
           emoji: "🗣️",
-          description: "Challenges the stereotype respectfully",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Laugh it off", 
           emoji: "😄",
-          description: "Doesn't address the issue",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const InterventionRoleplay = () => {
           id: "a", 
           text: "Explain: 'Household responsibilities should be shared by everyone, regardless of gender.'", 
           emoji: "🧹",
-          description: "Promotes equality",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Agree with them", 
           emoji: "✅",
-          description: "Reinforces the bias",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ignore the comment", 
           emoji: "🙈",
-          description: "Doesn't challenge the bias",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const InterventionRoleplay = () => {
           id: "b", 
           text: "Agree: 'Yes, they are'", 
           emoji: "👍",
-          description: "Reinforces the bias",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Argue aggressively", 
           emoji: "👊",
-          description: "Escalates conflict",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Respond: 'Emotions are human, and everyone expresses them differently regardless of gender.'", 
           emoji: "😢",
-          description: "Challenges bias respectfully",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const InterventionRoleplay = () => {
           id: "a", 
           text: "Say: 'Colors are for everyone. People can like any color regardless of gender.'", 
           emoji: "🎨",
-          description: "Challenges the stereotype",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Agree it's standard", 
           emoji: "📐",
-          description: "Reinforces the norm",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Just nod", 
           emoji: "👤",
-          description: "Doesn't challenge it",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const InterventionRoleplay = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

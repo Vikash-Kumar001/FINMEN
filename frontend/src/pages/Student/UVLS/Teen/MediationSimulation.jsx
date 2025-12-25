@@ -56,21 +56,18 @@ const MediationSimulation = () => {
           id: "a", 
           text: "Listen to both sides and find a compromise", 
           emoji: "🪑",
-          description: "Builds consensus through understanding",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Decide for them without listening", 
           emoji: "👑",
-          description: "Not mediation, that's dictating",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ignore the conflict", 
           emoji: "🙈",
-          description: "Doesn't resolve the issue",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const MediationSimulation = () => {
           id: "b", 
           text: "Assign roles randomly", 
           emoji: "🎲",
-          description: "Doesn't consider preferences",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Discuss preferences and vote on roles", 
           emoji: "👥",
-          description: "Consensus-building approach",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Let one leader decide everything", 
           emoji: "👑",
-          description: "Not collaborative mediation",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const MediationSimulation = () => {
           id: "a", 
           text: "Agree on rules together and compromise on changes", 
           emoji: "⚽",
-          description: "Consensus-building",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "One person dictates all rules", 
           emoji: "📢",
-          description: "Not mediation",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Stop playing completely", 
           emoji: "🚫",
-          description: "Doesn't solve the dispute",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const MediationSimulation = () => {
           id: "b", 
           text: "Fixed seats for everyone", 
           emoji: "🔒",
-          description: "Too rigid, doesn't address concerns",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Fight for seats", 
           emoji: "⚔️",
-          description: "Not constructive",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Rotate seats or make group decision", 
           emoji: "🍽️",
-          description: "Consensus-building solution",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const MediationSimulation = () => {
           id: "a", 
           text: "Prioritize needs together and vote on budget", 
           emoji: "💰",
-          description: "Collaborative consensus-building",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "One person decides everything", 
           emoji: "👑",
-          description: "Not mediation",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No budget at all", 
           emoji: "🚫",
-          description: "Doesn't solve the allocation issue",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const MediationSimulation = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

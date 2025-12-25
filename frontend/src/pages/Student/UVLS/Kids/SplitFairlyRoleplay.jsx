@@ -80,18 +80,19 @@ const SplitFairlyRoleplay = () => {
           emoji: "🤔", 
           isCorrect: false 
         },
-        { 
-          id: "a", 
-          text: "3 each", 
-          emoji: "🍬", 
-          isCorrect: true 
-        },
+       
         { 
           id: "c", 
           text: "Throw half away", 
           emoji: "🗑️", 
           isCorrect: false 
-        }
+        },
+         { 
+          id: "a", 
+          text: "3 each", 
+          emoji: "🍬", 
+          isCorrect: true 
+        },
       ]
     },
     {
@@ -123,17 +124,18 @@ const SplitFairlyRoleplay = () => {
       text: "You have 10 minutes of playtime to share with a friend. How should you split it?",
       options: [
         { 
-          id: "b", 
-          text: "7 and 3 minutes", 
-          emoji: "😠", 
-          isCorrect: false 
-        },
-        { 
           id: "a", 
           text: "5 minutes each", 
           emoji: "⏰", 
           isCorrect: true 
         },
+        { 
+          id: "b", 
+          text: "7 and 3 minutes", 
+          emoji: "😠", 
+          isCorrect: false 
+        },
+        
         { 
           id: "c", 
           text: "No playtime for anyone", 

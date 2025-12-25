@@ -1,14 +1,22 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const TypesMatch = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-34";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-34");
+  const gameId = gameData?.id || "uvls-kids-34";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for TypesMatch, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
@@ -23,26 +31,24 @@ const TypesMatch = () => {
       id: 1,
       text: "What type of bullying is 'Pushing'?",
       emoji: "👊",
+      correct: "Physical",
       options: [
         { 
           id: "physical", 
           text: "Physical", 
           emoji: "💪", 
-          description: "Harming someone's body",
           isCorrect: true 
         },
         { 
           id: "verbal", 
           text: "Verbal", 
           emoji: "🗣️", 
-          description: "Using words to hurt",
           isCorrect: false 
         },
         { 
           id: "cyber", 
           text: "Cyber", 
           emoji: "💻", 
-          description: "Bullying online",
           isCorrect: false 
         }
       ]
@@ -51,26 +57,24 @@ const TypesMatch = () => {
       id: 2,
       text: "What type of bullying is 'Name-calling'?",
       emoji: "😢",
+      correct: "Verbal",
       options: [
         { 
           id: "physical", 
           text: "Physical", 
           emoji: "💪", 
-          description: "Harming someone's body",
           isCorrect: false 
         },
         { 
           id: "verbal", 
           text: "Verbal", 
           emoji: "🗣️", 
-          description: "Using words to hurt",
           isCorrect: true 
         },
         { 
           id: "cyber", 
           text: "Cyber", 
           emoji: "💻", 
-          description: "Bullying online",
           isCorrect: false 
         }
       ]
@@ -79,26 +83,24 @@ const TypesMatch = () => {
       id: 3,
       text: "What type of bullying is 'Mean texts'?",
       emoji: "📱",
+      correct: "Cyber",
       options: [
         { 
           id: "physical", 
           text: "Physical", 
           emoji: "💪", 
-          description: "Harming someone's body",
           isCorrect: false 
         },
         { 
           id: "verbal", 
           text: "Verbal", 
           emoji: "🗣️", 
-          description: "Using words to hurt",
           isCorrect: false 
         },
         { 
           id: "cyber", 
           text: "Cyber", 
           emoji: "💻", 
-          description: "Bullying online",
           isCorrect: true 
         }
       ]
@@ -107,26 +109,24 @@ const TypesMatch = () => {
       id: 4,
       text: "What type of bullying is 'Hitting'?",
       emoji: "👊",
+      correct: "Physical",
       options: [
         { 
           id: "physical", 
           text: "Physical", 
           emoji: "💪", 
-          description: "Harming someone's body",
           isCorrect: true 
         },
         { 
           id: "verbal", 
           text: "Verbal", 
           emoji: "🗣️", 
-          description: "Using words to hurt",
           isCorrect: false 
         },
         { 
           id: "cyber", 
           text: "Cyber", 
           emoji: "💻", 
-          description: "Bullying online",
           isCorrect: false 
         }
       ]
@@ -135,26 +135,24 @@ const TypesMatch = () => {
       id: 5,
       text: "What type of bullying is 'Online rumors'?",
       emoji: "💻",
+      correct: "Cyber",
       options: [
         { 
           id: "physical", 
           text: "Physical", 
           emoji: "💪", 
-          description: "Harming someone's body",
           isCorrect: false 
         },
         { 
           id: "cyber", 
           text: "Cyber", 
           emoji: "💻", 
-          description: "Bullying online",
           isCorrect: true 
         },
         { 
           id: "verbal", 
           text: "Verbal", 
           emoji: "🗣️", 
-          description: "Using words to hurt",
           isCorrect: false 
         }
       ]
@@ -194,14 +192,12 @@ const TypesMatch = () => {
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
+  // Removed handleNext function as it's not needed for this game structure
 
   return (
     <GameShell
       title="Types Match"
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -215,12 +211,11 @@ const TypesMatch = () => {
       showAnswerConfetti={showAnswerConfetti}
       gameId={gameId}
       gameType="uvls"
-      onNext={handleNext}
-      nextEnabled={showResult && score >= 3}
+      // Removed onNext and nextEnabled props as they're not needed for this game structure
     >
-      <div className="space-y-8 max-w-2xl mx-auto">
+      <div className="space-y-8">
         {!showResult && questions[currentQuestion] ? (
-          <div>
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
@@ -232,26 +227,23 @@ const TypesMatch = () => {
                 <h3 className="text-white text-xl font-bold">{questions[currentQuestion].text}</h3>
               </div>
               
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {questions[currentQuestion].options.map((option) => (
                   <button
                     key={option.id}
                     onClick={() => handleAnswer(option.isCorrect)}
                     disabled={answered}
-                    className={`w-full text-left p-4 rounded-xl transition-all transform ${
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
                       answered
                         ? option.isCorrect
                           ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
                           : "bg-red-500/20 border-2 border-red-400 opacity-75"
-                        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
                     } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">{option.emoji}</span>
-                      <div className="flex-1">
-                        <div className="font-semibold text-lg">{option.text}</div>
-                        <div className="text-sm opacity-90">{option.description}</div>
-                      </div>
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
                     </div>
                   </button>
                 ))}
@@ -263,7 +255,7 @@ const TypesMatch = () => {
             {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Type Master!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Bullying Type Expert!</h3>
                 <p className="text-white/90 text-lg mb-4">
                   You got {score} out of {questions.length} correct!
                   You understand different types of bullying!
@@ -278,7 +270,7 @@ const TypesMatch = () => {
             ) : (
               <div>
                 <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Match Better!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
                   You got {score} out of {questions.length} correct.
                   Keep learning about different types of bullying!

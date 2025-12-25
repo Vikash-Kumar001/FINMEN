@@ -38,8 +38,8 @@ const ReflexDailyHabit = () => {
       id: 1,
       question: "What is a good daily habit for mental health?",
       options: [
-        { text: "Read books regularly", isCorrect: true, emoji: "📚" },
         { text: "Stay up late every night", isCorrect: false, emoji: "😴" },
+        { text: "Read books regularly", isCorrect: true, emoji: "📚" },
         { text: "Skip breakfast often", isCorrect: false, emoji: "🥪" },
         { text: "Avoid all social contact", isCorrect: false, emoji: "😶" }
       ]
@@ -58,19 +58,19 @@ const ReflexDailyHabit = () => {
       id: 3,
       question: "What habit improves sleep quality?",
       options: [
-        { text: "Go to bed early", isCorrect: true, emoji: "😴" },
         { text: "Use phone before sleep", isCorrect: false, emoji: "📱" },
         { text: "Drink caffeine late", isCorrect: false, emoji: "☕" },
-        { text: "Skip bedtime routine", isCorrect: false, emoji: "⏰" }
+        { text: "Skip bedtime routine", isCorrect: false, emoji: "⏰" },
+        { text: "Go to bed early", isCorrect: true, emoji: "😴" },
       ]
     },
     {
       id: 4,
       question: "Which habit supports brain function?",
       options: [
-        { text: "Drink plenty of water", isCorrect: true, emoji: "💧" },
         { text: "Dehydration regularly", isCorrect: false, emoji: "🏜️" },
         { text: "Skip meals often", isCorrect: false, emoji: "🍽️" },
+        { text: "Drink plenty of water", isCorrect: true, emoji: "💧" },
         { text: "Procrastinate constantly", isCorrect: false, emoji: "⏳" }
       ]
     },

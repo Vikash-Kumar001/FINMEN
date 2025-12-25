@@ -1,176 +1,243 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const PublicSpeakingPrep = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-68";
-  const gameData = getGameDataById(gameId);
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-teen-68");
+  const gameId = gameData?.id || "uvls-teen-68";
   
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for PublicSpeakingPrep, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getUvlsTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answer, setAnswer] = useState("");
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      text: "Draft a 60-second opening for a speech about a topic you care about.",
-      ideal: "Include a hook, main point, and preview",
-      minLength: 100
+      text: "What is the best approach for a 60-second speech opening?",
+      options: [
+        
+        { 
+          id: "b", 
+          text: "Start with your conclusion", 
+          emoji: "🔚", 
+          description: "This is confusing for the audience",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Include a hook, main point, and preview", 
+          emoji: "🎤", 
+          description: "This structure captures attention and sets expectations",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Skip the preview", 
+          emoji: "❓", 
+          description: "The preview helps the audience follow your speech",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      text: "Write the main body paragraph (2-3 sentences) with supporting evidence.",
-      ideal: "Use facts, examples, or personal stories",
-      minLength: 80
+      text: "What should be included in the main body paragraph?",
+      options: [
+        { 
+          id: "a", 
+          text: "Use facts, examples, or personal stories", 
+          emoji: "📊", 
+          description: "These provide supporting evidence for your points",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Just state your opinion", 
+          emoji: "💭", 
+          description: "Opinions need to be supported with evidence",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Skip supporting details", 
+          emoji: "🚫", 
+          description: "Supporting details strengthen your argument",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      text: "Write a compelling closing statement that calls for action.",
-      ideal: "Summarize key points and inspire action",
-      minLength: 60
+      text: "What makes a compelling closing statement?",
+      options: [
+        
+        { 
+          id: "b", 
+          text: "Introduce new information", 
+          emoji: "🆕", 
+          description: "This confuses the audience at the end",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "End abruptly without summary", 
+          emoji: "💨", 
+          description: "The audience needs closure and key takeaways",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Summarize key points and inspire action", 
+          emoji: "✨", 
+          description: "This reinforces your message and motivates the audience",
+          isCorrect: true
+        },
+      ]
     },
     {
       id: 4,
-      text: "Write a transition sentence connecting your opening to your main point.",
-      ideal: "Smoothly connect ideas",
-      minLength: 40
+      text: "What is the purpose of a transition sentence?",
+      options: [
+       
+        { 
+          id: "b", 
+          text: "Introduce a completely different topic", 
+          emoji: "🔀", 
+          description: "This disrupts the flow of your speech",
+          isCorrect: false
+        },
+         { 
+          id: "a", 
+          text: "Smoothly connect ideas", 
+          emoji: "🔗", 
+          description: "Transitions help the audience follow your logic",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "End the speech", 
+          emoji: "⏹️", 
+          description: "Transitions connect, not end, sections",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "Write a memorable conclusion that reinforces your message.",
-      ideal: "Leave a lasting impression",
-      minLength: 50
+      text: "What makes a memorable conclusion?",
+      options: [
+        { 
+          id: "a", 
+          text: "Leave a lasting impression", 
+          emoji: "🎯", 
+          description: "A strong conclusion reinforces your message",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Apologize for your mistakes", 
+          emoji: "🙇", 
+          description: "This undermines your credibility",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Thank the audience briefly", 
+          emoji: "🙏", 
+          description: "While polite, this doesn't reinforce your message",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleSubmit = () => {
-    if (answered || answer.trim() === "") return;
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentQuestionData = questions[currentQuestion];
-    const hasStructure = answer.trim().length >= currentQuestionData.minLength;
-    
-    if (hasStructure) {
+    if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setAnswer("");
-        setAnswered(false);
-        resetFeedback();
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setLevelCompleted(true);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    }, hasStructure ? 1000 : 800);
+    }, 500);
   };
 
   const currentQuestionData = questions[currentQuestion];
-  const finalScore = score;
 
   return (
     <GameShell
       title="Public Speaking Prep"
-      subtitle={levelCompleted ? "Prep Complete!" : `Step ${currentQuestion + 1} of ${questions.length}: Draft your speech`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="uvls"
-      showGameOver={levelCompleted}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
       maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!levelCompleted && currentQuestionData ? (
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Step {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
               
-              <h3 className="text-white text-xl md:text-2xl font-bold mb-4 text-center">
+              <p className="text-white text-lg mb-6">
                 {currentQuestionData.text}
-              </h3>
-              
-              <p className="text-white/70 text-sm mb-4 text-center">
-                💡 Tip: {currentQuestionData.ideal}
               </p>
               
-              <textarea
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                className="w-full h-40 p-4 bg-white/20 border-2 border-white/40 rounded-xl text-white placeholder-white/50"
-                placeholder="Write your response here..."
-                disabled={answered}
-              />
-              
-              <div className="mt-2 text-white/50 text-sm text-center">
-                {answer.trim().length}/{currentQuestionData.minLength} characters minimum
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
               </div>
-              
-              <button
-                onClick={handleSubmit}
-                disabled={answer.trim() === "" || answered}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  answer.trim() !== "" && !answered
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Submit
-              </button>
             </div>
           </div>
         ) : null}

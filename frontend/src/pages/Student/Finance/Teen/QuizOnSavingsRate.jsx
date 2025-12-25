@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -9,18 +9,22 @@ const QuizOnSavingsRate = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-2";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-2");
+  const gameId = gameData?.id || "finance-teens-2";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for QuizOnSavingsRate, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
@@ -161,96 +165,90 @@ const QuizOnSavingsRate = () => {
     }
   ];
 
-  const handleChoice = (selectedChoice) => {
-    const newChoices = [...choices, { 
-      questionId: questions[currentQuestion].id, 
-      choice: selectedChoice,
-      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
-    }];
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
     
-    setChoices(newChoices);
+    setAnswered(true);
+    resetFeedback();
     
-    // If the choice is correct, add coins and show flash/confetti
-    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-    
-    // Move to next question or show results
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, isCorrect ? 1000 : 0); // Delay if correct to show animation
     } else {
-      // Calculate final score
-      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
     setCurrentQuestion(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/student/finance/teen/reflex-smart-saver");
-  };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Quiz on Savings Rate"
-      score={coins}
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp} // Pass if 3 or more correct
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="finance-teens-2"
-      gameType="finance"
-      totalLevels={20}
-      currentLevel={2}
-      showConfetti={showResult && finalScore >= 3}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="finance"
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
               
-              <p className="text-white text-lg mb-6">
-                {getCurrentQuestion().text}
-              </p>
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
               
-              <div className="grid grid-cols-1 gap-4">
-                {getCurrentQuestion().options.map(option => (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => (
                   <button
                     key={option.id}
-                    onClick={() => handleChoice(option.id)}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex items-center">
-                      <div className="text-2xl mr-4">{option.emoji}</div>
-                      <div>
-                        <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                        <p className="text-white/90">{option.description}</p>
-                      </div>
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <span className="text-sm opacity-90">{option.description}</span>
                     </div>
                   </button>
                 ))}
@@ -258,29 +256,29 @@ const QuizOnSavingsRate = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
-            {finalScore >= 3 ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Excellent!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Savings Rate Quiz Star!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You got {finalScore} out of {questions.length} questions correct!
-                  You know how to calculate savings percentages!
+                  You got {score} out of {questions.length} correct!
+                  You're mastering savings rate calculations!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{coins} Coins</span>
+                  <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  You understand the importance of calculating and maintaining a healthy savings rate!
+                  Lesson: Understanding savings rates helps you plan for your financial future!
                 </p>
               </div>
             ) : (
               <div>
-                <div className="text-5xl mb-4">😔</div>
+                <div className="text-5xl mb-4">💪</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You got {finalScore} out of {questions.length} questions correct.
-                  Remember, saving a consistent percentage of your income is key to financial health!
+                  You got {score} out of {questions.length} correct.
+                  Practice makes perfect with savings rate calculations!
                 </p>
                 <button
                   onClick={handleTryAgain}
@@ -289,7 +287,7 @@ const QuizOnSavingsRate = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Try to calculate the percentage of income that is being saved in each scenario.
+                  Tip: Remember to calculate percentages and understand the importance of consistent saving rates!
                 </p>
               </div>
             )}

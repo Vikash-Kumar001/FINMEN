@@ -23,7 +23,7 @@ const CaseResponsePuzzle = () => {
     { id: 1, name: "Friend Seems Withdrawn", emoji: "😔", hint: "Notice someone acting distant or sad" },
     { id: 2, name: "Classmate Shares Problems", emoji: "💬", hint: "Someone opens up about their struggles" },
     { id: 3, name: "Peer Falling Behind", emoji: "📚", hint: "Notice someone struggling academically" },
-    { id: 4, name: "Someone Feels Isolated", emoji: "孤单", hint: "Person feels misunderstood or alone" },
+    { id: 4, name: "Someone Feels Isolated", emoji: "😔", hint: "Person feels misunderstood or alone" },
     { id: 5, name: "Hesitant About Help", emoji: "🤔", hint: "Someone reluctant to seek professional support" }
   ];
 

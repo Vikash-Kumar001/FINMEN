@@ -1,11 +1,12 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
-const QUESTION_TIME = 10; // 10 seconds per question
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const ReflexMemoryBoost = () => {
   const navigate = useNavigate();
@@ -15,47 +16,15 @@ const ReflexMemoryBoost = () => {
   const gameId = "brain-teens-23";
   const gameData = getGameDataById(gameId);
   
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
-  // Find next game path and ID if not provided in location.state
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    // First, try to get from location.state (passed from GameCategoryPage)
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    // Fallback: find next game from game data
-    try {
-      const games = getBrainTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [showResult, setShowResult] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [answered, setAnswered] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
-  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
   const questions = [
     {
@@ -230,77 +199,122 @@ const ReflexMemoryBoost = () => {
     }
   ];
 
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
+    }
+  }, []);
+
   // Timer effect
   useEffect(() => {
-    if (!showResult && !answered && timeLeft > 0) {
-      timerRef.current = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else if (timeLeft === 0 && !answered) {
-      // Time's up, move to next question
-      handleTimeUp();
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     }
+
     return () => {
       if (timerRef.current) {
-        clearTimeout(timerRef.current);
+        clearInterval(timerRef.current);
+        timerRef.current = null;
       }
     };
-  }, [timeLeft, answered, showResult]);
+  }, [gameState, answered, timeLeft, handleTimeUp]);
 
-  // Reset timer when question changes
-  useEffect(() => {
-    if (!showResult) {
-      setTimeLeft(QUESTION_TIME);
-      setAnswered(false);
-      setSelectedOptionId(null);
-    }
-  }, [currentQuestion, showResult]);
-
-  const handleTimeUp = () => {
-    setAnswered(true);
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
     resetFeedback();
-    showCorrectAnswerFeedback(0, false);
-    
-    const isLastQuestion = currentQuestion === questions.length - 1;
-    
-    setTimeout(() => {
-      if (isLastQuestion) {
-        setShowResult(true);
-      } else {
-        setCurrentQuestion(prev => prev + 1);
-      }
-    }, 1500);
   };
 
-  const handleChoice = (option) => {
-    if (answered) return;
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
     
     setAnswered(true);
-    setSelectedOptionId(option.id);
     resetFeedback();
     
-    if (option.isCorrect) {
-      setScore(prev => prev + 1);
+    const isCorrect = option.isCorrect;
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
-    const isLastQuestion = currentQuestion === questions.length - 1;
-    
+
     setTimeout(() => {
-      if (isLastQuestion) {
-        setShowResult(true);
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
       } else {
-        setCurrentQuestion(prev => prev + 1);
+        setGameState("finished");
       }
-    }, 1500);
+    }, 500);
   };
+
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getBrainTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const finalScore = score;
+
+  const currentQuestion = questions[currentRound - 1];
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Reflex Memory Boost game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+    if (gameState === "finished") {
+      console.log(`🎮 Reflex Memory Boost game completed! Score: ${finalScore}/${TOTAL_ROUNDS}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       
       // Update location state with nextGameId for GameOverModal
       if (nextGameId && window.history && window.history.replaceState) {
@@ -311,82 +325,108 @@ const ReflexMemoryBoost = () => {
         }, '');
       }
     }
-  }, [showResult, score, gameId, nextGamePath, nextGameId, questions.length]);
-
-  const currentQuestionData = questions[currentQuestion];
-  const timerColor = timeLeft <= 3 ? 'text-red-400' : timeLeft <= 6 ? 'text-yellow-400' : 'text-green-400';
+  }, [gameState, finalScore, gameId, nextGamePath, nextGameId, TOTAL_ROUNDS]);
 
   return (
     <GameShell
       title="Reflex Memory Boost"
-      score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your memory boost reflexes!` : "Test your memory boost reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      gameId={gameId}
-      gameType="brain"
-      showGameOver={showResult}
-      maxScore={questions.length}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="brain"
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-    >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
-        {!showResult && currentQuestionData ? (
-          <div className="space-y-4 md:space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
-                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
-                <div className="flex items-center gap-4">
-                  <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
-                  <div className={`text-lg md:text-xl font-bold ${timerColor}`}>
-                    ⏱️ {timeLeft}s
-                  </div>
-                </div>
+      nextGameId={nextGameId}>
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">🧠</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Answer questions about memory boost and recall!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.text}
+              </h3>
               
-              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
-                {currentQuestionData.text}
-              </p>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                {currentQuestionData.options.map((option) => {
-                  const isSelected = selectedOptionId === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleChoice(option)}
-                      disabled={answered}
-                      className={`p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
-                        showCorrect
-                          ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
-                          : showIncorrect
-                          ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
-                          : isSelected
-                          ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
-                      } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl md:text-3xl">{option.emoji}</span>
-                        <div className="flex-1">
-                          <div className="text-white font-bold text-sm md:text-base mb-1">{option.text}</div>
-                          <div className="text-white/80 text-xs md:text-sm">{option.description}</div>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        ) : null}
+        )}
+
+        {gameState === "finished" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-6xl mb-4">🎉</div>
+            <h3 className="text-3xl font-bold text-white mb-4">Game Complete!</h3>
+            <p className="text-xl text-white/90 mb-2">Final Score: <span className="font-bold text-yellow-400">{finalScore}/{TOTAL_ROUNDS}</span></p>
+            <p className="text-lg text-white/80 mb-6">
+              {finalScore === TOTAL_ROUNDS ? "Perfect score! Amazing memory boost skills!" : 
+               finalScore >= TOTAL_ROUNDS / 2 ? "Great job! You have good memory boost skills!" : 
+               "Keep practicing to improve your memory boost skills!"}
+            </p>
+            <button
+              onClick={() => {
+                setGameState("ready");
+                setScore(0);
+                setCurrentRound(0);
+                setTimeLeft(ROUND_TIME);
+                setAnswered(false);
+                resetFeedback();
+              }}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-6 rounded-full font-bold transition-all transform hover:scale-105"
+            >
+              Play Again
+            </button>
+          </div>
+        )}
       </div>
     </GameShell>
   );

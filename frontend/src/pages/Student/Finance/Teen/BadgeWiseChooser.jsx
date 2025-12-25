@@ -33,11 +33,7 @@ const BadgeWiseChooser = () => {
       title: "School Supplies Dilemma",
       question: "You need school supplies. Which is the wise choice?",
       options: [
-        { 
-          text: "Basic school supplies (pens, notebooks)", 
-          emoji: "📝", 
-          isCorrect: true
-        },
+        
         { 
           text: "Designer backpack and trendy accessories", 
           emoji: "🛍️", 
@@ -52,7 +48,12 @@ const BadgeWiseChooser = () => {
           text: "Skip buying anything", 
           emoji: "❌", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Basic school supplies (pens, notebooks)", 
+          emoji: "📝", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -114,11 +115,7 @@ const BadgeWiseChooser = () => {
       title: "Study Setup Dilemma",
       question: "You're preparing for an exam. What's the wise choice?",
       options: [
-        { 
-          text: "Quiet study space and textbooks", 
-          emoji: "📚", 
-          isCorrect: true
-        },
+        
         { 
           text: "Noise-canceling headphones and premium desk setup", 
           emoji: "🎧", 
@@ -128,6 +125,11 @@ const BadgeWiseChooser = () => {
           text: "Buy everything premium", 
           emoji: "💎", 
           isCorrect: false
+        },
+        { 
+          text: "Quiet study space and textbooks", 
+          emoji: "📚", 
+          isCorrect: true
         },
         { 
           text: "Study without any materials", 
@@ -141,11 +143,7 @@ const BadgeWiseChooser = () => {
       title: "Clothing Dilemma",
       question: "You need clothing for school. Which is the wise choice?",
       options: [
-        { 
-          text: "Essential clothing for school and weather", 
-          emoji: "👕", 
-          isCorrect: true
-        },
+        
         { 
           text: "Designer clothes and trendy fashion items", 
           emoji: "👔", 
@@ -160,7 +158,12 @@ const BadgeWiseChooser = () => {
           text: "Don't buy any clothes", 
           emoji: "🚫", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Essential clothing for school and weather", 
+          emoji: "👕", 
+          isCorrect: true
+        },
       ]
     }
   ];

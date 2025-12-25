@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const TOTAL_ROUNDS = 5;
 const ROUND_TIME = 10;
@@ -18,30 +17,8 @@ const SelfCheckReflex = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getUvlsTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
+  const nextGamePath = location.state?.nextGamePath || null;
+  const nextGameId = location.state?.nextGameId || null;
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   
@@ -56,52 +33,57 @@ const SelfCheckReflex = () => {
   const questions = [
     {
       id: 1,
-      text: "You notice: Racing heart, sweaty palms, tense muscles. What should you do?",
+      question: "You notice: Racing heart, sweaty palms, tense muscles. What should you do?",
+      correctAnswer: "Practice deep breathing",
       options: [
-        { id: "a", text: "Practice deep breathing", emoji: "🧘", description: "Calms tension cues", isCorrect: true },
-        { id: "b", text: "Ignore the tension", emoji: "🙈", description: "Doesn't address it", isCorrect: false },
-        { id: "c", text: "Panic more", emoji: "😰", description: "Makes it worse", isCorrect: false },
-        { id: "d", text: "Push through it", emoji: "💪", description: "May increase stress", isCorrect: false }
+        { text: "Ignore the tension", isCorrect: false, emoji: "🙈" },
+        { text: "Panic more", isCorrect: false, emoji: "😰" },
+        { text: "Push through it", isCorrect: false, emoji: "💪" },
+        { text: "Practice deep breathing", isCorrect: true, emoji: "🧘" },
       ]
     },
     {
       id: 2,
-      text: "You notice: Steady breathing, relaxed muscles. What should you do?",
+      question: "You notice: Steady breathing, relaxed muscles. What should you do?",
+      correctAnswer: "Maintain calm state with awareness",
       options: [
-        { id: "b", text: "Create tension", emoji: "😠", description: "Not helpful", isCorrect: false },
-        { id: "a", text: "Maintain calm state with awareness", emoji: "😌", description: "Good self-awareness", isCorrect: true },
-        { id: "c", text: "Ignore your body", emoji: "🙈", description: "Misses awareness", isCorrect: false },
-        { id: "d", text: "Worry about future stress", emoji: "😟", description: "Creates unnecessary anxiety", isCorrect: false }
+        { text: "Create tension", isCorrect: false, emoji: "😠" },
+        { text: "Maintain calm state with awareness", isCorrect: true, emoji: "😌" },
+        { text: "Ignore your body", isCorrect: false, emoji: "🙈" },
+        { text: "Worry about future stress", isCorrect: false, emoji: "😟" }
       ]
     },
     {
       id: 3,
-      text: "You notice: Tense shoulders, rapid breathing. What should you do?",
+      question: "You notice: Tense shoulders, rapid breathing. What should you do?",
+      correctAnswer: "Take a break and practice relaxation",
       options: [
-        { id: "a", text: "Take a break and practice relaxation", emoji: "🛑", description: "Addresses tension cues", isCorrect: true },
-        { id: "b", text: "Continue pushing yourself", emoji: "💪", description: "May worsen tension", isCorrect: false },
-        { id: "c", text: "Ignore your body signals", emoji: "🙈", description: "Not self-aware", isCorrect: false },
-        { id: "d", text: "Get angry about feeling tense", emoji: "😠", description: "Escalates the situation", isCorrect: false }
+        { text: "Continue pushing yourself", isCorrect: false, emoji: "💪" },
+        { text: "Ignore your body signals", isCorrect: false, emoji: "🙈" },
+        { text: "Take a break and practice relaxation", isCorrect: true, emoji: "🛑" },
+        { text: "Get angry about feeling tense", isCorrect: false, emoji: "😠" }
       ]
     },
     {
       id: 4,
-      text: "You notice: Balanced breathing, calm muscles. What should you do?",
+      question: "You notice: Balanced breathing, calm muscles. What should you do?",
+      correctAnswer: "Acknowledge the calm and continue mindfully",
       options: [
-        { id: "b", text: "Worry something is wrong", emoji: "😟", description: "Unnecessary anxiety", isCorrect: false },
-        { id: "c", text: "Ignore your calm state", emoji: "😐", description: "Misses positive awareness", isCorrect: false },
-        { id: "a", text: "Acknowledge the calm and continue mindfully", emoji: "😊", description: "Positive self-awareness", isCorrect: true },
-        { id: "d", text: "Create stress to feel productive", emoji: "⚡", description: "Counterproductive", isCorrect: false }
+        { text: "Worry something is wrong", isCorrect: false, emoji: "😟" },
+        { text: "Acknowledge the calm and continue mindfully", isCorrect: true, emoji: "😊" },
+        { text: "Ignore your calm state", isCorrect: false, emoji: "😐" },
+        { text: "Create stress to feel productive", isCorrect: false, emoji: "⚡" }
       ]
     },
     {
       id: 5,
-      text: "You notice: Mixed signals - some tension, some calm. What should you do?",
+      question: "You notice: Mixed signals - some tension, some calm. What should you do?",
+      correctAnswer: "Practice breathing to calm tense areas while maintaining calm",
       options: [
-        { id: "a", text: "Practice breathing to calm tense areas while maintaining calm", emoji: "🔄", description: "Balanced approach", isCorrect: true },
-        { id: "b", text: "Focus only on tension", emoji: "😰", description: "Overlooks calm", isCorrect: false },
-        { id: "c", text: "Ignore everything", emoji: "🙈", description: "No awareness", isCorrect: false },
-        { id: "d", text: "Panic about mixed signals", emoji: "😱", description: "Unhelpful", isCorrect: false }
+        { text: "Practice breathing to calm tense areas while maintaining calm", isCorrect: true, emoji: "🔄" },
+        { text: "Focus only on tension", isCorrect: false, emoji: "😰" },
+        { text: "Ignore everything", isCorrect: false, emoji: "🙈" },
+        { text: "Panic about mixed signals", isCorrect: false, emoji: "😱" }
       ]
     }
   ];
@@ -190,7 +172,7 @@ const SelfCheckReflex = () => {
   return (
     <GameShell
       title="Self-check Reflex"
-      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Tap when tension cues appear!` : "Practice self-awareness!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your self-awareness skills!` : "Test your self-awareness skills!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -204,10 +186,8 @@ const SelfCheckReflex = () => {
       maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="text-center text-white space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+      <div className="text-center text-white space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
             <div className="text-5xl mb-6">🧠</div>
@@ -216,9 +196,12 @@ const SelfCheckReflex = () => {
               Practice recognizing tension cues!<br />
               You have {ROUND_TIME} seconds for each question.
             </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
             <button
               onClick={startGame}
-              className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full text-lg font-bold text-white transition-transform hover:scale-105"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
             >
               Start Game
             </button>
@@ -226,55 +209,37 @@ const SelfCheckReflex = () => {
         )}
 
         {gameState === "playing" && currentQuestion && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Round {currentRound}/{TOTAL_ROUNDS}</span>
-              <span className="text-yellow-400 font-bold text-lg">⏱️ {timeLeft}s</span>
-              <span className="text-white/80">Score: {finalScore}/{TOTAL_ROUNDS}</span>
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
             </div>
-            
-            <p className="text-white text-lg md:text-xl mb-6 text-center">
-              {currentQuestion.text}
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {currentQuestion.options.map(option => {
-                const showCorrect = answered && option.isCorrect;
-                const showIncorrect = answered && !option.isCorrect;
-                
-                return (
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={option.id}
+                    key={index}
                     onClick={() => handleAnswer(option)}
                     disabled={answered}
-                    className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                      showCorrect
-                        ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                        : showIncorrect
-                        ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                    } ${answered ? "cursor-not-allowed" : ""}`}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                    <p className="text-white/90 text-sm">{option.description}</p>
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-
-        {gameState === "finished" && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-5xl mb-4">🎉</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Reflex Test Complete!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              Score: {finalScore} / {TOTAL_ROUNDS}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-4">
-              {finalScore >= 3 ? "Great Self-Awareness!" : "Keep Practicing!"}
-            </p>
           </div>
         )}
       </div>

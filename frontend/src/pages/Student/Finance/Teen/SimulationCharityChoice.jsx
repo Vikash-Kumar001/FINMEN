@@ -49,6 +49,12 @@ const SimulationCharityChoice = () => {
           text: "Save all ₹1000", 
           emoji: "💰", 
           isCorrect: false
+        },
+        { 
+          id: "invest", 
+          text: "Invest all ₹1000", 
+          emoji: "📈", 
+          isCorrect: false
         }
       ]
     },
@@ -74,6 +80,12 @@ const SimulationCharityChoice = () => {
           text: "Donate all ₹500", 
           emoji: "💝", 
           isCorrect: false
+        },
+        { 
+          id: "hoard", 
+          text: "Hoard all money", 
+          emoji: "🪙", 
+          isCorrect: false
         }
       ]
     },
@@ -88,18 +100,25 @@ const SimulationCharityChoice = () => {
           emoji: "🛍️", 
           isCorrect: false
         },
+        
+        { 
+          id: "save-all2", 
+          text: "Save all ₹2000", 
+          emoji: "🏦", 
+          isCorrect: false
+        },
+        { 
+          id: "luxury", 
+          text: "Spend on luxury items", 
+          emoji: "💎", 
+          isCorrect: false
+        },
         { 
           id: "balanced3", 
           text: "Donate ₹400 + Save ₹600 + Spend ₹1000", 
           emoji: "🎯", 
           isCorrect: true
         },
-        { 
-          id: "save-all2", 
-          text: "Save all ₹2000", 
-          emoji: "🏦", 
-          isCorrect: false
-        }
       ]
     },
     {
@@ -124,6 +143,12 @@ const SimulationCharityChoice = () => {
           text: "No donation, save all", 
           emoji: "💾", 
           isCorrect: false
+        },
+        { 
+          id: "borrow", 
+          text: "Borrow money to spend more", 
+          emoji: "💳", 
+          isCorrect: false
         }
       ]
     },
@@ -138,6 +163,13 @@ const SimulationCharityChoice = () => {
           emoji: "🛒", 
           isCorrect: false
         },
+        
+        { 
+          id: "only-donate", 
+          text: "Donate all ₹1500", 
+          emoji: "❤️", 
+          isCorrect: false
+        },
         { 
           id: "balanced5", 
           text: "Donate ₹300 + Save ₹450 + Spend ₹750", 
@@ -145,9 +177,9 @@ const SimulationCharityChoice = () => {
           isCorrect: true
         },
         { 
-          id: "only-donate", 
-          text: "Donate all ₹1500", 
-          emoji: "❤️", 
+          id: "crypto", 
+          text: "Invest in crypto", 
+          emoji: "🪙", 
           isCorrect: false
         }
       ]
@@ -217,7 +249,7 @@ const SimulationCharityChoice = () => {
                 {current.description}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {current.options.map((option) => (
                   <button
                     key={option.id}
@@ -234,7 +266,7 @@ const SimulationCharityChoice = () => {
                     <div className="flex flex-col items-center justify-center gap-3">
                       <span className="text-4xl">{option.emoji}</span>
                       <span className="font-semibold text-lg">{option.text}</span>
-                      <p className="text-sm opacity-90">{option.description}</p>
+
                     </div>
                   </button>
                 ))}

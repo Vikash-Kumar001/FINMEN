@@ -47,6 +47,12 @@ const SimulationChoice1000 = () => {
           text: "Mix FD + Stocks", 
           emoji: "⚖️", 
           isCorrect: true
+        },
+        { 
+          id: "crypto", 
+          text: "All in Crypto", 
+          emoji: "🪙", 
+          isCorrect: false
         }
       ]
     },
@@ -72,6 +78,12 @@ const SimulationChoice1000 = () => {
           id: "save", 
           text: "Save only", 
           emoji: "💰", 
+          isCorrect: false
+        },
+        { 
+          id: "invest-all", 
+          text: "Invest everything", 
+          emoji: "📈", 
           isCorrect: false
         }
       ]
@@ -99,6 +111,12 @@ const SimulationChoice1000 = () => {
           text: "All in FD", 
           emoji: "🏦", 
           isCorrect: false
+        },
+        { 
+          id: "all-stocks", 
+          text: "All in Stocks", 
+          emoji: "📊", 
+          isCorrect: false
         }
       ]
     },
@@ -114,18 +132,25 @@ const SimulationChoice1000 = () => {
           emoji: "🛍️", 
           isCorrect: false
         },
+        
+        { 
+          id: "hide", 
+          text: "Hide at home", 
+          emoji: "🏠", 
+          isCorrect: false
+        },
+        { 
+          id: "mutual", 
+          text: "Mutual Funds only", 
+          emoji: "📈", 
+          isCorrect: false
+        },
         { 
           id: "mix4", 
           text: "Mix Bonds + Stocks", 
           emoji: "🔄", 
           isCorrect: true
         },
-        { 
-          id: "hide", 
-          text: "Hide at home", 
-          emoji: "🏠", 
-          isCorrect: false
-        }
       ]
     },
     {
@@ -150,6 +175,12 @@ const SimulationChoice1000 = () => {
           id: "ignore", 
           text: "Ignore it", 
           emoji: "😴", 
+          isCorrect: false
+        },
+        { 
+          id: "all-bonds", 
+          text: "All in Bonds", 
+          emoji: "📜", 
           isCorrect: false
         }
       ]
@@ -232,7 +263,7 @@ const SimulationChoice1000 = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {scenarios[currentScenario].options.map((option) => (
                   <button
                     key={option.id}

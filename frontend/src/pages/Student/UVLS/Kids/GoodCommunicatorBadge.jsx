@@ -1,10 +1,12 @@
-import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsKidsGames } from '../../../../pages/Games/GameCategories/UVLS/kidGamesData';
 
 const GoodCommunicatorBadge = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -20,65 +22,96 @@ const GoodCommunicatorBadge = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [scenario, setScenario] = useState(0);
-  const [decisions, setDecisions] = useState([]);
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getUvlsKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const scenarios = [
+  const challenges = [
     {
       id: 1,
       title: "Meeting Someone New",
       description: "You meet a new student. How do you communicate?",
-      choices: [
+      question: "You meet a new student. How do you communicate?",
+      options: [
+        
         { 
-          id: "greet", 
-          text: "Greet politely and introduce yourself", 
+          text: "Ignore them - Pretend you don't see them", 
+          emoji: "🙈", 
+          isCorrect: false
+        },
+        { 
+          text: "Laugh at them - Make fun of them", 
+          emoji: "😂", 
+          isCorrect: false
+        },
+        { 
+          text: "Stare at them - Look at them without speaking", 
+          emoji: "👀", 
+          isCorrect: false
+        },
+        { 
+          text: "Greet politely and introduce yourself - Say hello and tell them your name", 
           emoji: "👋", 
-          description: "Say hello and tell them your name",
           isCorrect: true
         },
-        { 
-          id: "ignore", 
-          text: "Ignore them", 
-          emoji: "🙈", 
-          description: "Pretend you don't see them",
-          isCorrect: false
-        },
-        { 
-          id: "laugh", 
-          text: "Laugh at them", 
-          emoji: "😂", 
-          description: "Make fun of them",
-          isCorrect: false
-        }
       ]
     },
     {
       id: 2,
       title: "Friend is Upset",
       description: "Your friend looks upset. How do you communicate?",
-      choices: [
+      question: "Your friend looks upset. How do you communicate?",
+      options: [
         { 
-          id: "ignore", 
-          text: "Ignore their feelings", 
+          text: "Ignore their feelings - Don't ask about it", 
           emoji: "🙈", 
-          description: "Don't ask about it",
           isCorrect: false
         },
         { 
-          id: "listen", 
-          text: "Listen and ask what's wrong", 
+          text: "Listen and ask what's wrong - Show you care and want to help", 
           emoji: "👂", 
-          description: "Show you care and want to help",
           isCorrect: true
         },
         { 
-          id: "joke", 
-          text: "Make jokes", 
+          text: "Make jokes - Try to make them laugh", 
           emoji: "😄", 
-          description: "Try to make them laugh",
+          isCorrect: false
+        },
+        { 
+          text: "Tell them to get over it - Say they're overreacting", 
+          emoji: "🙄", 
           isCorrect: false
         }
       ]
@@ -87,27 +120,27 @@ const GoodCommunicatorBadge = () => {
       id: 3,
       title: "Asking for Help",
       description: "You need help with homework. How do you ask?",
-      choices: [
+      question: "You need help with homework. How do you ask?",
+      options: [
         { 
-          id: "demand", 
-          text: "Demand help", 
+          text: "Demand help - Tell them they must help", 
           emoji: "😤", 
-          description: "Tell them they must help",
           isCorrect: false
         },
         { 
-          id: "ignore", 
-          text: "Don't ask", 
+          text: "Don't ask - Try to figure it out alone", 
           emoji: "🙈", 
-          description: "Try to figure it out alone",
           isCorrect: false
         },
         { 
-          id: "ask", 
-          text: "Ask clearly and politely", 
+          text: "Ask clearly and politely - Explain what you need help with", 
           emoji: "🙋", 
-          description: "Explain what you need help with",
           isCorrect: true
+        },
+        { 
+          text: "Whisper quietly - Mumble your request", 
+          emoji: "🤫", 
+          isCorrect: false
         }
       ]
     },
@@ -115,26 +148,27 @@ const GoodCommunicatorBadge = () => {
       id: 4,
       title: "Disagreement",
       description: "You disagree with a friend. How do you communicate?",
-      choices: [
+      question: "You disagree with a friend. How do you communicate?",
+      options: [
         { 
-          id: "yell", 
-          text: "Yell at them", 
-          emoji: "😠", 
-          description: "Shout to make your point",
-          isCorrect: false
-        },
-        { 
-          id: "respectful", 
-          text: "Share your view respectfully", 
+          text: "Share your view respectfully - Explain your opinion without being mean", 
           emoji: "💬", 
-          description: "Explain your opinion without being mean",
           isCorrect: true
         },
         { 
-          id: "ignore", 
-          text: "Stop talking to them", 
+          text: "Yell at them - Shout to make your point", 
+          emoji: "😠", 
+          isCorrect: false
+        },
+        
+        { 
+          text: "Stop talking to them - Give them the silent treatment", 
           emoji: "🙈", 
-          description: "Give them the silent treatment",
+          isCorrect: false
+        },
+        { 
+          text: "Interrupt them constantly - Don't let them finish speaking", 
+          emoji: "🗣️", 
           isCorrect: false
         }
       ]
@@ -143,110 +177,166 @@ const GoodCommunicatorBadge = () => {
       id: 5,
       title: "Giving Feedback",
       description: "A friend asks for your opinion. How do you respond?",
-      choices: [
+      question: "A friend asks for your opinion. How do you respond?",
+      options: [
         { 
-          id: "mean", 
-          text: "Be mean and critical", 
+          text: "Be mean and critical - Point out only bad things", 
           emoji: "😠", 
-          description: "Point out only bad things",
           isCorrect: false
         },
         { 
-          id: "lie", 
-          text: "Lie to make them happy", 
+          text: "Lie to make them happy - Say everything is perfect", 
           emoji: "😊", 
-          description: "Say everything is perfect",
           isCorrect: false
         },
         { 
-          id: "kind", 
-          text: "Give kind, helpful feedback", 
+          text: "Give kind, helpful feedback - Be honest but gentle", 
           emoji: "💝", 
-          description: "Be honest but gentle",
           isCorrect: true
+        },
+        { 
+          text: "Avoid giving any feedback - Don't say anything at all", 
+          emoji: "🤐", 
+          isCorrect: false
         }
       ]
     }
   ];
 
-  const handleDecision = (selectedChoice) => {
-    const newDecisions = [...decisions, { 
-      scenarioId: scenarios[scenario].id, 
-      choice: selectedChoice,
-      isCorrect: scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect
-    }];
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
-    setDecisions(newDecisions);
+    setAnswered(true);
+    resetFeedback();
     
-    // If the choice is correct, show flash/confetti and update score
-    const isCorrect = scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setFinalScore(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
-    // Move to next scenario or show results
-    if (scenario < scenarios.length - 1) {
-      setTimeout(() => {
-        setScenario(prev => prev + 1);
-      }, isCorrect ? 1000 : 800);
-    } else {
-      setTimeout(() => {
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
         setShowResult(true);
-      }, isCorrect ? 1000 : 800);
-    }
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
-  const getCurrentScenario = () => scenarios[scenario];
+  const currentChallenge = challenges[challenge];
 
   return (
     <GameShell
       title="Badge: Good Communicator"
-      subtitle={showResult ? "Quiz Complete!" : `Scenario ${scenario + 1} of ${scenarios.length}`}
-      showGameOver={showResult}
-      score={finalScore}
-      gameId={gameId}
-      gameType="uvls"
-      totalLevels={scenarios.length}
-      maxScore={scenarios.length}
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      currentLevel={scenario + 1}
-      showConfetti={showResult && finalScore === 5}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="uvls"
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/uvls/kids"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
       <div className="space-y-8">
-        {!showResult && getCurrentScenario() ? (
+        {!showResult && currentChallenge ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Scenario {scenario + 1}/{scenarios.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{scenarios.length}</span>
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
               
-              <h3 className="text-xl font-bold text-white mb-2">{getCurrentScenario().title}</h3>
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
               <p className="text-white text-lg mb-6">
-                {getCurrentScenario().description}
+                {currentChallenge.question}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getCurrentScenario().choices.map(choice => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, index) => (
                   <button
-                    key={choice.id}
-                    onClick={() => handleDecision(choice.id)}
-                    className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                    key={index}
+                    onClick={() => {
+                      setSelectedAnswer(index);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === index
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-2xl mb-2">{choice.emoji}</div>
-                    <h4 className="font-bold text-xl mb-2">{choice.text}</h4>
-                    <p className="text-white/90">{choice.description}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Good Communicator Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} correct!
+                  You show great communication skills!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Being a good communicator means greeting people politely, listening when friends are upset, asking for help respectfully, sharing disagreements respectfully, and giving kind, helpful feedback. You've shown you can communicate well!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} correct.
+                  Remember: Good communication is important for building relationships!
+                </p>
+                <button
+                  onClick={() => {
+                    setShowResult(false);
+                    setChallenge(0);
+                    setScore(0);
+                    setAnswered(false);
+                    setSelectedAnswer(null);
+                    resetFeedback();
+                  }}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Always be respectful, listen actively, and express yourself clearly and kindly!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

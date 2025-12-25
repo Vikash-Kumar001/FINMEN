@@ -547,7 +547,7 @@ export const getBrainKidsGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["brain-kids-38"] || false,
           isSpecial: true,
-          path: "/student/brain/kids/sports-story",
+          path: "/student/brain/kids/sports",
           index: 37,
         },
         {

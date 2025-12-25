@@ -1,10 +1,37 @@
-import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getFinanceTeenGames } from "../../../../pages/Games/GameCategories/Finance/teenGamesData";
 
 const PuzzleEntrepreneurs = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getFinanceTeenGames({});
+      const currentGame = games.find(g => g.id === "finance-teens-154");
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state]);
 
   // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
   const coinsPerLevel = 1;
@@ -118,15 +145,10 @@ const PuzzleEntrepreneurs = () => {
     return match ? match.isCorrect : null;
   };
 
-  const handleNext = () => {
-    navigate("/games/finance/teens");
-  };
-
   return (
     <GameShell
       title="Puzzle: Entrepreneurs"
       subtitle={gameFinished ? "Puzzle Complete!" : `Match Entrepreneurs with Fields (${matches.length}/${entrepreneurs.length} matched)`}
-      onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={score}
@@ -137,11 +159,13 @@ const PuzzleEntrepreneurs = () => {
       showConfetti={gameFinished && score === entrepreneurs.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/finance/teens"
+      backPath="/games/financial-literacy/teens"
       maxScore={entrepreneurs.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
       <div className="space-y-8 max-w-4xl mx-auto">
         {!gameFinished ? (

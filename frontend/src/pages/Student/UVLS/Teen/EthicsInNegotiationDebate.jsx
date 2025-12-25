@@ -56,21 +56,18 @@ const EthicsInNegotiationDebate = () => {
           id: "a", 
           text: "Context matters - small omissions may be acceptable, but harmful lies are wrong", 
           emoji: "⚖️",
-          description: "Nuanced ethical consideration",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Lying is always wrong, no exceptions", 
           emoji: "❌",
-          description: "Too absolute, lacks nuance",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Lying is always okay in negotiations", 
           emoji: "🤥",
-          description: "Too permissive, lacks ethics",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const EthicsInNegotiationDebate = () => {
           id: "b", 
           text: "Never compromise on principles", 
           emoji: "🚫",
-          description: "Too rigid, lacks flexibility",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Balance both - compromise on means but hold core values", 
           emoji: "⚖️",
-          description: "Nuanced and balanced",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Always compromise, principles don't matter", 
           emoji: "🤷",
-          description: "Too permissive",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const EthicsInNegotiationDebate = () => {
           id: "a", 
           text: "Depends on context - harmless strategic positioning vs deceptive manipulation", 
           emoji: "🃏",
-          description: "Contextual ethical analysis",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Bluffing is never ethical", 
           emoji: "❌",
-          description: "Too absolute",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Bluffing is always fine", 
           emoji: "✅",
-          description: "Lacks ethical consideration",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const EthicsInNegotiationDebate = () => {
           id: "b", 
           text: "Exploit your power advantage fully", 
           emoji: "💪",
-          description: "Unethical use of power",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ignore power differences completely", 
           emoji: "🙈",
-          description: "Unrealistic and naive",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Acknowledge imbalance and seek fair outcomes", 
           emoji: "🤝",
-          description: "Ethical and realistic",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const EthicsInNegotiationDebate = () => {
           id: "a", 
           text: "Strive for win-win but recognize it's not always achievable", 
           emoji: "🎯",
-          description: "Realistic and ethical",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Win-win is never possible, always win-lose", 
           emoji: "⚔️",
-          description: "Too pessimistic",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Win-win is always possible if you try hard enough", 
           emoji: "✨",
-          description: "Unrealistic",
           isCorrect: false
         }
       ]
@@ -296,7 +281,6 @@ const EthicsInNegotiationDebate = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

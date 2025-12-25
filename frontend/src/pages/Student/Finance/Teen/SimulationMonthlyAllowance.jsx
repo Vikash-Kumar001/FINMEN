@@ -28,7 +28,7 @@ const SimulationMonthlyAllowance = () => {
       description: "You receive ₹1000 as monthly allowance. What's the best approach?",
       amount: 1000,
       options: [
-       
+              
         { 
           id: "spend-all", 
           text: "Spend all on wants", 
@@ -45,6 +45,12 @@ const SimulationMonthlyAllowance = () => {
           id: "save-all", 
           text: "Save everything", 
           emoji: "💰", 
+          isCorrect: false
+        },
+        { 
+          id: "random", 
+          text: "Spend randomly", 
+          emoji: "🎲", 
           isCorrect: false
         }
       ]
@@ -72,6 +78,12 @@ const SimulationMonthlyAllowance = () => {
           text: "Ignore and forget", 
           emoji: "😴", 
           isCorrect: false
+        },
+        { 
+          id: "invest-all", 
+          text: "Invest everything", 
+          emoji: "📈", 
+          isCorrect: false
         }
       ]
     },
@@ -81,12 +93,7 @@ const SimulationMonthlyAllowance = () => {
       description: "You receive ₹2000 as scholarship. What's the wisest choice?",
       amount: 2000,
       options: [
-        { 
-          id: "invest-in-self", 
-          text: "Invest in education first", 
-          emoji: "🎓", 
-          isCorrect: true
-        },
+       
         { 
           id: "vacation", 
           text: "Fun vacation trip", 
@@ -98,7 +105,19 @@ const SimulationMonthlyAllowance = () => {
           text: "Hide under mattress", 
           emoji: "🛏️", 
           isCorrect: false
-        }
+        },
+        { 
+          id: "donate", 
+          text: "Donate to charity", 
+          emoji: "💝", 
+          isCorrect: false
+        },
+         { 
+          id: "invest-in-self", 
+          text: "Invest in education first", 
+          emoji: "🎓", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -126,6 +145,12 @@ const SimulationMonthlyAllowance = () => {
           emoji: "📅", 
           isCorrect: true
         },
+        { 
+          id: "share", 
+          text: "Share with friends", 
+          emoji: "🤝", 
+          isCorrect: false
+        }
       ]
     },
     {
@@ -151,6 +176,12 @@ const SimulationMonthlyAllowance = () => {
           id: "impulse", 
           text: "Impulse buying", 
           emoji: "🛒", 
+          isCorrect: false
+        },
+        { 
+          id: "save-all2", 
+          text: "Save all earnings", 
+          emoji: "💰", 
           isCorrect: false
         }
       ]
@@ -235,7 +266,7 @@ const SimulationMonthlyAllowance = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {current.options.map((option) => (
                   <button
                     key={option.id}

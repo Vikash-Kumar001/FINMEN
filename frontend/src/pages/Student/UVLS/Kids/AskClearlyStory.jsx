@@ -32,21 +32,19 @@ const AskClearlyStory = () => {
           id: "a", 
           text: "Can you help me please?", 
           emoji: "🧩", 
-          description: "Ask politely and clearly",
+         
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Help!", 
           emoji: "😠", 
-          description: "Shout without details",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "What?", 
           emoji: "🤔", 
-          description: "Unclear question",
           isCorrect: false
         }
       ]
@@ -59,21 +57,18 @@ const AskClearlyStory = () => {
           id: "b", 
           text: "Give me!", 
           emoji: "🤲", 
-          description: "Demand rudely",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "May I borrow your toy?", 
           emoji: "🧸", 
-          description: "Ask politely and clearly",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Mine now.", 
           emoji: "😈", 
-          description: "Claim without asking",
           isCorrect: false
         }
       ]
@@ -86,21 +81,18 @@ const AskClearlyStory = () => {
           id: "b", 
           text: "Thirsty!", 
           emoji: "🥵", 
-          description: "Just state the problem",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Now!", 
           emoji: "⏰", 
-          description: "Demand without asking",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Can I have water please?", 
           emoji: "💧", 
-          description: "Ask clearly and politely",
           isCorrect: true
         }
       ]
@@ -113,21 +105,18 @@ const AskClearlyStory = () => {
           id: "b", 
           text: "Huh?", 
           emoji: "😕", 
-          description: "Unclear response",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Can you explain again?", 
           emoji: "📖", 
-          description: "Ask clearly for explanation",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Tell me!", 
           emoji: "🗣️", 
-          description: "Demand without politeness",
           isCorrect: false
         }
       ]
@@ -140,21 +129,18 @@ const AskClearlyStory = () => {
           id: "b", 
           text: "Outside!", 
           emoji: "🏃", 
-          description: "Just state what you want",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Bored inside.", 
           emoji: "😴", 
-          description: "Complain without asking",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "May we play outside?", 
           emoji: "🌳", 
-          description: "Ask politely and clearly",
           isCorrect: true
         }
       ]

@@ -81,22 +81,22 @@ const SleeppQuiz = () => {
       id: 3,
       text: "What happens if teens don't get enough sleep?",
       choices: [
-        { id: 'a', text: 'Poor concentration, mood issues, and health problems' },
-        { id: 'b', text: 'Better performance and energy' },
-        { id: 'c', text: 'No negative effects' }
+        { id: 'a', text: 'Better performance and energy' },
+        { id: 'b', text: 'No negative effects' },
+        { id: 'c', text: 'Poor concentration, mood issues, and health problems' },
       ],
-      correct: 'a',
+      correct: 'c',
       explanation: 'Insufficient sleep in teens leads to poor concentration, mood problems, weakened immune system, and health issues!'
     },
     {
       id: 4,
       text: "What's the best time for teens to go to sleep?",
       choices: [
-        { id: 'a', text: 'Consistent bedtime, 9-11 PM for 8-10 hours' },
-        { id: 'b', text: 'After midnight is fine' },
+        { id: 'a', text: 'After midnight is fine' },
+        { id: 'b', text: 'Consistent bedtime, 9-11 PM for 8-10 hours' },
         { id: 'c', text: 'Sleep time doesn\'t matter' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'A consistent bedtime between 9-11 PM helps teens get the recommended 8-10 hours of sleep for optimal health!'
     },
     {

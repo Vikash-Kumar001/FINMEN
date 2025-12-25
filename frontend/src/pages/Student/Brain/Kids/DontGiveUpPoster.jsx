@@ -31,7 +31,7 @@ const DontGiveUpPoster = () => {
     {
       question: 'Which poster best shows "Failure = Step to Success"?',
       choices: [
-        { text: "Poster showing failure leads to learning and success", correct: true, emoji: "📈💪" },
+        { text: "Poster showing failure leads to learning and success", correct: true, emoji: "📈" },
         { text: "Poster showing failure is the end", correct: false, emoji: "🛑" },
         { text: "Poster showing only success matters", correct: false, emoji: "🏆" }
       ]
@@ -40,14 +40,14 @@ const DontGiveUpPoster = () => {
       question: 'Which poster best shows "Don\'t Give Up"?',
       choices: [
         { text: "Poster showing quitting easily", correct: false, emoji: "🏳️" },
-        { text: "Poster showing persistence and trying again", correct: true, emoji: "💪🔄" },
+        { text: "Poster showing persistence and trying again", correct: true, emoji: "🔄" },
         { text: "Poster showing avoiding challenges", correct: false, emoji: "🚶" }
       ]
     },
     {
       question: 'Which poster best shows "Keep Trying"?',
       choices: [
-        { text: "Poster showing never giving up and practicing", correct: true, emoji: "🎯✨" },
+        { text: "Poster showing never giving up and practicing", correct: true, emoji: "🎯" },
         { text: "Poster showing giving up after one try", correct: false, emoji: "😞" },
         { text: "Poster showing only winning matters", correct: false, emoji: "👑" }
       ]
@@ -56,14 +56,14 @@ const DontGiveUpPoster = () => {
       question: 'Which poster best shows "Learn from Mistakes"?',
       choices: [
         { text: "Poster showing ignoring mistakes", correct: false, emoji: "🙈" },
-        { text: "Poster showing using mistakes to improve", correct: true, emoji: "📚💡" },
+        { text: "Poster showing using mistakes to improve", correct: true, emoji: "📚" },
         { text: "Poster showing never making mistakes", correct: false, emoji: "✨" }
       ]
     },
     {
       question: 'Which poster best shows "Resilience and Growth"?',
       choices: [
-        { text: "Poster showing bouncing back and growing stronger", correct: true, emoji: "🌱⬆️" },
+        { text: "Poster showing bouncing back and growing stronger", correct: true, emoji: "🌱" },
         { text: "Poster showing staying down after falling", correct: false, emoji: "⬇️" },
         { text: "Poster showing avoiding all challenges", correct: false, emoji: "🚫" }
       ]

@@ -30,21 +30,19 @@ const CalmChoice = () => {
           id: "a", 
           text: "Breathe deep", 
           emoji: "🌬️", 
-          description: "Calm yourself down",
+          
           isCorrect: true 
         },
         { 
           id: "b", 
           text: "Yell", 
           emoji: "😠", 
-          description: "Express anger loudly",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Throw things", 
           emoji: "🤬", 
-          description: "Act out in anger",
           isCorrect: false 
         }
       ]
@@ -57,21 +55,18 @@ const CalmChoice = () => {
           id: "b", 
           text: "Fight back", 
           emoji: "👊", 
-          description: "Respond with aggression",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Count to 10", 
           emoji: "🔟", 
-          description: "Take time to calm down",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "Run away", 
           emoji: "🏃", 
-          description: "Avoid the situation",
           isCorrect: false 
         }
       ]
@@ -84,21 +79,18 @@ const CalmChoice = () => {
           id: "b", 
           text: "Panic", 
           emoji: "😱", 
-          description: "Let fear take over",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Cheat", 
           emoji: "🤫", 
-          description: "Take the easy way out",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Positive talk", 
           emoji: "💭", 
-          description: "Encourage yourself",
           isCorrect: true 
         }
       ]
@@ -111,21 +103,18 @@ const CalmChoice = () => {
           id: "b", 
           text: "Grab it", 
           emoji: "🤲", 
-          description: "Take it back forcefully",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Ask nicely", 
           emoji: "🙏", 
-          description: "Communicate calmly",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "Cry loudly", 
           emoji: "😭", 
-          description: "React emotionally",
           isCorrect: false 
         }
       ]
@@ -138,21 +127,18 @@ const CalmChoice = () => {
           id: "b", 
           text: "Sulk alone", 
           emoji: "😔", 
-          description: "Stay sad and isolated",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Blame others", 
           emoji: "👉", 
-          description: "Get angry at others",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Draw or play", 
           emoji: "🎨", 
-          description: "Do something calming",
           isCorrect: true 
         }
       ]

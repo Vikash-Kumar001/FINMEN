@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const TOTAL_ROUNDS = 5;
 const ROUND_TIME = 10;
@@ -18,30 +17,8 @@ const BiasDetectionReflex = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getUvlsTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
+  const nextGamePath = location.state?.nextGamePath || null;
+  const nextGameId = location.state?.nextGameId || null;
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   
@@ -56,52 +33,57 @@ const BiasDetectionReflex = () => {
   const questions = [
     {
       id: 1,
-      text: "Statement: 'All teenagers are lazy.' Is this biased or unbiased?",
+      question: "Statement: 'All teenagers are lazy.' Is this biased or unbiased?",
+      correctAnswer: "Biased - Makes a generalization",
       options: [
-        { id: "a", text: "Biased - Makes a generalization", emoji: "⚠️", description: "Stereotypes all teenagers", isCorrect: true },
-        { id: "b", text: "Unbiased - Just an opinion", emoji: "💭", description: "Opinions can be biased", isCorrect: false },
-        { id: "c", text: "Unbiased - It's true", emoji: "✅", description: "Stereotypes are biased", isCorrect: false },
-        { id: "d", text: "Biased - But it's okay", emoji: "🤷", description: "Bias should be identified", isCorrect: false }
+        { text: "Unbiased - Just an opinion", isCorrect: false, emoji: "💭" },
+        { text: "Biased - Makes a generalization", isCorrect: true, emoji: "⚠️" },
+        { text: "Unbiased - It's true", isCorrect: false, emoji: "✅" },
+        { text: "Biased - But it's okay", isCorrect: false, emoji: "🤷" }
       ]
     },
     {
       id: 2,
-      text: "Statement: 'Water is wet.' Is this biased or unbiased?",
+      question: "Statement: 'Water is wet.' Is this biased or unbiased?",
+      correctAnswer: "Unbiased - Factual statement",
       options: [
-        { id: "b", text: "Biased - Against dry things", emoji: "💧", description: "Not biased, just factual", isCorrect: false },
-        { id: "a", text: "Unbiased - Factual statement", emoji: "✅", description: "Objective fact", isCorrect: true },
-        { id: "c", text: "Biased - Wet preference", emoji: "🎯", description: "No preference shown", isCorrect: false },
-        { id: "d", text: "Unbiased - But it's wrong", emoji: "❌", description: "Actually unbiased and true", isCorrect: false }
+        { text: "Biased - Against dry things", isCorrect: false, emoji: "💧" },
+        { text: "Biased - Wet preference", isCorrect: false, emoji: "🎯" },
+        { text: "Unbiased - Factual statement", isCorrect: true, emoji: "✅" },
+        { text: "Unbiased - But it's wrong", isCorrect: false, emoji: "❌" }
       ]
     },
     {
       id: 3,
-      text: "Statement: 'Rich people are greedy.' Is this biased or unbiased?",
+      question: "Statement: 'Rich people are greedy.' Is this biased or unbiased?",
+      correctAnswer: "Biased - Generalizes about wealth",
       options: [
-        { id: "a", text: "Biased - Generalizes about wealth", emoji: "💰", description: "Stereotypes based on wealth", isCorrect: true },
-        { id: "b", text: "Unbiased - Just describing", emoji: "📝", description: "Stereotyping is biased", isCorrect: false },
-        { id: "c", text: "Unbiased - It's accurate", emoji: "✅", description: "Generalization is bias", isCorrect: false },
-        { id: "d", text: "Biased - But acceptable", emoji: "🤷", description: "Bias should be recognized", isCorrect: false }
+        { text: "Biased - Generalizes about wealth", isCorrect: true, emoji: "💰" },
+        { text: "Unbiased - Just describing", isCorrect: false, emoji: "📝" },
+        { text: "Unbiased - It's accurate", isCorrect: false, emoji: "✅" },
+        { text: "Biased - But acceptable", isCorrect: false, emoji: "🤷" }
       ]
     },
     {
       id: 4,
-      text: "Statement: 'The sky is blue.' Is this biased or unbiased?",
+      question: "Statement: 'The sky is blue.' Is this biased or unbiased?",
+      correctAnswer: "Unbiased - Objective observation",
       options: [
-        { id: "b", text: "Biased - Favoring blue", emoji: "🎨", description: "Factual, not biased", isCorrect: false },
-        { id: "c", text: "Biased - Color preference", emoji: "🌈", description: "No preference shown", isCorrect: false },
-        { id: "a", text: "Unbiased - Objective observation", emoji: "☁️", description: "Neutral fact", isCorrect: true },
-        { id: "d", text: "Unbiased - But it's subjective", emoji: "👁️", description: "It's objective", isCorrect: false }
+        { text: "Biased - Favoring blue", isCorrect: false, emoji: "🎨" },
+        { text: "Biased - Color preference", isCorrect: false, emoji: "🌈" },
+        { text: "Unbiased - But it's subjective", isCorrect: false, emoji: "👁️" },
+        { text: "Unbiased - Objective observation", isCorrect: true, emoji: "☁️" },
       ]
     },
     {
       id: 5,
-      text: "Statement: 'Old people can't use technology.' Is this biased or unbiased?",
+      question: "Statement: 'Old people can't use technology.' Is this biased or unbiased?",
+      correctAnswer: "Biased - Age-based stereotype",
       options: [
-        { id: "a", text: "Biased - Age-based stereotype", emoji: "👴", description: "Generalizes by age", isCorrect: true },
-        { id: "b", text: "Unbiased - Just observation", emoji: "👀", description: "Stereotyping is biased", isCorrect: false },
-        { id: "c", text: "Unbiased - Generally true", emoji: "📊", description: "Still a stereotype", isCorrect: false },
-        { id: "d", text: "Biased - But harmless", emoji: "🤐", description: "Stereotypes can be harmful", isCorrect: false }
+        { text: "Biased - Age-based stereotype", isCorrect: true, emoji: "👴" },
+        { text: "Unbiased - Just observation", isCorrect: false, emoji: "👀" },
+        { text: "Unbiased - Generally true", isCorrect: false, emoji: "📊" },
+        { text: "Biased - But harmless", isCorrect: false, emoji: "🤐" }
       ]
     }
   ];
@@ -190,7 +172,7 @@ const BiasDetectionReflex = () => {
   return (
     <GameShell
       title="Bias Detection Reflex"
-      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Detect bias quickly!` : "Detect biased statements!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your bias detection skills!` : "Test your bias detection skills!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -204,10 +186,8 @@ const BiasDetectionReflex = () => {
       maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="text-center text-white space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+      <div className="text-center text-white space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
             <div className="text-5xl mb-6">⚡</div>
@@ -216,9 +196,12 @@ const BiasDetectionReflex = () => {
               Detect biased statements quickly!<br />
               You have {ROUND_TIME} seconds for each question.
             </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
             <button
               onClick={startGame}
-              className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full text-lg font-bold text-white transition-transform hover:scale-105"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
             >
               Start Game
             </button>
@@ -226,55 +209,37 @@ const BiasDetectionReflex = () => {
         )}
 
         {gameState === "playing" && currentQuestion && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Round {currentRound}/{TOTAL_ROUNDS}</span>
-              <span className="text-yellow-400 font-bold text-lg">⏱️ {timeLeft}s</span>
-              <span className="text-white/80">Score: {finalScore}/{TOTAL_ROUNDS}</span>
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
             </div>
-            
-            <p className="text-white text-lg md:text-xl mb-6 text-center">
-              {currentQuestion.text}
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {currentQuestion.options.map(option => {
-                const showCorrect = answered && option.isCorrect;
-                const showIncorrect = answered && !option.isCorrect;
-                
-                return (
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={option.id}
+                    key={index}
                     onClick={() => handleAnswer(option)}
                     disabled={answered}
-                    className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                      showCorrect
-                        ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                        : showIncorrect
-                        ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                    } ${answered ? "cursor-not-allowed" : ""}`}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                    <p className="text-white/90 text-sm">{option.description}</p>
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-
-        {gameState === "finished" && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-5xl mb-4">🎉</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Reflex Test Complete!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              Score: {finalScore} / {TOTAL_ROUNDS}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-4">
-              {finalScore >= 3 ? "Great Bias Detection!" : "Keep Practicing!"}
-            </p>
           </div>
         )}
       </div>

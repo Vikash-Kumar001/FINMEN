@@ -1,12 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Building2, Landmark, CreditCard, Lock, Users } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeBankExplorer = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -17,149 +15,322 @@ const BadgeBankExplorer = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [challenge, setChallenge] = useState(0);
   const [score, setScore] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const questions = [
+  const challenges = [
     {
       id: 1,
-      text: "What is the main purpose of a bank?",
-      icon: Building2,
+      title: "Bank Basics",
+      question: "What is the main purpose of a bank?",
       options: [
-        { text: "To give free toys", correct: false },
-        { text: "Only for adults to visit", correct: false },
-        { text: "To keep money safe and help it grow", correct: true },
-      ]
+        { 
+          text: "To give free toys", 
+          emoji: "🧸", 
+          isCorrect: false
+        },
+        { 
+          text: "Only for adults to visit", 
+          emoji: "👨", 
+          isCorrect: false
+        },
+        { 
+          text: "To keep money safe and help it grow", 
+          emoji: "💰", 
+          isCorrect: true
+        },
+        { 
+          text: "To play games", 
+          emoji: "🎮", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Excellent! Banks keep your money safe and help it grow!",
+        wrong: "Banks are for keeping money safe and helping it grow, not for toys or games!"
+      }
     },
     {
       id: 2,
-      text: "What happens when you put money in a savings account?",
-      icon: Landmark,
+      title: "Savings Knowledge",
+      question: "What happens when you put money in a savings account?",
       options: [
-        { text: "It stays safe and earns interest", correct: true },
-        { text: "The bank uses it for free", correct: false },
-        { text: "It disappears", correct: false }
-      ]
+        { 
+          text: "It stays safe and earns interest", 
+          emoji: "🔒", 
+          isCorrect: true
+        },
+        { 
+          text: "The bank uses it for free", 
+          emoji: "🚫", 
+          isCorrect: false
+        },
+        { 
+          text: "It disappears", 
+          emoji: "👻", 
+          isCorrect: false
+        },
+        { 
+          text: "You can't get it back", 
+          emoji: "❌", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Perfect! Money in savings is safe and earns interest!",
+        wrong: "Your money is safe in savings accounts and even earns interest over time!"
+      }
     },
     {
       id: 3,
-      text: "What should you NEVER do with your ATM card?",
-      icon: CreditCard,
+      title: "Card Security",
+      question: "What should you NEVER do with your ATM card?",
       options: [
-        { text: "Share your PIN with strangers", correct: false },
-        { text: "Never share with anyone", correct: true },
-        { text: "Use it with parent's permission", correct: false }
-      ]
+        { 
+          text: "Share your PIN with strangers", 
+          emoji: "🤫", 
+          isCorrect: false
+        },
+        { 
+          text: "Never share with anyone", 
+          emoji: "🔒", 
+          isCorrect: true
+        },
+        { 
+          text: "Use it with parent's permission", 
+          emoji: "👨‍👩", 
+          isCorrect: false
+        },
+        { 
+          text: "Tell friends your PIN", 
+          emoji: "🗣️", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Great! Never share your PIN with anyone, not even friends or family!",
+        wrong: "Your PIN should never be shared with anyone, including family!"
+      }
     },
     {
       id: 4,
-      text: "Why do banks have security guards and cameras?",
-      icon: Lock,
+      title: "Bank Safety",
+      question: "Why do banks have security guards and cameras?",
       options: [
-        { text: "To scare children", correct: false },
-        { text: "To protect everyone's money", correct: true },
-        { text: "Just for decoration", correct: false }
-      ]
+        { 
+          text: "To scare children", 
+          emoji: "👻", 
+          isCorrect: false
+        },
+        { 
+          text: "To protect everyone's money", 
+          emoji: "🛡️", 
+          isCorrect: true
+        },
+        { 
+          text: "Just for decoration", 
+          emoji: "🎨", 
+          isCorrect: false
+        },
+        { 
+          text: "To make it look fancy", 
+          emoji: "💎", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Right! Security measures protect everyone's money!",
+        wrong: "Security guards and cameras are there to protect everyone's money!"
+      }
     },
     {
       id: 5,
-      text: "Which service do banks provide to help people?",
-      icon: Users,
+      title: "Bank Services",
+      question: "Which service do banks provide to help people?",
       options: [
-        { text: "Free vacations", correct: false },
-        { text: "Magic money machines", correct: false },
-        { text: "Loans to start businesses or buy homes", correct: true },
-      ]
+        { 
+          text: "Free vacations", 
+          emoji: "✈️", 
+          isCorrect: false
+        },
+        { 
+          text: "Magic money machines", 
+          emoji: "✨", 
+          isCorrect: false
+        },
+        { 
+          text: "Loans to start businesses or buy homes", 
+          emoji: "🏠", 
+          isCorrect: true
+        },
+        { 
+          text: "Free money gifts", 
+          emoji: "🎁", 
+          isCorrect: false
+        }
+      ],
+      feedback: {
+        correct: "Perfect! Banks provide loans to help people start businesses and buy homes!",
+        wrong: "Banks provide loans to help people achieve their goals like starting businesses or buying homes!"
+      }
     }
   ];
 
-  const currentQuestionData = questions[currentQuestion];
-  const Icon = currentQuestionData?.icon || Building2;
-
-  const handleAnswer = (option) => {
-    const newChoices = [...choices, { 
-      questionId: currentQuestionData.id, 
-      choice: option,
-      isCorrect: option.correct
-    }];
+  const handleAnswer = (isCorrect, optionIndex) => {
+    if (answered) return;
     
-    setChoices(newChoices);
+    setAnswered(true);
+    setSelectedAnswer(optionIndex);
+    resetFeedback();
     
-    if (option.correct) {
+    if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, option.correct ? 1000 : 800);
-    } else {
-      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setTimeout(() => {
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
         setShowResult(true);
-      }, option.correct ? 1000 : 800);
-    }
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
   };
 
-  const handleNext = () => {
-    navigate("/games/financial-literacy/kids");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
   };
+
+  const currentChallenge = challenges[challenge];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Badge: Bank Explorer"
-      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      currentLevel={currentQuestion + 1}
-      totalLevels={5}
-      coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      nextEnabled={false}
+      subtitle={showResult ? "Badge Earned!" : `Challenge ${challenge + 1} of ${challenges.length}`}
       showGameOver={showResult}
-      score={score}
-      gameId="finance-kids-50"
+      score={finalScore}
+      gameId={gameId}
       gameType="finance"
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      maxScore={5}
+      totalLevels={challenges.length}
+      coinsPerLevel={coinsPerLevel}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && finalScore === 5}>
+      showConfetti={showResult && finalScore === challenges.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showResult && currentQuestionData ? (
+        {!showResult && currentChallenge ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-center mb-4">
-                <Icon className="w-16 h-16 text-blue-400" />
-              </div>
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
-              </div>
-              
-              <p className="text-white text-lg mb-6 text-center">
-                {currentQuestionData.text}
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallenge.question}
               </p>
               
-              <div className="space-y-4">
-                {currentQuestionData.options.map((option, index) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, idx) => (
                   <button
-                    key={index}
-                    onClick={() => handleAnswer(option)}
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 rounded-full text-white font-bold hover:scale-105 transition-transform hover:shadow-lg"
+                    key={idx}
+                    onClick={() => handleAnswer(option.isCorrect, idx)}
+                    disabled={answered}
+                    className={`bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3 ${
+                      answered && selectedAnswer === idx
+                        ? option.isCorrect
+                          ? "ring-4 ring-green-400"
+                          : "ring-4 ring-red-400"
+                        : ""
+                    }`}
                   >
-                    {option.text}
+                    <span className="text-2xl">{option.emoji}</span>
+                    <span className="font-bold text-lg">{option.text}</span>
                   </button>
                 ))}
               </div>
+              
+              {answered && (
+                <div className={`mt-4 p-4 rounded-xl ${
+                  currentChallenge.options[selectedAnswer]?.isCorrect
+                    ? "bg-green-500/20 border border-green-500/30"
+                    : "bg-red-500/20 border border-red-500/30"
+                }`}>
+                  <p className="text-white font-semibold">
+                    {currentChallenge.options[selectedAnswer]?.isCorrect
+                      ? currentChallenge.feedback.correct
+                      : currentChallenge.feedback.wrong}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {finalScore >= 4 ? (
+              <div>
+                <div className="text-6xl mb-4">🏆</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Bank Explorer Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-6">
+                  You made {finalScore} smart banking decisions out of {challenges.length} challenges!
+                </p>
+                
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-2xl mb-6">
+                  <h4 className="text-2xl font-bold mb-2">🎉 Achievement Unlocked!</h4>
+                  <p className="text-xl">Badge: Bank Explorer</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-green-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-green-300 mb-2">Banking Skills</h4>
+                    <p className="text-white/90 text-sm">
+                      You learned about bank safety, savings accounts, card security, 
+                      and bank services!
+                    </p>
+                  </div>
+                  <div className="bg-blue-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-blue-300 mb-2">Financial Wisdom</h4>
+                    <p className="text-white/90 text-sm">
+                      These habits will help you make better financial decisions and keep your money safe!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You made {finalScore} smart banking decisions out of {challenges.length} challenges.
+                </p>
+                <p className="text-white/90 mb-6">
+                  Remember, banks keep your money safe, help it grow, and provide important services. 
+                  Always protect your personal information!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

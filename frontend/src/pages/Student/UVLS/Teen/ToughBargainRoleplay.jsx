@@ -56,21 +56,18 @@ const ToughBargainRoleplay = () => {
           id: "a", 
           text: "Share costs and alternate events", 
           emoji: "🎟️",
-          description: "Fair distribution",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Take all tickets for yourself", 
           emoji: "👑",
-          description: "Selfish approach",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Fight for them", 
           emoji: "👊",
-          description: "Creates conflict",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const ToughBargainRoleplay = () => {
           id: "b", 
           text: "Spend on one thing only", 
           emoji: "💸",
-          description: "Not fair to everyone",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Prioritize activities and vote on spending", 
           emoji: "✈️",
-          description: "Democratic and fair",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Let one leader decide", 
           emoji: "👑",
-          description: "Excludes others",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const ToughBargainRoleplay = () => {
           id: "a", 
           text: "Divide tasks evenly and schedule meetings", 
           emoji: "⏰",
-          description: "Equal distribution",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Let one person do all the work", 
           emoji: "👤",
-          description: "Unfair burden",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Procrastinate together", 
           emoji: "😴",
-          description: "Not productive",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const ToughBargainRoleplay = () => {
           id: "b", 
           text: "Claim more space for yourself", 
           emoji: "🏠",
-          description: "Selfish",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ignore the other person's needs", 
           emoji: "🙈",
-          description: "Disrespectful",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Divide space fairly and rotate usage", 
           emoji: "🛏️",
-          description: "Fair and considerate",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const ToughBargainRoleplay = () => {
           id: "a", 
           text: "Portion equally and share plates", 
           emoji: "🍕",
-          description: "Fair distribution",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "First come first serve", 
           emoji: "🏃",
-          description: "Can leave some without",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Hoard food for yourself", 
           emoji: "🍗",
-          description: "Selfish behavior",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const ToughBargainRoleplay = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

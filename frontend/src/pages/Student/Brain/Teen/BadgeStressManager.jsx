@@ -106,8 +106,8 @@ const BadgeStressManager = () => {
       options: [
         { text: "Bottle up your feelings", emoji: "🔒", isCorrect: false },
         { text: "Isolate yourself completely", emoji: "🚶", isCorrect: false },
+        { text: "Talk to someone you trust", emoji: "🗣️", isCorrect: true },
         { text: "Ignore the problem", emoji: "🙈", isCorrect: false },
-        { text: "Talk to someone you trust", emoji: "🗣️", isCorrect: true }
       ]
     },
     {

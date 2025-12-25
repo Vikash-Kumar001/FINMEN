@@ -58,10 +58,10 @@ const NameRespectReflex = () => {
       question: "How should you pronounce 'Nguyen' (Vietnamese name)?",
       correctAnswer: "WIN",
       options: [
-        { text: "WIN (rhymes with 'win')", isCorrect: true, emoji: "✅" },
-        { text: "NOO-GEN", isCorrect: false, emoji: "❌" },
-        { text: "NAY-GEN", isCorrect: false, emoji: "❌" },
-        { text: "NYU-GEN", isCorrect: false, emoji: "❌" }
+        { text: "WIN (rhymes with 'win')", isCorrect: true, emoji: "🎯" },
+        { text: "NOO-GEN", isCorrect: false, emoji: "😕" },
+        { text: "NAY-GEN", isCorrect: false, emoji: "🤔" },
+        { text: "NYU-GEN", isCorrect: false, emoji: "💡" }
       ]
     },
     {
@@ -69,10 +69,10 @@ const NameRespectReflex = () => {
       question: "How should you pronounce 'Siobhan' (Irish name)?",
       correctAnswer: "shi-VAWN",
       options: [
-        { text: "SEE-OH-BHAN", isCorrect: false, emoji: "❌" },
-        { text: "shi-VAWN", isCorrect: true, emoji: "✅" },
-        { text: "SYE-OH-BAN", isCorrect: false, emoji: "❌" },
-        { text: "SIO-BHAN", isCorrect: false, emoji: "❌" }
+        { text: "SEE-OH-BHAN", isCorrect: false, emoji: "😕" },
+        { text: "shi-VAWN", isCorrect: true, emoji: "🌟" },
+        { text: "SYE-OH-BAN", isCorrect: false, emoji: "🤔" },
+        { text: "SIO-BHAN", isCorrect: false, emoji: "💡" }
       ]
     },
     {
@@ -80,10 +80,10 @@ const NameRespectReflex = () => {
       question: "How should you pronounce 'Xochitl' (Nahuatl name)?",
       correctAnswer: "SO-cheel",
       options: [
-        { text: "ZOH-cheel", isCorrect: false, emoji: "❌" },
-        { text: "EX-oh-chittle", isCorrect: false, emoji: "❌" },
-        { text: "SO-cheel", isCorrect: true, emoji: "✅" },
-        { text: "XO-CHITL", isCorrect: false, emoji: "❌" }
+        { text: "ZOH-cheel", isCorrect: false, emoji: "😕" },
+        { text: "EX-oh-chittle", isCorrect: false, emoji: "🤔" },
+        { text: "SO-cheel", isCorrect: true, emoji: "👍" },
+        { text: "XO-CHITL", isCorrect: false, emoji: "💡" }
       ]
     },
     {
@@ -91,10 +91,10 @@ const NameRespectReflex = () => {
       question: "How should you pronounce 'Saoirse' (Irish name)?",
       correctAnswer: "SIR-sha",
       options: [
-        { text: "SIR-sha", isCorrect: true, emoji: "✅" },
-        { text: "SAY-ohr-say", isCorrect: false, emoji: "❌" },
-        { text: "SOW-ear-see", isCorrect: false, emoji: "❌" },
-        { text: "SA-OIR-SE", isCorrect: false, emoji: "❌" }
+        { text: "SIR-sha", isCorrect: true, emoji: "💯" },
+        { text: "SAY-ohr-say", isCorrect: false, emoji: "😕" },
+        { text: "SOW-ear-see", isCorrect: false, emoji: "🤔" },
+        { text: "SA-OIR-SE", isCorrect: false, emoji: "💡" }
       ]
     },
     {
@@ -102,10 +102,10 @@ const NameRespectReflex = () => {
       question: "How should you pronounce 'Rajesh' (Indian name)?",
       correctAnswer: "RAJ-esh (with soft 'j')",
       options: [
-        { text: "RAJ-esh (with soft 'j')", isCorrect: true, emoji: "✅" },
-        { text: "RA-jess", isCorrect: false, emoji: "❌" },
-        { text: "RAGE-esh", isCorrect: false, emoji: "❌" },
-        { text: "RAJ-ESH", isCorrect: false, emoji: "❌" }
+        { text: "RAJ-esh (with soft 'j')", isCorrect: true, emoji: "👏" },
+        { text: "RA-jess", isCorrect: false, emoji: "😕" },
+        { text: "RAGE-esh", isCorrect: false, emoji: "🤔" },
+        { text: "RAJ-ESH", isCorrect: false, emoji: "💡" }
       ]
     }
   ];

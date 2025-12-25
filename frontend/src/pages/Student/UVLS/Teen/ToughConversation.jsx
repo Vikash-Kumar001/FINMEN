@@ -56,21 +56,18 @@ const ToughConversation = () => {
           id: "a", 
           text: "I feel worried when money isn't returned. Can we discuss a plan to pay it back?", 
           emoji: "💰",
-          description: "Uses 'I' statements and seeks solution",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "You're a thief! Give me my money back now!", 
           emoji: "😠",
-          description: "Accusatory and aggressive",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Forget it, I don't care anymore", 
           emoji: "🤷",
-          description: "Avoids addressing the issue",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const ToughConversation = () => {
           id: "b", 
           text: "You're lazy and not doing your part!", 
           emoji: "😤",
-          description: "Attacking and judgmental",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "I notice the work isn't evenly divided. How can we better collaborate to finish the project?", 
           emoji: "👥",
-          description: "Observational, solution-focused",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "I'll just do everything myself", 
           emoji: "😓",
-          description: "Doesn't address the problem",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const ToughConversation = () => {
           id: "a", 
           text: "I heard some things are being said about me. Can we talk about it so I understand what's happening?", 
           emoji: "💬",
-          description: "Open, non-accusatory approach",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "You're a liar and I hate you!", 
           emoji: "😡",
-          description: "Emotional and destructive",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "I'll just ignore them completely", 
           emoji: "🙈",
-          description: "Avoids resolving the issue",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const ToughConversation = () => {
           id: "b", 
           text: "Your idea is stupid, let's do my plan", 
           emoji: "😒",
-          description: "Dismissive and disrespectful",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Whatever, do what you want", 
           emoji: "🤷",
-          description: "Passive, doesn't find compromise",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "I prefer this option, but I'd like to hear what you think so we can find something we both enjoy", 
           emoji: "🤝",
-          description: "Shares preference, seeks compromise",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const ToughConversation = () => {
           id: "a", 
           text: "I noticed the item came back damaged. How can we figure out how to fix this together?", 
           emoji: "🛠️",
-          description: "Observational, solution-oriented",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "You broke it on purpose, you're so careless!", 
           emoji: "😠",
-          description: "Assumes intent, accusatory",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "I'll never lend you anything again, forget about it", 
           emoji: "🚫",
-          description: "Creates distance, doesn't solve problem",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const ToughConversation = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

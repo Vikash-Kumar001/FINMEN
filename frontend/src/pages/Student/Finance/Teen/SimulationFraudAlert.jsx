@@ -38,18 +38,25 @@ const SimulationFraudAlert = () => {
           emoji: "🔗", 
           isCorrect: false
         },
-        { 
-          id: "delete", 
-          text: "Delete the message", 
-          emoji: "🗑️", 
-          isCorrect: true
-        },
+       
         { 
           id: "forward", 
           text: "Forward to friends", 
           emoji: "📤", 
           isCorrect: false
-        }
+        },
+        { 
+          id: "report", 
+          text: "Report as spam", 
+          emoji: "⚠️", 
+          isCorrect: false
+        },
+         { 
+          id: "delete", 
+          text: "Delete the message", 
+          emoji: "🗑️", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -73,6 +80,12 @@ const SimulationFraudAlert = () => {
           id: "trust", 
           text: "Trust the caller", 
           emoji: "😊", 
+          isCorrect: false
+        },
+        { 
+          id: "verify", 
+          text: "Verify with bank directly", 
+          emoji: "🔍", 
           isCorrect: false
         }
       ]
@@ -99,6 +112,12 @@ const SimulationFraudAlert = () => {
           text: "Check website first", 
           emoji: "🔍", 
           isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore and continue browsing", 
+          emoji: "🔇", 
+          isCorrect: false
         }
       ]
     },
@@ -107,12 +126,7 @@ const SimulationFraudAlert = () => {
       title: "Fraud Alert: Urgent Email",
       description: "Email says 'Act now or lose account.' Asks for password. What do you do?",
       options: [
-        { 
-          id: "ignore", 
-          text: "Ignore and delete", 
-          emoji: "🗑️", 
-          isCorrect: true
-        },
+       
         { 
           id: "reply", 
           text: "Reply with password", 
@@ -123,6 +137,18 @@ const SimulationFraudAlert = () => {
           id: "forward-email", 
           text: "Forward email", 
           emoji: "📤", 
+          isCorrect: false
+        },
+         { 
+          id: "ignore", 
+          text: "Ignore and delete", 
+          emoji: "🗑️", 
+          isCorrect: true
+        },
+        { 
+          id: "spam", 
+          text: "Mark as spam", 
+          emoji: "⚠️", 
           isCorrect: false
         }
       ]
@@ -148,6 +174,12 @@ const SimulationFraudAlert = () => {
           id: "think", 
           text: "Think about it", 
           emoji: "🤔", 
+          isCorrect: false
+        },
+        { 
+          id: "consult", 
+          text: "Consult with family", 
+          emoji: "👨‍👩‍👧", 
           isCorrect: false
         }
       ]
@@ -217,7 +249,7 @@ const SimulationFraudAlert = () => {
                 {current.description}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {current.options.map((option) => (
                   <button
                     key={option.id}

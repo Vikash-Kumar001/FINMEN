@@ -1,11 +1,12 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 import { getBrainKidsGames } from "../../../../pages/Games/GameCategories/Brain/kidGamesData";
 
-const QUESTION_TIME = 10; // 10 seconds per question
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const QuickEmotionReflex = () => {
   const location = useLocation();
@@ -24,41 +25,15 @@ const QuickEmotionReflex = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
-  // Find next game path and ID if not provided in location.state
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    // First, try to get from location.state (passed from GameCategoryPage)
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    // Fallback: find next game from game data
-    try {
-      const games = getBrainKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-  
-  const [score, setScore] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
-  const timerRef = useRef(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
   const questions = [
     {
@@ -233,52 +208,36 @@ const QuickEmotionReflex = () => {
     }
   ];
 
-  const handleTimeUp = useCallback(() => {
-    if (!answered && currentQuestion < questions.length - 1) {
-      // Time's up - move to next question (count as wrong)
-      setAnswered(true);
-      resetFeedback();
-      showCorrectAnswerFeedback(0, false);
-      
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-        setAnswered(false);
-      }, 1000);
-    } else if (!answered && currentQuestion === questions.length - 1) {
-      // Last question and time's up
-      setAnswered(true);
-      setShowResult(true);
-    }
-  }, [answered, currentQuestion, questions.length, resetFeedback, showCorrectAnswerFeedback]);
-
-  // Reset timer when question changes
   useEffect(() => {
-    if (!showResult && currentQuestion < questions.length) {
-      setTimeLeft(QUESTION_TIME);
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
       setAnswered(false);
     }
-  }, [currentQuestion, showResult, questions.length]);
+  }, [currentRound, gameState]);
+
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
+    }
+  }, []);
 
   // Timer effect
   useEffect(() => {
-    if (!showResult && !answered && timeLeft > 0 && currentQuestion < questions.length) {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-
+    if (gameState === "playing" && !answered && timeLeft > 0) {
       timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          const newTime = prev - 1;
-          if (newTime <= 0) {
-            if (timerRef.current) {
-              clearInterval(timerRef.current);
-              timerRef.current = null;
-            }
+        setTimeLeft(prev => {
+          if (prev <= 1) {
             handleTimeUp();
             return 0;
           }
-          return newTime;
+          return prev - 1;
         });
       }, 1000);
     } else {
@@ -294,112 +253,117 @@ const QuickEmotionReflex = () => {
         timerRef.current = null;
       }
     };
-  }, [showResult, answered, timeLeft, currentQuestion, questions.length, handleTimeUp]);
+  }, [gameState, answered, timeLeft, handleTimeUp]);
 
-  const handleChoice = (isCorrect) => {
-    if (answered) return;
-    
-    // Clear timer when answered
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
+    resetFeedback();
+  };
+
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
     
     setAnswered(true);
     resetFeedback();
     
+    const isCorrect = option.isCorrect;
+    
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
-    const isLastQuestion = currentQuestion === questions.length - 1;
-    
+
     setTimeout(() => {
-      if (isLastQuestion) {
-        setShowResult(true);
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
       } else {
-        setCurrentQuestion(prev => prev + 1);
-        setAnswered(false);
+        setGameState("finished");
       }
-    }, 1500);
+    }, 500);
   };
 
-  // Log when game completes and update location state with nextGameId
-  useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Reflex Quick Emotion game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
-      
-      // Update location state with nextGameId for GameOverModal
-      if (nextGameId && window.history && window.history.replaceState) {
-        const currentState = window.history.state || {};
-        window.history.replaceState({
-          ...currentState,
-          nextGameId: nextGameId
-        }, '');
-      }
-    }
-  }, [showResult, score, gameId, nextGamePath, nextGameId, questions.length]);
+  const finalScore = score;
 
-  const currentQuestionData = questions[currentQuestion];
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Quick Emotion"
-      score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your emotion reflexes!` : "Test your emotion reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult}
-      gameId={gameId}
-      gameType="brain"
-      totalLevels={questions.length}
-      currentLevel={currentQuestion + 1}
-      maxScore={questions.length}
-      showConfetti={showResult && score >= 3}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/brain-health/kids"
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-    >
-      <div className="space-y-4 sm:space-y-6 md:space-y-8 max-w-4xl mx-auto px-2 sm:px-4 md:px-6">
-        {!showResult && currentQuestionData ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 border border-white/20">
-            {/* Header - Stack on mobile, horizontal on larger screens */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-5 md:mb-6">
-              <span className="text-white/80 text-xs sm:text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
-              <span className="text-yellow-400 font-bold text-xs sm:text-sm md:text-base">Score: {score}/{questions.length}</span>
-              <span className={`font-bold text-xs sm:text-sm md:text-base ${timeLeft <= 3 ? 'text-red-400' : timeLeft <= 5 ? 'text-yellow-400' : 'text-green-400'}`}>
-                Time: {timeLeft}s
-              </span>
-            </div>
-            
-            {/* Question text - Responsive font size */}
-            <p className="text-white text-base sm:text-lg md:text-xl mb-4 sm:mb-5 md:mb-6 text-center sm:text-left">
-              {currentQuestionData.text}
+      score={finalScore}
+      gameId={gameId}
+      gameType="brain"
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">🧠</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Answer questions about emotions!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
-            
-            {/* Options grid - Single column on mobile, 2 columns on tablet+ */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              {currentQuestionData.options.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.isCorrect)}
-                  disabled={answered}
-                  className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 active:scale-95 text-white p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none w-full"
-                >
-                  <div className="text-2xl sm:text-3xl md:text-4xl mb-2 sm:mb-3">{option.emoji}</div>
-                  <h3 className="font-bold text-base sm:text-lg md:text-xl mb-1 sm:mb-2">{option.text}</h3>
-                  <p className="text-white/90 text-xs sm:text-sm md:text-base leading-tight sm:leading-normal">{option.description}</p>
-                </button>
-              ))}
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+      
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+      
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+                    
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : null}
+        )}
       </div>
     </GameShell>
   );

@@ -56,21 +56,18 @@ const RehabVsPunishDebate = () => {
           id: "a", 
           text: "Rehab can reform behavior when combined with appropriate consequences", 
           emoji: "⚖️",
-          description: "Balanced approach with evidence",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Punish only, no rehab needed", 
           emoji: "👊",
-          description: "One-sided approach",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No action at all", 
           emoji: "🚫",
-          description: "Doesn't address the problem",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const RehabVsPunishDebate = () => {
           id: "b", 
           text: "Rehab only, no consequences", 
           emoji: "🧠",
-          description: "Missing accountability",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Rehab with appropriate consequences and restorative justice creates lasting change", 
           emoji: "🤝",
-          description: "Comprehensive approach",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Just ignore the bullying", 
           emoji: "🙈",
-          description: "Not a solution",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const RehabVsPunishDebate = () => {
           id: "a", 
           text: "Evidence-based reasoning that considers both rehabilitation and accountability", 
           emoji: "📚",
-          description: "Strong, balanced argument",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Only emotional appeals", 
           emoji: "😢",
-          description: "Lacks substance",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Personal opinions without evidence", 
           emoji: "💭",
-          description: "Weak argument",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const RehabVsPunishDebate = () => {
           id: "b", 
           text: "Agree completely", 
           emoji: "👍",
-          description: "No debate",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Insult their position", 
           emoji: "😠",
-          description: "Not constructive",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Acknowledge their point, then present evidence for why rehabilitation combined with consequences works better", 
           emoji: "💡",
-          description: "Respectful counter-argument",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const RehabVsPunishDebate = () => {
           id: "a", 
           text: "Summarize key points: effective interventions combine rehabilitation, accountability, and prevention", 
           emoji: "📝",
-          description: "Comprehensive conclusion",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Just repeat your first point", 
           emoji: "🔄",
-          description: "Weak conclusion",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Change your position completely", 
           emoji: "🔄",
-          description: "Inconsistent",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const RehabVsPunishDebate = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

@@ -56,21 +56,18 @@ const RequestExtensionRoleplay = () => {
           id: "a", 
           text: "Dear Teacher,", 
           emoji: "👋",
-          description: "Polite and respectful greeting",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Hey,", 
           emoji: "😎",
-          description: "Too casual for formal request",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Yo,", 
           emoji: "🤙",
-          description: "Inappropriate for academic context",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const RequestExtensionRoleplay = () => {
           id: "b", 
           text: "I was lazy and didn't do it", 
           emoji: "😴",
-          description: "Not honest or professional",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Due to unexpected illness, I need additional time", 
           emoji: "🤒",
-          description: "Honest and valid reason",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "I forgot about it", 
           emoji: "🤷",
-          description: "Not a valid reason",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const RequestExtensionRoleplay = () => {
           id: "a", 
           text: "Would it be possible to submit by Friday?", 
           emoji: "📅",
-          description: "Polite and specific request",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Give me more time", 
           emoji: "⏰",
-          description: "Too demanding and vague",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "I'll turn it in whenever", 
           emoji: "🤷",
-          description: "Not respectful of deadlines",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const RequestExtensionRoleplay = () => {
           id: "b", 
           text: "No plan, I'll figure it out", 
           emoji: "🤷",
-          description: "Shows lack of responsibility",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Maybe I'll finish it", 
           emoji: "❓",
-          description: "Uncertain and unprofessional",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "I have a plan to complete it by the new deadline", 
           emoji: "✅",
-          description: "Shows responsibility and planning",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const RequestExtensionRoleplay = () => {
           id: "a", 
           text: "Thank you for your consideration", 
           emoji: "🙏",
-          description: "Polite and appreciative closing",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Bye", 
           emoji: "👋",
-          description: "Too casual",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "That's it", 
           emoji: "✌️",
-          description: "Not professional",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const RequestExtensionRoleplay = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

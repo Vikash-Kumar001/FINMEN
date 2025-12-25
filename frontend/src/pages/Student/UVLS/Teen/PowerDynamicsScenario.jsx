@@ -56,21 +56,18 @@ const PowerDynamicsScenario = () => {
           id: "a", 
           text: "Discuss privately and provide evidence", 
           emoji: "📝",
-          description: "Equitable - respectful and evidence-based",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Complain publicly", 
           emoji: "📢",
-          description: "Not constructive",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ignore the issue", 
           emoji: "🙈",
-          description: "Doesn't address the problem",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const PowerDynamicsScenario = () => {
           id: "b", 
           text: "Quit job immediately", 
           emoji: "🚪",
-          description: "Too extreme without discussion",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Negotiate workload or seek HR help", 
           emoji: "👔",
-          description: "Equitable - uses proper channels",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Overwork silently", 
           emoji: "😔",
-          description: "Not fair to yourself",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const PowerDynamicsScenario = () => {
           id: "a", 
           text: "Calm discussion and compromise plan", 
           emoji: "🏠",
-          description: "Equitable - respectful communication",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Rebel or sneak out", 
           emoji: "😤",
-          description: "Not constructive",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Accept without discussion", 
           emoji: "😔",
-          description: "Doesn't address concerns",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const PowerDynamicsScenario = () => {
           id: "b", 
           text: "Quit team immediately", 
           emoji: "🚪",
-          description: "Too extreme without trying",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Accept favoritism", 
           emoji: "😔",
-          description: "Not fair",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Talk to coach or gather team support", 
           emoji: "🏀",
-          description: "Equitable - addresses issue constructively",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const PowerDynamicsScenario = () => {
           id: "a", 
           text: "Escalate to higher authority or document and follow up", 
           emoji: "🏫",
-          description: "Equitable - uses proper channels",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Give up completely", 
           emoji: "😔",
-          description: "Doesn't resolve the issue",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Spread rumors", 
           emoji: "📢",
-          description: "Not constructive",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const PowerDynamicsScenario = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

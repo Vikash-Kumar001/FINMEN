@@ -31,21 +31,21 @@ const SupportFriend = () => {
           id: "a", 
           text: "Listen and give a hug", 
           emoji: "🤗", 
-          description: "Offer comfort and support",
+        
           isCorrect: true 
         },
         { 
           id: "b", 
           text: "Ignore them", 
           emoji: "🙈", 
-          description: "Don't help",
+          
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Tell them to fight back", 
           emoji: "👊", 
-          description: "This can make things worse",
+          
           isCorrect: false 
         }
       ]
@@ -58,21 +58,18 @@ const SupportFriend = () => {
           id: "b", 
           text: "Laugh at them", 
           emoji: "😂", 
-          description: "Be unkind",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Invite them to join", 
           emoji: "👋", 
-          description: "Include them in activities",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "Walk away", 
           emoji: "🚶", 
-          description: "Don't help",
           isCorrect: false 
         }
       ]
@@ -85,21 +82,18 @@ const SupportFriend = () => {
           id: "b", 
           text: "Join in the name-calling", 
           emoji: "😈", 
-          description: "This is wrong",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Do nothing", 
           emoji: "🫥", 
-          description: "Not helping",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Report to teacher", 
           emoji: "🧑‍🏫", 
-          description: "Get help from an adult",
           isCorrect: true 
         }
       ]
@@ -112,21 +106,18 @@ const SupportFriend = () => {
           id: "b", 
           text: "Blame your friend", 
           emoji: "🤬", 
-          description: "This is not helpful",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Help find and support them", 
           emoji: "🔍", 
-          description: "Help and stand with them",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "Pretend not to know", 
           emoji: "🤷", 
-          description: "Not supporting them",
           isCorrect: false 
         }
       ]
@@ -139,21 +130,18 @@ const SupportFriend = () => {
           id: "b", 
           text: "Reply with mean messages", 
           emoji: "💻", 
-          description: "This makes it worse",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Ignore the messages", 
           emoji: "🙄", 
-          description: "They need help",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Advise to block and report", 
           emoji: "🚫", 
-          description: "Help them stay safe",
           isCorrect: true 
         }
       ]

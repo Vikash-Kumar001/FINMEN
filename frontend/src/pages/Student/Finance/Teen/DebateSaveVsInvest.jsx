@@ -51,17 +51,17 @@ const DebateSaveVsInvest = () => {
       id: 3,
       scenario: "Which grows money faster?",
       positions: [
-        { id: "invest3", text: "Investing wins", emoji: "📈", points: ["Higher returns", "Beat inflation", "Compound growth"], isCorrect: true },
         { id: "same", text: "Both equal", emoji: "📊", points: ["Equal growth", "No difference", "Same result"], isCorrect: false },
-        { id: "save2", text: "Saving wins", emoji: "🏦", points: ["Saving is faster", "No risk", "Guaranteed"], isCorrect: false }
+        { id: "save2", text: "Saving wins", emoji: "🏦", points: ["Saving is faster", "No risk", "Guaranteed"], isCorrect: false },
+        { id: "invest3", text: "Investing wins", emoji: "📈", points: ["Higher returns", "Beat inflation", "Compound growth"], isCorrect: true },
       ]
     },
     {
       id: 4,
       scenario: "What's the best strategy for long-term wealth?",
       positions: [
-        { id: "mix", text: "Mix save and invest", emoji: "💼", points: ["Save for security", "Invest for growth", "Best of both"], isCorrect: true },
         { id: "only-save", text: "Only save", emoji: "🔐", points: ["Saving is enough", "Low risk", "Simple approach"], isCorrect: false },
+        { id: "mix", text: "Mix save and invest", emoji: "💼", points: ["Save for security", "Invest for growth", "Best of both"], isCorrect: true },
         { id: "only-invest", text: "Only invest", emoji: "🎲", points: ["Invest everything", "No savings", "Maximum risk"], isCorrect: false }
       ]
     },

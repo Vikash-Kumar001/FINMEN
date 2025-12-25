@@ -56,21 +56,18 @@ const RightsLawQuiz = () => {
           id: "a", 
           text: "Equal pay for equal work", 
           emoji: "💰",
-          description: "Ensures equal pay regardless of gender",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Voting rights", 
           emoji: "🗳️",
-          description: "Different law",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Education equality", 
           emoji: "📚",
-          description: "Different law",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const RightsLawQuiz = () => {
           id: "b", 
           text: "Employment", 
           emoji: "💼",
-          description: "Different law",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Education non-discrimination", 
           emoji: "🎓",
-          description: "Prohibits gender discrimination in education",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Healthcare", 
           emoji: "🏥",
-          description: "Different law",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const RightsLawQuiz = () => {
           id: "a", 
           text: "Convention on Elimination of Discrimination Against Women", 
           emoji: "🌍",
-          description: "UN treaty for women's rights",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Child Education Act", 
           emoji: "👶",
-          description: "Incorrect",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Cultural Diversity Agreement", 
           emoji: "🎨",
-          description: "Incorrect",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const RightsLawQuiz = () => {
           id: "b", 
           text: "Women superior", 
           emoji: "👆",
-          description: "Not what equality means",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Men have more rights", 
           emoji: "👑",
-          description: "Not equality",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Same rights for all genders", 
           emoji: "⚖️",
-          description: "Equal treatment under law",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const RightsLawQuiz = () => {
           id: "a", 
           text: "Protects from domestic violence", 
           emoji: "🛡️",
-          description: "Addresses gender-based violence",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Employment law", 
           emoji: "💼",
-          description: "Different purpose",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Voting act", 
           emoji: "🗳️",
-          description: "Different purpose",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const RightsLawQuiz = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

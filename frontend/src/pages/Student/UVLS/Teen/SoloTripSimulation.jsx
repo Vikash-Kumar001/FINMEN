@@ -1,15 +1,17 @@
 import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const SoloTripSimulation = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
-  const gameId = "uvls-teen-99";
-  const gameData = getGameDataById(gameId);
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-teen-99");
+  const gameId = gameData?.id || "uvls-teen-99";
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
@@ -41,243 +43,238 @@ const SoloTripSimulation = () => {
   }, [location.state, gameId]);
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [challenge, setChallenge] = useState(0);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
 
-  const questions = [
+  const challenges = [
     {
       id: 1,
-      text: "Item: Permissions. What should you do before a solo trip?",
+      title: "Permissions",
+      question: "Item: Permissions. What should you do before a solo trip?",
       options: [
+        
         { 
-          id: "a", 
-          text: "Get parent/guardian permission", 
-          emoji: "📝",
-          description: "Complete - essential for safety",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "No permission needed", 
           emoji: "🚫",
-          description: "Incomplete - unsafe",
           isCorrect: false
         },
         { 
-          id: "c", 
+          text: "Get parent/guardian permission", 
+          emoji: "📝",
+          isCorrect: true
+        },
+        { 
           text: "Ask after leaving", 
           emoji: "😰",
-          description: "Too late",
+          isCorrect: false
+        },
+        { 
+          text: "Just leave without telling anyone", 
+          emoji: "🏃",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Item: Contacts. What should you do before a solo trip?",
+      title: "Contacts",
+      question: "Item: Contacts. What should you do before a solo trip?",
       options: [
         { 
-          id: "b", 
-          text: "Go alone without sharing itinerary", 
-          emoji: "🚫",
-          description: "Incomplete - dangerous",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
           text: "Share itinerary with trusted contacts", 
           emoji: "📞",
-          description: "Complete - people know where you are",
           isCorrect: true
         },
         { 
-          id: "c", 
+          text: "Go alone without sharing itinerary", 
+          emoji: "🚫",
+          isCorrect: false
+        },
+        { 
           text: "Share only after arriving", 
           emoji: "⏰",
-          description: "Too late",
+          isCorrect: false
+        },
+        { 
+          text: "Only tell your best friend", 
+          emoji: "🤫",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Item: Money. What should you do before a solo trip?",
+      title: "Money",
+      question: "Item: Money. What should you do before a solo trip?",
       options: [
+        
         { 
-          id: "a", 
-          text: "Create a budget plan", 
-          emoji: "💰",
-          description: "Complete - ensures you have enough",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "No budget planning", 
           emoji: "🚫",
-          description: "Incomplete - risky",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "Spend everything before trip", 
           emoji: "💸",
-          description: "Unwise",
           isCorrect: false
-        }
+        },
+        { 
+          text: "Just take some cash and hope for the best", 
+          emoji: "🤞",
+          isCorrect: false
+        },
+        { 
+          text: "Create a budget plan", 
+          emoji: "💰",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 4,
-      text: "Item: Route. What should you do before a solo trip?",
+      title: "Route",
+      question: "Item: Route. What should you do before a solo trip?",
       options: [
+        
         { 
-          id: "b", 
           text: "Take unknown path", 
           emoji: "❓",
-          description: "Incomplete - unsafe",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "No route planning", 
           emoji: "🚫",
-          description: "Dangerous",
           isCorrect: false
         },
         { 
-          id: "a", 
           text: "Plan a safe route", 
           emoji: "🗺️",
-          description: "Complete - know where you're going",
           isCorrect: true
+        },
+        { 
+          text: "Just use GPS without backup plan", 
+          emoji: "🧭",
+          isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "Item: Emergency plan. What should you do before a solo trip?",
+      title: "Emergency Plan",
+      question: "Item: Emergency plan. What should you do before a solo trip?",
       options: [
         { 
-          id: "a", 
           text: "Have emergency contact numbers ready", 
           emoji: "🚨",
-          description: "Complete - prepared for emergencies",
           isCorrect: true
         },
         { 
-          id: "b", 
           text: "No emergency plan", 
           emoji: "🚫",
-          description: "Incomplete - unprepared",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "Figure it out if needed", 
           emoji: "😰",
-          description: "Too late in emergency",
+          isCorrect: false
+        },
+        { 
+          text: "Just hope nothing goes wrong", 
+          emoji: "🤞",
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (answered || levelCompleted) return;
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
     setAnswered(true);
-    setSelectedOption(optionId);
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
+    const isLastChallenge = challenge === challenges.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setAnswered(false);
-        resetFeedback();
+      if (isLastChallenge) {
+        setShowResult(true);
       } else {
-        setLevelCompleted(true);
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
       }
-    }, isCorrect ? 1000 : 800);
+    }, 500);
   };
 
-  const currentQuestionData = questions[currentQuestion];
-  const finalScore = score;
+  const currentChallengeData = challenges[challenge];
 
   return (
     <GameShell
-      title="Solo Trip Simulation"
-      subtitle={levelCompleted ? "Simulation Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      title="Badge: Solo Trip Simulation"
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="uvls"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
-      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!levelCompleted && currentQuestionData ? (
+      <div className="space-y-8">
+        {!showResult && currentChallengeData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
               
-              <p className="text-white text-lg md:text-xl mb-6 text-center">
-                {currentQuestionData.text}
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallengeData.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallengeData.question}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map(option => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleAnswer(option.id)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                        showCorrect
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallengeData.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
                           ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : showIncorrect
-                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                          : isSelected
-                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-2xl mb-2">{option.emoji}</div>
-                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
-                    </button>
-                  );
-                })}
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>

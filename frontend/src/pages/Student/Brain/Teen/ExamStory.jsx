@@ -61,9 +61,9 @@ const ExamStory = () => {
       id: 1,
       text: "Jamie studies for 1 hour with their phone nearby. Will this lead to strong focus?",
       choices: [
-        { id: 'no', text: 'No' },
-        { id: 'yes', text: 'Yes' },
-        { id: 'maybe', text: 'Maybe, depends on the person' }
+        { id: 'no', text: 'No', emoji: '🤯' },
+        { id: 'yes', text: 'Yes', emoji: '📱' },
+        { id: 'maybe', text: 'Maybe, depends on the person', emoji: '🤷' }
       ],
       correct: 'no',
       explanation: 'Having your phone nearby while studying is a major distraction that reduces focus and retention. A phone-free environment is best for effective studying!'
@@ -72,9 +72,9 @@ const ExamStory = () => {
       id: 2,
       text: "What is the most effective study technique for long-term retention?",
       choices: [
-        { id: 'a', text: 'Cramming the night before' },
-        { id: 'b', text: 'Spaced repetition' },
-        { id: 'c', text: 'Highlighting text only' }
+        { id: 'a', text: 'Cramming the night before', emoji: '😰' },
+        { id: 'b', text: 'Spaced repetition', emoji: '📅' },
+        { id: 'c', text: 'Highlighting text only', emoji: '📝' }
       ],
       correct: 'b',
       explanation: 'Spaced repetition involves reviewing material at increasing intervals, which strengthens long-term memory retention!'
@@ -83,9 +83,9 @@ const ExamStory = () => {
       id: 3,
       text: "How does multitasking affect exam performance?",
       choices: [
-        { id: 'a', text: 'Improves performance' },
-        { id: 'c', text: 'Has no effect' },
-        { id: 'b', text: 'Reduces efficiency by up to 40%' }
+        { id: 'a', text: 'Improves performance', emoji: '📈' },
+        { id: 'c', text: 'Has no effect', emoji: '⏸️' },
+        { id: 'b', text: 'Reduces efficiency by up to 40%', emoji: '📉' }
       ],
       correct: 'b',
       explanation: 'Multitasking actually reduces productivity and increases errors, as the brain struggles to switch between tasks!'
@@ -94,9 +94,9 @@ const ExamStory = () => {
       id: 4,
       text: "What is the benefit of taking short breaks during study sessions?",
       choices: [
-        { id: 'b', text: 'Prevents mental fatigue' },
-        { id: 'a', text: 'Decreases focus' },
-        { id: 'c', text: 'Wastes valuable study time' }
+        { id: 'b', text: 'Prevents mental fatigue', emoji: '😴' },
+        { id: 'a', text: 'Decreases focus', emoji: '😵' },
+        { id: 'c', text: 'Wastes valuable study time', emoji: '⏰' }
       ],
       correct: 'b',
       explanation: 'Short breaks help prevent mental fatigue and maintain optimal concentration throughout study sessions!'
@@ -105,9 +105,9 @@ const ExamStory = () => {
       id: 5,
       text: "Which environment is best for exam preparation?",
       choices: [
-        { id: 'a', text: 'Noisy café with friends' },
-        { id: 'c', text: 'Loud party atmosphere' },
-        { id: 'b', text: 'Quiet, dedicated study space' }
+        { id: 'a', text: 'Noisy café with friends', emoji: '☕' },
+        { id: 'c', text: 'Loud party atmosphere', emoji: '🎉' },
+        { id: 'b', text: 'Quiet, dedicated study space', emoji: '🤫' }
       ],
       correct: 'b',
       explanation: 'A quiet, dedicated study space minimizes distractions and maximizes focus and retention!'
@@ -225,7 +225,10 @@ const ExamStory = () => {
                         : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
                     } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none text-white font-bold text-sm md:text-base`}
                   >
-                    {choice.text}
+                    <div className="flex flex-col items-center">
+                      <span className="text-2xl mb-1">{choice.emoji}</span>
+                      <span>{choice.text}</span>
+                    </div>
                   </button>
                 );
               })}

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from '../../../../utils/getGameData';
+import { getUvlsKidsGames } from '../../../../pages/Games/GameCategories/UVLS/kidGamesData';
 
 const LittleEmpathBadge = () => {
   const navigate = useNavigate();
@@ -21,38 +22,67 @@ const LittleEmpathBadge = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [scenario, setScenario] = useState(0);
-  const [decisions, setDecisions] = useState([]);
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getUvlsKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const scenarios = [
+  const challenges = [
     {
       id: 1,
       title: "Friend is Sad",
       description: "Your friend looks sad and is sitting alone. What do you do?",
-      choices: [
+      question: "Your friend looks sad and is sitting alone. What do you do?",
+      options: [
         { 
-          id: "comfort", 
-          text: "Go and comfort them", 
+          text: "Go and comfort them - Ask what's wrong and offer support", 
           emoji: "🤗", 
-          description: "Ask what's wrong and offer support",
           isCorrect: true
         },
         { 
-          id: "ignore", 
-          text: "Ignore them", 
+          text: "Ignore them - Pretend you don't notice", 
           emoji: "🙈", 
-          description: "Pretend you don't notice",
           isCorrect: false
         },
         { 
-          id: "laugh", 
-          text: "Laugh with others", 
+          text: "Laugh with others - Continue playing with other friends", 
           emoji: "😂", 
-          description: "Continue playing with other friends",
+          isCorrect: false
+        },
+        { 
+          text: "Tell them to cheer up - Just be positive", 
+          emoji: "😊", 
           isCorrect: false
         }
       ]
@@ -61,26 +91,26 @@ const LittleEmpathBadge = () => {
       id: 2,
       title: "Someone Needs Help",
       description: "A classmate is struggling with their homework. What do you do?",
-      choices: [
+      question: "A classmate is struggling with their homework. What do you do?",
+      options: [
         { 
-          id: "busy", 
-          text: "Say you're busy", 
+          text: "Say you're busy - Tell them you don't have time", 
           emoji: "⏰", 
-          description: "Tell them you don't have time",
           isCorrect: false
         },
         { 
-          id: "help", 
-          text: "Offer to help", 
+          text: "Offer to help - Sit with them and help explain", 
           emoji: "🤝", 
-          description: "Sit with them and help explain",
           isCorrect: true
         },
         { 
-          id: "laugh", 
-          text: "Make fun of them", 
+          text: "Make fun of them - Tease them for not knowing", 
           emoji: "😏", 
-          description: "Tease them for not knowing",
+          isCorrect: false
+        },
+        { 
+          text: "Tell the teacher - Let an adult handle it", 
+          emoji: "👩‍🏫", 
           isCorrect: false
         }
       ]
@@ -89,27 +119,27 @@ const LittleEmpathBadge = () => {
       id: 3,
       title: "New Student",
       description: "A new student joins your class and looks nervous. What do you do?",
-      choices: [
+      question: "A new student joins your class and looks nervous. What do you do?",
+      options: [
         { 
-          id: "ignore", 
-          text: "Ignore the new student", 
+          text: "Ignore the new student - Continue with your friends", 
           emoji: "🙈", 
-          description: "Continue with your friends",
           isCorrect: false
         },
         { 
-          id: "tease", 
-          text: "Tease them", 
+          text: "Tease them - Make jokes about them being new", 
           emoji: "😏", 
-          description: "Make jokes about them being new",
           isCorrect: false
         },
         { 
-          id: "welcome", 
-          text: "Welcome and befriend them", 
+          text: "Welcome and befriend them - Introduce yourself and show them around", 
           emoji: "👋", 
-          description: "Introduce yourself and show them around",
           isCorrect: true
+        },
+        { 
+          text: "Wait for others to approach them - Let someone else make the first move", 
+          emoji: "🤔", 
+          isCorrect: false
         }
       ]
     },
@@ -117,26 +147,26 @@ const LittleEmpathBadge = () => {
       id: 4,
       title: "Someone is Excluded",
       description: "You see someone being left out of a game. What do you do?",
-      choices: [
+      question: "You see someone being left out of a game. What do you do?",
+      options: [
         { 
-          id: "include", 
-          text: "Invite them to join", 
+          text: "Invite them to join - Ask them to play with your group", 
           emoji: "🤝", 
-          description: "Ask them to play with your group",
           isCorrect: true
         },
         { 
-          id: "ignore", 
-          text: "Do nothing", 
+          text: "Do nothing - Continue playing without them", 
           emoji: "🙈", 
-          description: "Continue playing without them",
           isCorrect: false
         },
         { 
-          id: "laugh", 
-          text: "Laugh along", 
+          text: "Laugh along - Join others in excluding them", 
           emoji: "😂", 
-          description: "Join others in excluding them",
+          isCorrect: false
+        },
+        { 
+          text: "Tell a teacher - Report the exclusion", 
+          emoji: "👩‍🏫", 
           isCorrect: false
         }
       ]
@@ -145,75 +175,62 @@ const LittleEmpathBadge = () => {
       id: 5,
       title: "Friend Made a Mistake",
       description: "Your friend accidentally broke something and feels bad. What do you do?",
-      choices: [
+      question: "Your friend accidentally broke something and feels bad. What do you do?",
+      options: [
         { 
-          id: "blame", 
-          text: "Blame them", 
+          text: "Blame them - Tell them it's their fault", 
           emoji: "👆", 
-          description: "Tell them it's their fault",
           isCorrect: false
         },
         { 
-          id: "support", 
-          text: "Support and reassure them", 
+          text: "Support and reassure them - Tell them it's okay and help fix it", 
           emoji: "💪", 
-          description: "Tell them it's okay and help fix it",
           isCorrect: true
         },
         { 
-          id: "laugh", 
-          text: "Make fun of them", 
+          text: "Make fun of them - Tease them about the mistake", 
           emoji: "😏", 
-          description: "Tease them about the mistake",
+          isCorrect: false
+        },
+        { 
+          text: "Tell an adult - Let a grown-up handle the situation", 
+          emoji: "👩‍🏫", 
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleDecision = (selectedChoice) => {
+  const handleChoice = (isCorrect) => {
     if (answered) return;
     
     setAnswered(true);
     resetFeedback();
     
-    const newDecisions = [...decisions, { 
-      scenarioId: scenarios[scenario].id, 
-      choice: selectedChoice,
-      isCorrect: scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect
-    }];
-    
-    setDecisions(newDecisions);
-    
-    // If the choice is correct, show flash/confetti and update score
-    const isCorrect = scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setFinalScore(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    // Move to next scenario or show results
-    if (scenario < scenarios.length - 1) {
-      setTimeout(() => {
-        setScenario(prev => prev + 1);
-        setAnswered(false);
-        resetFeedback();
-      }, 500);
-    } else {
-      setTimeout(() => {
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
         setShowResult(true);
-      }, 500);
-    }
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setScenario(0);
-    setDecisions([]);
-    setFinalScore(0);
+    setChallenge(0);
+    setScore(0);
     setAnswered(false);
+    setSelectedAnswer(null);
     resetFeedback();
   };
 
@@ -221,85 +238,83 @@ const LittleEmpathBadge = () => {
     navigate("/games/uvls/kids");
   };
 
-  const getCurrentScenario = () => scenarios[scenario];
+  const currentChallenge = challenges[challenge];
 
   return (
     <GameShell
       title="Badge: Little Empath"
-      subtitle={!showResult ? `Scenario ${scenario + 1} of ${scenarios.length}` : "Quiz Complete!"}
-      showGameOver={showResult}
-      score={finalScore}
-      gameId={gameId}
-      gameType="uvls"
-      totalLevels={scenarios.length}
-      maxScore={scenarios.length}
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      currentLevel={scenario + 1}
-      showConfetti={showResult && finalScore >= 3}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="uvls"
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      backPath="/games/uvls/kids"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
       <div className="space-y-8">
-        {!showResult && getCurrentScenario() ? (
+        {!showResult && currentChallenge ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Scenario {scenario + 1}/{scenarios.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{scenarios.length}</span>
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
               
-              <h3 className="text-xl font-bold text-white mb-2">{getCurrentScenario().title}</h3>
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
               <p className="text-white text-lg mb-6">
-                {getCurrentScenario().description}
+                {currentChallenge.question}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getCurrentScenario().choices.map(choice => {
-                  const isCorrect = choice.isCorrect;
-                  const isSelected = decisions.length > 0 && decisions[decisions.length - 1]?.scenarioId === scenarios[scenario].id && decisions[decisions.length - 1]?.choice === choice.id;
-                  
-                  return (
-                    <button
-                      key={choice.id}
-                      onClick={() => handleDecision(choice.id)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform ${
-                        answered
-                          ? isCorrect && isSelected
-                            ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                            : isSelected && !isCorrect
-                            ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                            : isCorrect
-                            ? "bg-green-500/20 border-2 border-green-400"
-                            : "bg-gray-500/20 border-2 border-gray-400 opacity-50"
-                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-2xl mb-2">{choice.emoji}</div>
-                      <h4 className="font-bold text-xl mb-2">{choice.text}</h4>
-                      <p className={answered ? "text-white/90" : "text-white/90"}>{choice.description}</p>
-                    </button>
-                  );
-                })}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSelectedAnswer(index);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === index
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 3 ? (
+            {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Little Empath Badge Earned!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You got {finalScore} out of {scenarios.length} correct!
+                  You got {score} out of {challenges.length} correct!
                   You show great empathy and kindness!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{finalScore} Coins</span>
+                  <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
                   Lesson: Empathy means understanding and caring about how others feel. You've shown you can be a great friend!
@@ -310,7 +325,7 @@ const LittleEmpathBadge = () => {
                 <div className="text-5xl mb-4">💪</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You got {finalScore} out of {scenarios.length} correct.
+                  You got {score} out of {challenges.length} correct.
                   Remember: Empathy means understanding how others feel and helping them!
                 </p>
                 <button

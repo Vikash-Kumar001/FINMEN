@@ -128,11 +128,7 @@ const BadgeInnovatorHero = () => {
           emoji: "📋", 
           isCorrect: false
         },
-        { 
-          text: "Creating new solutions to problems", 
-          emoji: "🎨", 
-          isCorrect: true
-        },
+      
         { 
           text: "Avoiding challenges", 
           emoji: "🚫", 
@@ -142,7 +138,12 @@ const BadgeInnovatorHero = () => {
           text: "Never trying new things", 
           emoji: "😐", 
           isCorrect: false
-        }
+        },
+          { 
+          text: "Creating new solutions to problems", 
+          emoji: "🎨", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -163,16 +164,17 @@ const BadgeInnovatorHero = () => {
           emoji: "🙈", 
           isCorrect: false
         },
+         { 
+          text: "With creative and original solutions", 
+          emoji: "💡", 
+          isCorrect: true
+        },
         { 
           text: "By giving up quickly", 
           emoji: "🚫", 
           isCorrect: false
         },
-        { 
-          text: "With creative and original solutions", 
-          emoji: "💡", 
-          isCorrect: true
-        }
+       
       ]
     },
     {

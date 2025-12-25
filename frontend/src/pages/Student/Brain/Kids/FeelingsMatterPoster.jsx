@@ -31,7 +31,7 @@ const FeelingsMatterPoster = () => {
     {
       question: 'Which poster best shows "It\'s Okay to Feel"?',
       choices: [
-        { text: "Poster showing different emotions are normal", correct: true, emoji: "😊😢😠" },
+        { text: "Poster showing different emotions are normal", correct: true, emoji: "😠" },
         { text: "Poster showing only happy faces", correct: false, emoji: "😊" },
         { text: "Poster showing only sad faces", correct: false, emoji: "😢" }
       ]
@@ -40,14 +40,14 @@ const FeelingsMatterPoster = () => {
       question: 'Which poster best shows "Feelings Matter"?',
       choices: [
         { text: "Poster showing only objects", correct: false, emoji: "📦" },
-        { text: "Poster showing emotions are important", correct: true, emoji: "💭❤️" },
+        { text: "Poster showing emotions are important", correct: true, emoji: "❤️" },
         { text: "Poster showing only games", correct: false, emoji: "🎮" }
       ]
     },
     {
       question: 'Which poster best shows "Express Your Feelings"?',
       choices: [
-        { text: "Poster showing talking about feelings", correct: true, emoji: "🗣️💬" },
+        { text: "Poster showing talking about feelings", correct: true, emoji: "🗣️" },
         { text: "Poster showing hiding emotions", correct: false, emoji: "🤐" },
         { text: "Poster showing only silence", correct: false, emoji: "🤫" }
       ]
@@ -56,7 +56,7 @@ const FeelingsMatterPoster = () => {
       question: 'Which poster best shows "All Emotions Are Valid"?',
       choices: [
         { text: "Poster showing only one emotion", correct: false, emoji: "😊" },
-        { text: "Poster showing all feelings are okay", correct: true, emoji: "🌈💭" },
+        { text: "Poster showing all feelings are okay", correct: true, emoji: "🌈" },
         { text: "Poster showing only negative emotions", correct: false, emoji: "😢" }
       ]
     },
@@ -65,7 +65,7 @@ const FeelingsMatterPoster = () => {
       choices: [
         { text: "Poster showing keeping feelings inside", correct: false, emoji: "🔒" },
         { text: "Poster showing only being alone", correct: false, emoji: "🚶" },
-        { text: "Poster showing talking to trusted adults", correct: true, emoji: "👨‍👩‍👧💬" }
+        { text: "Poster showing talking to trusted adults", correct: true, emoji: "👨‍👩‍👧" }
       ]
     }
   ];

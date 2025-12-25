@@ -59,21 +59,18 @@ const ListenDeep = () => {
           id: "validate", 
           text: "I hear you're feeling overwhelmed. That sounds really tough. Want to talk about it?", 
           emoji: "💬", 
-          description: "Show understanding and offer support",
           isCorrect: true
         },
         { 
           id: "dismiss", 
           text: "Just study harder and you'll be fine.", 
           emoji: "📚", 
-          description: "Minimize their feelings",
           isCorrect: false
         },
         { 
           id: "ignore", 
           text: "Everyone feels that way, it's no big deal.", 
           emoji: "🙈", 
-          description: "Dismiss their concerns",
           isCorrect: false
         }
       ]
@@ -86,21 +83,18 @@ const ListenDeep = () => {
           id: "dismiss", 
           text: "Just ignore it and focus on school.", 
           emoji: "🙈", 
-          description: "Avoid the problem",
           isCorrect: false
         },
         { 
           id: "validate", 
           text: "That must be really hard for you. I'm here if you need to talk.", 
           emoji: "🤝", 
-          description: "Acknowledge their feelings and offer support",
           isCorrect: true
         },
         { 
           id: "compare", 
           text: "My parents fight too, it's normal.", 
           emoji: "😐", 
-          description: "Compare situations",
           isCorrect: false
         }
       ]
@@ -113,21 +107,18 @@ const ListenDeep = () => {
           id: "validate", 
           text: "I understand feeling lonely is really painful. Would you like to hang out sometime?", 
           emoji: "💝", 
-          description: "Validate their feelings and offer connection",
           isCorrect: true
         },
         { 
           id: "blame", 
           text: "You probably need to be more outgoing.", 
           emoji: "👆", 
-          description: "Blame them for the situation",
           isCorrect: false
         },
         { 
           id: "dismiss", 
           text: "Just join a club or something.", 
           emoji: "🏃", 
-          description: "Give simple advice without listening",
           isCorrect: false
         }
       ]
@@ -140,21 +131,18 @@ const ListenDeep = () => {
           id: "dismiss", 
           text: "Just cheer up and think positive!", 
           emoji: "😊", 
-          description: "Minimize their feelings",
           isCorrect: false
         },
         { 
           id: "validate", 
           text: "I'm sorry you're going through this. That sounds really difficult. Have you talked to anyone about how you're feeling?", 
           emoji: "💙", 
-          description: "Show empathy and suggest getting help",
           isCorrect: true
         },
         { 
           id: "minimize", 
           text: "Everyone gets sad sometimes, just get over it.", 
           emoji: "🤷", 
-          description: "Dismiss their emotions",
           isCorrect: false
         }
       ]
@@ -167,21 +155,18 @@ const ListenDeep = () => {
           id: "validate", 
           text: "I can imagine how disappointing that must feel after all your hard work. That really stings. Want to talk about what's next?", 
           emoji: "💭", 
-          description: "Acknowledge their effort and disappointment",
           isCorrect: true
         },
         { 
           id: "dismiss", 
           text: "It's not the end of the world, there are other colleges.", 
           emoji: "🌍", 
-          description: "Minimize their disappointment",
           isCorrect: false
         },
         { 
           id: "hurtful", 
           text: "Maybe you just weren't good enough for that school.", 
           emoji: "😞", 
-          description: "Say something hurtful",
           isCorrect: false
         }
       ]
@@ -277,7 +262,6 @@ const ListenDeep = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Paintbrush } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const PosterPlanFirst = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -22,86 +21,69 @@ const PosterPlanFirst = () => {
   const [currentStage, setCurrentStage] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
 
   const stages = [
     {
-      question: "What is the first step in creating a budget?",
+      question: "Which poster would best teach kids the first step in financial planning?",
       choices: [
         { text: "Buy what you want immediately 🛍️", correct: false },
-        { text: "List your income and expenses 📋", correct: true },
+        { text: "Plan your spending before buying 📋", correct: true },
         { text: "Spend all your money 🎉", correct: false },
-        { text: "Hide your money 🏺", correct: false }
       ],
     },
     {
-      question: "What should you do if your expenses are higher than your income?",
+      question: "What poster would best show what to do when planning your money?",
       choices: [
-        { text: "Ignore the problem 🙈", correct: false },
-        { text: "Spend more money 🤑", correct: false },
-        { text: "Find ways to reduce expenses or increase income 💡", correct: true },
-        { text: "Give up on budgeting 🏃", correct: false }
+        { text: "Ignore your spending 🙈", correct: false },
+        { text: "Plan more purchases 🤑", correct: false },
+        { text: "Plan how to balance your money 💡", correct: true },
       ],
     },
     {
-      question: "Why is it important to track your spending?",
+      question: "Which poster would best explain why planning your spending is important?",
       choices: [
-        { text: "To understand where your money goes 🔍", correct: true },
+        { text: "To know where your money goes 🔍", correct: true },
         { text: "To spend more freely 💳", correct: false },
-        { text: "To avoid paying bills 📉", correct: false },
-        { text: "To make budgeting more difficult 🤯", correct: false }
+        { text: "To avoid planning 📉", correct: false },
       ],
     },
     {
-      question: "What is a good strategy for sticking to a budget?",
+      question: "What poster would best illustrate a good strategy for planning your money?",
       choices: [
         { text: "Spend whenever you feel like it 🔄", correct: false },
-        { text: "Avoid checking your bank account 🙅", correct: false },
-        { text: "Set spending limits and review regularly 📊", correct: true },
-        { text: "Use all your credit cards 🎴", correct: false }
+        { text: "Avoid planning your spending 🙅", correct: false },
+        { text: "Plan limits and review regularly 📊", correct: true },
       ],
     },
     {
-      question: "What is the benefit of saving money before buying non-essential items?",
+      question: "Which poster would best show the benefit of planning before making purchases?",
       choices: [
+        { text: "You can make thoughtful purchases ✅", correct: true },
         { text: "You can spend more money overall 💸", correct: false },
         { text: "You will never enjoy anything 🙁", correct: false },
-        { text: "You will become rich instantly 💰", correct: false },
-        { text: "You can make thoughtful purchases without guilt ✅", correct: true },
       ],
     }
   ];
 
   const handleSelect = (isCorrect) => {
-    if (answered) return; // Prevent multiple clicks
-    
-    setAnswered(true);
     resetFeedback();
-    
     if (isCorrect) {
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    
-    const isLastQuestion = currentStage === stages.length - 1;
-    
-    // Move to next question or show results after a short delay
-    setTimeout(() => {
-      if (isLastQuestion) {
-        setShowResult(true);
-      } else {
-        setCurrentStage((prev) => prev + 1);
-        setAnswered(false);
-      }
-    }, 500);
+    if (currentStage < stages.length - 1) {
+      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    } else {
+      setTimeout(() => setShowResult(true), 800);
+    }
   };
 
   const finalScore = score;
 
   return (
     <GameShell
-      title="Budgeting Basics"
-      subtitle={`Question ${currentStage + 1} of ${stages.length}: Test your budgeting knowledge!`}
+      title="Poster: Plan First"
+      subtitle={`Question ${currentStage + 1} of ${stages.length}: Choose posters that promote good planning!`}
       coins={score}
       currentLevel={currentStage + 1}
       totalLevels={5}
@@ -126,8 +108,8 @@ const PosterPlanFirst = () => {
               <button
                 key={idx}
                 onClick={() => handleSelect(choice.correct)}
-                className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-green-600 transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={answered || showResult}
+                className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-emerald-600 transition-transform hover:scale-105"
+                disabled={showResult}
               >
                 <div className="text-lg font-semibold">{choice.text}</div>
               </button>

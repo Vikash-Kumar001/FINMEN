@@ -6,7 +6,7 @@ import { getGameDataById } from "../../../../utils/getGameData";
 import { Power, Monitor, Zap, Book } from 'lucide-react';
 
 const TOTAL_ROUNDS = 5;
-const ROUND_TIME = 8;
+const ROUND_TIME = 10;
 
 const ScreenAlertReflex = () => {
   const location = useLocation();
@@ -32,58 +32,189 @@ const ScreenAlertReflex = () => {
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [answered, setAnswered] = useState(false);
   const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
   const questions = [
     {
       id: 1,
-      question: "Is 'Log Off' a balanced screen choice?",
-      action: "Log Off",
-      type: "good",
-      emoji: "🔌",
-      icon: <Power className="w-8 h-8" />
+      text: "Which is a balanced screen choice?",
+      options: [
+        
+        { 
+          id: "keep-scrolling", 
+          text: "Keep Scrolling", 
+          emoji: "📱", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        },
+        { 
+          id: "log-off", 
+          text: "Log Off", 
+          emoji: "🔌", 
+          description: "A balanced screen choice",
+          isCorrect: true
+        },
+        { 
+          id: "game-all-day", 
+          text: "Game All Day", 
+          emoji: "🎮", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        },
+        { 
+          id: "watch-all-night", 
+          text: "Watch all night", 
+          emoji: "📺", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      question: "Is 'Keep Scrolling' a balanced screen choice?",
-      action: "Keep Scrolling",
-      type: "bad",
-      emoji: "📱",
-      icon: <Monitor className="w-8 h-8" />
+      text: "Which is a balanced screen choice?",
+      options: [
+        { 
+          id: "screen-break", 
+          text: "Take a screen break", 
+          emoji: "⏸️", 
+          description: "A balanced screen choice",
+          isCorrect: true
+        },
+        { 
+          id: "non-stop-gaming", 
+          text: "Non-stop gaming", 
+          emoji: "🎮", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        },
+        { 
+          id: "marathon-watch", 
+          text: "Marathon watching", 
+          emoji: "📺", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        },
+        { 
+          id: "late-phone", 
+          text: "Use phone until late", 
+          emoji: "📱", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      question: "Is 'Screen Break' a balanced screen choice?",
-      action: "Screen Break",
-      type: "good",
-      emoji: "⏸️",
-      icon: <Zap className="w-8 h-8" />
+      text: "Which is a balanced screen choice?",
+      options: [
+        
+        { 
+          id: "stare-screen", 
+          text: "Stare at screen continuously", 
+          emoji: "👀", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        },
+        { 
+          id: "no-breaks", 
+          text: "No breaks while using screens", 
+          emoji: "⏰", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        },
+        { 
+          id: "all-day-scrolling", 
+          text: "Scroll all day", 
+          emoji: "📱", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        },
+        { 
+          id: "rest-eyes", 
+          text: "Rest your eyes", 
+          emoji: "😴", 
+          description: "A balanced screen choice",
+          isCorrect: true
+        },
+      ]
     },
     {
       id: 4,
-      question: "Is 'Game All Day' a balanced screen choice?",
-      action: "Game All Day",
-      type: "bad",
-      emoji: "🎮",
-      icon: <Monitor className="w-8 h-8" />
+      text: "Which is a balanced screen choice?",
+      options: [
+        
+        { 
+          id: "ignore-time", 
+          text: "Ignore time limits", 
+          emoji: "⏱️", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        },
+        { 
+          id: "excessive-use", 
+          text: "Excessive screen use", 
+          emoji: "💻", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        },
+        { 
+          id: "limit-time", 
+          text: "Limit screen time", 
+          emoji: "⏰", 
+          description: "A balanced screen choice",
+          isCorrect: true
+        },
+        { 
+          id: "no-timeout", 
+          text: "No timeout breaks", 
+          emoji: "📱", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      question: "Is 'Rest Eyes' a balanced screen choice?",
-      action: "Rest Eyes",
-      type: "good",
-      emoji: "😴",
-      icon: <Book className="w-8 h-8" />
+      text: "Which is a balanced screen choice?",
+      options: [
+        { 
+          id: "balanced-schedule", 
+          text: "Follow a balanced screen schedule", 
+          emoji: "📅", 
+          description: "A balanced screen choice",
+          isCorrect: true
+        },
+        { 
+          id: "random-time", 
+          text: "Random screen time", 
+          emoji: "🔄", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        },
+        { 
+          id: "all-screens", 
+          text: "Use all screens at once", 
+          emoji: "💻📱📺", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        },
+        { 
+          id: "no-limits", 
+          text: "No screen limits", 
+          emoji: "🔓", 
+          description: "An unbalanced screen choice",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleTimeUp = useCallback(() => {
-    if (currentRound < TOTAL_ROUNDS) {
-      setCurrentRound(prev => prev + 1);
-    } else {
-      setGameState("finished");
-    }
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
   }, [currentRound]);
 
+  // Reset timeLeft and answered when round changes
   useEffect(() => {
     if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
       setTimeLeft(ROUND_TIME);
@@ -91,26 +222,24 @@ const ScreenAlertReflex = () => {
     }
   }, [currentRound, gameState]);
 
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
+    }
+  }, []);
+
   // Timer effect
   useEffect(() => {
-    if (gameState === "playing" && !answered && timeLeft > 0 && currentRound > 0) {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-
+    if (gameState === "playing" && !answered && timeLeft > 0) {
       timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          const newTime = prev - 1;
-          if (newTime <= 0) {
-            if (timerRef.current) {
-              clearInterval(timerRef.current);
-              timerRef.current = null;
-            }
+        setTimeLeft(prev => {
+          if (prev <= 1) {
             handleTimeUp();
             return 0;
           }
-          return newTime;
+          return prev - 1;
         });
       }, 1000);
     } else {
@@ -126,7 +255,7 @@ const ScreenAlertReflex = () => {
         timerRef.current = null;
       }
     };
-  }, [gameState, answered, timeLeft, currentRound, handleTimeUp]);
+  }, [gameState, answered, timeLeft, handleTimeUp]);
 
   const startGame = () => {
     setGameState("playing");
@@ -137,23 +266,16 @@ const ScreenAlertReflex = () => {
     resetFeedback();
   };
 
-  const handleAnswer = (answerType) => {
+  const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
-    
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
     
     setAnswered(true);
     resetFeedback();
     
-    const currentQ = questions[currentRound - 1];
-    const isCorrect = (answerType === "tap" && currentQ.type === "good") || 
-                      (answerType === "skip" && currentQ.type === "bad");
+    const isCorrect = option.isCorrect;
     
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
@@ -165,77 +287,81 @@ const ScreenAlertReflex = () => {
       } else {
         setGameState("finished");
       }
-    }, 1000);
+    }, 500);
   };
 
-  const currentQ = questions[currentRound - 1];
+  const finalScore = score;
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Screen Alert"
-      subtitle={gameState === "ready" ? "Get Ready!" : gameState === "playing" ? `Round ${currentRound} of ${TOTAL_ROUNDS}` : "Game Complete!"}
-      score={score}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your screen balance reflexes!` : "Test your screen balance reflexes!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
       showGameOver={gameState === "finished"}
-      maxScore={TOTAL_ROUNDS}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showConfetti={gameState === "finished" && score >= 3}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
       gameId={gameId}
       gameType="brain"
-    >
-      <div className="space-y-8">
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="text-center text-white space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h3 className="text-2xl font-bold text-white mb-4">Tap for balanced screen choices, skip for unbalanced ones!</h3>
-            <p className="text-white/90 mb-6">You'll see screen choices. Tap if it's balanced, skip if it's unbalanced.</p>
+            <div className="text-5xl mb-6">📱</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Identify balanced screen choices!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
             <button
               onClick={startGame}
-              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-8 rounded-full font-bold transition-all"
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
             >
               Start Game
             </button>
           </div>
         )}
 
-        {gameState === "playing" && currentQ && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Round {currentRound}/{TOTAL_ROUNDS}</span>
-              <span className="text-yellow-400 font-bold">Score: {score}/{TOTAL_ROUNDS}</span>
-              <span className="text-red-400 font-bold">Time: {timeLeft}s</span>
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
             </div>
-            
-            <div className="text-center mb-8">
-              <div className="text-6xl mb-4">{currentQ.emoji}</div>
-              <h3 className="text-3xl font-bold text-white mb-2">{currentQ.action}</h3>
-              <p className="text-white/80 text-lg">{currentQ.question}</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                onClick={() => handleAnswer("tap")}
-                disabled={answered}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                <div className="text-3xl mb-2">👆</div>
-                <h3 className="font-bold text-xl">Tap</h3>
-                <p className="text-white/90 text-sm">Balanced</p>
-              </button>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.text}
+              </h3>
               
-              <button
-                onClick={() => handleAnswer("skip")}
-                disabled={answered}
-                className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                <div className="text-3xl mb-2">⏭️</div>
-                <h3 className="font-bold text-xl">Skip</h3>
-                <p className="text-white/90 text-sm">Unbalanced</p>
-              </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

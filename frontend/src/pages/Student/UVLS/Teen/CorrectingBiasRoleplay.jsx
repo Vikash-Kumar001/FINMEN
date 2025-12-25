@@ -56,21 +56,18 @@ const CorrectingBiasRoleplay = () => {
           id: "a", 
           text: "Hey, that's not true. Many girls excel at math, and everyone can learn it.", 
           emoji: "🔢",
-          description: "Challenges bias respectfully",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "You're being sexist and ignorant!", 
           emoji: "😠",
-          description: "Too aggressive",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Whatever, I don't care.", 
           emoji: "🤷",
-          description: "Doesn't address the bias",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const CorrectingBiasRoleplay = () => {
           id: "b", 
           text: "You're racist! Stop talking!", 
           emoji: "😤",
-          description: "Too aggressive",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "That's a stereotype. I know hardworking people from many countries.", 
           emoji: "🌍",
-          description: "Challenges stereotype respectfully",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Just ignore and walk away", 
           emoji: "🚶",
-          description: "Doesn't address the bias",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const CorrectingBiasRoleplay = () => {
           id: "a", 
           text: "Hey, using 'gay' as an insult is hurtful. Let's choose better words.", 
           emoji: "🏳️‍🌈",
-          description: "Addresses the issue respectfully",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Shut up, you're so offensive!", 
           emoji: "😠",
-          description: "Too aggressive",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Say nothing but feel uncomfortable", 
           emoji: "😐",
-          description: "Doesn't address the problem",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const CorrectingBiasRoleplay = () => {
           id: "c", 
           text: "Just laugh along", 
           emoji: "😄",
-          description: "Doesn't challenge the bias",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Actually, many successful people in that field are from all genders. Anyone can do it.", 
           emoji: "💼",
-          description: "Provides respectful correction",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "You're so wrong!", 
           emoji: "❌",
-          description: "Not constructive",
           isCorrect: false
         }
       ]
@@ -164,21 +152,18 @@ const CorrectingBiasRoleplay = () => {
           id: "a", 
           text: "That's not accurate. Many people with disabilities excel in various fields with accommodations.", 
           emoji: "♿",
-          description: "Challenges bias with facts respectfully",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "That's mean!", 
           emoji: "😠",
-          description: "Too simplistic",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Maybe you're right", 
           emoji: "🤷",
-          description: "Doesn't challenge the bias",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const CorrectingBiasRoleplay = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

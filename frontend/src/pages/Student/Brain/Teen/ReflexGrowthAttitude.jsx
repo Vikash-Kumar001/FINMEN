@@ -1,11 +1,11 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
-import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
-const QUESTION_TIME = 10; // 10 seconds per question
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const ReflexGrowthAttitude = () => {
   const location = useLocation();
@@ -19,250 +19,235 @@ const ReflexGrowthAttitude = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
-  // Find next game path and ID if not provided in location.state
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    // First, try to get from location.state (passed from GameCategoryPage)
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    // Fallback: find next game from game data
-    try {
-      const games = getBrainTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
+  // Get nextGamePath and nextGameId from location.state
+  const nextGamePath = location.state?.nextGamePath || null;
+  const nextGameId = location.state?.nextGameId || null;
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
   const [score, setScore] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [showResult, setShowResult] = useState(false);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [answered, setAnswered] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
-  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
   const questions = [
     {
       id: 1,
-      text: "Which action shows growth mindset?",
+      question: "Which action shows growth mindset?",
+      correctAnswer: "Practice More",
       options: [
-        { id: "practice", text: "Practice More", emoji: "💪", description: "Shows determination", isCorrect: true },
-        { id: "giveup", text: "Give Up", emoji: "🚫", description: "Fixed mindset", isCorrect: false },
-        { id: "quit", text: "Quit Immediately", emoji: "🏃", description: "No persistence", isCorrect: false },
-        { id: "avoid", text: "Avoid Challenges", emoji: "🙈", description: "No growth", isCorrect: false }
+        { text: "Practice More", isCorrect: true, emoji: "💪" },
+        { text: "Give Up", isCorrect: false, emoji: "🚫" },
+        { text: "Quit Immediately", isCorrect: false, emoji: "🏃" },
+        { text: "Avoid Challenges", isCorrect: false, emoji: "🙈" }
       ]
     },
     {
       id: 2,
-      text: "What's the best response to difficulty?",
+      question: "What's the best response to difficulty?",
+      correctAnswer: "Keep Practicing",
       options: [
-        { id: "giveup", text: "Give Up", emoji: "🚫", description: "Fixed mindset", isCorrect: false },
-        { id: "persist", text: "Keep Practicing", emoji: "💪", description: "Growth mindset", isCorrect: true },
-        { id: "quit", text: "Quit", emoji: "🏃", description: "No effort", isCorrect: false },
-        { id: "blame", text: "Blame Others", emoji: "👆", description: "Avoids responsibility", isCorrect: false }
+        { text: "Give Up", isCorrect: false, emoji: "🚫" },
+        { text: "Keep Practicing", isCorrect: true, emoji: "💪" },
+        { text: "Quit", isCorrect: false, emoji: "🏃" },
+        { text: "Blame Others", isCorrect: false, emoji: "👆" }
       ]
     },
     {
       id: 3,
-      text: "How should you approach challenges?",
+      question: "How should you approach challenges?",
+      correctAnswer: "Practice and Improve",
       options: [
-        { id: "giveup", text: "Give Up", emoji: "🚫", description: "Fixed mindset", isCorrect: false },
-        { id: "avoid", text: "Avoid Challenges", emoji: "🙈", description: "No growth", isCorrect: false },
-        { id: "practice", text: "Practice and Improve", emoji: "📈", description: "Growth attitude", isCorrect: true },
-        { id: "quit", text: "Quit", emoji: "🏃", description: "No persistence", isCorrect: false }
+        { text: "Give Up", isCorrect: false, emoji: "🚫" },
+        { text: "Avoid Challenges", isCorrect: false, emoji: "🙈" },
+        { text: "Practice and Improve", isCorrect: true, emoji: "📈" },
+        { text: "Quit", isCorrect: false, emoji: "🏃" }
       ]
     },
     {
       id: 4,
-      text: "What demonstrates growth attitude?",
+      question: "What demonstrates growth attitude?",
+      correctAnswer: "Put in Effort",
       options: [
-        { id: "effort", text: "Put in Effort", emoji: "💪", description: "Shows growth", isCorrect: true },
-        { id: "giveup", text: "Give Up", emoji: "🚫", description: "Fixed mindset", isCorrect: false },
-        { id: "quit", text: "Quit", emoji: "🏃", description: "No effort", isCorrect: false },
-        { id: "avoid", text: "Avoid", emoji: "🙈", description: "No growth", isCorrect: false }
+        { text: "Put in Effort", isCorrect: true, emoji: "💪" },
+        { text: "Give Up", isCorrect: false, emoji: "🚫" },
+        { text: "Quit", isCorrect: false, emoji: "🏃" },
+        { text: "Avoid", isCorrect: false, emoji: "🙈" }
       ]
     },
     {
       id: 5,
-      text: "Which mindset leads to improvement?",
+      question: "Which mindset leads to improvement?",
+      correctAnswer: "Practice More",
       options: [
-        { id: "practice", text: "Practice More", emoji: "💪", description: "Growth mindset", isCorrect: true },
-        { id: "giveup", text: "Give Up", emoji: "🚫", description: "Fixed mindset", isCorrect: false },
-        { id: "quit", text: "Quit", emoji: "🏃", description: "No persistence", isCorrect: false },
-        { id: "avoid", text: "Avoid", emoji: "🙈", description: "No growth", isCorrect: false }
+        { text: "Practice More", isCorrect: true, emoji: "💪" },
+        { text: "Give Up", isCorrect: false, emoji: "🚫" },
+        { text: "Quit", isCorrect: false, emoji: "🏃" },
+        { text: "Avoid", isCorrect: false, emoji: "🙈" }
       ]
     }
   ];
 
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
+    }
+  }, []);
+
   // Timer effect
   useEffect(() => {
-    if (answered || showResult) return;
-
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          // Time's up - move to next question
-          handleTimeUp();
-          return QUESTION_TIME;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
 
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
+        timerRef.current = null;
       }
     };
-  }, [currentQuestion, answered, showResult]);
+  }, [gameState, answered, timeLeft, handleTimeUp]);
 
-  const handleTimeUp = () => {
-    if (answered) return;
-    setAnswered(true);
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
     resetFeedback();
-    showCorrectAnswerFeedback(0, false);
-    
-    setTimeout(() => {
-      moveToNextQuestion();
-    }, 1500);
   };
 
-  const moveToNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
-      setTimeLeft(QUESTION_TIME);
-      setAnswered(false);
-      setSelectedOptionId(null);
-    } else {
-      setShowResult(true);
-    }
-  };
-
-  const handleOptionClick = (optionId, isCorrect) => {
-    if (answered) return;
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
     
     setAnswered(true);
-    setSelectedOptionId(optionId);
     resetFeedback();
+    
+    const isCorrect = option.isCorrect;
     
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-    
+
     setTimeout(() => {
-      moveToNextQuestion();
-    }, 1500);
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
+      } else {
+        setGameState("finished");
+      }
+    }, 500);
   };
 
-  // Log when game completes and update location state with nextGameId
-  useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Reflex Growth Attitude game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
-      
-      // Update location state with nextGameId for GameOverModal
-      if (nextGameId && window.history && window.history.replaceState) {
-        const currentState = window.history.state || {};
-        window.history.replaceState({
-          ...currentState,
-          nextGameId: nextGameId
-        }, '');
-      }
-    }
-  }, [showResult, score, gameId, nextGamePath, nextGameId, questions.length]);
+  const finalScore = score;
 
-  const currentQuestionData = questions[currentQuestion];
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Growth Attitude"
-      score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your growth mindset reflexes!` : "Test your growth mindset reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      gameId={gameId}
-      gameType="brain"
-      showGameOver={showResult}
-      maxScore={questions.length}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
+      score={finalScore}
+      gameId={gameId}
+      gameType="brain"
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
-        {!showResult && currentQuestionData ? (
-          <div className="space-y-4 md:space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
-                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
-                <div className="flex items-center gap-4">
-                  <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
-                  <div className="bg-red-500/20 px-3 py-1 rounded-lg border border-red-400/30">
-                    <span className="text-red-300 font-bold text-sm md:text-base">⏱️ {timeLeft}s</span>
-                  </div>
-                </div>
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">🌱</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Answer questions about growth mindset!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
               
-              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
-                {currentQuestionData.text}
-              </p>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                {currentQuestionData.options.map((option) => {
-                  const isSelected = selectedOptionId === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleOptionClick(option.id, option.isCorrect)}
-                      disabled={answered}
-                      className={`p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
-                        showCorrect
-                          ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
-                          : showIncorrect
-                          ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
-                          : isSelected
-                          ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
-                      } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none`}
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-2xl">{option.emoji}</span>
-                        <span className="text-white font-bold text-sm md:text-base">{option.text}</span>
-                      </div>
-                      <div className="text-white/70 text-xs md:text-sm">{option.description}</div>
-                    </button>
-                  );
-                })}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        ) : null}
+        )}
       </div>
     </GameShell>
   );

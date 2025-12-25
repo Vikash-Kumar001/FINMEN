@@ -30,21 +30,19 @@ const EthicsRoleplay = () => {
           id: "a", 
           text: "Return it to the owner or teacher", 
           emoji: "💰", 
-          description: "Honest and responsible",
+         
           isCorrect: true 
         },
         { 
           id: "b", 
           text: "Keep it for yourself", 
           emoji: "🤫", 
-          description: "Dishonest",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Ignore it", 
           emoji: "🙈", 
-          description: "Not responsible",
           isCorrect: false 
         }
       ]
@@ -57,21 +55,18 @@ const EthicsRoleplay = () => {
           id: "b", 
           text: "Hide it and pretend you don't know", 
           emoji: "🕳️", 
-          description: "Dishonest",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Admit it and apologize", 
           emoji: "🙏", 
-          description: "Honest and responsible",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "Blame someone else", 
           emoji: "👉", 
-          description: "Dishonest and unfair",
           isCorrect: false 
         }
       ]
@@ -84,21 +79,18 @@ const EthicsRoleplay = () => {
           id: "b", 
           text: "Cheat too", 
           emoji: "📋", 
-          description: "Dishonest",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Do nothing", 
           emoji: "🫥", 
-          description: "Not responsible",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Tell the teacher privately", 
           emoji: "🧑‍🏫", 
-          description: "Honest and responsible",
           isCorrect: true 
         }
       ]
@@ -111,21 +103,18 @@ const EthicsRoleplay = () => {
           id: "b", 
           text: "Eat it secretly", 
           emoji: "🤐", 
-          description: "Dishonest",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Confess and apologize", 
           emoji: "🍪", 
-          description: "Honest and responsible",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "Share it with a friend", 
           emoji: "👭", 
-          description: "Still wrong",
           isCorrect: false 
         }
       ]
@@ -138,21 +127,18 @@ const EthicsRoleplay = () => {
           id: "b", 
           text: "Keep lying", 
           emoji: "🤥", 
-          description: "Dishonest",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Forget about it", 
           emoji: "😵", 
-          description: "Not responsible",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Tell the truth and do it", 
           emoji: "📖", 
-          description: "Honest and responsible",
           isCorrect: true 
         }
       ]

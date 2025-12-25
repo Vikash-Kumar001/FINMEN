@@ -56,21 +56,18 @@ const EqualityDebate = () => {
           id: "a", 
           text: "Laws enforce rights and we have examples from history showing policy impact", 
           emoji: "⚖️",
-          description: "Strong, evidence-based argument",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Policies are useless", 
           emoji: "❌",
-          description: "Weak argument",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Just my personal view", 
           emoji: "💭",
-          description: "Not a strong argument",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const EqualityDebate = () => {
           id: "b", 
           text: "Culture is irrelevant", 
           emoji: "🚫",
-          description: "Weak argument",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Norms shape behavior and we have local examples showing cultural impact", 
           emoji: "🌍",
-          description: "Strong, evidence-based argument",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "I just think so", 
           emoji: "🤷",
-          description: "Not a strong argument",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const EqualityDebate = () => {
           id: "a", 
           text: "Evidence, examples, and logical reasoning", 
           emoji: "📚",
-          description: "Well-supported argument",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Just stating your opinion", 
           emoji: "💭",
-          description: "Weak without support",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Saying the opposite person is wrong", 
           emoji: "👆",
-          description: "Not constructive",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const EqualityDebate = () => {
           id: "b", 
           text: "Insult the other person", 
           emoji: "😠",
-          description: "Not respectful",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ignore their points completely", 
           emoji: "🙈",
-          description: "Doesn't address the debate",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Acknowledge their points respectfully, then present counter-evidence", 
           emoji: "🤝",
-          description: "Respectful and effective",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const EqualityDebate = () => {
           id: "a", 
           text: "Summarize key points and restate your position clearly", 
           emoji: "📝",
-          description: "Strong conclusion",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Just stop talking", 
           emoji: "🔇",
-          description: "Weak conclusion",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Change your position completely", 
           emoji: "🔄",
-          description: "Inconsistent",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const EqualityDebate = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

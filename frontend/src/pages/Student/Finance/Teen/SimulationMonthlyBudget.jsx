@@ -51,6 +51,12 @@ const SimulationMonthlyBudget = () => {
           text: "Save everything", 
           emoji: "💰", 
           isCorrect: false
+        },
+        { 
+          id: "random", 
+          text: "Spend randomly", 
+          emoji: "🎲", 
+          isCorrect: false
         }
       ]
     },
@@ -79,6 +85,12 @@ const SimulationMonthlyBudget = () => {
           emoji: "⚖️", 
           isCorrect: true
         },
+        { 
+          id: "hoard", 
+          text: "Hoarding without spending", 
+          emoji: "📦", 
+          isCorrect: false
+        }
       ]
     },
     {
@@ -104,6 +116,12 @@ const SimulationMonthlyBudget = () => {
           text: "Ignore and forget", 
           emoji: "😴", 
           isCorrect: false
+        },
+        { 
+          id: "invest", 
+          text: "Invest everything", 
+          emoji: "📈", 
+          isCorrect: false
         }
       ]
     },
@@ -120,18 +138,25 @@ const SimulationMonthlyBudget = () => {
           emoji: "🎁", 
           isCorrect: false
         },
-        { 
-          id: "plan-ahead", 
-          text: "Plan needs, wants, savings", 
-          emoji: "📝", 
-          isCorrect: true
-        },
+       
         { 
           id: "hoard", 
           text: "Hoarding without purpose", 
           emoji: "📦", 
           isCorrect: false
-        }
+        },
+        { 
+          id: "share", 
+          text: "Share with friends", 
+          emoji: "🤝", 
+          isCorrect: false
+        },
+         { 
+          id: "plan-ahead", 
+          text: "Plan needs, wants, savings", 
+          emoji: "📝", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -159,6 +184,12 @@ const SimulationMonthlyBudget = () => {
           emoji: "🎯", 
           isCorrect: true
         },
+        { 
+          id: "save-all2", 
+          text: "Save all earnings", 
+          emoji: "💰", 
+          isCorrect: false
+        }
       ]
     }
   ];
@@ -241,7 +272,7 @@ const SimulationMonthlyBudget = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {current.options.map((option) => (
                   <button
                     key={option.id}

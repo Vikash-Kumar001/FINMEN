@@ -56,21 +56,18 @@ const NegotiationTacticsQuiz = () => {
           id: "a", 
           text: "First offer sets the range for negotiation", 
           emoji: "⚓",
-          description: "Correct - anchoring establishes reference point",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Final agreement reached", 
           emoji: "🤝",
-          description: "That's the outcome, not the tactic",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Walking away from negotiation", 
           emoji: "🚶",
-          description: "That's BATNA, not anchoring",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const NegotiationTacticsQuiz = () => {
           id: "b", 
           text: "Win everything you want", 
           emoji: "🏆",
-          description: "Not realistic in negotiation",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Give and take - exchanging concessions", 
           emoji: "⚖️",
-          description: "Correct - negotiation involves mutual concessions",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Refuse to compromise", 
           emoji: "🚫",
-          description: "That's not negotiation",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const NegotiationTacticsQuiz = () => {
           id: "a", 
           text: "Best Alternative To Negotiated Agreement", 
           emoji: "🎯",
-          description: "Correct - your backup plan",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Worst case scenario", 
           emoji: "😰",
-          description: "BATNA is your best alternative, not worst",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "First offer in negotiation", 
           emoji: "💰",
-          description: "That's anchoring, not BATNA",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const NegotiationTacticsQuiz = () => {
           id: "b", 
           text: "Compete to win everything", 
           emoji: "⚔️",
-          description: "That's win-lose, not win-win",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Give up everything", 
           emoji: "😔",
-          description: "That's lose-win, not win-win",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Collaborate to find mutual benefits", 
           emoji: "🤝",
-          description: "Correct - win-win seeks mutual gain",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const NegotiationTacticsQuiz = () => {
           id: "a", 
           text: "Giving in a bit to reach agreement", 
           emoji: "📉",
-          description: "Correct - strategic compromise",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Full surrender of all demands", 
           emoji: "🏳️",
-          description: "That's not a concession, that's surrender",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Refusing to negotiate", 
           emoji: "🚫",
-          description: "That's not a concession",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const NegotiationTacticsQuiz = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

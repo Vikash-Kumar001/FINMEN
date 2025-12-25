@@ -31,7 +31,7 @@ const BeCreativePoster = () => {
     {
       question: 'Which poster best shows "Think Out of the Box"?',
       choices: [
-        { text: "Poster showing creative thinking and new ideas", correct: true, emoji: "💡✨" },
+        { text: "Poster showing creative thinking and new ideas", correct: true, emoji: "💡" },
         { text: "Poster showing only following rules", correct: false, emoji: "📋" },
         { text: "Poster showing copying others", correct: false, emoji: "📋" }
       ]
@@ -40,14 +40,14 @@ const BeCreativePoster = () => {
       question: 'Which poster best shows "Be Creative"?',
       choices: [
         { text: "Poster showing only doing same thing", correct: false, emoji: "🔄" },
-        { text: "Poster showing imagination and creativity", correct: true, emoji: "🎨🌈" },
+        { text: "Poster showing imagination and creativity", correct: true, emoji: "🎨" },
         { text: "Poster showing avoiding new things", correct: false, emoji: "🚫" }
       ]
     },
     {
       question: 'Which poster best shows "Solve Problems Creatively"?',
       choices: [
-        { text: "Poster showing finding creative solutions", correct: true, emoji: "🔧💭" },
+        { text: "Poster showing finding creative solutions", correct: true, emoji: "💭" },
         { text: "Poster showing giving up easily", correct: false, emoji: "🏳️" },
         { text: "Poster showing only one way to solve", correct: false, emoji: "➡️" }
       ]
@@ -56,14 +56,14 @@ const BeCreativePoster = () => {
       question: 'Which poster best shows "Use Your Imagination"?',
       choices: [
         { text: "Poster showing only copying", correct: false, emoji: "📋" },
-        { text: "Poster showing thinking differently", correct: true, emoji: "🧠✨" },
+        { text: "Poster showing thinking differently", correct: true, emoji: "🧠" },
         { text: "Poster showing avoiding ideas", correct: false, emoji: "🤐" }
       ]
     },
     {
       question: 'Which poster best shows "Create Something New"?',
       choices: [
-        { text: "Poster showing making original things", correct: true, emoji: "🎨🆕" },
+        { text: "Poster showing making original things", correct: true, emoji: "🆕" },
         { text: "Poster showing only repeating old things", correct: false, emoji: "🔄" },
         { text: "Poster showing never trying new", correct: false, emoji: "🚫" }
       ]

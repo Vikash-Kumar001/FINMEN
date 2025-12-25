@@ -56,21 +56,18 @@ const NonverbalQuiz = () => {
           id: "a", 
           text: "Defensive or closed off", 
           emoji: "🛡️",
-          description: "Common defensive body language",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Open and welcoming", 
           emoji: "🤗",
-          description: "Opposite of what crossed arms indicate",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Excited and energetic", 
           emoji: "⚡",
-          description: "Not indicated by crossed arms",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const NonverbalQuiz = () => {
           id: "b", 
           text: "Shy and uncertain", 
           emoji: "😳",
-          description: "Shy people often avoid eye contact",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Confident and engaged", 
           emoji: "👁️",
-          description: "Eye contact shows confidence and interest",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Disinterested and bored", 
           emoji: "😴",
-          description: "Disinterest usually means avoiding eye contact",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const NonverbalQuiz = () => {
           id: "a", 
           text: "Tired, defeated, or low energy", 
           emoji: "😔",
-          description: "Slouching often indicates low mood or exhaustion",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Alert and ready", 
           emoji: "⚡",
-          description: "Alertness is shown by upright posture",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Happy and excited", 
           emoji: "😄",
-          description: "Happy people usually have better posture",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const NonverbalQuiz = () => {
           id: "b", 
           text: "Sad or upset", 
           emoji: "😢",
-          description: "Opposite of what a genuine smile indicates",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Angry and frustrated", 
           emoji: "😠",
-          description: "Not associated with smiling",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Happy, genuine, and positive", 
           emoji: "😊",
-          description: "Genuine smiles show true happiness",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const NonverbalQuiz = () => {
           id: "a", 
           text: "Nervous, anxious, or restless", 
           emoji: "😰",
-          description: "Fidgeting is a common sign of anxiety",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Calm and relaxed", 
           emoji: "😌",
-          description: "Calm people typically don't fidget",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Focused and concentrating", 
           emoji: "🧠",
-          description: "Focus usually means stillness",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const NonverbalQuiz = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

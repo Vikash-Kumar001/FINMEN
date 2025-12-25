@@ -70,42 +70,42 @@ const EmotionQuiz = () => {
       id: 2,
       text: "What emotion is 'joy'?",
       choices: [
-        { id: 'b', text: 'Sadness' },
-        { id: 'a', text: 'Happiness and delight' },
+        { id: 'a', text: 'Sadness' },
+        { id: 'b', text: 'Happiness and delight' },
         { id: 'c', text: 'Anger' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'Joy is a positive emotion characterized by happiness, delight, and contentment!'
     },
     {
       id: 3,
       text: "What's a healthy response to sadness?",
       choices: [
-        { id: 'b', text: 'Pretend to be happy' },
-        { id: 'c', text: 'Ignore the feeling completely' },
-        { id: 'a', text: 'Cry or talk to someone' }
+        { id: 'a', text: 'Pretend to be happy' },
+        { id: 'b', text: 'Ignore the feeling completely' },
+        { id: 'c', text: 'Cry or talk to someone' }
       ],
-      correct: 'a',
+      correct: 'c',
       explanation: 'Expressing sadness through crying or talking helps process the emotion and promotes emotional healing!'
     },
     {
       id: 4,
       text: "How does fear help us?",
       choices: [
-        { id: 'b', text: 'Helps us relax' },
+        { id: 'a', text: 'Helps us relax' },
+        { id: 'b', text: 'Activates survival instincts' },
         { id: 'c', text: 'Makes us stronger physically' },
-        { id: 'a', text: 'Activates survival instincts' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'Fear triggers the fight-or-flight response, preparing our body to respond to danger and protect ourselves!'
     },
     {
       id: 5,
       text: "What does emotional intelligence include?",
       choices: [
+        { id: 'a', text: 'Self-awareness and managing emotions' },
         { id: 'b', text: 'Avoiding all feelings' },
         { id: 'c', text: 'Only showing positive emotions' },
-        { id: 'a', text: 'Self-awareness and managing emotions' }
       ],
       correct: 'a',
       explanation: 'Emotional intelligence includes recognizing, understanding, and managing your own emotions and those of others!'

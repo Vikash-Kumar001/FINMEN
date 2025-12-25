@@ -56,21 +56,18 @@ const AdvocacyRoleplay = () => {
           id: "a", 
           text: "Evidence of accidents and data with solutions", 
           emoji: "🚸",
-          description: "Fact-based and solution-oriented",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Emotional story only", 
           emoji: "😢",
-          description: "Needs evidence to be persuasive",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Complaints without solutions", 
           emoji: "😠",
-          description: "Not constructive",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const AdvocacyRoleplay = () => {
           id: "b", 
           text: "Rambling without structure", 
           emoji: "🗣️",
-          description: "Not organized",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Clear structure with visual aids", 
           emoji: "📊",
-          description: "Organized and engaging",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "No preparation at all", 
           emoji: "😓",
-          description: "Unprofessional",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const AdvocacyRoleplay = () => {
           id: "a", 
           text: "Confident delivery that engages the audience", 
           emoji: "🏛️",
-          description: "Professional and engaging",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Nervous mumbling", 
           emoji: "😰",
-          description: "Not effective",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Reading script without looking up", 
           emoji: "📄",
-          description: "Poor engagement",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const AdvocacyRoleplay = () => {
           id: "b", 
           text: "Avoid questions", 
           emoji: "🙈",
-          description: "Shows lack of preparation",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Argue back defensively", 
           emoji: "😠",
-          description: "Not professional",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Answer factually and provide additional data", 
           emoji: "📊",
-          description: "Shows expertise and preparation",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const AdvocacyRoleplay = () => {
           id: "a", 
           text: "Thank them and provide petition support", 
           emoji: "📧",
-          description: "Maintains relationship and momentum",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "No follow up", 
           emoji: "🚫",
-          description: "Misses opportunity",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Demand immediate action", 
           emoji: "😤",
-          description: "Too aggressive",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const AdvocacyRoleplay = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

@@ -50,6 +50,12 @@ const SimulationLoanRepayment = () => {
           text: "Calculate before borrowing", 
           emoji: "🧮", 
           isCorrect: true
+        },
+        { 
+          id: "invest", 
+          text: "Invest borrowed money", 
+          emoji: "📈", 
+          isCorrect: false
         }
       ]
     },
@@ -75,6 +81,12 @@ const SimulationLoanRepayment = () => {
           id: "extra", 
           text: "Borrow more unnecessarily", 
           emoji: "➕", 
+          isCorrect: false
+        },
+        { 
+          id: "reduce", 
+          text: "Reduce loan amount", 
+          emoji: "📉", 
           isCorrect: false
         }
       ]
@@ -102,6 +114,12 @@ const SimulationLoanRepayment = () => {
           text: "Only borrow for needs", 
           emoji: "📱", 
           isCorrect: true
+        },
+        { 
+          id: "save", 
+          text: "Save instead of borrowing", 
+          emoji: "💰", 
+          isCorrect: false
         }
       ]
     },
@@ -128,6 +146,12 @@ const SimulationLoanRepayment = () => {
           text: "Luxury over necessities", 
           emoji: "💎", 
           isCorrect: false
+        },
+        { 
+          id: "negotiate", 
+          text: "Negotiate payment terms", 
+          emoji: "🤝", 
+          isCorrect: false
         }
       ]
     },
@@ -137,12 +161,7 @@ const SimulationLoanRepayment = () => {
       description: "You have ₹1200. What should you do?",
       amount: 1200,
       options: [
-        { 
-          id: "emergency-only", 
-          text: "Use loans for emergencies", 
-          emoji: "🚑", 
-          isCorrect: true
-        },
+        
         { 
           id: "regular", 
           text: "Regular expense loans", 
@@ -154,7 +173,19 @@ const SimulationLoanRepayment = () => {
           text: "Avoid all borrowing", 
           emoji: "🙅", 
           isCorrect: false
-        }
+        },
+        { 
+          id: "credit", 
+          text: "Use credit cards instead", 
+          emoji: "💳", 
+          isCorrect: false
+        },
+        { 
+          id: "emergency-only", 
+          text: "Use loans for emergencies", 
+          emoji: "🚑", 
+          isCorrect: true
+        },
       ]
     }
   ];
@@ -237,7 +268,7 @@ const SimulationLoanRepayment = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {current.options.map((option) => (
                   <button
                     key={option.id}

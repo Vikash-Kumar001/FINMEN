@@ -52,8 +52,8 @@ const DebateBorrowGoodOrBad = () => {
       scenario: "Is it okay to borrow without a repayment plan?",
       positions: [
         { id: "no-plan", text: "No planning needed", emoji: "🌀", points: ["Worry later", "No planning", "Spend freely"], isCorrect: false },
+        { id: "balanced", text: "Sometimes plan", emoji: "⏳", points: ["Plan for big loans", "Skip for small", "Partial planning"], isCorrect: false },
         { id: "plan", text: "Always plan repayment", emoji: "📝", points: ["Know how to repay", "Avoid debt trap", "Stay in control"], isCorrect: true },
-        { id: "balanced", text: "Sometimes plan", emoji: "⏳", points: ["Plan for big loans", "Skip for small", "Partial planning"], isCorrect: false }
       ]
     },
     {

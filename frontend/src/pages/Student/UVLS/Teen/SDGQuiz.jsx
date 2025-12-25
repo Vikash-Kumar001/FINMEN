@@ -56,21 +56,18 @@ const SDGQuiz = () => {
           id: "a", 
           text: "Clean Water and Sanitation", 
           emoji: "💧",
-          description: "Correct - SDG 6",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Zero Hunger", 
           emoji: "🍽️",
-          description: "That's SDG 2",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Good Health", 
           emoji: "🏥",
-          description: "Related but not the primary goal",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const SDGQuiz = () => {
           id: "b", 
           text: "Quality Education", 
           emoji: "📚",
-          description: "That's SDG 4",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Climate Action", 
           emoji: "🌳",
-          description: "Correct - SDG 13",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Life on Land", 
           emoji: "🌍",
-          description: "Related but climate action is more direct",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const SDGQuiz = () => {
           id: "a", 
           text: "Zero Hunger", 
           emoji: "🍽️",
-          description: "Correct - SDG 2",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Good Health", 
           emoji: "🏥",
-          description: "Related but hunger is primary",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No Poverty", 
           emoji: "💰",
-          description: "Related but hunger is more specific",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const SDGQuiz = () => {
           id: "b", 
           text: "Gender Equality", 
           emoji: "⚖️",
-          description: "That's SDG 5",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Quality Education", 
           emoji: "📚",
-          description: "Correct - SDG 4",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Reduced Inequalities", 
           emoji: "🤝",
-          description: "Related but education is primary",
           isCorrect: false
         }
       ]
@@ -164,21 +152,18 @@ const SDGQuiz = () => {
           id: "a", 
           text: "Gender Equality", 
           emoji: "⚖️",
-          description: "Correct - SDG 5",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Clean Energy", 
           emoji: "⚡",
-          description: "That's SDG 7",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Decent Work", 
           emoji: "💼",
-          description: "Related but gender equality is primary",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const SDGQuiz = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

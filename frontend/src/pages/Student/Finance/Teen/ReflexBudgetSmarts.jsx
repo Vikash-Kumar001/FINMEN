@@ -136,14 +136,16 @@ const ReflexBudgetSmarts = () => {
     resetFeedback();
   };
 
-  const handleAnswer = (isCorrect) => {
-    if (answered) return;
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
     
     setAnswered(true);
     resetFeedback();
     
+    const isCorrect = option.isCorrect;
+    
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
@@ -158,53 +160,43 @@ const ReflexBudgetSmarts = () => {
     }, 500);
   };
 
-  const handleTryAgain = () => {
-    setGameState("ready");
-    setCurrentRound(0);
-    setScore(0);
-    setTimeLeft(ROUND_TIME);
-    setAnswered(false);
-    resetFeedback();
-  };
+
 
   const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Budget Smarts"
-      subtitle={
-        gameState === "ready" 
-          ? "Test your budget reflexes!" 
-          : gameState === "playing" 
-          ? `Round ${currentRound} of ${TOTAL_ROUNDS}` 
-          : "Game Complete!"
-      }
-      score={score}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your budget reflexes!` : "Test your budget reflexes!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
       showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && score === TOTAL_ROUNDS}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={score}
+      gameId={gameId}
+      gameType="finance"
       maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={gameState === "finished" && score >= 3}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      gameId={gameId}
-      gameType="finance"
     >
       <div className="space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-5xl mb-4">⚡</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Ready to Test Your Budget Reflexes?</h3>
+            <div className="text-5xl mb-6">💰</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
             <p className="text-white/90 text-lg mb-6">
-              Answer {TOTAL_ROUNDS} questions about budgeting quickly!
-              You have {ROUND_TIME} seconds per question.
+              Answer questions about budgeting habits!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
             </p>
             <button
               onClick={startGame}
-              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all transform hover:scale-105"
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
             >
               Start Game
             </button>
@@ -212,49 +204,33 @@ const ReflexBudgetSmarts = () => {
         )}
 
         {gameState === "playing" && currentQuestion && (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Round {currentRound}/{TOTAL_ROUNDS}</span>
-                <div className="flex items-center gap-4">
-                  <span className="text-yellow-400 font-bold">Score: {score}/{TOTAL_ROUNDS}</span>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-lg font-bold ${timeLeft <= 3 ? "text-red-400 animate-pulse" : "text-blue-400"}`}>
-                      ⏱️ {timeLeft}s
-                    </span>
-                  </div>
-                </div>
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
-              
-              <div className="w-full bg-white/20 rounded-full h-2 mb-6">
-                <div 
-                  className={`h-2 rounded-full transition-all ${timeLeft <= 3 ? "bg-red-500" : "bg-blue-500"}`}
-                  style={{ width: `${(timeLeft / ROUND_TIME) * 100}%` }}
-                />
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
               </div>
-              
-              <h3 className="text-xl font-bold text-white mb-6">
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
                 {currentQuestion.question}
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {currentQuestion.options.map((option, idx) => (
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={idx}
-                    onClick={() => handleAnswer(option.isCorrect)}
+                    key={index}
+                    onClick={() => handleAnswer(option)}
                     disabled={answered}
-                    className={`p-4 rounded-2xl text-left transition-all transform ${
-                      answered
-                        ? option.isCorrect
-                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
-                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                    } ${answered ? "cursor-not-allowed" : ""}`}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{option.emoji}</span>
-                      <span className="text-white font-semibold">{option.text}</span>
-                    </div>
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
                 ))}
               </div>
@@ -262,44 +238,7 @@ const ReflexBudgetSmarts = () => {
           </div>
         )}
 
-        {gameState === "finished" && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {score >= 3 ? (
-              <div>
-                <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Budget Reflex Master!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You scored {score} out of {TOTAL_ROUNDS}!
-                  You have quick budget reflexes!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{score} Coins</span>
-                </div>
-                <p className="text-white/80">
-                  Lesson: Quick thinking about budgeting helps you make smart financial decisions!
-                </p>
-              </div>
-            ) : (
-              <div>
-                <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You scored {score} out of {TOTAL_ROUNDS}.
-                  Practice makes perfect with budget reflexes!
-                </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
-                <p className="text-white/80 text-sm">
-                  Tip: Remember to plan ahead, save first, track costs, prioritize needs, and check your balance regularly!
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+
       </div>
     </GameShell>
   );

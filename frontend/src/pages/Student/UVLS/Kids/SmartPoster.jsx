@@ -47,8 +47,8 @@ const SmartPoster = () => {
     {
       question: 'Which poster focuses on defining actionable steps with measurable outcomes?',
       choices: [
-        { text: "What to Do, How Much, When Done ✅", correct: true },
         { text: "No Plan, No Amount, No Deadline 🚫", correct: false },
+        { text: "What to Do, How Much, When Done ✅", correct: true },
         { text: "Never Plan 🚫", correct: false },
       ],
     },
@@ -63,9 +63,9 @@ const SmartPoster = () => {
     {
       question: 'Why do smart goal posters help kids?',
       choices: [
-        { text: "Teach us to set good goals 📚", correct: true },
         { text: "Encourage no planning 😠", correct: false },
         { text: "Make us avoid goals 🙈", correct: false },
+        { text: "Teach us to set good goals 📚", correct: true },
       ],
     },
   ];

@@ -56,28 +56,24 @@ const InterventionSimulation = () => {
           id: "a", 
           text: "Stay calm and use de-escalation words", 
           emoji: "🗣️",
-          description: "Safe and effective",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Yell back at the bully", 
           emoji: "😠",
-          description: "Escalates conflict",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ignore the situation completely", 
           emoji: "🙈",
-          description: "Doesn't help the victim",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Join in the bullying", 
           emoji: "👥",
-          description: "Wrong and harmful",
           isCorrect: false
         }
       ]
@@ -90,28 +86,24 @@ const InterventionSimulation = () => {
           id: "b", 
           text: "Fight back", 
           emoji: "👊",
-          description: "Dangerous",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Get away safely and call for help", 
           emoji: "💪",
-          description: "Prioritizes safety",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Stand your ground", 
           emoji: "🛑",
-          description: "Risky",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Challenge them to fight", 
           emoji: "⚔️",
-          description: "Very dangerous",
           isCorrect: false
         }
       ]
@@ -124,28 +116,24 @@ const InterventionSimulation = () => {
           id: "a", 
           text: "Include the person and talk to the group about inclusion", 
           emoji: "👥",
-          description: "Direct and helpful",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Join the exclusion", 
           emoji: "👋",
-          description: "Harmful",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Do nothing", 
           emoji: "🚫",
-          description: "Doesn't help",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Make fun of the excluded person", 
           emoji: "😄",
-          description: "Very wrong",
           isCorrect: false
         }
       ]
@@ -158,28 +146,24 @@ const InterventionSimulation = () => {
           id: "b", 
           text: "Argue with them online", 
           emoji: "💬",
-          description: "Engages with troll",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Share personal information", 
           emoji: "📱",
-          description: "Very dangerous",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Don't engage and report to platform", 
           emoji: "🌐",
-          description: "Safe and appropriate",
           isCorrect: true
         },
         { 
           id: "d", 
           text: "Post their personal info", 
           emoji: "📋",
-          description: "Wrong and harmful",
           isCorrect: false
         }
       ]
@@ -192,28 +176,24 @@ const InterventionSimulation = () => {
           id: "a", 
           text: "Confront the spreader calmly and tell an authority", 
           emoji: "🔗",
-          description: "Addresses the issue properly",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Spread a counter-rumor", 
           emoji: "📢",
-          description: "Makes it worse",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ignore the rumor completely", 
           emoji: "🙈",
-          description: "Doesn't stop the spread",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Join in spreading it", 
           emoji: "📣",
-          description: "Very harmful",
           isCorrect: false
         }
       ]
@@ -309,7 +289,6 @@ const InterventionSimulation = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

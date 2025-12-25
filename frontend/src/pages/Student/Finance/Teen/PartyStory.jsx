@@ -134,13 +134,7 @@ const PartyStory = () => {
       id: 5,
       text: "You saved ₹1000 from your part-time job for a party. How should you evaluate if hosting is worth it?",
       options: [
-        { 
-          id: "a", 
-          text: "Compare the joy of hosting with alternative uses of ₹1000", 
-          emoji: "⚖️", 
-          description: "Considers opportunity cost",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Focus only on having fun", 
@@ -154,7 +148,14 @@ const PartyStory = () => {
           emoji: "💎", 
           description: "Focuses on external validation",
           isCorrect: false
-        }
+        },
+        { 
+          id: "a", 
+          text: "Compare the joy of hosting with alternative uses of ₹1000", 
+          emoji: "⚖️", 
+          description: "Considers opportunity cost",
+          isCorrect: true
+        },
       ]
     }
   ];

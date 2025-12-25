@@ -1,245 +1,260 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
-import { getGameDataById } from '../../../../utils/getGameData';
-import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const SimulationStudyyPlan = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
-  // Get game data from game category folder (source of truth)
-  const gameId = "brain-teens-28";
-  const gameData = getGameDataById(gameId);
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
-  // Find next game path and ID if not provided in location.state
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    // First, try to get from location.state (passed from GameCategoryPage)
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    // Fallback: find next game from game data
-    try {
-      const games = getBrainTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-  
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [answers, setAnswers] = useState({});
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [currentScenario, setCurrentScenario] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0); // Add coins state
 
-  const questions = [
+  const scenarios = [
     {
       id: 1,
-      text: "Study 30 min daily or cram 3 hrs once?",
+      title: "Study Schedule Choice",
+      description: "You have limited time to study. Should you study 30 minutes daily or cram for 3 hours once?",
       options: [
-        { id: 'daily', text: '30 min daily', description: 'Consistent daily practice' },
-        { id: 'cram', text: 'Cram 3 hrs once', description: 'Intensive single session' },
-        { id: 'skip', text: 'Skip studying', description: 'Avoid preparation' },
-        { id: 'random', text: 'Study randomly', description: 'No schedule' }
-      ],
-      correct: 'daily',
-      explanation: 'Daily 30-minute study sessions build consistent habits and improve long-term retention through spaced repetition!'
+        {
+          id: "a",
+          text: "30 min daily - Consistent daily practice",
+          emoji: "📅",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Cram 3 hrs once - Intensive single session",
+          emoji: "🤯",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Skip studying - Avoid preparation",
+          emoji: "😴",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Study randomly - No schedule",
+          emoji: "🎲",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      text: "What's the best study plan for exam preparation?",
+      title: "Exam Preparation",
+      description: "What's the best study plan for exam preparation?",
       options: [
-        { id: 'allnight', text: 'All-nighters before exam', description: 'Last-minute cramming' },
-        { id: 'ignore', text: 'Ignore difficult topics', description: 'Avoid challenges' },
-        { id: 'spaced', text: 'Spaced sessions over weeks', description: 'Distributed learning' },
-        { id: 'copy', text: 'Copy friend\'s notes', description: 'Passive learning' }
-      ],
-      correct: 'spaced',
-      explanation: 'Spaced learning sessions over weeks allow your brain to consolidate information and improve retention significantly!'
+        {
+          id: "a",
+          text: "All-nighters before exam - Last-minute cramming",
+          emoji: "🌙",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Ignore difficult topics - Avoid challenges",
+          emoji: "鸵",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Spaced sessions over weeks - Distributed learning",
+          emoji: "🗓️",
+          isCorrect: true
+        },
+        {
+          id: "d",
+          text: "Copy friend's notes - Passive learning",
+          emoji: "📚",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      text: "Should you include breaks in your study plan?",
+      title: "Study Breaks",
+      description: "Should you include breaks in your study plan?",
       options: [
-        { id: 'no', text: 'No breaks needed', description: 'Study continuously' },
-        { id: 'long', text: 'One long break only', description: 'Minimal rest' },
-        { id: 'skip', text: 'Skip studying entirely', description: 'No preparation' },
-        { id: 'yes', text: 'Yes, regular breaks', description: 'Prevent burnout' }
-      ],
-      correct: 'yes',
-      explanation: 'Regular breaks prevent mental fatigue, maintain focus, and improve overall study effectiveness!'
+        {
+          id: "a",
+          text: "No breaks needed - Study continuously",
+          emoji: "💨",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "One long break only - Minimal rest",
+          emoji: "⏱️",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Skip studying entirely - No preparation",
+          emoji: "😴",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Yes, regular breaks - Prevent burnout",
+          emoji: "🧘",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
-      text: "How should you prioritize subjects in your study plan?",
+      title: "Subject Prioritization",
+      description: "How should you prioritize subjects in your study plan?",
       options: [
-        { id: 'easy', text: 'Only easy subjects', description: 'Avoid difficulty' },
-        { id: 'weak', text: 'Focus on weak areas', description: 'Address challenges' },
-        { id: 'ignore', text: 'Ignore all subjects', description: 'No preparation' },
-        { id: 'random', text: 'Study randomly', description: 'No structure' }
-      ],
-      correct: 'weak',
-      explanation: 'Focusing on weak areas while maintaining strength in other subjects creates a balanced and effective study plan!'
+        {
+          id: "a",
+          text: "Only easy subjects - Avoid difficulty",
+          emoji: "😊",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Focus on weak areas - Address challenges",
+          emoji: "💪",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Ignore all subjects - No preparation",
+          emoji: "😴",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Study randomly - No structure",
+          emoji: "🎲",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "Should you track progress in your study plan?",
+      title: "Progress Tracking",
+      description: "Should you track progress in your study plan?",
       options: [
-        { id: 'no', text: 'No tracking needed', description: 'Study without goals' },
-        { id: 'guess', text: 'Guess your progress', description: 'No measurement' },
-        { id: 'ignore', text: 'Ignore progress', description: 'No awareness' },
-        { id: 'track', text: 'Yes, with goals', description: 'Monitor progress' }
-      ],
-      correct: 'track',
-      explanation: 'Tracking progress with specific goals helps you stay motivated, identify areas needing more attention, and adjust your plan accordingly!'
+        {
+          id: "a",
+          text: "No tracking needed - Study without goals",
+          emoji: "🎯",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Guess your progress - No measurement",
+          emoji: "🤔",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ignore progress - No awareness",
+          emoji: "🙈",
+          isCorrect: false
+        },
+        {
+          id: "d",
+          text: "Yes, with goals - Monitor progress",
+          emoji: "📊",
+          isCorrect: true
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
-    
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    resetFeedback();
-    
-    // Save answer
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
-    
+  const handleChoice = (optionId) => {
+    const selectedOption = scenarios[currentScenario].options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
+
     if (isCorrect) {
-      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
+      setCoins(prev => prev + 1); // Increment coins when correct
     }
-    
-    // Auto-advance to next question after delay
+
+    setChoices([...choices, { scenario: currentScenario, optionId, isCorrect }]);
+
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        setFeedbackType(null);
+      if (currentScenario < scenarios.length - 1) {
+        setCurrentScenario(prev => prev + 1);
       } else {
-        setLevelCompleted(true);
+        setGameFinished(true);
       }
     }, 1500);
   };
 
-  // Log when game completes and update location state with nextGameId
-  useEffect(() => {
-    if (levelCompleted) {
-      console.log(`🎮 Simulation: Study Plan game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
-      
-      // Update location state with nextGameId for GameOverModal
-      if (nextGameId && window.history && window.history.replaceState) {
-        const currentState = window.history.state || {};
-        window.history.replaceState({
-          ...currentState,
-          nextGameId: nextGameId
-        }, '');
-      }
-    }
-  }, [levelCompleted, score, gameId, nextGamePath, nextGameId, questions.length]);
+  const handleNext = () => {
+    navigate("/student/brain/teen/reflex-recall-quick");
+  };
 
-  const currentQuestionData = questions[currentQuestion];
+  const getCurrentScenario = () => scenarios[currentScenario];
 
   return (
     <GameShell
       title="Simulation: Study Plan"
-      score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={`Scenario ${currentScenario + 1} of ${scenarios.length}`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={coins} // Use coins for score
+      gameId="brain-teens-28"
+      gameType="brain"
+      totalLevels={scenarios.length}
+      currentLevel={currentScenario + 1}
+      showConfetti={gameFinished}
+      flashPoints={flashPoints}
+      backPath="/games/brain-health/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={scenarios.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId={gameId}
-      gameType="brain"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
-        {!levelCompleted && currentQuestionData ? (
-          <div className="space-y-4 md:space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
-                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
-              </div>
-              
-              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
-                {currentQuestionData.text}
-              </p>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                {currentQuestionData.options.map((option) => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = showFeedback && isSelected && option.id === questions[currentQuestion].correct;
-                  const showIncorrect = showFeedback && isSelected && option.id !== questions[currentQuestion].correct;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleOptionSelect(option.id)}
-                      disabled={!!selectedOption}
-                      className={`p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
-                        showCorrect
-                          ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
-                          : showIncorrect
-                          ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
-                          : isSelected
-                          ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
-                      } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none`}
-                    >
-                      <div className="text-white font-bold text-sm md:text-base mb-1">{option.text}</div>
-                      <div className="text-white/70 text-xs md:text-sm">{option.description}</div>
-                    </button>
-                  );
-                })}
-              </div>
-              
-              {showFeedback && feedbackType === "wrong" && (
-                <div className="mt-4 md:mt-6 text-white/90 text-center text-sm md:text-base">
-                  <p>💡 {currentQuestionData.explanation}</p>
-                </div>
-              )}
-            </div>
+      <div className="space-y-8">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Scenario {currentScenario + 1}/{scenarios.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
           </div>
-        ) : null}
+          
+          <h2 className="text-xl font-semibold text-white mb-4">
+            {getCurrentScenario().title}
+          </h2>
+          
+          <p className="text-white/90 mb-6">
+            {getCurrentScenario().description}
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {getCurrentScenario().options.map(option => (
+              <button
+                key={option.id}
+                onClick={() => handleChoice(option.id)}
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+              >
+                <div className="flex items-center">
+                  <div className="text-2xl mr-4">{option.emoji}</div>
+                  <div>
+                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </GameShell>
   );

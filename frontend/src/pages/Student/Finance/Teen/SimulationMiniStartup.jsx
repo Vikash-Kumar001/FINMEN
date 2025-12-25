@@ -50,6 +50,12 @@ const SimulationMiniStartup = () => {
           text: "No, too risky", 
           emoji: "⚠️", 
           isCorrect: false
+        },
+        { 
+          id: "other", 
+          text: "Choose other business", 
+          emoji: "🔄", 
+          isCorrect: false
         }
       ]
     },
@@ -75,6 +81,12 @@ const SimulationMiniStartup = () => {
           id: "maybe2", 
           text: "Maybe, if repeatable", 
           emoji: "🤷", 
+          isCorrect: false
+        },
+        { 
+          id: "wait", 
+          text: "Wait for better opportunity", 
+          emoji: "⏳", 
           isCorrect: false
         }
       ]
@@ -102,6 +114,12 @@ const SimulationMiniStartup = () => {
           text: "Yes, 67% profit", 
           emoji: "💡", 
           isCorrect: true
+        },
+        { 
+          id: "save", 
+          text: "Save money instead", 
+          emoji: "💰", 
+          isCorrect: false
         }
       ]
     },
@@ -128,6 +146,12 @@ const SimulationMiniStartup = () => {
           text: "Maybe, if easy", 
           emoji: "🤷", 
           isCorrect: false
+        },
+        { 
+          id: "borrow", 
+          text: "Borrow more money", 
+          emoji: "💳", 
+          isCorrect: false
         }
       ]
     },
@@ -143,18 +167,25 @@ const SimulationMiniStartup = () => {
           emoji: "😴", 
           isCorrect: false
         },
+        
+        { 
+          id: "maybe5", 
+          text: "Maybe, if skilled", 
+          emoji: "🎓", 
+          isCorrect: false
+        },
+        { 
+          id: "hire", 
+          text: "Hire someone else", 
+          emoji: "👥", 
+          isCorrect: false
+        },
         { 
           id: "yes5", 
           text: "Yes, 150% profit", 
           emoji: "💡", 
           isCorrect: true
         },
-        { 
-          id: "maybe5", 
-          text: "Maybe, if skilled", 
-          emoji: "🎓", 
-          isCorrect: false
-        }
       ]
     }
   ];
@@ -237,7 +268,7 @@ const SimulationMiniStartup = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {current.options.map((option) => (
                   <button
                     key={option.id}

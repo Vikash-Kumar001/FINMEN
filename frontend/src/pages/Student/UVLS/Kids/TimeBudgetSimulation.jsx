@@ -3,349 +3,340 @@ import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsKidsGames } from '../../../../pages/Games/GameCategories/UVLS/kidGamesData';
 
 const TimeBudgetSimulation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-98";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [allocations, setAllocations] = useState([]); // Array of { levelIndex, allocation }
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-98");
+  const gameId = gameData?.id || "uvls-kids-98";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for TimeBudgetSimulation, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getUvlsKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [timeAllocations, setTimeAllocations] = useState({});
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const questions = [
+  const challenges = [
     {
       id: 1,
-      totalMinutes: 120,
-      activities: [
-        { name: "Study", emoji: "📚" },
-        { name: "Fun", emoji: "🎮" },
-        { name: "Sleep prep", emoji: "😴" }
-      ],
-      scenario: "You have 2 hours (120 minutes) before bedtime. How will you spend your time?",
-      instruction: "Divide all 120 minutes between the activities. Make sure to give time to each activity!"
+      title: "Time Before Bed",
+      question: "You have 2 hours (120 minutes) before bedtime. How should you spend your time?",
+      options: [
+        { 
+          text: "Study for 1 hour, have fun for 30 minutes, prepare for sleep for 30 minutes - Good balance of learning and rest", 
+          emoji: "📚", 
+          isCorrect: true
+        },
+        { 
+          text: "Spend all time playing games - Fun is more important than rest", 
+          emoji: "🎮", 
+          isCorrect: false
+        },
+        { 
+          text: "Sleep immediately without any activities - Skip all other activities", 
+          emoji: "😴", 
+          isCorrect: false
+        },
+        { 
+          text: "Study for the entire time - Learning is the only priority", 
+          emoji: "📖", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      totalMinutes: 180,
-      activities: [
-        { name: "Homework", emoji: "✏️" },
-        { name: "Play", emoji: "⚽" },
-        { name: "Chore", emoji: "🧹" }
-      ],
-      scenario: "You have 3 hours (180 minutes) in the afternoon. Plan your time wisely!",
-      instruction: "Use all 180 minutes. Give time to homework, play, and chores!"
+      title: "Afternoon Planning",
+      question: "You have 3 hours (180 minutes) in the afternoon. How should you plan your time?",
+      options: [
+        
+        { 
+          text: "Play for the entire time - Afternoon is for fun only", 
+          emoji: "⚽", 
+          isCorrect: false
+        },
+        { 
+          text: "Do chores for the entire time - Help family all afternoon", 
+          emoji: "🧹", 
+          isCorrect: false
+        },
+        { 
+          text: "Do homework for 1 hour, play for 1 hour, help with chores for 1 hour - Balanced approach", 
+          emoji: "✅", 
+          isCorrect: true
+        },
+        { 
+          text: "Avoid all activities - Just relax without doing anything", 
+          emoji: "🛋️", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      totalMinutes: 60,
-      activities: [
-        { name: "Read", emoji: "📖" },
-        { name: "Exercise", emoji: "🏃" },
-        { name: "Rest", emoji: "🧘" }
-      ],
-      scenario: "You have 1 hour (60 minutes) in the evening. What will you do?",
-      instruction: "Allocate all 60 minutes. Balance reading, exercise, and rest!"
+      title: "Evening Balance",
+      question: "You have 1 hour (60 minutes) in the evening. How should you use your time?",
+      options: [
+        { 
+          text: "Read for 20 min, exercise for 20 min, rest for 20 min - Good variety and balance", 
+          emoji: "📚", 
+          isCorrect: true
+        },
+        { 
+          text: "Read for the entire hour - Focus only on learning", 
+          emoji: "📖", 
+          isCorrect: false
+        },
+        { 
+          text: "Exercise for the entire hour - Physical activity is most important", 
+          emoji: "🏃", 
+          isCorrect: false
+        },
+        { 
+          text: "Rest for the entire hour - Relax without other activities", 
+          emoji: "😴", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      totalMinutes: 240,
-      activities: [
-        { name: "Family", emoji: "👨‍👩‍👧" },
-        { name: "Hobby", emoji: "🎨" },
-        { name: "Study", emoji: "📝" },
-        { name: "Fun", emoji: "🎉" }
-      ],
-      scenario: "You have 4 hours (240 minutes) on the weekend. Plan your day!",
-      instruction: "Use all 240 minutes. Include family time, hobbies, study, and fun!"
+      title: "Weekend Planning",
+      question: "You have 4 hours (240 minutes) on the weekend. How should you structure your day?",
+      options: [
+        
+        { 
+          text: "Focus only on hobbies - Spend all time on personal interests", 
+          emoji: "🎨", 
+          isCorrect: false
+        },
+        { 
+          text: "Spend time with family, work on hobbies, study a bit, and have fun - Well-rounded day", 
+          emoji: "👨‍👩‍👧", 
+          isCorrect: true
+        },
+        { 
+          text: "Study for the entire time - Use weekend for learning", 
+          emoji: "📝", 
+          isCorrect: false
+        },
+        { 
+          text: "Just have fun the whole time - Weekend is for entertainment only", 
+          emoji: "🎉", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      totalMinutes: 150,
-      activities: [
-        { name: "Help home", emoji: "🏠" },
-        { name: "Watch TV", emoji: "📺" },
-        { name: "Prepare tomorrow", emoji: "📋" }
-      ],
-      scenario: "You have 2.5 hours (150 minutes) after school. How will you use it?",
-      instruction: "Allocate all 150 minutes. Balance helping at home, relaxing, and preparing for tomorrow!"
+      title: "After School Time",
+      question: "You have 2.5 hours (150 minutes) after school. How should you use this time?",
+      options: [
+        
+        { 
+          text: "Watch TV for the entire time - Relax after school", 
+          emoji: "📺", 
+          isCorrect: false
+        },
+        { 
+          text: "Help at home for the entire time - Focus only on chores", 
+          emoji: "🧹", 
+          isCorrect: false
+        },
+        { 
+          text: "Just prepare for tomorrow - Focus only on school work", 
+          emoji: "📋", 
+          isCorrect: false
+        },
+        { 
+          text: "Help at home, relax by watching TV, prepare for tomorrow - Good balance of responsibilities", 
+          emoji: "🏠", 
+          isCorrect: true
+        },
+      ]
     }
   ];
 
-  const handleTimeChange = (activity, value) => {
-    const numValue = parseFloat(value) || 0;
-    setTimeAllocations(prev => ({
-      ...prev,
-      [activity]: numValue
-    }));
-  };
-
-  const getCurrentLevel = () => questions[currentLevel];
-  
-  const getTotalAllocated = () => {
-    return Object.values(timeAllocations).reduce((sum, time) => sum + (parseFloat(time) || 0), 0);
-  };
-
-  const getRemainingTime = () => {
-    const current = getCurrentLevel();
-    return current.totalMinutes - getTotalAllocated();
-  };
-
-  const checkBalance = (alloc, levelIndex = null) => {
-    // Use provided levelIndex or default to currentLevel
-    const levelIdx = levelIndex !== null ? levelIndex : currentLevel;
-    const level = questions[levelIdx];
-    if (!level) return false;
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
-    const total = Object.values(alloc).reduce((sum, time) => sum + (parseFloat(time) || 0), 0);
-    const hasAllActivities = level.activities.every(activity => (alloc[activity.name] || 0) > 0);
-    const totalMatches = Math.abs(total - level.totalMinutes) < 0.01; // Allow small floating point differences
-    return hasAllActivities && totalMatches;
-  };
-
-  const getValidationMessage = () => {
-    const current = getCurrentLevel();
-    const total = getTotalAllocated();
-    const remaining = getRemainingTime();
-    const hasAllActivities = current.activities.every(activity => (timeAllocations[activity.name] || 0) > 0);
-
-    if (total === 0) {
-      return "Start allocating time to activities!";
-    }
-    if (!hasAllActivities) {
-      return `Give at least some time to all ${current.activities.length} activities!`;
-    }
-    if (remaining > 0) {
-      return `You still have ${remaining} minutes left to allocate!`;
-    }
-    if (remaining < 0) {
-      return `You've allocated ${Math.abs(remaining)} minutes too many! Total should be ${current.totalMinutes} minutes.`;
-    }
-    return "Perfect! All time is allocated. Click Submit!";
-  };
-
-  const handleAllocation = () => {
-    const isBalanced = checkBalance(timeAllocations, currentLevel);
+    setAnswered(true);
+    resetFeedback();
     
-    if (!isBalanced) {
-      showCorrectAnswerFeedback(0, false);
-      return;
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    // Store allocation with its level index for proper validation
-    const newAllocations = [...allocations, { levelIndex: currentLevel, allocation: { ...timeAllocations } }];
-    setAllocations(newAllocations);
-
-    setCoins(prev => prev + 1);
-    showCorrectAnswerFeedback(1, true);
-
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setTimeAllocations({}); // Reset allocations for next level
-      }, 1000);
-    } else {
-      setTimeout(() => {
-        // Calculate final score by validating each allocation against its own level
-        const balancedCount = newAllocations.filter(({ levelIndex, allocation }) => 
-          checkBalance(allocation, levelIndex)
-        ).length;
-        setFinalScore(balancedCount);
+    
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
         setShowResult(true);
-      }, 1000);
-    }
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentLevel(0);
-    setAllocations([]);
-    setCoins(0);
-    setFinalScore(0);
-    setTimeAllocations({});
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
     resetFeedback();
   };
 
   const handleNext = () => {
-    navigate("/games/uvls/kids");
+    if (nextGamePath) {
+      navigate(nextGamePath);
+    } else {
+      navigate("/games/uvls/kids");
+    }
   };
 
   return (
     <GameShell
       title="Time Budget Simulation"
-      score={coins}
-      subtitle={!showResult ? `Question ${currentLevel + 1} of ${questions.length}` : "Simulation Complete!"}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Simulation Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       showGameOver={showResult}
-      maxScore={questions.length}
-      currentLevel={currentLevel + 1}
-      totalLevels={questions.length}
-      gameId="uvls-kids-98"
+      gameId={gameId}
       gameType="uvls"
-      showConfetti={showResult && finalScore >= 3}
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/uvls/kids"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showResult ? (
-          <div className="w-full max-w-4xl space-y-6">
-            <div className="bg-gradient-to-br from-purple-900/30 via-blue-900/30 to-indigo-900/30 backdrop-blur-md rounded-3xl p-6 md:p-8 border-2 border-white/20 shadow-2xl">
-              {/* Scenario Description */}
-              <div className="bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 border-2 border-blue-400/50 rounded-2xl p-5 md:p-6 mb-6">
-                <p className="text-white text-lg md:text-xl font-semibold mb-3 leading-relaxed">{getCurrentLevel().scenario}</p>
-                <p className="text-blue-200 text-sm md:text-base">{getCurrentLevel().instruction}</p>
+      <div className="space-y-8">
+        {!showResult && challenges[challenge] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
-
-              {/* Total Time Display */}
-              <div className="bg-gradient-to-r from-yellow-500/20 via-orange-500/20 to-amber-500/20 border-2 border-yellow-400/50 rounded-2xl p-5 md:p-6 mb-6">
-                <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6">
-                  <div className="text-center">
-                    <p className="text-yellow-200 text-xs md:text-sm mb-1">Total Time Available</p>
-                    <p className="text-yellow-300 text-2xl md:text-4xl font-bold">{getCurrentLevel().totalMinutes} min</p>
-                  </div>
-                  <div className="text-white/50 text-xl md:text-2xl hidden md:block">→</div>
-                  <div className="text-center">
-                    <p className="text-yellow-200 text-xs md:text-sm mb-1">Time Allocated</p>
-                    <p className={`text-2xl md:text-4xl font-bold ${getRemainingTime() === 0 ? 'text-green-400' : getRemainingTime() < 0 ? 'text-red-400' : 'text-yellow-300'}`}>
-                      {getTotalAllocated()} min
-                    </p>
-                  </div>
-                  <div className="text-white/50 text-xl md:text-2xl hidden md:block">→</div>
-                  <div className="text-center">
-                    <p className="text-yellow-200 text-xs md:text-sm mb-1">Remaining</p>
-                    <p className={`text-2xl md:text-4xl font-bold ${getRemainingTime() === 0 ? 'text-green-400' : getRemainingTime() < 0 ? 'text-red-400' : 'text-yellow-300'}`}>
-                      {getRemainingTime()} min
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Activity Inputs */}
-              <div className="space-y-4 mb-6">
-                {getCurrentLevel().activities.map(activity => {
-                  const allocated = timeAllocations[activity.name] || 0;
-                  const percentage = getCurrentLevel().totalMinutes > 0 
-                    ? ((allocated / getCurrentLevel().totalMinutes) * 100).toFixed(0) 
-                    : 0;
-                  
-                  return (
-                    <div key={activity.name} className="bg-gradient-to-r from-white/10 to-white/5 border-2 border-white/20 rounded-2xl p-4 md:p-5 hover:border-white/40 transition-all">
-                      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4 mb-3">
-                        <div className="flex items-center gap-3 md:gap-4 flex-1">
-                          <span className="text-3xl md:text-4xl">{activity.emoji}</span>
-                          <span className="text-white font-semibold text-base md:text-xl">{activity.name}</span>
-                        </div>
-                        <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto">
-                          <input
-                            type="number"
-                            min="0"
-                            step="5"
-                            max={getCurrentLevel().totalMinutes}
-                            value={timeAllocations[activity.name] || ''}
-                            onChange={(e) => handleTimeChange(activity.name, e.target.value)}
-                            className="w-20 md:w-28 p-2 md:p-3 rounded-lg bg-white/30 text-white placeholder-white/50 text-center font-bold text-base md:text-lg border-2 border-white/30 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
-                            placeholder="0"
-                          />
-                          <span className="text-white/70 text-sm md:text-base font-medium w-10 md:w-12">min</span>
-                          {allocated > 0 && (
-                            <span className="text-blue-300 text-sm md:text-base font-bold w-12 md:w-16">
-                              {percentage}%
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      {allocated > 0 && (
-                        <div className="w-full bg-white/10 rounded-full h-3 md:h-4 mt-2">
-                          <div 
-                            className="bg-gradient-to-r from-blue-400 to-cyan-400 h-3 md:h-4 rounded-full transition-all duration-300"
-                            style={{ width: `${Math.min(percentage, 100)}%` }}
-                          ></div>
-                        </div>
-                      )}
+              
+              <h3 className="text-xl font-bold text-white mb-2">{challenges[challenge].title}</h3>
+              <p className="text-white text-lg mb-6">
+                {challenges[challenge].question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {challenges[challenge].options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSelectedAnswer(index);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === index
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
                     </div>
-                  );
-                })}
+                  </button>
+                ))}
               </div>
-
-              {/* Validation Message */}
-              <div className={`rounded-2xl p-4 md:p-5 mb-6 ${
-                getRemainingTime() === 0 && getCurrentLevel().activities.every(a => (timeAllocations[a.name] || 0) > 0)
-                  ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-2 border-green-400'
-                  : 'bg-gradient-to-r from-orange-500/20 to-amber-500/20 border-2 border-orange-400'
-              }`}>
-                <p className={`text-sm md:text-base font-semibold ${
-                  getRemainingTime() === 0 && getCurrentLevel().activities.every(a => (timeAllocations[a.name] || 0) > 0)
-                    ? 'text-green-200'
-                    : 'text-orange-200'
-                }`}>
-                  💡 {getValidationMessage()}
-                </p>
-              </div>
-
-              {/* Submit Button */}
-              <button 
-                onClick={handleAllocation}
-                disabled={!checkBalance(timeAllocations)}
-                className={`w-full py-4 md:py-5 rounded-2xl font-bold text-white text-base md:text-lg transition-all transform ${
-                  checkBalance(timeAllocations)
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:scale-105'
-                    : 'bg-gray-500/50 cursor-not-allowed opacity-50'
-                }`}
-              >
-                {checkBalance(timeAllocations) ? '✅ Submit Allocation' : 'Complete allocation to submit'}
-              </button>
             </div>
           </div>
         ) : (
-          <div className="w-full max-w-3xl bg-gradient-to-br from-green-900/30 via-emerald-900/30 to-teal-900/30 backdrop-blur-md rounded-3xl p-6 md:p-8 border-2 border-white/20 shadow-2xl text-center">
-            {finalScore >= 3 ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
               <div>
-                <div className="text-6xl md:text-8xl mb-6 animate-bounce">🎉</div>
-                <h3 className="text-2xl md:text-3xl font-bold text-white mb-4 bg-gradient-to-r from-yellow-300 to-green-300 bg-clip-text text-transparent">Time Balancer!</h3>
-                <p className="text-white/90 text-base md:text-lg mb-6 leading-relaxed">
-                  You balanced {finalScore} out of {questions.length} times!
-                  You know how to manage your time well!
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Time Budget Simulation Complete!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} correct!
+                  You understand how to manage your time well!
                 </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 md:py-4 px-6 md:px-8 rounded-full inline-flex items-center gap-2 mb-6 text-base md:text-lg font-bold">
-                  <span>+{finalScore} Coins</span>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
-                <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl p-4 md:p-5 border-2 border-green-400/30">
-                  <p className="text-white/90 text-sm md:text-base">
-                    💡 Lesson: Balancing your time between study, play, and rest helps you stay healthy and happy!
-                  </p>
-                </div>
+                <p className="text-white/80">
+                  Lesson: Good time management involves balancing study, play, rest, helping at home, and preparing for tomorrow. A well-structured day includes time for all important activities.
+                </p>
               </div>
             ) : (
               <div>
-                <div className="text-6xl md:text-8xl mb-6">💪</div>
-                <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Balance Better!</h3>
-                <p className="text-white/90 text-base md:text-lg mb-6 leading-relaxed">
-                  You balanced {finalScore} out of {questions.length} times.
-                  Keep practicing to balance your time better!
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} correct.
+                  Remember: Good time management requires balancing all activities!
                 </p>
                 <button
                   onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 md:py-4 px-6 md:px-8 rounded-full font-bold text-base md:text-lg transition-all transform hover:scale-105 mb-6"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-                <div className="bg-gradient-to-r from-orange-500/20 to-amber-500/20 rounded-2xl p-4 md:p-5 border-2 border-orange-400/30">
-                  <p className="text-white/90 text-sm md:text-base">
-                    💡 Tip: Make sure to allocate time for all activities - study, play, rest, and chores!
-                  </p>
-                </div>
+                <p className="text-white/80 text-sm">
+                  Tip: Consider how to balance study, play, rest, and responsibilities!
+                </p>
               </div>
             )}
           </div>

@@ -56,21 +56,18 @@ const FeedbackRoleplay = () => {
           id: "a", 
           text: "I appreciate you, but lateness affects our plans. Let's set reminders together", 
           emoji: "⏰",
-          description: "Constructive and solution-focused",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "You're always late!", 
           emoji: "😠",
-          description: "Accusatory and not helpful",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Stop being late", 
           emoji: "🚫",
-          description: "Demanding without support",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const FeedbackRoleplay = () => {
           id: "b", 
           text: "You do nothing!", 
           emoji: "😠",
-          description: "Attacking and unhelpful",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Your ideas are valuable. How can we include more? Let's assign specific tasks", 
           emoji: "👥",
-          description: "Encouraging and actionable",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Kick them out", 
           emoji: "🚪",
-          description: "Extreme and not constructive",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const FeedbackRoleplay = () => {
           id: "a", 
           text: "Good structure, improve arguments with evidence. Here are specific suggestions", 
           emoji: "📝",
-          description: "Balanced and constructive",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "This is bad", 
           emoji: "❌",
-          description: "Not helpful or specific",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Perfect score", 
           emoji: "✅",
-          description: "Not honest feedback",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const FeedbackRoleplay = () => {
           id: "b", 
           text: "It sucks", 
           emoji: "😞",
-          description: "Not constructive",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No feedback", 
           emoji: "🤷",
-          description: "Not helpful",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Strong design, add more features. Here's positive and constructive feedback", 
           emoji: "🛠️",
-          description: "Balanced feedback method",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const FeedbackRoleplay = () => {
           id: "a", 
           text: "Great effort, work on speed. Here's a training plan", 
           emoji: "🏀",
-          description: "Encouraging with actionable plan",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "You're slow", 
           emoji: "🐌",
-          description: "Not constructive",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Bench you", 
           emoji: "🪑",
-          description: "Extreme and demotivating",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const FeedbackRoleplay = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

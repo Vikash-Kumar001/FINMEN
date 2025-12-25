@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const SafetyOfferReflex = () => {
   const location = useLocation();
@@ -15,167 +17,231 @@ const SafetyOfferReflex = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getUvlsTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
+  const nextGamePath = location.state?.nextGamePath || null;
+  const nextGameId = location.state?.nextGameId || null;
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAction, setSelectedAction] = useState(null);
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
   const questions = [
     {
       id: 1,
-      text: "Offer: 'Stranger offers ride.'",
-      suspicious: true,
-      correctAction: "refuse"
+      question: "Offer: 'Stranger offers ride.'",
+      correctAnswer: "Refuse",
+      options: [
+        { text: "Accept", isCorrect: false, emoji: "✅" },
+        { text: "Refuse", isCorrect: true, emoji: "🚫" },
+        { text: "Ask questions", isCorrect: false, emoji: "❓" },
+        { text: "Negotiate terms", isCorrect: false, emoji: "🤝" }
+      ]
     },
     {
       id: 2,
-      text: "Offer: 'Friend offers help.'",
-      suspicious: false,
-      correctAction: "accept"
+      question: "Offer: 'Friend offers help.'",
+      correctAnswer: "Accept",
+      options: [
+        { text: "Accept", isCorrect: true, emoji: "✅" },
+        { text: "Refuse", isCorrect: false, emoji: "🚫" },
+        { text: "Ask questions", isCorrect: false, emoji: "❓" },
+        { text: "Tell others", isCorrect: false, emoji: "📢" }
+      ]
     },
     {
       id: 3,
-      text: "Offer: 'Unknown online friend asks for personal info.'",
-      suspicious: true,
-      correctAction: "refuse"
+      question: "Offer: 'Unknown online friend asks for personal info.'",
+      correctAnswer: "Refuse",
+      options: [
+        { text: "Accept", isCorrect: false, emoji: "✅" },
+        { text: "Ask for details", isCorrect: false, emoji: "❓" },
+        { text: "Refuse", isCorrect: true, emoji: "🚫" },
+        { text: "Share some info", isCorrect: false, emoji: "📝" }
+      ]
     },
     {
       id: 4,
-      text: "Offer: 'Teacher asks for meeting.'",
-      suspicious: false,
-      correctAction: "accept"
+      question: "Offer: 'Teacher asks for meeting.'",
+      correctAnswer: "Accept",
+      options: [
+        { text: "Accept", isCorrect: true, emoji: "✅" },
+        { text: "Ask questions", isCorrect: false, emoji: "❓" },
+        { text: "Refuse", isCorrect: false, emoji: "🚫" },
+        { text: "Bring friend", isCorrect: false, emoji: "👥" }
+      ]
     },
     {
       id: 5,
-      text: "Offer: 'Free gift from unknown person.'",
-      suspicious: true,
-      correctAction: "refuse"
+      question: "Offer: 'Free gift from unknown person.'",
+      correctAnswer: "Refuse",
+      options: [
+        { text: "Accept", isCorrect: false, emoji: "✅" },
+        { text: "Ask questions", isCorrect: false, emoji: "❓" },
+        { text: "Accept with caution", isCorrect: false, emoji: "⚠️" },
+        { text: "Refuse", isCorrect: true, emoji: "🚫" },
+      ]
     }
   ];
 
-  const handleAction = (action) => {
-    if (answered || levelCompleted) return;
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
+    resetFeedback();
+  };
+
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
     
     setAnswered(true);
-    setSelectedAction(action);
     resetFeedback();
     
-    const currentQuestionData = questions[currentQuestion];
-    const isCorrect = action === currentQuestionData.correctAction;
+    const isCorrect = option.isCorrect;
     
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
+
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedAction(null);
-        setAnswered(false);
-        resetFeedback();
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
       } else {
-        setLevelCompleted(true);
+        setGameState("finished");
       }
-    }, isCorrect ? 1000 : 800);
+    }, 500);
   };
 
-  const currentQuestionData = questions[currentQuestion];
   const finalScore = score;
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Safety Offer Reflex"
-      subtitle={levelCompleted ? "Reflex Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your safety awareness!` : "Test your safety awareness!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      gameId={gameId}
-      gameType="uvls"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-      showConfetti={levelCompleted && finalScore >= 3}
+      score={finalScore}
+      gameId={gameId}
+      gameType="uvls"
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!levelCompleted && currentQuestionData ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">⚡</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Should you accept or refuse this offer?<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
               
-              <p className="text-white text-xl md:text-2xl mb-8 text-center font-semibold">
-                "{currentQuestionData.text}"
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <button
-                  onClick={() => handleAction("refuse")}
-                  disabled={answered}
-                  className={`py-6 px-8 rounded-2xl font-bold text-white text-lg transition-all transform ${
-                    answered && selectedAction === "refuse"
-                      ? currentQuestionData.correctAction === "refuse"
-                        ? "bg-green-500 border-4 border-green-300 ring-4 ring-green-400 scale-105"
-                        : "bg-red-500/50 border-2 border-red-400 opacity-75"
-                      : "bg-red-500 hover:bg-red-600 hover:scale-105 border-2 border-red-300"
-                  } ${answered ? "cursor-not-allowed" : ""}`}
-                >
-                  🚫 Refuse!
-                </button>
-                <button
-                  onClick={() => handleAction("accept")}
-                  disabled={answered}
-                  className={`py-6 px-8 rounded-2xl font-bold text-white text-lg transition-all transform ${
-                    answered && selectedAction === "accept"
-                      ? currentQuestionData.correctAction === "accept"
-                        ? "bg-green-500 border-4 border-green-300 ring-4 ring-green-400 scale-105"
-                        : "bg-red-500/50 border-2 border-red-400 opacity-75"
-                      : "bg-green-500 hover:bg-green-600 hover:scale-105 border-2 border-green-300"
-                  } ${answered ? "cursor-not-allowed" : ""}`}
-                >
-                  ✅ Accept
-                </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        ) : null}
+        )}
       </div>
     </GameShell>
   );

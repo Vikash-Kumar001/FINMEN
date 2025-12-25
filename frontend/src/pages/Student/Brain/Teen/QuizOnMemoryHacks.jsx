@@ -58,9 +58,9 @@ const QuizOnMemoryHacks = () => {
       id: 1,
       text: "Which helps memory?",
       choices: [
-        { id: 'a', text: 'Mnemonics' },
-        { id: 'b', text: 'Ignoring information' },
-        { id: 'c', text: 'Skipping sleep' }
+        { id: 'a', text: 'Mnemonics', emoji: '🧠' },
+        { id: 'b', text: 'Ignoring information', emoji: '🙈' },
+        { id: 'c', text: 'Skipping sleep', emoji: '😴' }
       ],
       correct: 'a',
       explanation: 'Mnemonics like acronyms and visual associations help remember information easily by creating strong memory connections!'
@@ -69,20 +69,20 @@ const QuizOnMemoryHacks = () => {
       id: 2,
       text: "What's a good hack for remembering names?",
       choices: [
-        { id: 'b', text: 'Ignoring them completely' },
-        { id: 'c', text: 'Writing once only' },
-        { id: 'a', text: 'Association with faces' }
+        { id: 'a', text: 'Ignoring them completely', emoji: '🤷' },
+        { id: 'b', text: 'Writing once only', emoji: '✏️' },
+        { id: 'c', text: 'Association with faces', emoji: '👥' }
       ],
-      correct: 'a',
+      correct: 'c',
       explanation: 'Linking names to visual cues like faces or characteristics creates stronger memory associations and boosts recall!'
     },
     {
       id: 3,
       text: "Does chunking help with phone numbers?",
       choices: [
-        { id: 'no', text: 'No, it makes it harder' },
-        { id: 'yes', text: 'Yes, breaking into groups helps' },
-        { id: 'maybe', text: 'Maybe, depends on the number' }
+        { id: 'no', text: 'No, it makes it harder', emoji: '❌' },
+        { id: 'yes', text: 'Yes, breaking into groups helps', emoji: '✅' },
+        { id: 'maybe', text: 'Maybe, depends on the number', emoji: '🤔' }
       ],
       correct: 'yes',
       explanation: 'Breaking information into smaller chunks (like 3-3-4 for phone numbers) makes it much easier to remember!'
@@ -91,20 +91,20 @@ const QuizOnMemoryHacks = () => {
       id: 4,
       text: "Which hack involves repeating information?",
       choices: [
-        { id: 'b', text: 'Single read only' },
-        { id: 'a', text: 'Spaced repetition' },
-        { id: 'c', text: 'Distraction techniques' }
+        { id: 'a', text: 'Single read only', emoji: '📄' },
+        { id: 'b', text: 'Spaced repetition', emoji: '📅' },
+        { id: 'c', text: 'Distraction techniques', emoji: '📱' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'Spaced repetition involves reviewing material at increasing intervals, which reinforces memory over time!'
     },
     {
       id: 5,
       text: "Is mind mapping a visual memory hack?",
       choices: [
-        { id: 'no', text: 'No, it\'s only for writing' },
-        { id: 'maybe', text: 'Maybe, depends on the topic' },
-        { id: 'yes', text: 'Yes, it organizes info visually' }
+        { id: 'no', text: 'No, it\'s only for writing', emoji: '✍️' },
+        { id: 'maybe', text: 'Maybe, depends on the topic', emoji: '❓' },
+        { id: 'yes', text: 'Yes, it organizes info visually', emoji: '🎨' }
       ],
       correct: 'yes',
       explanation: 'Mind maps organize information visually, creating spatial relationships that make information easier to recall!'
@@ -209,7 +209,10 @@ const QuizOnMemoryHacks = () => {
                           : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
                       } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none text-white font-bold text-sm md:text-base`}
                     >
-                      {choice.text}
+                      <div className="flex flex-col items-center">
+                        <span className="text-2xl mb-1">{choice.emoji}</span>
+                        <span>{choice.text}</span>
+                      </div>
                     </button>
                   );
                 })}

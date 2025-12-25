@@ -57,21 +57,18 @@ const EthicalRoleplay = () => {
           id: "b", 
           text: "Copy the homework", 
           emoji: "📋",
-          description: "Unethical - academic dishonesty",
           isCorrect: false
         },
          { 
           id: "a", 
           text: "Do it yourself or ask for help", 
           emoji: "✍️",
-          description: "Ethical approach - honest learning",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Skip the assignment entirely", 
           emoji: "⏭️",
-          description: "Avoids the dilemma but fails the assignment",
           isCorrect: false
         }
       ]
@@ -84,21 +81,18 @@ const EthicalRoleplay = () => {
           id: "b", 
           text: "Tell the truth kindly and honestly", 
           emoji: "💬",
-          description: "Ethical - respects honesty",
           isCorrect: true
         },
         { 
           id: "a", 
           text: "Lie to avoid the conflict", 
           emoji: "🤥",
-          description: "Unethical - deception",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Avoid the topic completely", 
           emoji: "🙈",
-          description: "Doesn't address the situation",
           isCorrect: false
         }
       ]
@@ -112,21 +106,18 @@ const EthicalRoleplay = () => {
           id: "b", 
           text: "Cheat on the test", 
           emoji: "👀",
-          description: "Unethical - academic dishonesty",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Guess all answers randomly", 
           emoji: "🎲",
-          description: "Not a responsible approach",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Study hard and prepare ethically", 
           emoji: "📚",
-          description: "Ethical - honest preparation",
           isCorrect: true
         },
       ]
@@ -139,21 +130,18 @@ const EthicalRoleplay = () => {
           id: "b", 
           text: "Pay for it or leave it", 
           emoji: "💳",
-          description: "Ethical - respects property",
           isCorrect: true
         },
         { 
           id: "a", 
           text: "Take it without paying", 
           emoji: "🛒",
-          description: "Unethical - theft",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Rationalize taking it", 
           emoji: "🤔",
-          description: "Justifies unethical behavior",
           isCorrect: false
         }
       ]
@@ -167,21 +155,18 @@ const EthicalRoleplay = () => {
           id: "b", 
           text: "Spread the gossip", 
           emoji: "🗣️",
-          description: "Unethical - harmful behavior",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Stay silent or defend the person", 
           emoji: "🤐",
-          description: "Ethical - respectful behavior",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Add more rumors", 
           emoji: "📢",
-          description: "Very unethical - causes harm",
           isCorrect: false
         }
       ]
@@ -277,7 +262,6 @@ const EthicalRoleplay = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

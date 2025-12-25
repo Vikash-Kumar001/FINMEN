@@ -59,22 +59,22 @@ const DebateRoteVsUnderstanding = () => {
       id: 1,
       text: "Is rote learning better than understanding?",
       choices: [
-        { id: 'a', text: 'No, understanding is better' },
-        { id: 'b', text: 'Yes, rote learning is superior' },
+        { id: 'a', text: 'Yes, rote learning is superior' },
+        { id: 'b', text: 'No, understanding is better' },
         { id: 'c', text: 'They are equally effective' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'Understanding leads to better application, retention, and problem-solving compared to rote memorization!'
     },
     {
       id: 2,
       text: "Does rote learning help in creative problem-solving?",
       choices: [
-        { id: 'b', text: 'Rarely, understanding fosters creativity' },
-        { id: 'a', text: 'Always, rote is best for creativity' },
+        { id: 'a', text: 'Rarely, understanding fosters creativity' },
+        { id: 'b', text: 'Always, rote is best for creativity' },
         { id: 'c', text: 'Only for math problems' }
       ],
-      correct: 'b',
+      correct: 'a',
       explanation: 'Understanding concepts allows you to apply knowledge flexibly and creatively, while rote learning limits you to memorized patterns!'
     },
     {
@@ -93,8 +93,8 @@ const DebateRoteVsUnderstanding = () => {
       text: "Should you use rote for facts and understanding for concepts?",
       choices: [
         { id: 'a', text: 'Rote only for everything' },
+        { id: 'b', text: 'Balance both, but prioritize understanding' },
         { id: 'c', text: 'Understanding is never needed' },
-        { id: 'b', text: 'Balance both, but prioritize understanding' }
       ],
       correct: 'b',
       explanation: 'While some facts require memorization, understanding the underlying concepts helps you remember facts better and apply them!'
@@ -103,8 +103,8 @@ const DebateRoteVsUnderstanding = () => {
       id: 5,
       text: "In exams, does understanding help you adapt to new questions?",
       choices: [
-        { id: 'b', text: 'No, rote is better for exams' },
         { id: 'a', text: 'Yes, understanding allows flexible application' },
+        { id: 'b', text: 'No, rote is better for exams' },
         { id: 'c', text: 'Only for easy questions' }
       ],
       correct: 'a',

@@ -34,14 +34,14 @@ const BedtimeStory = () => {
         { 
           id: "yes", 
           text: "Yes, it's good", 
-          emoji: "✅", 
+          emoji: "😴", 
           description: "Good sleep schedule helps brain",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No, it's bad", 
-          emoji: "❌", 
+          emoji: "😫", 
           description: "Sleeping early is not helpful",
           isCorrect: false
         },
@@ -68,14 +68,14 @@ const BedtimeStory = () => {
         { 
           id: "yes", 
           text: "Yes, it's good", 
-          emoji: "✅", 
+          emoji: "⚡", 
           description: "Early sleep gives energy",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No, it's bad", 
-          emoji: "❌", 
+          emoji: "👎", 
           description: "Sleeping early is wrong",
           isCorrect: false
         }
@@ -88,7 +88,7 @@ const BedtimeStory = () => {
         { 
           id: "no", 
           text: "No, routines are bad", 
-          emoji: "❌", 
+          emoji: "🙅‍♂️", 
           description: "Routines don't help",
           isCorrect: false
         },
@@ -102,7 +102,7 @@ const BedtimeStory = () => {
         { 
           id: "yes", 
           text: "Yes, it's smart", 
-          emoji: "✅", 
+          emoji: "😎", 
           description: "Routines help sleep better",
           isCorrect: true
         }
@@ -115,14 +115,14 @@ const BedtimeStory = () => {
         { 
           id: "yes", 
           text: "Yes, it's good", 
-          emoji: "✅", 
+          emoji: "🏫", 
           description: "Good sleep prepares for school",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No, it's bad", 
-          emoji: "❌", 
+          emoji: "🤦", 
           description: "Sleeping early is not good",
           isCorrect: false
         },
@@ -142,7 +142,7 @@ const BedtimeStory = () => {
         { 
           id: "no", 
           text: "No, screens are fine", 
-          emoji: "❌", 
+          emoji: "📱", 
           description: "Screens don't affect sleep",
           isCorrect: false
         },
@@ -156,7 +156,7 @@ const BedtimeStory = () => {
         { 
           id: "yes", 
           text: "Yes, it's good", 
-          emoji: "✅", 
+          emoji: "😴", 
           description: "No screens help sleep better",
           isCorrect: true
         }

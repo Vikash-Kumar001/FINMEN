@@ -32,21 +32,18 @@ const VoiceAssistantQuiz = () => {
           id: "yes", 
           text: "Yes, they are AI ", 
           emoji: "✅", 
-          description: "Siri and Alexa are AI voice assistants that listen, understand, and help us",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No, they are not AI ", 
           emoji: "❌", 
-          description: "Siri and Alexa are actually AI voice assistants",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Siri and Alexa definitely use AI to understand and respond",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const VoiceAssistantQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Alexa is mostly found in Amazon Echo devices",
           isCorrect: false
         },
         { 
           id: "echo", 
           text: "Amazon Echo ", 
           emoji: "🟣", 
-          description: "Alexa is mostly found in Amazon Echo devices - smart speakers",
           isCorrect: true
         },
         { 
           id: "washing", 
           text: "Washing Machine ", 
           emoji: "🧺", 
-          description: "Alexa is in smart speakers, not washing machines",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const VoiceAssistantQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Voice assistants use machine learning to improve over time",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No, they stay the same always ", 
           emoji: "🚫", 
-          description: "Voice assistants improve their understanding over time",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes, they improve with use ", 
           emoji: "💡", 
-          description: "Voice assistants use machine learning to improve based on your voice patterns",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const VoiceAssistantQuiz = () => {
           id: "photoshop", 
           text: "Photoshop ", 
           emoji: "🎨", 
-          description: "Photoshop is a design tool, not a voice assistant",
           isCorrect: true
         },
         { 
           id: "siri", 
           text: "Siri ", 
           emoji: "🍎", 
-          description: "Siri is an AI voice assistant",
           isCorrect: false
         },
         { 
           id: "google", 
           text: "Google Assistant ", 
           emoji: "🔍", 
-          description: "Google Assistant is an AI voice assistant",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const VoiceAssistantQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Voice assistants can't cook food, but can help with timers and recipes",
           isCorrect: false
         },
         { 
           id: "lights", 
           text: "Control smart lights ", 
           emoji: "💡", 
-          description: "Voice assistants can control smart lights",
           isCorrect: false
         },
         { 
           id: "cook", 
           text: "Cook food ", 
           emoji: "🍳", 
-          description: "Voice assistants can't cook food, but can help with timers and recipes",
           isCorrect: true
         }
       ]
@@ -246,8 +231,7 @@ const VoiceAssistantQuiz = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

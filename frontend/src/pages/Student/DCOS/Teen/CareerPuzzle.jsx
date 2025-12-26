@@ -65,10 +65,10 @@ const CareerPuzzle = () => {
   // Skills - shuffled order to make it harder
   const rightItems = [
     { id: 1, name: "Digital Design", emoji: "🎨", description: "Creating visual content" },
-    { id: 2, name: "Coding", emoji: "💻", description: "Writing computer programs" },
+    { id: 5, name: "Security Protection", emoji: "🛡️", description: "Defending against threats" },
     { id: 3, name: "Data Analysis", emoji: "📊", description: "Examining data patterns" },
+    { id: 2, name: "Coding", emoji: "💻", description: "Writing computer programs" },
     { id: 4, name: "Video Production", emoji: "🎬", description: "Creating video content" },
-    { id: 5, name: "Security Protection", emoji: "🛡️", description: "Defending against threats" }
   ];
 
   // Correct matches

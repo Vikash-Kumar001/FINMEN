@@ -30,22 +30,19 @@ const GoodBadAIQuiz = () => {
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Yes! This is an example of Good AI. Ethical AI helps humans safely and fairly",
+          emoji: "👍", 
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "Helping blind people is actually an example of Good AI",
+          emoji: "👎", 
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Helping blind people is definitely an example of Good AI",
           isCorrect: false
         }
       ]
@@ -58,21 +55,18 @@ const GoodBadAIQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Spreading false news is an example of Bad AI",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "Actually, this is an example of Bad AI. Spreading false news is harmful",
+          emoji: "👎", 
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Spreading false news is actually Bad AI - it's harmful",
+          emoji: "👍", 
           isCorrect: false
         }
       ]
@@ -85,21 +79,18 @@ const GoodBadAIQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Recommending safe routes is an example of Good AI",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "Recommending safe routes is actually an example of Good AI",
+          emoji: "👎", 
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Yes! This is an example of Good AI. Recommending safe routes helps people",
+          emoji: "👍", 
           isCorrect: true
         }
       ]
@@ -111,22 +102,19 @@ const GoodBadAIQuiz = () => {
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "Actually, this is an example of Bad AI. Ignoring privacy is harmful",
+          emoji: "👎", 
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Ignoring privacy is actually Bad AI - it's harmful",
+          emoji: "👍", 
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Ignoring privacy is an example of Bad AI",
           isCorrect: false
         }
       ]
@@ -139,21 +127,18 @@ const GoodBadAIQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Teaching kids educational games is an example of Good AI",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "Yes! This is an example of Good AI. Teaching kids educational games helps them learn",
+          emoji: "👍", 
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "Teaching kids educational games is actually an example of Good AI",
+          emoji: "👎", 
           isCorrect: false
         }
       ]
@@ -245,8 +230,7 @@ const GoodBadAIQuiz = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

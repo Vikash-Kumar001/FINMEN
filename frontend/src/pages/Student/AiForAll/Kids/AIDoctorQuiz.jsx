@@ -32,21 +32,18 @@ const AIDoctorQuiz = () => {
           id: "yes", 
           text: "Yes ", 
           emoji: "✅", 
-          description: "AI can analyze X-rays to help doctors detect cancer early",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No ", 
           emoji: "❌", 
-          description: "AI can actually help detect cancer in X-rays",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI definitely helps doctors detect cancer in X-rays",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const AIDoctorQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI can help doctors schedule patient appointments efficiently",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes ", 
           emoji: "✅", 
-          description: "AI can help doctors schedule patient appointments efficiently",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No ", 
           emoji: "❌", 
-          description: "AI can actually help schedule appointments",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const AIDoctorQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI doesn't perform surgeries alone - doctors are always needed",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No ", 
           emoji: "❌", 
-          description: "AI doesn't perform surgeries alone - doctors are always needed",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes ", 
           emoji: "✅", 
-          description: "AI doesn't perform surgeries alone - doctors are always needed",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const AIDoctorQuiz = () => {
           id: "yes", 
           text: "Yes ", 
           emoji: "✅", 
-          description: "AI can remind patients to take medicines on time",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No ", 
           emoji: "❌", 
-          description: "AI can actually remind patients to take medicines",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI definitely helps remind patients about medicines",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const AIDoctorQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI can help predict heart problems early by analyzing data",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes ", 
           emoji: "✅", 
-          description: "AI can help predict heart problems early by analyzing medical data",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No ", 
           emoji: "❌", 
-          description: "AI can actually help predict heart problems early",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const AIDoctorQuiz = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

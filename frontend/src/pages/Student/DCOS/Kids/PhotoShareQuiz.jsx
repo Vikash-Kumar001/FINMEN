@@ -35,21 +35,18 @@ const PhotoShareQuiz = () => {
           id: "a", 
           text: "No, Never!", 
           emoji: "🚫", 
-          description: "Never share your address online",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Yes, It's Fine", 
           emoji: "✅", 
-          description: "It's okay to share addresses",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Only to Friends", 
           emoji: "👥", 
-          description: "Share only with close friends",
           isCorrect: false
         }
       ]
@@ -62,21 +59,18 @@ const PhotoShareQuiz = () => {
           id: "a", 
           text: "Yes, I'm Proud", 
           emoji: "🏫", 
-          description: "Show off your school",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Crop the Name", 
           emoji: "✂️", 
-          description: "Post but hide the school name",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No, Keep Private", 
           emoji: "🔒", 
-          description: "Don't reveal where you go to school",
           isCorrect: true
         }
       ]
@@ -89,21 +83,18 @@ const PhotoShareQuiz = () => {
           id: "a", 
           text: "Keep Private", 
           emoji: "🔐", 
-          description: "Don't share with strangers",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Show the Fun", 
           emoji: "🎉", 
-          description: "Share to show how fun it was",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Share Some Photos", 
           emoji: "📸", 
-          description: "Share only a few photos",
           isCorrect: false
         }
       ]
@@ -116,21 +107,18 @@ const PhotoShareQuiz = () => {
           id: "a", 
           text: "Yes", 
           emoji: "✅", 
-          description: "It's fine to show house numbers",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "No, Private Info", 
           emoji: "🔒", 
-          description: "House numbers are private information",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Blur It Slightly", 
           emoji: "🌫️", 
-          description: "Post but blur the number",
           isCorrect: false
         }
       ]
@@ -143,21 +131,18 @@ const PhotoShareQuiz = () => {
           id: "a", 
           text: "Share My Fun", 
           emoji: "🏖️", 
-          description: "Post photos right away",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Post Just a Few", 
           emoji: "📷", 
-          description: "Share only some photos",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Wait Until Home", 
           emoji: "⏰", 
-          description: "Wait until you're back home",
           isCorrect: true
         }
       ]
@@ -230,7 +215,6 @@ const PhotoShareQuiz = () => {
                   >
                     <div className="text-3xl mb-3">{option.emoji}</div>
                     <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
                   </button>
                 ))}
               </div>

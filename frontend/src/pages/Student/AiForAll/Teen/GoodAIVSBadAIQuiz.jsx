@@ -273,8 +273,7 @@ const GoodAIVSBadAIQuiz = () => {
                       } ${answered ? "cursor-not-allowed" : ""}`}
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
-                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
+                      <h4 className="font-bold text-base">{option.text}</h4>
                     </button>
                   );
                 })}

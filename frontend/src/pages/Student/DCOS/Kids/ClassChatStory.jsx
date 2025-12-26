@@ -83,19 +83,20 @@ const ClassChatStory = () => {
       text: "You see a mean comment about your best friend online. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Join In", 
-          emoji: "😈", 
-          description: "Join in and say worse things",
-          isCorrect: false
-        },
-        { 
           id: "b", 
           text: "Report and Tell", 
           emoji: "📢", 
           description: "Report the post and tell your friend",
           isCorrect: true
         },
+        { 
+          id: "a", 
+          text: "Join In", 
+          emoji: "😈", 
+          description: "Join in and say worse things",
+          isCorrect: false
+        },
+        
         { 
           id: "c", 
           text: "Scroll Past", 
@@ -109,13 +110,7 @@ const ClassChatStory = () => {
       id: 4,
       text: "You accidentally type something rude about a classmate in a group chat. What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Apologize and Delete", 
-          emoji: "🙏", 
-          description: "Apologize and delete it right away",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Blame Someone", 
@@ -129,26 +124,34 @@ const ClassChatStory = () => {
           emoji: "😬", 
           description: "Ignore and hope no one saw it",
           isCorrect: false
-        }
+        },
+        { 
+          id: "a", 
+          text: "Apologize and Delete", 
+          emoji: "🙏", 
+          description: "Apologize and delete it right away",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 5,
       text: "Someone calls another student 'nerd' in chat. Everyone is watching. What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Say Stop", 
-          emoji: "🗣️", 
-          description: "Say 'That's not kind — stop it.'",
-          isCorrect: true
-        },
+       
         { 
           id: "b", 
           text: "Join Teasing", 
           emoji: "🤣", 
           description: "Join the teasing for fun",
           isCorrect: false
+        },
+         { 
+          id: "a", 
+          text: "Say Stop", 
+          emoji: "🗣️", 
+          description: "Say 'That's not kind — stop it.'",
+          isCorrect: true
         },
         { 
           id: "c", 

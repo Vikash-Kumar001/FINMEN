@@ -85,13 +85,7 @@ const KindVsMeanQuiz = () => {
       id: 3,
       text: "What's the kind word to call someone?",
       options: [
-        { 
-          id: "a", 
-          text: "Buddy", 
-          emoji: "👋", 
-          description: "Friendly and kind word",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Idiot", 
@@ -105,7 +99,14 @@ const KindVsMeanQuiz = () => {
           emoji: "😒", 
           description: "Mean and insulting word",
           isCorrect: false
-        }
+        },
+        { 
+          id: "a", 
+          text: "Buddy", 
+          emoji: "👋", 
+          description: "Friendly and kind word",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -139,19 +140,20 @@ const KindVsMeanQuiz = () => {
       id: 5,
       text: "Which word spreads kindness?",
       options: [
-        { 
-          id: "a", 
-          text: "Kind", 
-          emoji: "😊", 
-          description: "Kind words spread positivity",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Mean", 
           emoji: "😠", 
           description: "Mean words spread negativity",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Kind", 
+          emoji: "😊", 
+          description: "Kind words spread positivity",
+          isCorrect: true
         },
         { 
           id: "c", 

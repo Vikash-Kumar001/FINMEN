@@ -32,21 +32,18 @@ const AIMapsStory = () => {
           id: "maps", 
           text: "Google Maps AI", 
           emoji: "🧭", 
-          description: "AI like Google Maps helps us find the fastest and safest routes easily",
           isCorrect: true
         },
         { 
           id: "guess", 
           text: "Guessing the route", 
           emoji: "🤷‍♂️", 
-          description: "AI navigation systems are more reliable than guessing",
           isCorrect: false
         },
         { 
           id: "paper", 
           text: "Using a paper map", 
           emoji: "🗺️", 
-          description: "AI maps provide real-time traffic and route optimization",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const AIMapsStory = () => {
           id: "wait", 
           text: "Wait until someone reminds her", 
           emoji: "⏰", 
-          description: "Voice assistants can set alarms instantly",
           isCorrect: false
         },
         { 
           id: "voice", 
           text: "Say 'Hey Google' or 'Alexa'", 
           emoji: "🗣️", 
-          description: "Voice assistants like Alexa and Google Assistant use AI to follow voice commands",
           isCorrect: true
         },
         { 
           id: "paper", 
           text: "Write it on paper", 
           emoji: "📝", 
-          description: "Voice assistants use AI to set alarms with voice commands",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const AIMapsStory = () => {
           id: "owner", 
           text: "Shop owner personally guessed", 
           emoji: "🧑‍💼", 
-          description: "AI learns your choices and suggests related products",
           isCorrect: false
         },
         { 
           id: "luck", 
           text: "Random luck", 
           emoji: "🍀", 
-          description: "AI uses data to make smart recommendations",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI recommendation system", 
           emoji: "💡", 
-          description: "AI learns your choices and suggests related products you might like",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const AIMapsStory = () => {
           id: "ai", 
           text: "AI medical imaging tool", 
           emoji: "🩺", 
-          description: "AI helps doctors analyze scans faster and detect patterns humans might miss",
           isCorrect: true
         },
         { 
           id: "luck", 
           text: "Guessing based on luck", 
           emoji: "🎲", 
-          description: "AI uses pattern recognition to help doctors",
           isCorrect: false
         },
         { 
           id: "handwriting", 
           text: "Doctor's handwriting", 
           emoji: "🖋️", 
-          description: "AI medical tools analyze scans to help doctors",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const AIMapsStory = () => {
           id: "developer", 
           text: "Game developer drives them", 
           emoji: "👨‍💻", 
-          description: "AI controls game difficulty dynamically",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI controls difficulty dynamically", 
           emoji: "🤖", 
-          description: "Game AI adjusts difficulty to make challenges fun and fair",
           isCorrect: true
         },
         { 
           id: "random", 
           text: "They are random bots", 
           emoji: "🎲", 
-          description: "AI adjusts game difficulty based on player skill",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const AIMapsStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

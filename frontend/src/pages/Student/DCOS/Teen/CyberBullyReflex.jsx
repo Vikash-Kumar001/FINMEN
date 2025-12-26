@@ -39,8 +39,8 @@ const CyberBullyReflex = () => {
       question: "A comment says 'You're so stupid!'. What should you do?",
       correctAnswer: "Block and Report",
       options: [
-        { text: "Block and Report", isCorrect: true, emoji: "🚫" },
         { text: "Reply with Insults", isCorrect: false, emoji: "😡" },
+        { text: "Block and Report", isCorrect: true, emoji: "🚫" },
         { text: "Share It", isCorrect: false, emoji: "📤" },
         { text: "Ignore It", isCorrect: false, emoji: "🙈" }
       ]
@@ -50,8 +50,8 @@ const CyberBullyReflex = () => {
       question: "A comment says 'Great job on your project!'. What should you do?",
       correctAnswer: "Thank and Keep",
       options: [
-        { text: "Block Immediately", isCorrect: false, emoji: "🚫" },
         { text: "Thank and Keep", isCorrect: true, emoji: "👍" },
+        { text: "Block Immediately", isCorrect: false, emoji: "🚫" },
         { text: "Report as Bullying", isCorrect: false, emoji: "📢" },
         { text: "Delete Comment", isCorrect: false, emoji: "🗑️" }
       ]
@@ -62,9 +62,9 @@ const CyberBullyReflex = () => {
       correctAnswer: "Block and Report",
       options: [
         { text: "Engage in Argument", isCorrect: false, emoji: "💬" },
-        { text: "Block and Report", isCorrect: true, emoji: "🛡️" },
         { text: "Share with Friends", isCorrect: false, emoji: "👥" },
-        { text: "Laugh It Off", isCorrect: false, emoji: "😄" }
+        { text: "Laugh It Off", isCorrect: false, emoji: "😄" },
+        { text: "Block and Report", isCorrect: true, emoji: "🛡️" },
       ]
     },
     {
@@ -73,8 +73,8 @@ const CyberBullyReflex = () => {
       correctAnswer: "Respond Positively",
       options: [
         { text: "Block User", isCorrect: false, emoji: "🚫" },
-        { text: "Respond Positively", isCorrect: true, emoji: "😊" },
         { text: "Report Comment", isCorrect: false, emoji: "📢" },
+        { text: "Respond Positively", isCorrect: true, emoji: "😊" },
         { text: "Delete It", isCorrect: false, emoji: "🗑️" }
       ]
     },

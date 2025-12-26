@@ -32,21 +32,18 @@ const AIMedicineStory = () => {
           id: "ai", 
           text: "AI alone", 
           emoji: "🤖", 
-          description: "Doctors make final diagnoses, AI assists them",
           isCorrect: false
         },
         { 
           id: "doctor", 
           text: "Doctor", 
           emoji: "👨‍⚕️", 
-          description: "Doctors make final diagnoses, AI assists them in making decisions",
           isCorrect: true
         },
         { 
           id: "patient", 
           text: "Patient decides", 
           emoji: "👤", 
-          description: "Doctors make final diagnoses with AI assistance",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const AIMedicineStory = () => {
           id: "patient", 
           text: "Patient decides alone", 
           emoji: "👤", 
-          description: "Doctors approve treatment plans with AI assistance",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI automatically", 
           emoji: "🤖", 
-          description: "Doctors must approve treatment plans, AI only suggests",
           isCorrect: false
         },
         { 
           id: "doctor", 
           text: "Doctor approval required", 
           emoji: "👨‍⚕️", 
-          description: "Doctors must approve treatment plans, AI only suggests options",
           isCorrect: true
         }
       ]
@@ -86,21 +80,18 @@ const AIMedicineStory = () => {
           id: "ignore", 
           text: "Ignore AI warning", 
           emoji: "❌", 
-          description: "Doctors should review AI warnings and inform patients",
           isCorrect: false
         },
         { 
           id: "doctor", 
           text: "Doctor reviews and informs patient", 
           emoji: "👨‍⚕️", 
-          description: "Doctors should review AI warnings and inform patients about allergies",
           isCorrect: true
         },
         { 
           id: "ai", 
           text: "AI automatically adjusts dosage", 
           emoji: "🤖", 
-          description: "Doctors must review and make decisions, not AI alone",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const AIMedicineStory = () => {
           id: "patient", 
           text: "Patient alone", 
           emoji: "👤", 
-          description: "Doctors decide treatment with AI and patient input",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI decides alone", 
           emoji: "🤖", 
-          description: "Doctors decide treatment with AI assistance",
           isCorrect: false
         },
         { 
           id: "doctor", 
           text: "Doctor in consultation with AI", 
           emoji: "👨‍⚕️", 
-          description: "Doctors decide treatment in consultation with AI predictions",
           isCorrect: true
         }
       ]
@@ -140,21 +128,18 @@ const AIMedicineStory = () => {
           id: "ai", 
           text: "AI automatically schedules", 
           emoji: "🤖", 
-          description: "Doctors confirm schedules with patients",
           isCorrect: false
         },
         { 
           id: "doctor", 
           text: "Doctor confirms schedule with patient", 
           emoji: "👨‍⚕️", 
-          description: "Doctors confirm AI-recommended schedules with patients",
           isCorrect: true
         },
         { 
           id: "patient", 
           text: "Patient decides without doctor", 
           emoji: "👤", 
-          description: "Doctors should be involved in scheduling checkups",
           isCorrect: false
         }
       ]
@@ -253,8 +238,7 @@ const AIMedicineStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

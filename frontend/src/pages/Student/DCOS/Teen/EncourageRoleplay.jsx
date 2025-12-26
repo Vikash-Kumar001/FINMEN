@@ -1,239 +1,243 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState } from "react";
 import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
 
 const EncourageRoleplay = () => {
   const location = useLocation();
-  const gameId = "dcos-teen-16";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("dcos-teen-16");
+  const gameId = gameData?.id || "dcos-teen-16";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for EncourageRoleplay, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [selectedApproach, setSelectedApproach] = useState(null);
-  const [encouragingWords, setEncouragingWords] = useState("");
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      situation: "Your classmate Maya is being cyberbullied. She's posting about feeling sad and alone.",
-      emoji: "😢",
-      approaches: [
-        { id: 1, text: "Encourage her and report the bullying", isCorrect: true },
-        { id: 2, text: "Ignore it - not my business", isCorrect: false },
-        { id: 3, text: "Tell her to just delete social media", isCorrect: false }
+      text: "Your classmate Maya is being cyberbullied. She's posting about feeling sad and alone. What should you do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Encourage her and report the bullying", 
+          emoji: "🤗", 
+          description: "Supporting victims and reporting bullying helps them feel less alone and stops the harassment",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Ignore it - not my business", 
+          emoji: "😑", 
+          description: "Ignoring bullying allows it to continue and can harm the victim",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Tell her to just delete social media", 
+          emoji: "📱", 
+          description: "While this may provide temporary relief, it doesn't address the bullying or support the victim",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      situation: "Your friend Sam is being trolled online and feels hopeless.",
-      emoji: "💔",
-      approaches: [
-        { id: 1, text: "Stay out of it", isCorrect: false },
-        { id: 2, text: "Support them and report the trolling", isCorrect: true },
-        { id: 3, text: "Tell them to ignore it", isCorrect: false }
+      text: "Your friend Sam is being trolled online and feels hopeless. What should you do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Stay out of it", 
+          emoji: "🚶", 
+          description: "Avoiding the situation leaves your friend without support when they need it most",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Support them and report the trolling", 
+          emoji: "🤗", 
+          description: "Supporting victims and reporting harassment provides emotional help and addresses the problem",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Tell them to ignore it", 
+          emoji: "🔇", 
+          description: "Ignoring serious harassment doesn't help the victim cope with the emotional impact",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      situation: "A classmate is being excluded and bullied in a group chat.",
-      emoji: "😞",
-      approaches: [
-        { id: 1, text: "Don't get involved", isCorrect: false },
-        { id: 2, text: "Just watch", isCorrect: false },
-        { id: 3, text: "Include them and report the bullying", isCorrect: true }
+      text: "A classmate is being excluded and bullied in a group chat. What should you do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Don't get involved", 
+          emoji: "🚫", 
+          description: "Not getting involved allows the bullying to continue and can make the victim feel isolated",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Just watch", 
+          emoji: "👁️", 
+          description: "Being a passive observer doesn't help the victim and can make the situation worse",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Include them and report the bullying", 
+          emoji: "🤗", 
+          description: "Inclusion helps the victim feel supported, and reporting stops the harassment",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 4,
-      situation: "Someone you know is being harassed online and feels scared.",
-      emoji: "😰",
-      approaches: [
-        { id: 1, text: "Encourage them and report harassment", isCorrect: true },
-        { id: 2, text: "It's not my problem", isCorrect: false },
-        { id: 3, text: "Tell them to block everyone", isCorrect: false }
+      text: "Someone you know is being harassed online and feels scared. What should you do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Encourage them and report harassment", 
+          emoji: "🤗", 
+          description: "Encouragement provides emotional support, and reporting helps stop the harassment",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "It's not my problem", 
+          emoji: "🤷", 
+          description: "Bullying affects the whole community, and helping others creates a safer environment for all",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Tell them to block everyone", 
+          emoji: "🚫", 
+          description: "Blocking may provide temporary relief but doesn't address the root problem or support the victim",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      situation: "A friend is being cyberbullied and losing confidence.",
-      emoji: "😔",
-      approaches: [
-        { id: 1, text: "Ignore the situation", isCorrect: false },
-        { id: 2, text: "Support them and report the bullying", isCorrect: true },
-        { id: 3, text: "Tell them to toughen up", isCorrect: false }
+      text: "A friend is being cyberbullied and losing confidence. What should you do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Ignore the situation", 
+          emoji: "🙈", 
+          description: "Ignoring the situation allows the bullying to continue and can damage your friendship",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Support them and report the bullying", 
+          emoji: "🤗", 
+          description: "Support helps rebuild confidence, and reporting addresses the source of the problem",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Tell them to toughen up", 
+          emoji: "💪", 
+          description: "Telling someone to toughen up dismisses their pain and doesn't address the bullying",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleSubmit = () => {
+  const handleChoice = (isCorrect) => {
     if (answered) return;
-    
-    if (!selectedApproach || encouragingWords.trim().length < 20) return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentScenarioData = scenarios[currentScenario];
-    const selectedApp = currentScenarioData.approaches.find(a => a.id === selectedApproach);
-    const isCorrect = selectedApp?.isCorrect || false;
-    
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentScenario < scenarios.length - 1) {
-        setCurrentScenario(prev => prev + 1);
-        setSelectedApproach(null);
-        setEncouragingWords("");
-        setAnswered(false);
-      } else {
+      if (isLastQuestion) {
         setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
     }, 500);
   };
 
-  const currentScenarioData = scenarios[currentScenario];
-
-  // Log when game completes and update location state with nextGameId
-  useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Encourage Roleplay game completed! Score: ${score}/${scenarios.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
-      
-      // Update location state with nextGameId for GameOverModal
-      if (nextGameId && window.history && window.history.replaceState) {
-        const currentState = window.history.state || {};
-        window.history.replaceState({
-          ...currentState,
-          nextGameId: nextGameId
-        }, '');
-      }
-    }
-  }, [showResult, score, gameId, nextGamePath, nextGameId, scenarios.length]);
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Encourage Roleplay"
       score={score}
-      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Game Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       showGameOver={showResult}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={scenarios.length}
-      currentLevel={currentScenario + 1}
-      maxScore={scenarios.length}
-      showConfetti={showResult && score === scenarios.length}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentScenarioData.emoji}</div>
-            <div className="bg-red-500/20 border-2 border-red-400 rounded-lg p-4 md:p-5 mb-6">
-              <p className="text-white text-base md:text-lg leading-relaxed">{currentScenarioData.situation}</p>
-            </div>
-
-            <h3 className="text-white font-bold mb-4">1. Choose Your Approach</h3>
-            <div className="space-y-3 mb-6">
-              {currentScenarioData.approaches.map(app => (
-                <button
-                  key={app.id}
-                  onClick={() => !answered && setSelectedApproach(app.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 transition-all ${
-                    selectedApproach === app.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : answered && app.isCorrect
-                      ? 'bg-green-500/50 border-green-400'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="text-white font-semibold text-base md:text-lg">{app.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <h3 className="text-white font-bold mb-2">2. Write Encouraging Words (min 20 chars)</h3>
-            <textarea
-              value={encouragingWords}
-              onChange={(e) => !answered && setEncouragingWords(e.target.value)}
-              disabled={answered}
-              placeholder="What would you say to encourage them?..."
-              className="w-full h-32 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={200}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">{encouragingWords.length}/200</div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedApproach || encouragingWords.trim().length < 20 || answered}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedApproach && encouragingWords.trim().length >= 20 && !answered
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Submit Response
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">{score === scenarios.length ? "💖" : "😔"}</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === scenarios.length ? "Perfect Compassionate Helper! 🎉" : `You got ${score} out of ${scenarios.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === scenarios.length 
-                ? "Perfect! Encouraging victims and reporting bullying are both essential. Your support can help them feel less alone and the report can stop the bullying. Be the friend who stands up and speaks out!"
-                : "Great job! Keep learning to support bullying victims!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Always offer support and report bullying! Your kindness makes a difference!
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

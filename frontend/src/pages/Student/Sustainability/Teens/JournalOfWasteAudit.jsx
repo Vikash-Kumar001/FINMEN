@@ -100,18 +100,13 @@ const JournalOfWasteAudit = () => {
   const isLongEnough = characterCount >= 10;
   const currentPrompt = stages[currentPromptIndex]?.question;
 
-  const handleNext = () => {
-    // Navigate to the next appropriate page
-    // This would depend on your routing structure
-    console.log('Navigating to next page');
-  };
+
 
   return (
     <GameShell
       title="Journal of Waste Audit"
       subtitle={!gameFinished ? `Entry ${currentPromptIndex + 1} of ${stages.length}` : "Journal Complete!"}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
+
       showGameOver={gameFinished}
       score={coins}
       gameId={gameId}
@@ -125,6 +120,7 @@ const JournalOfWasteAudit = () => {
       totalLevels={stages.length}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
+      backPath="/games/sustainability/teens"
     >
       <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center text-center text-white space-y-6 md:space-y-8 max-w-4xl mx-auto px-4 py-4">
         {!gameFinished && currentPrompt && (

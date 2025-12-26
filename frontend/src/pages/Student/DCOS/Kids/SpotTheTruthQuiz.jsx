@@ -35,21 +35,18 @@ const SpotTheTruthQuiz = () => {
           id: "a", 
           text: "Real", 
           emoji: "✅", 
-          description: "This is true",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Fake", 
           emoji: "❌", 
-          description: "Dogs cannot fly, this is fake",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "It could be true",
           isCorrect: false
         }
       ]
@@ -62,21 +59,18 @@ const SpotTheTruthQuiz = () => {
           id: "a", 
           text: "Real", 
           emoji: "✅", 
-          description: "Water is indeed wet",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Fake", 
           emoji: "❌", 
-          description: "This is not true",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Not Sure", 
           emoji: "🤷", 
-          description: "I don't know",
           isCorrect: false
         }
       ]
@@ -85,27 +79,25 @@ const SpotTheTruthQuiz = () => {
       id: 3,
       text: "Headline: 'A robot became the school principal.' Real or Fake?",
       options: [
-        { 
-          id: "a", 
-          text: "Fake", 
-          emoji: "❌", 
-          description: "This is not real",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Real", 
           emoji: "✅", 
-          description: "This actually happened",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Could Be", 
           emoji: "🤔", 
-          description: "It might be possible",
           isCorrect: false
-        }
+        },
+        { 
+          id: "a", 
+          text: "Fake", 
+          emoji: "❌", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -116,21 +108,18 @@ const SpotTheTruthQuiz = () => {
           id: "a", 
           text: "Real", 
           emoji: "✅", 
-          description: "The sun does rise in the east",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Fake", 
           emoji: "❌", 
-          description: "This is not true",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Sometimes", 
           emoji: "🌅", 
-          description: "It depends on location",
           isCorrect: false
         }
       ]
@@ -139,25 +128,23 @@ const SpotTheTruthQuiz = () => {
       id: 5,
       text: "Headline: 'Chocolate grows on trees.' Real or Fake?",
       options: [
-        { 
-          id: "a", 
-          text: "Fake", 
-          emoji: "❌", 
-          description: "Chocolate doesn't grow on trees",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Real", 
           emoji: "✅", 
-          description: "This is true",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Fake", 
+          emoji: "❌", 
+          isCorrect: true
         },
         { 
           id: "c", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "It could be possible",
           isCorrect: false
         }
       ]
@@ -230,7 +217,6 @@ const SpotTheTruthQuiz = () => {
                   >
                     <div className="text-3xl mb-3">{option.emoji}</div>
                     <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
                   </button>
                 ))}
               </div>

@@ -142,9 +142,7 @@ const QuizSavingEnergy = () => {
     }, option.isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/student/sustainability/kids/reflex-energy-saver");
-  };
+
 
   return (
     <GameShell

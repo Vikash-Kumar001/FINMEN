@@ -32,21 +32,18 @@ const FakeJobScamStory = () => {
           id: "pay", 
           text: "Pay the money - it's a good deal", 
           emoji: "💰", 
-          description: "Pay the money to get the guaranteed job",
           isCorrect: false
         },
         { 
           id: "scam", 
           text: "It's a scam - real jobs don't ask for payment", 
           emoji: "🚫", 
-          description: "Recognize this is a scam and don't pay",
           isCorrect: true
         },
         { 
           id: "ask-details", 
           text: "Ask for more details first", 
           emoji: "❓", 
-          description: "Get more information before deciding",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const FakeJobScamStory = () => {
           id: "pay-start", 
           text: "Pay to get started", 
           emoji: "💰", 
-          description: "Pay the money to begin earning",
           isCorrect: false
         },
         { 
           id: "forward", 
           text: "Forward to friends", 
           emoji: "➡️", 
-          description: "Share the opportunity with friends",
           isCorrect: false
         },
         { 
           id: "scam-ignore", 
           text: "It's a scam - ignore it", 
           emoji: "🚫", 
-          description: "Recognize it's a scam and ignore the offer",
           isCorrect: true
         }
       ]
@@ -82,27 +76,25 @@ const FakeJobScamStory = () => {
       id: 3,
       text: "A job posting asks you to pay ₹2000 as 'application fee.' What do you do?",
       options: [
+         { 
+          id: "scam-fee", 
+          text: "It's a scam - real jobs don't charge fees", 
+          emoji: "🚫", 
+          isCorrect: true
+        },
         { 
           id: "pay-fee", 
           text: "Pay the fee to apply", 
           emoji: "💰", 
-          description: "Pay the application fee to proceed",
           isCorrect: false
         },
         { 
           id: "check-legit", 
           text: "Check if it's legitimate first", 
           emoji: "🔍", 
-          description: "Verify the company before paying",
           isCorrect: false
         },
-        { 
-          id: "scam-fee", 
-          text: "It's a scam - real jobs don't charge fees", 
-          emoji: "🚫", 
-          description: "Recognize legitimate jobs don't charge application fees",
-          isCorrect: true
-        }
+       
       ]
     },
     {
@@ -113,21 +105,18 @@ const FakeJobScamStory = () => {
           id: "pay-guaranteed", 
           text: "Pay for guaranteed job", 
           emoji: "💰", 
-          description: "Pay to secure the guaranteed position",
           isCorrect: false
         },
         { 
           id: "scam-guaranteed", 
           text: "It's a scam - no job is guaranteed", 
           emoji: "🚫", 
-          description: "Understand that no legitimate job can be guaranteed",
           isCorrect: true
         },
         { 
           id: "ask-company", 
           text: "Ask for company details", 
           emoji: "❓", 
-          description: "Request more information about the company",
           isCorrect: false
         }
       ]
@@ -140,21 +129,18 @@ const FakeJobScamStory = () => {
           id: "pay-work", 
           text: "Pay to start working", 
           emoji: "💰", 
-          description: "Pay the money to begin working from home",
           isCorrect: false
         },
         { 
           id: "share", 
           text: "Share with others", 
           emoji: "📤", 
-          description: "Share the opportunity with others",
           isCorrect: false
         },
         { 
           id: "scam-pay", 
           text: "It's a scam - real jobs pay you, not the other way", 
           emoji: "🚫", 
-          description: "Recognize that legitimate jobs pay you, not vice versa",
           isCorrect: true
         }
       ]
@@ -246,7 +232,6 @@ const FakeJobScamStory = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>

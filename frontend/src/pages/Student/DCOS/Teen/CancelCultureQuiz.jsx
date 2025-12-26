@@ -1,56 +1,39 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
-import { getDcosTeenGames } from '../../../../pages/Games/GameCategories/DCOS/teenGamesData';
 
 const CancelCultureQuiz = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "dcos-teen-62";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("dcos-teen-62");
+  const gameId = gameData?.id || "dcos-teen-62";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for CancelCultureQuiz, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
-  // Find next game path and ID if not provided in location.state
+  // Extract nextGamePath and nextGameId from location state
   const { nextGamePath, nextGameId } = useMemo(() => {
-    // First, try to get from location.state (passed from GameCategoryPage)
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    // Fallback: find next game from game data
-    try {
-      const games = getDcosTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
+    return {
+      nextGamePath: location.state?.nextGamePath || null,
+      nextGameId: location.state?.nextGameId || null
+    };
+  }, [location.state]);
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
@@ -58,20 +41,23 @@ const CancelCultureQuiz = () => {
       text: "An old offensive post resurfaces. Is this safe or risky?",
       options: [
         { 
-          id: "b", 
-          text: "Risky - old posts can resurface and cause problems", 
-          description: "Old offensive posts are risky because they can resurface and damage your reputation",
-          isCorrect: true
-        },
-        { 
           id: "a", 
           text: "Safe - it's old", 
+          emoji: "✅",
           description: "Old posts can resurface at any time and cause serious problems",
           isCorrect: false
         },
         { 
+          id: "b", 
+          text: "Risky - old posts can resurface and cause problems", 
+          emoji: "⚠️",
+          description: "Old offensive posts are risky because they can resurface and damage your reputation",
+          isCorrect: true
+        },
+        { 
           id: "c", 
           text: "Maybe - depends on context", 
+          emoji: "❓",
           description: "Old offensive posts are always risky regardless of context",
           isCorrect: false
         }
@@ -84,20 +70,23 @@ const CancelCultureQuiz = () => {
         { 
           id: "a", 
           text: "Safe - it's in the past", 
+          emoji: "🕐",
           description: "Old posts can resurface and damage your reputation even if they're from the past",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Only if it's bad", 
-          description: "Even seemingly harmless old posts can be risky if they resurface",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Risky - old posts can damage your reputation", 
+          emoji: "⚠️",
           description: "Old posts can resurface and damage your reputation, affecting opportunities",
           isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Only if it's bad", 
+          emoji: "🤷",
+          description: "Even seemingly harmless old posts can be risky if they resurface",
+          isCorrect: false
         }
       ]
     },
@@ -108,21 +97,25 @@ const CancelCultureQuiz = () => {
         { 
           id: "a", 
           text: "Safe - people forget", 
+          emoji: "😪",
           description: "People don't forget - inappropriate comments can affect your opportunities",
           isCorrect: false
         },
-        { 
-          id: "b", 
-          text: "Risky - can affect your opportunities", 
-          description: "Inappropriate comments from the past can resurface and affect your opportunities",
-          isCorrect: true
-        },
+       
         { 
           id: "c", 
           text: "Maybe - if it's not too bad", 
+          emoji: "🤔",
           description: "Any inappropriate comment can be risky if it resurfaces",
           isCorrect: false
-        }
+        },
+         { 
+          id: "b", 
+          text: "Risky - can affect your opportunities", 
+          emoji: "⚠️",
+          description: "Inappropriate comments from the past can resurface and affect your opportunities",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -132,18 +125,21 @@ const CancelCultureQuiz = () => {
         { 
           id: "a", 
           text: "Safe - you deleted it", 
+          emoji: "🗑️",
           description: "Deleted posts can still be found and shared by others who saved them",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Risky - deleted posts can still be found and shared", 
+          emoji: "⚠️",
           description: "Deleted posts are risky because others may have saved or shared them before deletion",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Only if someone saved it", 
+          emoji: "💾",
           description: "Assume someone may have saved it - deleted posts are always risky",
           isCorrect: false
         }
@@ -156,18 +152,22 @@ const CancelCultureQuiz = () => {
         { 
           id: "b", 
           text: "Risky - can lead to serious consequences", 
+          emoji: "⚠️",
           description: "Offensive posts can lead to serious consequences including reputation damage and lost opportunities",
           isCorrect: true
         },
         { 
           id: "a", 
           text: "Safe - it's just one post", 
+          emoji: "📝",
           description: "Even one offensive post can lead to serious consequences if discovered",
           isCorrect: false
         },
+        
         { 
           id: "c", 
           text: "Maybe - depends on who sees it", 
+          emoji: "👀",
           description: "Offensive posts are risky regardless of who sees them",
           isCorrect: false
         }
@@ -175,80 +175,50 @@ const CancelCultureQuiz = () => {
     }
   ];
 
-  const handleChoice = (selectedChoice) => {
-    const newChoices = [...choices, { 
-      questionId: questions[currentQuestion].id, 
-      choice: selectedChoice,
-      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
-    }];
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
-    setChoices(newChoices);
-    
-    // If the choice is correct, add coins and show flash/confetti
-    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
-    }
-    
-    // Move to next question or show results
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, isCorrect ? 1000 : 800);
-    } else {
-      // Calculate final score
-      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setTimeout(() => {
-        setShowResult(true);
-      }, isCorrect ? 1000 : 800);
-    }
-  };
-
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentQuestion(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
+    setAnswered(true);
     resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
 
-  // Log when game completes and update location state with nextGameId
-  useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Cancel Culture Quiz game completed! Score: ${finalScore}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
-      
-      // Update location state with nextGameId for GameOverModal
-      if (nextGameId && window.history && window.history.replaceState) {
-        const currentState = window.history.state || {};
-        window.history.replaceState({
-          ...currentState,
-          nextGameId: nextGameId
-        }, '');
-      }
-    }
-  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, questions.length]);
+
+
+
+
 
   return (
     <GameShell
       title="Cancel Culture Quiz"
-      score={coins}
+      score={score}
+      maxScore={questions.length}
       subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="dcos"
       totalLevels={questions.length}
       currentLevel={currentQuestion + 1}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={showResult && score === questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
@@ -260,24 +230,24 @@ const CancelCultureQuiz = () => {
             <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
                 <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
               </div>
               
-              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
-                {getCurrentQuestion().text}
+              <p className="text-white text-base md:text-lg lg:text-xl mb-6 md:mb-8 text-center">
+                {questions[currentQuestion].text}
               </p>
               
-              <div className="grid grid-cols-1 gap-3 md:gap-4">
-                {getCurrentQuestion().options.map(option => (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {questions[currentQuestion].options.map((option, index) => (
                   <button
                     key={option.id}
-                    onClick={() => handleChoice(option.id)}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                    onClick={() => handleChoice(option.isCorrect)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105 flex flex-col items-center justify-center text-center h-full"
+                    disabled={answered}
                   >
-                    <div>
-                      <h3 className="font-bold text-base md:text-xl mb-1">{option.text}</h3>
-                      <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
-                    </div>
+                    <span className="text-2xl md:text-3xl mb-2">{option.emoji}</span>
+                    <h3 className="font-bold text-base md:text-lg mb-1">{option.text}</h3>
+                    <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
                   </button>
                 ))}
               </div>
@@ -285,40 +255,18 @@ const CancelCultureQuiz = () => {
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
-            {finalScore >= 3 ? (
-              <div>
-                <div className="text-4xl md:text-5xl mb-4">🎉</div>
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Excellent!</h3>
-                <p className="text-white/90 text-base md:text-lg mb-4">
-                  You got {finalScore} out of {questions.length} questions correct!
-                  You know about the risks of old posts!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
-                  <span>+{coins} Coins</span>
+            <div>
+              <div className="text-4xl md:text-5xl mb-4">🎉</div>
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Quiz Completed!</h3>
+              <p className="text-white/90 text-base md:text-lg mb-2">
+                You scored <span className="font-bold text-yellow-400">{score}</span> out of <span className="font-bold">{questions.length}</span>
+              </p>
+              <div className="mt-6">
+                <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-6 rounded-full inline-block font-bold">
+                  <span>+{score * 10} Points</span>
                 </div>
-                <p className="text-white/80 text-sm md:text-base">
-                  You understand that old offensive posts are risky - they can resurface at any time and cause serious problems. Your digital footprint is permanent, so always think carefully before posting!
-                </p>
               </div>
-            ) : (
-              <div>
-                <div className="text-4xl md:text-5xl mb-4">😔</div>
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
-                <p className="text-white/90 text-base md:text-lg mb-4">
-                  You got {finalScore} out of {questions.length} questions correct.
-                  Remember, old offensive posts are risky - they can resurface and cause serious problems!
-                </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
-                >
-                  Try Again
-                </button>
-                <p className="text-white/80 text-xs md:text-sm">
-                  Try to understand the risks of old posts and how they can affect your reputation and opportunities.
-                </p>
-              </div>
-            )}
+            </div>
           </div>
         )}
       </div>

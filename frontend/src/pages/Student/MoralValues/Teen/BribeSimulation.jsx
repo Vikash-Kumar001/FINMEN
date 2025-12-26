@@ -20,12 +20,12 @@ const BribeSimulation = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -33,24 +33,23 @@ const BribeSimulation = () => {
       text: "You're competing for a scholarship prize. Someone offers you money to help them cheat and win instead. What do you do?",
       options: [
         { 
-          id: "a", 
           text: "Refuse and report the bribery attempt", 
-          emoji: "🛡️", 
-          description: "Shows integrity and protects fairness",
+          emoji: "🛡️",
           isCorrect: true 
         },
         { 
-          id: "b", 
           text: "Accept the bribe - easy money", 
-          emoji: "💰", 
-          description: "Accepting bribes is dishonest and wrong",
+          emoji: "💰",
           isCorrect: false 
         },
         { 
-          id: "c", 
           text: "Take the money but don't help", 
-          emoji: "🤔", 
-          description: "Taking bribes is still wrong even if you don't help",
+          emoji: "🤔",
+          isCorrect: false 
+        },
+        { 
+          text: "Ask for more money", 
+          emoji: "💸",
           isCorrect: false 
         }
       ]
@@ -60,24 +59,23 @@ const BribeSimulation = () => {
       text: "A coach offers you a spot on the team in exchange for a gift. You really want to play. What do you do?",
       options: [
         { 
-          id: "a", 
           text: "Give the gift secretly", 
-          emoji: "🎁", 
-          description: "Bribing is wrong even if done secretly",
+          emoji: "🎁",
           isCorrect: false 
         },
         { 
-          id: "b", 
           text: "Say no and earn your spot through effort", 
-          emoji: "💪", 
-          description: "Earning through merit shows integrity",
+          emoji: "💪",
           isCorrect: true 
         },
         { 
-          id: "c", 
           text: "Tell no one but accept the offer", 
-          emoji: "😬", 
-          description: "Accepting bribes is wrong even in secret",
+          emoji: "😬",
+          isCorrect: false 
+        },
+        { 
+          text: "Ask your parents for advice", 
+          emoji: "👨‍👩‍👧",
           isCorrect: false 
         }
       ]
@@ -87,25 +85,24 @@ const BribeSimulation = () => {
       text: "A friend says they'll vote for you as class rep if you promise to give them answers in exams. What's your response?",
       options: [
         { 
-          id: "a", 
           text: "Agree—it's just one favor", 
-          emoji: "😏", 
-          description: "Trading favors for votes is corruption",
+          emoji: "😏",
           isCorrect: false 
         },
         { 
-          id: "b", 
           text: "Ignore it and hope they forget", 
-          emoji: "😐", 
-          description: "Ignoring corruption doesn't solve it",
+          emoji: "😐",
           isCorrect: false 
         },
         { 
-          id: "c", 
           text: "Refuse and focus on fair election", 
-          emoji: "🗳️", 
-          description: "Fair elections require integrity",
+          emoji: "🗳️",
           isCorrect: true 
+        },
+        { 
+          text: "Accept but plan to break promise", 
+          emoji: "🤥",
+          isCorrect: false 
         }
       ]
     },
@@ -114,24 +111,23 @@ const BribeSimulation = () => {
       text: "Your supervisor offers extra marks if you get them a personal favor done illegally. What do you do?",
       options: [
         { 
-          id: "a", 
           text: "Report it to HR or authorities", 
-          emoji: "📢", 
-          description: "Reporting corruption protects others",
+          emoji: "📢",
           isCorrect: true 
         },
         { 
-          id: "b", 
           text: "Comply—it could help your career", 
-          emoji: "💸", 
-          description: "Complying with illegal requests is wrong",
+          emoji: "💸",
           isCorrect: false 
         },
         { 
-          id: "c", 
           text: "Stay silent and walk away", 
-          emoji: "😶", 
-          description: "Staying silent allows corruption to continue",
+          emoji: "😶",
+          isCorrect: false 
+        },
+        { 
+          text: "Tell others about it", 
+          emoji: "🗣️",
           isCorrect: false 
         }
       ]
@@ -141,58 +137,51 @@ const BribeSimulation = () => {
       text: "Someone secretly offers the leaked paper a day before your exam for a small amount. What will you do?",
       options: [
         { 
-          id: "a", 
           text: "Buy it—everyone else might too", 
-          emoji: "😈", 
-          description: "Buying leaked papers is cheating",
+          emoji: "😈",
           isCorrect: false 
         },
         { 
-          id: "b", 
           text: "Tell your friends but don't buy", 
-          emoji: "🙄", 
-          description: "Spreading information about leaks is wrong",
+          emoji: "🙄",
           isCorrect: false 
         },
         { 
-          id: "c", 
           text: "Refuse and inform the authorities", 
-          emoji: "🚨", 
-          description: "Reporting leaks protects exam integrity",
+          emoji: "🚨",
           isCorrect: true 
+        },
+        { 
+          text: "Use it but feel guilty", 
+          emoji: "😰",
+          isCorrect: false 
         }
       ]
     }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (answered || levelCompleted) return;
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
     setAnswered(true);
-    setSelectedOption(optionId);
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setAnswered(false);
-        resetFeedback();
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setLevelCompleted(true);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
       }
-    }, isCorrect ? 1000 : 800);
+    }, 500);
   };
 
   const currentQuestionData = questions[currentQuestion];
@@ -201,23 +190,23 @@ const BribeSimulation = () => {
   return (
     <GameShell
       title="Bribe Simulation"
-      subtitle={levelCompleted ? "Simulation Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="moral"
-      showGameOver={levelCompleted}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
       maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!levelCompleted && currentQuestionData ? (
+        <div className="space-y-8">
+        {!showResult && questions[currentQuestion] ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="bg-yellow-500/20 border-2 border-yellow-400/50 rounded-lg p-3 mb-4">
@@ -228,44 +217,85 @@ const BribeSimulation = () => {
               
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
               
-              <p className="text-white text-lg md:text-xl mb-6 text-center">
-                {currentQuestionData.text}
+              <p className="text-white text-lg mb-6">
+                {questions[currentQuestion].text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map(option => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleAnswer(option.id)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                        showCorrect
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {questions[currentQuestion].options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
                           ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : showIncorrect
-                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                          : isSelected
-                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-2xl mb-2">{option.emoji}</div>
-                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
-                    </button>
-                  );
-                })}
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct!
+                  You understand the importance of integrity!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Always maintain integrity and refuse bribes. Stand up for what's right!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct.
+                  Remember to always choose integrity over bribes!
+                </p>
+                <button
+                  onClick={() => {
+                    setShowResult(false);
+                    setCurrentQuestion(0);
+                    setScore(0);
+                    setAnswered(false);
+                    resetFeedback();
+                  }}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Always refuse bribes and report corruption to maintain integrity!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

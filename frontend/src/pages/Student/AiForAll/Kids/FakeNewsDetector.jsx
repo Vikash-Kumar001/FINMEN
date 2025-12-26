@@ -24,21 +24,18 @@ const FakeNewsDetector = () => {
           id: "check", 
           text: "Check Reliable Sources", 
           emoji: "🔍", 
-          description: "Cross-reference with trusted news outlets and official statements",
           isCorrect: true
         },
         { 
           id: "share", 
           text: "Share Immediately", 
           emoji: "📤", 
-          description: "Sharing without verification spreads misinformation",
           isCorrect: false
         },
         { 
           id: "believe", 
           text: "Believe Headline", 
           emoji: "💭", 
-          description: "Extraordinary claims require extraordinary evidence",
           isCorrect: false
         }
       ],
@@ -52,21 +49,18 @@ const FakeNewsDetector = () => {
           id: "buy", 
           text: "Buy Chocolate", 
           emoji: "🛒", 
-          description: "Buying based on false claims wastes money",
           isCorrect: false
         },
         { 
           id: "research", 
           text: "Research Scientific Studies", 
           emoji: "📚", 
-          description: "Look for peer-reviewed research and medical consensus",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore Health Info", 
           emoji: "🙈", 
-          description: "Ignoring legitimate health information isn't wise",
           isCorrect: false
         }
       ],
@@ -80,21 +74,18 @@ const FakeNewsDetector = () => {
           id: "facts", 
           text: "Check Facts & Evidence", 
           emoji: "✅", 
-          description: "Verify with factual evidence and multiple sources",
           isCorrect: true
         },
         { 
           id: "click", 
           text: "Click for Views", 
           emoji: "👀", 
-          description: "Clickbait headlines often mislead for engagement",
           isCorrect: false
         },
         { 
           id: "trust", 
           text: "Trust All Headlines", 
           emoji: "🙏", 
-          description: "Not all headlines are accurate or truthful",
           isCorrect: false
         }
       ],
@@ -108,21 +99,18 @@ const FakeNewsDetector = () => {
           id: "try", 
           text: "Try the Method", 
           emoji: "🧪", 
-          description: "Trying unproven methods can be harmful",
           isCorrect: false
         },
         { 
           id: "dismiss", 
           text: "Dismiss All Articles", 
           emoji: "🗑️", 
-          description: "Some articles contain valuable information",
           isCorrect: false
         },
         { 
           id: "skeptical", 
           text: "Stay Skeptical", 
           emoji: "🧐", 
-          description: "Question extraordinary health claims lacking scientific basis",
           isCorrect: true
         }
       ],
@@ -136,21 +124,18 @@ const FakeNewsDetector = () => {
           id: "logic", 
           text: "Apply Critical Thinking", 
           emoji: "🧠", 
-          description: "Use logic and reasoning to assess plausibility",
           isCorrect: true
         },
         { 
           id: "excited", 
           text: "Get Excited", 
           emoji: "🤩", 
-          description: "Emotional reactions can cloud judgment",
           isCorrect: false
         },
         { 
           id: "accept", 
           text: "Accept at Face Value", 
           emoji: "👍", 
-          description: "Not all claims should be accepted without scrutiny",
           isCorrect: false
         }
       ],
@@ -172,7 +157,7 @@ const FakeNewsDetector = () => {
 
     if (isCorrect) {
       setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+      showCorrectAnswerFeedback(1, true);
     }
 
     if (currentQuestion < questions.length - 1) {
@@ -243,8 +228,7 @@ const FakeNewsDetector = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

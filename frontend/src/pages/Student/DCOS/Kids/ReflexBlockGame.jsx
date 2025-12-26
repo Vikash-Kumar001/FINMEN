@@ -203,7 +203,7 @@ const ReflexBlockGame = () => {
   const currentQuestion = questions[currentRound - 1];
   
   const handleNext = () => {
-    navigate("/games/dcos/kids");
+    navigate("/student/dcos/kids/scam-aware-badge");
   };
 
   return (
@@ -220,7 +220,7 @@ const ReflexBlockGame = () => {
       currentLevel={currentRound}
       showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
-      backPath="/games/dcos/kids"
+      backPath="/games/digital-citizenship/kids"
       showAnswerConfetti={showAnswerConfetti}
       maxScore={TOTAL_ROUNDS} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}

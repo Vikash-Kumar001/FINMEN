@@ -32,21 +32,18 @@ const AIEthicsQuiz = () => {
           id: "yes", 
           text: "Yes - AI must follow rules", 
           emoji: "✓", 
-          description: "AI must follow rules to be safe and helpful",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No - AI can ignore rules", 
           emoji: "✗", 
-          description: "AI must follow rules to be safe and ethical",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI must definitely follow rules",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const AIEthicsQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI must protect user privacy - it's very important",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes, privacy is important", 
           emoji: "🛡️", 
-          description: "AI must protect user privacy - it's very important",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No, it can share data freely", 
           emoji: "📤", 
-          description: "AI must protect user privacy - sharing data freely is wrong",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const AIEthicsQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI must prevent harm - it's essential",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No, it can do anything", 
           emoji: "🤷", 
-          description: "AI must prevent harm - it can't do anything harmful",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes, prevent harm", 
           emoji: "🚫", 
-          description: "AI must prevent harm - it's essential for safety",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const AIEthicsQuiz = () => {
           id: "yes", 
           text: "Yes, explain decisions", 
           emoji: "🔍", 
-          description: "AI should explain its decisions so people can understand",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No, secrecy is fine", 
           emoji: "🤐", 
-          description: "AI should be transparent - secrecy is not good",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI should definitely explain its decisions",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const AIEthicsQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI must be fair to all people - fairness matters",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes, fairness matters", 
           emoji: "🤝", 
-          description: "AI must be fair to all people - fairness matters",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No, bias is acceptable", 
           emoji: "😐", 
-          description: "AI must be fair - bias is not acceptable",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const AIEthicsQuiz = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

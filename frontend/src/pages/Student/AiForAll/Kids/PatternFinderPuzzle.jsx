@@ -35,11 +35,11 @@ const PatternFinderPuzzle = () => {
 
   // Answers (right side) - manually arranged to vary correct answer positions
   const rightItems = [
-    { id: 2, name: '8', emoji: '8️⃣', description: 'Even number between 6 and 10' }, // Matches left 2 (right position 1)
-    { id: 4, name: '7', emoji: '7️⃣', description: 'Number between 8 and 6' }, // Matches left 4 (right position 2)
-    { id: 1, name: '4', emoji: '4️⃣', description: 'Number between 3 and 5' }, // Matches left 1 (right position 3)
-    { id: 5, name: '5', emoji: '5️⃣', description: 'Next in Fibonacci sequence' }, // Matches left 5 (right position 4)
-    { id: 3, name: '20', emoji: '2️⃣0️⃣', description: 'Multiple of 5 between 15 and 25' } // Matches left 3 (right position 5)
+    { id: 2, name: '8', emoji: '8️⃣' }, // Matches left 2 (right position 1)
+    { id: 4, name: '7', emoji: '7️⃣' }, // Matches left 4 (right position 2)
+    { id: 1, name: '4', emoji: '4️⃣' }, // Matches left 1 (right position 3)
+    { id: 5, name: '5', emoji: '5️⃣' }, // Matches left 5 (right position 4)
+    { id: 3, name: '20', emoji: '2️⃣0️⃣' } // Matches left 3 (right position 5)
   ];
 
   // Correct matches - manually defined to split correct answers across different positions

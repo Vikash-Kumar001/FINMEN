@@ -82,13 +82,7 @@ const SmileStory = () => {
       id: 3,
       text: "You see a classmate who forgot their lunch and looks sad. What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Share Your Lunch", 
-          emoji: "🍽️", 
-          description: "Share your lunch with them",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Laugh at Their Mistake", 
@@ -102,7 +96,14 @@ const SmileStory = () => {
           emoji: "🙈", 
           description: "Act like you didn't see them",
           isCorrect: false
-        }
+        },
+        { 
+          id: "a", 
+          text: "Share Your Lunch", 
+          emoji: "🍽️", 
+          description: "Share your lunch with them",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -136,19 +137,20 @@ const SmileStory = () => {
       id: 5,
       text: "A classmate shares their achievement online. Some kids make jealous comments. What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Congratulate Them", 
-          emoji: "🎉", 
-          description: "Congratulate them and celebrate",
-          isCorrect: true
-        },
+       
         { 
           id: "b", 
           text: "Make Jealous Comments", 
           emoji: "😒", 
           description: "Make jealous comments too",
           isCorrect: false
+        },
+         { 
+          id: "a", 
+          text: "Congratulate Them", 
+          emoji: "🎉", 
+          description: "Congratulate them and celebrate",
+          isCorrect: true
         },
         { 
           id: "c", 

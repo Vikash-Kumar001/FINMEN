@@ -145,18 +145,19 @@ const FreeGiftStory = () => {
         },
         { 
           id: "b", 
+          text: "Close and Report", 
+          emoji: "🚨", 
+          description: "Close and report it",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
           text: "Reply to Ask", 
           emoji: "💬", 
           description: "Reply to ask more",
           isCorrect: false
         },
-        { 
-          id: "c", 
-          text: "Close and Report", 
-          emoji: "🚨", 
-          description: "Close and report it",
-          isCorrect: true
-        }
+        
       ]
     }
   ];

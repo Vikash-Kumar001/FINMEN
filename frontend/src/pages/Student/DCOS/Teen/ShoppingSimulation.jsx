@@ -19,6 +19,7 @@ const ShoppingSimulation = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
@@ -27,21 +28,23 @@ const ShoppingSimulation = () => {
       text: "Choose the safe website to shop:",
       options: [
         { 
-          id: "amazon", 
           text: "Official Amazon", 
-          description: "Official trusted retailer",
+          emoji: "📦",
           isCorrect: true
         },
         { 
-          id: "freeshop", 
           text: "FreeShop123.com", 
-          description: "Unknown suspicious site",
+          emoji: "⚠️",
           isCorrect: false
         },
         { 
-          id: "unknown", 
           text: "Unknown-Store.net", 
-          description: "Unverified store",
+          emoji: "❓",
+          isCorrect: false
+        },
+        { 
+          text: "Deal-Scam.com", 
+          emoji: "🚨",
           isCorrect: false
         }
       ]
@@ -51,22 +54,24 @@ const ShoppingSimulation = () => {
       text: "Which shopping site is trustworthy?",
       options: [
         { 
-          id: "random-shop", 
           text: "Random-Shop.com", 
-          description: "Random unverified site",
+          emoji: "⚠️",
           isCorrect: false
         },
         { 
-          id: "suspicious", 
           text: "Suspicious-Deals.net", 
-          description: "Suspicious deals site",
+          emoji: "🚨",
           isCorrect: false
         },
         { 
-          id: "verified", 
           text: "Verified Retailer", 
-          description: "Verified and trusted retailer",
+          emoji: "✅",
           isCorrect: true
+        },
+        { 
+          text: "TooGoodToBeTrue.com", 
+          emoji: "⚠️",
+          isCorrect: false
         }
       ]
     },
@@ -75,21 +80,23 @@ const ShoppingSimulation = () => {
       text: "Pick the safe online store:",
       options: [
         { 
-          id: "unverified", 
           text: "Unverified-Store.com", 
-          description: "Unverified store",
+          emoji: "⚠️",
           isCorrect: false
         },
         { 
-          id: "official-brand", 
           text: "Official Brand Store", 
-          description: "Official brand website",
+          emoji: "🏢",
           isCorrect: true
         },
         { 
-          id: "unknown-market", 
           text: "Unknown-Market.net", 
-          description: "Unknown marketplace",
+          emoji: "❓",
+          isCorrect: false
+        },
+        { 
+          text: "Bargain-Basement.com", 
+          emoji: "🚨",
           isCorrect: false
         }
       ]
@@ -99,22 +106,24 @@ const ShoppingSimulation = () => {
       text: "Which website is safe for shopping?",
       options: [
         { 
-          id: "fake-store", 
           text: "Fake-Store.com", 
-          description: "Fake store website",
+          emoji: "🚨",
           isCorrect: false
         },
         { 
-          id: "random-shop2", 
           text: "Random-Shop.net", 
-          description: "Random shop site",
+          emoji: "⚠️",
           isCorrect: false
         },
         { 
-          id: "established", 
           text: "Established E-commerce Site", 
-          description: "Well-known e-commerce platform",
+          emoji: "🛒",
           isCorrect: true
+        },
+        { 
+          text: "Scam-Site.com", 
+          emoji: "❌",
+          isCorrect: false
         }
       ]
     },
@@ -123,23 +132,26 @@ const ShoppingSimulation = () => {
       text: "Choose the trusted shopping platform:",
       options: [
         { 
-          id: "unknown-website", 
           text: "Unknown-Website.com", 
-          description: "Unknown website",
+          emoji: "❓",
           isCorrect: false
         },
         { 
-          id: "suspicious-site", 
           text: "Suspicious-Site.net", 
-          description: "Suspicious website",
+          emoji: "⚠️",
           isCorrect: false
         },
+      
         { 
-          id: "official-platform", 
+          text: "Get-Rich-Quick.com", 
+          emoji: "🚨",
+          isCorrect: false
+        },
+          { 
           text: "Official Shopping Platform", 
-          description: "Official trusted platform",
+          emoji: "🏛️",
           isCorrect: true
-        }
+        },
       ]
     }
   ];
@@ -153,8 +165,6 @@ const ShoppingSimulation = () => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
     const isLastQuestion = currentQuestion === questions.length - 1;
@@ -165,6 +175,7 @@ const ShoppingSimulation = () => {
       } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
+        setSelectedAnswer(null);
       }
     }, 500);
   };
@@ -181,7 +192,7 @@ const ShoppingSimulation = () => {
     <GameShell
       title="Shopping Simulation"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -208,17 +219,28 @@ const ShoppingSimulation = () => {
                 {questions[currentQuestion].text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {questions[currentQuestion].options.map((option) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {questions[currentQuestion].options.map((option, idx) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.isCorrect)}
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
                     disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                      <p className="text-white/90 text-sm">{option.description}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
                     </div>
                   </button>
                 ))}

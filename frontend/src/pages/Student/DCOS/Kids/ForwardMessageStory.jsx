@@ -62,20 +62,21 @@ const ForwardMessageStory = () => {
           description: "Click the link quickly",
           isCorrect: false
         },
-        { 
-          id: "b", 
-          text: "Ignore and Warn", 
-          emoji: "🚫", 
-          description: "Ignore and tell others it's fake",
-          isCorrect: true
-        },
+       
         { 
           id: "c", 
           text: "Forward to Friends", 
           emoji: "📲", 
           description: "Forward to friends",
           isCorrect: false
-        }
+        },
+         { 
+          id: "b", 
+          text: "Ignore and Warn", 
+          emoji: "🚫", 
+          description: "Ignore and tell others it's fake",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -110,19 +111,20 @@ const ForwardMessageStory = () => {
       text: "You get a message saying 'Forward this to 10 people or you'll have bad luck!' What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Forward Quickly", 
-          emoji: "😬", 
-          description: "Forward to everyone quickly",
-          isCorrect: false
-        },
-        { 
           id: "b", 
           text: "Ignore It", 
           emoji: "😌", 
           description: "Ignore and don't spread superstition",
           isCorrect: true
         },
+        { 
+          id: "a", 
+          text: "Forward Quickly", 
+          emoji: "😬", 
+          description: "Forward to everyone quickly",
+          isCorrect: false
+        },
+        
         { 
           id: "c", 
           text: "Post on Story", 
@@ -136,13 +138,7 @@ const ForwardMessageStory = () => {
       id: 5,
       text: "You see a viral message: 'Famous actor quitting movies forever!' What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Search to Confirm", 
-          emoji: "🔍", 
-          description: "Search online to confirm",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Forward Fast", 
@@ -156,7 +152,14 @@ const ForwardMessageStory = () => {
           emoji: "😂", 
           description: "Make a meme about it",
           isCorrect: false
-        }
+        },
+        { 
+          id: "a", 
+          text: "Search to Confirm", 
+          emoji: "🔍", 
+          description: "Search online to confirm",
+          isCorrect: true
+        },
       ]
     }
   ];

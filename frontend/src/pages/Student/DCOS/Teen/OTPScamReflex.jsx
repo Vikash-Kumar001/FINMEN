@@ -50,8 +50,8 @@ const OTPScamReflex = () => {
       question: "A message says 'Your OTP is 123456. Don't share it.'. What should you do?",
       correctAnswer: "Keep OTP Private",
       options: [
-        { text: "Share with Friends", isCorrect: false },
         { text: "Keep OTP Private", isCorrect: true },
+        { text: "Share with Friends", isCorrect: false },
         { text: "Post Online", isCorrect: false },
         { text: "Save in Notes App", isCorrect: false }
       ]
@@ -74,8 +74,8 @@ const OTPScamReflex = () => {
       options: [
         { text: "Share with Others", isCorrect: false },
         { text: "Post Online", isCorrect: false },
+        { text: "Take Screenshot", isCorrect: false },
         { text: "Keep OTP Private", isCorrect: true },
-        { text: "Take Screenshot", isCorrect: false }
       ]
     },
     {

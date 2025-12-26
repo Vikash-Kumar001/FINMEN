@@ -92,11 +92,7 @@ const AIEthicsBadge = () => {
           emoji: "📱", 
           isCorrect: false
         },
-        { 
-          text: "Did not share personal data with AI", 
-          emoji: "🔒", 
-          isCorrect: true
-        },
+        
         { 
           text: "Give AI your passwords", 
           emoji: "🔑", 
@@ -106,7 +102,12 @@ const AIEthicsBadge = () => {
           text: "Share your address with AI", 
           emoji: "🏠", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Did not share personal data with AI", 
+          emoji: "🔒", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -119,15 +120,16 @@ const AIEthicsBadge = () => {
           emoji: "📝", 
           isCorrect: false
         },
-        { 
-          text: "Gave credit when using AI help", 
-          emoji: "✍️", 
-          isCorrect: true
-        },
+       
         { 
           text: "Never mention AI", 
           emoji: "🤫", 
           isCorrect: false
+        },
+         { 
+          text: "Gave credit when using AI help", 
+          emoji: "✍️", 
+          isCorrect: true
         },
         { 
           text: "Hide that you used AI", 

@@ -19,6 +19,7 @@ const DigitalDetoxSimulation = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
@@ -27,21 +28,23 @@ const DigitalDetoxSimulation = () => {
       text: "It's the weekend! What will you do?",
       options: [
         { 
-          id: "park", 
           text: "Go to the park and play sports", 
-          description: "Spend time outdoors and active",
+          emoji: "🌳",
           isCorrect: true
         },
         { 
-          id: "screen-binge", 
           text: "Screen binge - watch shows all day", 
-          description: "Spend all day watching screens",
+          emoji: "📺",
           isCorrect: false
         },
         { 
-          id: "book", 
           text: "Read a book offline", 
-          description: "Read without screens",
+          emoji: "📚",
+          isCorrect: false
+        },
+        { 
+          text: "Hang out with friends online", 
+          emoji: "💻",
           isCorrect: false
         }
       ]
@@ -51,22 +54,24 @@ const DigitalDetoxSimulation = () => {
       text: "You have 2 hours of free time. What's your choice?",
       options: [
         { 
-          id: "scroll", 
           text: "Scroll social media", 
-          description: "Spend time on social media",
+          emoji: "📱",
           isCorrect: false
         },
         { 
-          id: "hobby", 
           text: "Do a hobby offline", 
-          description: "Engage in offline activities",
+          emoji: "🎨",
           isCorrect: false
         },
         { 
-          id: "walk", 
           text: "Go for a walk outside", 
-          description: "Take a walk outdoors",
+          emoji: "🚶",
           isCorrect: true
+        },
+        { 
+          text: "Play video games", 
+          emoji: "🎮",
+          isCorrect: false
         }
       ]
     },
@@ -75,21 +80,23 @@ const DigitalDetoxSimulation = () => {
       text: "It's evening. How will you spend your time?",
       options: [
         { 
-          id: "games", 
           text: "Play video games for hours", 
-          description: "Spend hours gaming",
+          emoji: "🎮",
           isCorrect: false
         },
         { 
-          id: "crafts", 
           text: "Read or do crafts", 
-          description: "Creative offline activities",
+          emoji: "📚",
           isCorrect: true
         },
         { 
-          id: "tv", 
           text: "Watch TV for a short time", 
-          description: "Limited screen time with breaks",
+          emoji: "📺",
+          isCorrect: false
+        },
+        { 
+          text: "Browse the internet", 
+          emoji: "🌐",
           isCorrect: false
         }
       ]
@@ -99,23 +106,26 @@ const DigitalDetoxSimulation = () => {
       text: "You have a break from studying. What do you do?",
       options: [
         { 
-          id: "check-phone", 
           text: "Check phone and scroll", 
-          description: "Use your phone",
+          emoji: "📱",
+          isCorrect: false
+        },
+        
+        { 
+          text: "Have a snack and relax", 
+          emoji: "🍎",
           isCorrect: false
         },
         { 
-          id: "walk-stretch", 
+          text: "Call a friend", 
+          emoji: "📞",
+          isCorrect: false
+        },
+        { 
           text: "Take a walk or stretch", 
-          description: "Physical activity break",
+          emoji: "🚶",
           isCorrect: true
         },
-        { 
-          id: "snack", 
-          text: "Have a snack and relax", 
-          description: "Take a healthy break",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -123,22 +133,24 @@ const DigitalDetoxSimulation = () => {
       text: "It's a holiday! What's your plan?",
       options: [
         { 
-          id: "binge-watch", 
           text: "Binge watch shows", 
-          description: "Watch shows all day",
+          emoji: "📺",
           isCorrect: false
         },
         { 
-          id: "read-relax", 
           text: "Read books and relax", 
-          description: "Enjoy offline reading",
+          emoji: "📚",
           isCorrect: false
         },
         { 
-          id: "adventure", 
           text: "Go on an outdoor adventure", 
-          description: "Explore outdoors",
+          emoji: "🏕️",
           isCorrect: true
+        },
+        { 
+          text: "Spend time on social media", 
+          emoji: "📱",
+          isCorrect: false
         }
       ]
     }
@@ -153,8 +165,6 @@ const DigitalDetoxSimulation = () => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
     const isLastQuestion = currentQuestion === questions.length - 1;
@@ -165,6 +175,7 @@ const DigitalDetoxSimulation = () => {
       } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
+        setSelectedAnswer(null);
       }
     }, 500);
   };
@@ -181,7 +192,7 @@ const DigitalDetoxSimulation = () => {
     <GameShell
       title="Digital Detox Simulation"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -208,17 +219,28 @@ const DigitalDetoxSimulation = () => {
                 {questions[currentQuestion].text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {questions[currentQuestion].options.map((option) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {questions[currentQuestion].options.map((option, idx) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.isCorrect)}
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
                     disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                      <p className="text-white/90 text-sm">{option.description}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
                     </div>
                   </button>
                 ))}

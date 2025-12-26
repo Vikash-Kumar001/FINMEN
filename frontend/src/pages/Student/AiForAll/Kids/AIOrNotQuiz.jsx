@@ -32,21 +32,18 @@ const AIOrNotQuiz = () => {
           id: "no", 
           text: "No - It's not AI", 
           emoji: "❌", 
-          description: "A calculator only follows fixed math rules - it doesn't think or learn",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes - It's AI", 
           emoji: "🤖", 
-          description: "A calculator is not AI - it just follows fixed rules",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "A calculator is not AI - it doesn't learn or think",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const AIOrNotQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Alexa definitely uses AI to understand and respond",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes - It's AI", 
           emoji: "🤖", 
-          description: "Alexa listens, understands, and learns from your commands",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No - It's not AI", 
           emoji: "❌", 
-          description: "Alexa is actually an AI voice assistant",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const AIOrNotQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "A fan just spins when switched on - it's not AI",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes - It's AI", 
           emoji: "🤖", 
-          description: "A fan is not AI - it doesn't make decisions or learn",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No - It's not AI", 
           emoji: "❌", 
-          description: "A fan just spins when switched on - it doesn't think or learn",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const AIOrNotQuiz = () => {
           id: "yes", 
           text: "Yes - It's AI", 
           emoji: "🤖", 
-          description: "Google Maps uses AI to predict traffic by analyzing data",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No - It's not AI", 
           emoji: "❌", 
-          description: "Google Maps uses AI to analyze traffic patterns",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Google Maps definitely uses AI for traffic prediction",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const AIOrNotQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "An automatic light uses sensors, not intelligence",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes - It's AI", 
           emoji: "🤖", 
-          description: "An automatic light uses sensors, not AI intelligence",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No - It's not AI", 
           emoji: "❌", 
-          description: "An automatic light uses sensors, not intelligence - it reacts but doesn't learn",
           isCorrect: true
         }
       ]
@@ -246,8 +231,7 @@ const AIOrNotQuiz = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

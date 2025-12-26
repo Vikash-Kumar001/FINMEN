@@ -26,20 +26,20 @@ const MissingDataPuzzle = () => {
 
   // Incomplete sequences (left side)
   const leftItems = [
-    { id: 1, name: '🍎, 🍌, ❓', emoji: '🍎', description: 'Fruit salad missing item' },
-    { id: 2, name: '🐶, 🐱, ❓', emoji: '🐶', description: 'Animal sequence missing' },
-    { id: 3, name: '🔺, 🔵, ❓', emoji: '🔺', description: 'Shape pattern incomplete' },
-    { id: 4, name: '🍔, 🍟, ❓', emoji: '🍔', description: 'Meal missing item' },
-    { id: 5, name: '☀️, 🌧️, ❓', emoji: '☀️', description: 'Weather pattern incomplete' }
+    { id: 1, name: '🍎, 🍌, ❓',  description: 'Fruit salad missing item' },
+    { id: 2, name: '🐶, 🐱, ❓',  description: 'Animal sequence missing' },
+    { id: 3, name: '🔺, 🔵, ❓',  description: 'Shape pattern incomplete' },
+    { id: 4, name: '🍔, 🍟, ❓',  description: 'Meal missing item' },
+    { id: 5, name: '☀️, 🌧️, ❓',  description: 'Weather pattern incomplete' }
   ];
 
   // Missing items (right side) - manually arranged to vary correct answer positions
   const rightItems = [
-    { id: 2, name: '🐭', emoji: '🐭', description: 'Small animal in sequence' }, // Matches left 2 (right position 1)
-    { id: 4, name: '🥤', emoji: '🥤', description: 'Drink with meal' }, // Matches left 4 (right position 2)
-    { id: 1, name: '🍇', emoji: '🍇', description: 'Fruit in salad' }, // Matches left 1 (right position 3)
-    { id: 5, name: '🌈', emoji: '🌈', description: 'Weather after rain' }, // Matches left 5 (right position 4)
-    { id: 3, name: '⬛', emoji: '⬛', description: 'Shape in pattern' } // Matches left 3 (right position 5)
+    { id: 2, name: '🐭',  description: 'Small animal in sequence' }, // Matches left 2 (right position 1)
+    { id: 4, name: '🥤',  description: 'Drink with meal' }, // Matches left 4 (right position 2)
+    { id: 1, name: '🍇',  description: 'Fruit in salad' }, // Matches left 1 (right position 3)
+    { id: 5, name: '🌈',  description: 'Weather after rain' }, // Matches left 5 (right position 4)
+    { id: 3, name: '⬛',  description: 'Shape in pattern' } // Matches left 3 (right position 5)
   ];
 
   // Correct matches - manually defined to split correct answers across different positions

@@ -32,21 +32,18 @@ const OverfittingStory = () => {
           id: "explain", 
           text: "Explain the robot its mistake", 
           emoji: "🧠", 
-          description: "Teaching robots about different varieties helps them learn better",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "🙈", 
-          description: "We should help robots learn about different varieties",
           isCorrect: false
         },
         { 
           id: "agree", 
           text: "Tell the robot it's right", 
           emoji: "👍", 
-          description: "We should correct mistakes to help robots learn",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const OverfittingStory = () => {
           id: "good", 
           text: "Say 'good job' to AI", 
           emoji: "👏", 
-          description: "Showing diverse examples helps AI learn better",
           isCorrect: false
         },
         { 
           id: "show", 
           text: "Show it pictures of cats too", 
           emoji: "📸", 
-          description: "Showing diverse examples helps AI learn to distinguish different animals",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore the error", 
           emoji: "🙈", 
-          description: "We should help AI learn about different animals",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const OverfittingStory = () => {
           id: "same", 
           text: "Keep using the same data", 
           emoji: "🔁", 
-          description: "Adding diverse data helps AI work better",
           isCorrect: false
         },
         { 
           id: "add", 
           text: "Add data from more schools", 
           emoji: "📚", 
-          description: "Adding data from more schools helps AI learn to work with different situations",
           isCorrect: true
         },
         { 
           id: "stop", 
           text: "Stop training AI", 
           emoji: "✋", 
-          description: "Adding diverse data is better than stopping",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const OverfittingStory = () => {
           id: "ai", 
           text: "Add rainy and cloudy weather data", 
           emoji: "🌧️", 
-          description: "Adding diverse weather data helps AI work in all conditions",
           isCorrect: true
         },
         { 
           id: "delete", 
           text: "Delete sunny data", 
           emoji: "☀️", 
-          description: "We should add diverse data, not delete existing data",
           isCorrect: false
         },
         { 
           id: "nothing", 
           text: "Do nothing", 
           emoji: "🙅‍♂️", 
-          description: "Adding diverse data helps AI work better",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const OverfittingStory = () => {
           id: "ignore", 
           text: "Ignore the issue", 
           emoji: "🙈", 
-          description: "Training with diverse voices helps AI work better",
           isCorrect: false
         },
         { 
           id: "train", 
           text: "Train it with diverse voices", 
           emoji: "🗣️", 
-          description: "Training with diverse voices helps AI recognize everyone",
           isCorrect: true
         },
         { 
           id: "off", 
           text: "Turn off voice input", 
           emoji: "🔇", 
-          description: "Training with diverse data is better than turning it off",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const OverfittingStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

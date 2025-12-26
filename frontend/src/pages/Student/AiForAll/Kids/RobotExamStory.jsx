@@ -32,21 +32,18 @@ const RobotExamStory = () => {
           id: "study", 
           text: "Study more questions and gather enough data", 
           emoji: "📚", 
-          description: "Studying more examples helps robots learn better and perform well on tests",
           isCorrect: true
         },
         { 
           id: "keep", 
           text: "Keep studying just 2 questions", 
           emoji: "📝", 
-          description: "Studying more examples is better than just 2 questions",
           isCorrect: false
         },
         { 
           id: "ignore", 
           text: "Ignore studying and guess answers", 
           emoji: "❌", 
-          description: "Studying more examples helps robots learn properly",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const RobotExamStory = () => {
           id: "assume", 
           text: "Assume all are cats", 
           emoji: "🐱", 
-          description: "Seeing pictures of many animals helps robots learn to distinguish",
           isCorrect: false
         },
         { 
           id: "see", 
           text: "See pictures of many animals before deciding", 
           emoji: "🦁", 
-          description: "Seeing pictures of many animals helps robots learn to distinguish between different types",
           isCorrect: true
         },
         { 
           id: "guess", 
           text: "Close its eyes and guess", 
           emoji: "🙈", 
-          description: "Learning from many examples is better than guessing",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const RobotExamStory = () => {
           id: "ignore", 
           text: "Ignore the mistake", 
           emoji: "🙉", 
-          description: "Listening to more examples helps robots learn to distinguish sounds",
           isCorrect: false
         },
         { 
           id: "listen", 
           text: "Listen to more examples of animal sounds", 
           emoji: "🐾", 
-          description: "Listening to more examples helps robots learn to distinguish between different animal sounds",
           isCorrect: true
         },
         { 
           id: "wrong", 
           text: "Keep saying wrong names", 
           emoji: "😅", 
-          description: "Learning from more examples helps robots improve",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const RobotExamStory = () => {
           id: "ai", 
           text: "Practice with many examples of shapes", 
           emoji: "⚪", 
-          description: "Practicing with many examples helps robots learn to distinguish between different shapes",
           isCorrect: true
         },
         { 
           id: "guess", 
           text: "Guess randomly", 
           emoji: "🎲", 
-          description: "Practicing with examples is better than guessing",
           isCorrect: false
         },
         { 
           id: "avoid", 
           text: "Avoid learning shapes", 
           emoji: "🚫", 
-          description: "Practicing with examples helps robots learn",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const RobotExamStory = () => {
           id: "opposite", 
           text: "Keep saying opposite emotions", 
           emoji: "😢", 
-          description: "Studying more faces helps robots learn to recognize emotions correctly",
           isCorrect: false
         },
         { 
           id: "study", 
           text: "Study more faces to learn expressions", 
           emoji: "😀", 
-          description: "Studying more faces helps robots learn to recognize different emotions correctly",
           isCorrect: true
         },
         { 
           id: "stop", 
           text: "Stop learning emotions", 
           emoji: "😐", 
-          description: "Learning from more examples helps robots improve",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const RobotExamStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

@@ -1,237 +1,271 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const RoleplayCalmReply = () => {
   const location = useLocation();
-  const gameId = "dcos-teen-88";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("dcos-teen-88");
+  const gameId = gameData?.id || "dcos-teen-88";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for RoleplayCalmReply, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [selectedApproach, setSelectedApproach] = useState(null);
-  const [calmReply, setCalmReply] = useState("");
+  
+  // Extract nextGamePath and nextGameId from location state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    return {
+      nextGamePath: location.state?.nextGamePath || null,
+      nextGameId: location.state?.nextGameId || null
+    };
+  }, [location.state]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
 
-  const scenarios = [
+
+  const questions = [
     {
       id: 1,
-      situation: "A peer posts a rude comment on your post saying 'This is so stupid!'",
-      emoji: "😠",
-      approaches: [
-        { id: 1, text: "Reply with an angry comment back", isCorrect: false },
-        { id: 3, text: "Delete your post", isCorrect: false },
-        { id: 2, text: "Reply calmly or ignore it", isCorrect: true },
+      text: "A peer posts a rude comment on your post saying 'This is so stupid!' What should you do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Reply with an angry comment back", 
+          emoji: "😠",
+          description: "Replying with anger will escalate the situation and make it worse",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Reply calmly or ignore it", 
+          emoji: "😌",
+          description: "Replying calmly or ignoring the comment prevents escalation",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Delete your post", 
+          emoji: "❌",
+          description: "Deleting your post gives the troll power over your content",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      situation: "Someone comments 'You're wrong!' on your opinion post.",
-      emoji: "💬",
-      approaches: [
-        { id: 1, text: "Argue back aggressively", isCorrect: false },
-        { id: 2, text: "Reply calmly or ignore", isCorrect: true },
-        { id: 3, text: "Block them immediately", isCorrect: false }
+      text: "Someone comments 'You're wrong!' on your opinion post. What should you do?",
+      options: [
+        { 
+          id: "b", 
+          text: "Reply calmly or ignore", 
+          emoji: "😌",
+          description: "Replying calmly or ignoring keeps the peace and shows maturity",
+          isCorrect: true
+        },
+        { 
+          id: "a", 
+          text: "Argue back aggressively", 
+          emoji: "😠",
+          description: "Arguing aggressively will create more conflict and negativity",
+          isCorrect: false
+        },
+        
+        { 
+          id: "c", 
+          text: "Block them immediately", 
+          emoji: "🚫",
+          description: "Blocking immediately might be too hasty for a simple disagreement",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      situation: "A classmate makes a mean comment about your photo.",
-      emoji: "📸",
-      approaches: [
-        { id: 2, text: "Reply calmly or ignore", isCorrect: true },
-        { id: 1, text: "Post mean comments about them", isCorrect: false },
-        { id: 3, text: "Delete all your photos", isCorrect: false }
+      text: "A classmate makes a mean comment about your photo. What should you do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Post mean comments about them", 
+          emoji: "😠",
+          description: "Responding with meanness escalates the situation and makes you part of the problem",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Reply calmly or ignore it", 
+          emoji: "😌",
+          description: "Replying calmly or ignoring prevents the situation from getting worse",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Delete all your photos", 
+          emoji: "❌",
+          description: "Deleting all photos lets the bully win and affects your own content",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      situation: "Someone trolls your post with negative comments.",
-      emoji: "👹",
-      approaches: [
-        { id: 1, text: "Engage in a heated argument", isCorrect: false },
-        { id: 2, text: "Reply calmly or ignore", isCorrect: true },
-        { id: 3, text: "Report and block immediately", isCorrect: false }
+      text: "Someone trolls your post with negative comments. What should you do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Engage in a heated argument", 
+          emoji: "😠",
+          description: "Engaging with trolls is exactly what they want and fuels the negativity",
+          isCorrect: false
+        },
+        
+        { 
+          id: "c", 
+          text: "Report and block immediately", 
+          emoji: "🚫",
+          description: "While reporting can be appropriate, sometimes it's better to just ignore first",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Reply calmly or ignore", 
+          emoji: "😌",
+          description: "Replying calmly or ignoring the troll is the best approach",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 5,
-      situation: "A peer posts a disrespectful comment on your achievement post.",
-      emoji: "🏆",
-      approaches: [
-        { id: 1, text: "Respond with insults", isCorrect: false },
-        { id: 3, text: "Delete the achievement post", isCorrect: false },
-        { id: 2, text: "Reply calmly or ignore", isCorrect: true },
+      text: "A peer posts a disrespectful comment on your achievement post. What should you do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Respond with insults", 
+          emoji: "😠",
+          description: "Responding with insults degrades the conversation and your own dignity",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Reply calmly or ignore", 
+          emoji: "😌",
+          description: "Replying calmly or ignoring shows maturity and doesn't feed negativity",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Delete the achievement post", 
+          emoji: "❌",
+          description: "Deleting your achievement post lets the negative comment win and removes your success",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleSubmit = () => {
+  const handleChoice = (isCorrect) => {
     if (answered) return;
-    
-    if (!selectedApproach || calmReply.trim().length < 20) return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentScenarioData = scenarios[currentScenario];
-    const selectedApp = currentScenarioData.approaches.find(a => a.id === selectedApproach);
-    const isCorrect = selectedApp?.isCorrect || false;
-    
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentScenario < scenarios.length - 1) {
-        setCurrentScenario(prev => prev + 1);
-        setSelectedApproach(null);
-        setCalmReply("");
-        setAnswered(false);
-      } else {
+      if (isLastQuestion) {
         setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
     }, 500);
   };
 
-  const currentScenarioData = scenarios[currentScenario];
-  const selectedApp = currentScenarioData.approaches.find(a => a.id === selectedApproach);
 
-  // Log when game completes and update location state with nextGameId
-  useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Roleplay: Calm Reply game completed! Score: ${score}/${scenarios.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
-      
-      // Update location state with nextGameId for GameOverModal
-      if (nextGameId && window.history && window.history.replaceState) {
-        const currentState = window.history.state || {};
-        window.history.replaceState({
-          ...currentState,
-          nextGameId: nextGameId
-        }, '');
-      }
-    }
-  }, [showResult, score, gameId, nextGamePath, nextGameId, scenarios.length]);
+
+
 
   return (
     <GameShell
       title="Roleplay: Calm Reply"
       score={score}
-      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Game Complete!"}
+      maxScore={questions.length}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       showGameOver={showResult}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={scenarios.length}
-      currentLevel={currentScenario + 1}
-      maxScore={scenarios.length}
-      showConfetti={showResult && score === scenarios.length}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && score === questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentScenarioData.emoji}</div>
-            <div className="bg-red-500/20 border-2 border-red-400 rounded-lg p-4 md:p-5 mb-6">
-              <p className="text-white text-base md:text-lg leading-relaxed">{currentScenarioData.situation}</p>
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-base md:text-lg lg:text-xl mb-6 md:mb-8 text-center">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {questions[currentQuestion].options.map((option, index) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105 flex flex-col items-center justify-center text-center h-full"
+                    disabled={answered}
+                  >
+                    <span className="text-2xl md:text-3xl mb-2">{option.emoji}</span>
+                    <h3 className="font-bold text-base md:text-lg mb-1">{option.text}</h3>
+                    <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4">1. Choose Your Approach</h3>
-            <div className="space-y-3 mb-6">
-              {currentScenarioData.approaches.map(app => (
-                <button
-                  key={app.id}
-                  onClick={() => !answered && setSelectedApproach(app.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 transition-all ${
-                    selectedApproach === app.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : answered && app.isCorrect
-                      ? 'bg-green-500/50 border-green-400'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="text-white font-semibold text-base md:text-lg">{app.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <h3 className="text-white font-bold mb-2">2. Write a Calm Reply (min 20 chars)</h3>
-            <textarea
-              value={calmReply}
-              onChange={(e) => !answered && setCalmReply(e.target.value)}
-              disabled={answered}
-              placeholder="How would you reply calmly? Or explain why you'd ignore it?..."
-              className="w-full h-32 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={200}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">{calmReply.length}/200</div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedApproach || calmReply.trim().length < 20 || answered}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedApproach && calmReply.trim().length >= 20 && !answered
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Submit Response
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">{score === scenarios.length ? "😌" : "😔"}</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === scenarios.length ? "Perfect Calm Responder! 🎉" : `You got ${score} out of ${scenarios.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === scenarios.length 
-                ? "Perfect! Replying calmly or ignoring rude comments is the best approach. It prevents escalation, shows maturity, and protects your mental health. Don't feed the trolls - stay calm and move on!"
-                : "Great job! Keep learning to respond calmly to negative comments!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Stay calm or ignore rude comments - don't let negativity affect you!
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            <div>
+              <div className="text-4xl md:text-5xl mb-4">🎉</div>
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Quiz Completed!</h3>
+              <p className="text-white/90 text-base md:text-lg mb-2">
+                You scored <span className="font-bold text-yellow-400">{score}</span> out of <span className="font-bold">{questions.length}</span>
               </p>
+              <div className="mt-6">
+                <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-6 rounded-full inline-block font-bold">
+                  <span>+{score * 10} Points</span>
+                </div>
+              </div>
             </div>
           </div>
         )}

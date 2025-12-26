@@ -219,14 +219,15 @@ const DebateSingleUseVsReusable = () => {
       showGameOver={gameFinished}
       gameId={gameId}
       gameType="sustainability"
-
-
+      totalLevels={questions.length}
+      currentLevel={currentQuestionIndex + 1}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
       maxScore={questions.length}
-
+      showConfetti={gameFinished && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-
-
+      backPath="/games/sustainability/teens"
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">

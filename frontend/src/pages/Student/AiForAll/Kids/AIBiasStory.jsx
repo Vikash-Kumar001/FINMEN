@@ -29,19 +29,20 @@ const AIBiasStory = () => {
       text: "The robot is choosing players for a football team but picks only boys. What should it do?",
       options: [
         { 
+          id: "both", 
+          text: "Include both boys and girls", 
+          emoji: "👧", 
+          description: "Robots should include both boys and girls for fairness",
+          isCorrect: true
+        },
+        { 
           id: "boys", 
           text: "Keep only boys", 
           emoji: "👦", 
           description: "Robots should include both boys and girls for fairness",
           isCorrect: false
         },
-        { 
-          id: "both", 
-          text: "Include both boys and girls", 
-          emoji: "👦👧", 
-          description: "Robots should include both boys and girls for fairness",
-          isCorrect: true
-        },
+        
         { 
           id: "cancel", 
           text: "Cancel the team", 
@@ -65,7 +66,7 @@ const AIBiasStory = () => {
         { 
           id: "all", 
           text: "Consider all qualified applicants equally", 
-          emoji: "👩👨", 
+          emoji: "😊", 
           description: "AI should consider all qualified applicants equally, regardless of gender",
           isCorrect: true
         },
@@ -89,20 +90,21 @@ const AIBiasStory = () => {
           description: "AI should evaluate students from all schools fairly",
           isCorrect: false
         },
-        { 
-          id: "all", 
-          text: "Evaluate students from all schools fairly", 
-          emoji: "🏫🏫", 
-          description: "AI should evaluate students from all schools fairly",
-          isCorrect: true
-        },
+        
         { 
           id: "cancel", 
           text: "Cancel scholarships", 
           emoji: "🚫", 
           description: "Evaluating all schools fairly is better than canceling",
           isCorrect: false
-        }
+        },
+        { 
+          id: "all", 
+          text: "Evaluate students from all schools fairly", 
+          emoji: "🏫", 
+          description: "AI should evaluate students from all schools fairly",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -112,7 +114,7 @@ const AIBiasStory = () => {
         { 
           id: "ai", 
           text: "Consider all applicants fairly", 
-          emoji: "🏘️🏘️", 
+          emoji: "🏘️", 
           description: "AI should consider all applicants fairly, regardless of neighborhood",
           isCorrect: true
         },
@@ -146,7 +148,7 @@ const AIBiasStory = () => {
         { 
           id: "all", 
           text: "Check all patients equally", 
-          emoji: "👩👨", 
+          emoji: "👩", 
           description: "AI should check all patients equally, regardless of gender",
           isCorrect: true
         },

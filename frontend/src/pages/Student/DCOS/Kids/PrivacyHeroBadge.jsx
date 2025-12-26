@@ -92,11 +92,7 @@ const PrivacyHeroBadge = () => {
           emoji: "📸", 
           isCorrect: false
         },
-        { 
-          text: "Ask parents before sharing photos", 
-          emoji: "📸", 
-          isCorrect: true
-        },
+        
         { 
           text: "Share all photos immediately", 
           emoji: "📤", 
@@ -106,7 +102,12 @@ const PrivacyHeroBadge = () => {
           text: "Post photos of others without permission", 
           emoji: "📱", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Ask parents before sharing photos", 
+          emoji: "📸", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -119,15 +120,16 @@ const PrivacyHeroBadge = () => {
           emoji: "📍", 
           isCorrect: false
         },
-        { 
-          text: "Turn off location sharing", 
-          emoji: "📍", 
-          isCorrect: true
-        },
+       
         { 
           text: "Always keep it on", 
           emoji: "✅", 
           isCorrect: false
+        },
+        { 
+          text: "Turn off location sharing", 
+          emoji: "📍", 
+          isCorrect: true
         },
         { 
           text: "Share location with strangers", 

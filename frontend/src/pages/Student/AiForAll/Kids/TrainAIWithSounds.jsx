@@ -33,23 +33,20 @@ const TrainAIWithSounds = () => {
       options: [
         { 
           id: "examples", 
-          text: "Provide many examples of dog barks 🐶", 
+          text: "Provide many examples of dog barks ", 
           emoji: "📚", 
-          description: "AI needs numerous varied examples to learn patterns effectively.",
           isCorrect: true
         },
         { 
           id: "once", 
-          text: "Play one bark sound once 🎵", 
+          text: "Play one bark sound once ", 
           emoji: "🎵", 
-          description: "One example isn't enough for reliable AI learning.",
           isCorrect: false
         },
         { 
           id: "guess", 
-          text: "Let AI guess without examples 🤔", 
+          text: "Let AI guess without examples ", 
           emoji: "🤔", 
-          description: "AI needs structured data, not random guessing.",
           isCorrect: false
         }
       ]
@@ -58,52 +55,48 @@ const TrainAIWithSounds = () => {
       id: 2,
       text: "What's the best way to help AI distinguish between cat meows and dog barks?",
       options: [
-        { 
-          id: "labels", 
-          text: "Label each sound correctly 🏷️", 
-          emoji: "🏷️", 
-          description: "Proper labeling helps AI form accurate associations.",
-          isCorrect: true
-        },
+       
         { 
           id: "mix", 
-          text: "Mix all sounds together randomly 🔀", 
+          text: "Mix all sounds together randomly ", 
           emoji: "🔀", 
-          description: "Random mixing without structure confuses AI learning.",
           isCorrect: false
         },
         { 
           id: "silent", 
-          text: "Train with silent recordings 🤫", 
+          text: "Train with silent recordings ", 
           emoji: "🤫", 
-          description: "Silent recordings provide no learning value to AI.",
           isCorrect: false
-        }
+        },
+         { 
+          id: "labels", 
+          text: "Label each sound correctly ", 
+          emoji: "🏷️", 
+          isCorrect: true
+        },
       ]
     },
     {
       id: 3,
       text: "Why is variety important when training AI with sounds?",
       options: [
-        { 
-          id: "variety", 
-          text: "Different environments, pitches, and tones help AI generalize 🔄", 
-          emoji: "🔄", 
-          description: "Variety ensures AI works in real-world situations.",
-          isCorrect: true
-        },
+        
         { 
           id: "same", 
-          text: "Using the same sound repeatedly is best 📻", 
+          text: "Using the same sound repeatedly is best ", 
           emoji: "📻", 
-          description: "Repetition limits AI's ability to recognize variations.",
           isCorrect: false
         },
         { 
+          id: "variety", 
+          text: "Different environments, pitches, and tones help AI generalize ", 
+          emoji: "🔄", 
+          isCorrect: true
+        },
+        { 
           id: "loud", 
-          text: "Only use extremely loud sounds 📢", 
+          text: "Only use extremely loud sounds ", 
           emoji: "📢", 
-          description: "Volume alone doesn't help AI understand audio patterns.",
           isCorrect: false
         }
       ]
@@ -115,23 +108,20 @@ const TrainAIWithSounds = () => {
         
         { 
           id: "quiet", 
-          text: "Only train in perfectly quiet rooms 🤫", 
+          text: "Only train in perfectly quiet rooms ", 
           emoji: "🤫", 
-          description: "Quiet-only training doesn't prepare AI for real environments.",
           isCorrect: false
         },
         { 
           id: "noise", 
-          text: "Train with background noise examples 🎧", 
+          text: "Train with background noise examples ", 
           emoji: "🎧", 
-          description: "Including noise helps AI filter and focus on target sounds.",
           isCorrect: true
         },
         { 
           id: "ignore", 
-          text: "Ignore background sounds completely 🚫", 
+          text: "Ignore background sounds completely ", 
           emoji: "🚫", 
-          description: "AI needs to learn filtering, not ignoring environmental factors.",
           isCorrect: false
         }
       ]
@@ -143,23 +133,20 @@ const TrainAIWithSounds = () => {
         
         { 
           id: "never", 
-          text: "Never update after initial training 🛑", 
+          text: "Never update after initial training ", 
           emoji: "🛑", 
-          description: "Static training becomes outdated and inaccurate over time.",
           isCorrect: false
         },
         { 
           id: "random", 
-          text: "Update randomly without a plan 🔀", 
+          text: "Update randomly without a plan ", 
           emoji: "🔀", 
-          description: "Structured updates are more effective than random changes.",
           isCorrect: false
         },
         { 
           id: "regular", 
-          text: "Regular updates with new sound examples 📅", 
+          text: "Regular updates with new sound examples ", 
           emoji: "📅", 
-          description: "Continuous learning keeps AI accurate and up-to-date.",
           isCorrect: true
         }
       ]
@@ -259,8 +246,7 @@ const TrainAIWithSounds = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

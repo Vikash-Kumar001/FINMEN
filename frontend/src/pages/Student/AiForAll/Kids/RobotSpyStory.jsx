@@ -32,21 +32,18 @@ const RobotSpyStory = () => {
           id: "stop", 
           text: "Stop the robot", 
           emoji: "✋", 
-          description: "Stopping robots that invade privacy protects your personal information",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore it - it's just a robot", 
           emoji: "😐", 
-          description: "We should protect our privacy from robots that record without permission",
           isCorrect: false
         },
         { 
           id: "laugh", 
           text: "Laugh and record it yourself", 
           emoji: "😂", 
-          description: "We should stop robots that invade privacy",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const RobotSpyStory = () => {
           id: "pose", 
           text: "Pose for fun photos", 
           emoji: "😎", 
-          description: "We should protect our privacy from robots taking photos without permission",
           isCorrect: false
         },
         { 
           id: "cover", 
           text: "Cover your camera and stop it", 
           emoji: "✋📷", 
-          description: "Protecting privacy by stopping unauthorized photo-taking is important",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "😐", 
-          description: "We should protect our privacy from unauthorized photo-taking",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const RobotSpyStory = () => {
           id: "continue", 
           text: "Let it continue", 
           emoji: "😐", 
-          description: "We should protect our privacy by turning off tracking",
           isCorrect: false
         },
         { 
           id: "turn", 
           text: "Turn off tracking features", 
           emoji: "🛑", 
-          description: "Turning off tracking features protects your privacy and safety",
           isCorrect: true
         },
         { 
           id: "hack", 
           text: "Try to hack the robot", 
           emoji: "💻", 
-          description: "Turning off tracking is safer than hacking",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const RobotSpyStory = () => {
           id: "share", 
           text: "Share data with others", 
           emoji: "📤", 
-          description: "We should protect our friends' privacy by stopping the robot",
           isCorrect: false
         },
         { 
           id: "inform", 
           text: "Inform your friends & shut it down", 
           emoji: "👥✋", 
-          description: "Informing friends and shutting down spy robots protects everyone's privacy",
           isCorrect: true
         },
         { 
           id: "laugh", 
           text: "Laugh and ignore", 
           emoji: "😂", 
-          description: "We should protect our friends' privacy",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const RobotSpyStory = () => {
           id: "give", 
           text: "Give full access without reading", 
           emoji: "✅", 
-          description: "We should protect our privacy by limiting data access",
           isCorrect: false
         },
         { 
           id: "deny", 
           text: "Deny or limit access", 
           emoji: "✋", 
-          description: "Denying or limiting access protects your privacy and personal information",
           isCorrect: true
         },
         { 
           id: "share", 
           text: "Share only with friends", 
           emoji: "👥", 
-          description: "We should protect our privacy by limiting access",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const RobotSpyStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

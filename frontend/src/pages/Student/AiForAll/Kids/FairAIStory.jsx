@@ -32,21 +32,18 @@ const FairAIStory = () => {
           id: "make", 
           text: "Make the robot give prizes equally", 
           emoji: "⚖️", 
-          description: "Robots should treat everyone equally and fairly",
           isCorrect: true
         },
         { 
           id: "continue", 
           text: "Let it continue giving prizes only to tall kids", 
           emoji: "🙄", 
-          description: "Robots should treat everyone equally",
           isCorrect: false
         },
         { 
           id: "ignore", 
           text: "Ignore the robot's behavior", 
           emoji: "😐", 
-          description: "We should fix robots to treat everyone fairly",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const FairAIStory = () => {
           id: "continue", 
           text: "Let it recommend boys only", 
           emoji: "🙄", 
-          description: "AI should recommend jobs fairly to everyone",
           isCorrect: false
         },
         { 
           id: "make", 
           text: "Make the AI recommend fairly", 
           emoji: "⚖️", 
-          description: "AI should recommend jobs fairly to everyone, regardless of gender",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore the bias", 
           emoji: "😐", 
-          description: "We should fix AI to recommend fairly",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const FairAIStory = () => {
           id: "favor", 
           text: "Favor the preferred region", 
           emoji: "🙄", 
-          description: "AI should grade all students fairly",
           isCorrect: false
         },
         { 
           id: "ensure", 
           text: "Ensure fair grading for all", 
           emoji: "⚖️", 
-          description: "AI should grade all students fairly, regardless of region",
           isCorrect: true
         },
         { 
           id: "nothing", 
           text: "Do nothing", 
           emoji: "😐", 
-          description: "We should fix AI to grade fairly",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const FairAIStory = () => {
           id: "ai", 
           text: "Make content recommendation fair for all", 
           emoji: "⚖️", 
-          description: "AI should recommend content fairly to all users",
           isCorrect: true
         },
         { 
           id: "popular", 
           text: "Show popular content only", 
           emoji: "🙄", 
-          description: "AI should recommend content fairly to everyone",
           isCorrect: false
         },
         { 
           id: "ignore", 
           text: "Ignore the bias", 
           emoji: "😐", 
-          description: "We should fix AI to recommend fairly",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const FairAIStory = () => {
           id: "favor", 
           text: "Favor the preferred music", 
           emoji: "🙄", 
-          description: "AI should treat all music types fairly",
           isCorrect: false
         },
         { 
           id: "ensure", 
           text: "Ensure all music types are treated fairly", 
           emoji: "⚖️", 
-          description: "AI should treat all music types fairly and equally",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "😐", 
-          description: "We should fix AI to treat all music fairly",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const FairAIStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

@@ -82,13 +82,7 @@ const ClassroomStory3 = () => {
       id: 3,
       text: "Your classmate asks you to share an AI-generated summary of your textbook. What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Tell to Ask Teacher", 
-          emoji: "🧑‍🏫", 
-          description: "Tell them to ask the teacher first",
-          isCorrect: true
-        },
+      
         { 
           id: "b", 
           text: "Share Immediately", 
@@ -102,7 +96,14 @@ const ClassroomStory3 = () => {
           emoji: "💬", 
           description: "Post it in the group chat for everyone",
           isCorrect: false
-        }
+        },
+          { 
+          id: "a", 
+          text: "Tell to Ask Teacher", 
+          emoji: "🧑‍🏫", 
+          description: "Tell them to ask the teacher first",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -136,19 +137,20 @@ const ClassroomStory3 = () => {
       id: 5,
       text: "You use AI to make a class project presentation. What's the right way to show your work?",
       options: [
-        { 
-          id: "a", 
-          text: "Give Credit", 
-          emoji: "🏆", 
-          description: "Give credit that AI helped and explain what you learned",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Hide AI Help", 
           emoji: "🙊", 
           description: "Hide that AI helped you",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Give Credit", 
+          emoji: "🏆", 
+          description: "Give credit that AI helped and explain what you learned",
+          isCorrect: true
         },
         { 
           id: "c", 

@@ -82,13 +82,7 @@ const CyberBullyReport = () => {
       id: 3,
       text: "You discover someone created a fake account to bully another student. What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Report and Tell Adult", 
-          emoji: "📢", 
-          description: "Report the fake account and tell an adult",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Follow the Fake Account", 
@@ -102,7 +96,14 @@ const CyberBullyReport = () => {
           emoji: "📤", 
           description: "Share it with others",
           isCorrect: false
-        }
+        },
+        { 
+          id: "a", 
+          text: "Report and Tell Adult", 
+          emoji: "📢", 
+          description: "Report the fake account and tell an adult",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -136,19 +137,20 @@ const CyberBullyReport = () => {
       id: 5,
       text: "You're added to a group chat where kids are saying mean things about someone. What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Leave and Report", 
-          emoji: "🚪", 
-          description: "Leave the group and report it",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Join In", 
           emoji: "😄", 
           description: "Join in with the mean comments",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Leave and Report", 
+          emoji: "🚪", 
+          description: "Leave the group and report it",
+          isCorrect: true
         },
         { 
           id: "c", 

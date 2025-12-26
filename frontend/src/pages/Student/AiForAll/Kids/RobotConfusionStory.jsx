@@ -31,22 +31,19 @@ const RobotConfusionStory = () => {
         { 
           id: "correct", 
           text: "Correct and teach it is a tiger", 
-          emoji: "✅", 
-          description: "Correcting robot mistakes helps AI learn to distinguish between similar animals",
+          emoji: "🐯", 
           isCorrect: true
         },
         { 
           id: "silent", 
           text: "Stay silent and ignore", 
           emoji: "🤐", 
-          description: "We should help robots learn to distinguish between different animals",
           isCorrect: false
         },
         { 
           id: "same", 
           text: "Say both are the same", 
           emoji: "🤷‍♂️", 
-          description: "Tigers and lions are different - we should teach robots correctly",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const RobotConfusionStory = () => {
           id: "agree", 
           text: "Agree with the robot", 
           emoji: "👍", 
-          description: "We should help robots learn to distinguish between apples and tomatoes",
           isCorrect: false
         },
         { 
           id: "explain", 
           text: "Explain it's an apple, not a tomato", 
-          emoji: "✅", 
-          description: "Explaining correctly helps robots learn to distinguish between similar objects",
+          emoji: "🍎", 
           isCorrect: true
         },
         { 
           id: "laugh", 
           text: "Laugh and walk away", 
           emoji: "😂", 
-          description: "We should help robots learn, not laugh at mistakes",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const RobotConfusionStory = () => {
           id: "close", 
           text: "Tell it's close enough", 
           emoji: "😅", 
-          description: "Cats and dogs are different - we should correct robots",
           isCorrect: false
         },
         { 
           id: "correct", 
           text: "Correct it kindly and say it's a cat", 
-          emoji: "✅", 
-          description: "Correcting robots kindly helps them learn to distinguish between different animals",
+          emoji: "🐱", 
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore and move on", 
           emoji: "🤐", 
-          description: "We should help robots learn to distinguish between cats and dogs",
           isCorrect: false
         }
       ]
@@ -112,22 +103,19 @@ const RobotConfusionStory = () => {
         { 
           id: "ai", 
           text: "Tell it's actually a bus", 
-          emoji: "✅", 
-          description: "Correcting robots helps them learn to distinguish between different vehicles",
+          emoji: "🚌", 
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Say yes to avoid confusion", 
           emoji: "🙈", 
-          description: "Buses and cars are different - we should teach robots correctly",
           isCorrect: false
         },
         { 
           id: "same", 
           text: "Say both are same vehicles", 
           emoji: "🚘", 
-          description: "Buses and cars are different types of vehicles",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const RobotConfusionStory = () => {
           id: "maybe", 
           text: "Say maybe it's the same", 
           emoji: "🤔", 
-          description: "The sun and moon are different - we should teach robots correctly",
           isCorrect: false
         },
         { 
           id: "teach", 
           text: "Teach it that it's the moon, not the sun", 
-          emoji: "✅", 
-          description: "Teaching robots correctly helps them learn to distinguish between the sun and moon",
+          emoji: "🌙", 
           isCorrect: true
         },
         { 
           id: "nothing", 
           text: "Do nothing", 
           emoji: "😐", 
-          description: "We should help robots learn to distinguish between the sun and moon",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const RobotConfusionStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

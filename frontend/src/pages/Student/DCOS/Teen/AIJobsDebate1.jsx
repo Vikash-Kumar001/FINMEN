@@ -31,21 +31,18 @@ const AIJobsDebate1 = () => {
           id: "take-jobs", 
           text: "AI will only take jobs", 
           emoji: "🤖", 
-          description: "AI will replace all human workers",
           isCorrect: false
         },
         { 
           id: "both-fairness", 
           text: "Both - fairness needed", 
-          emoji: "✅", 
-          description: "AI will both take and create jobs, but fairness is needed",
+          emoji: "😇", 
           isCorrect: true
         },
         { 
           id: "create-only", 
           text: "AI will only create jobs", 
           emoji: "💼", 
-          description: "AI will only create new job opportunities",
           isCorrect: false
         }
       ]
@@ -57,15 +54,13 @@ const AIJobsDebate1 = () => {
         { 
           id: "balance-fair", 
           text: "Balance change with fairness", 
-          emoji: "✅", 
-          description: "We should balance AI changes with fairness for workers",
+          emoji: "⚖️", 
           isCorrect: true
         },
         { 
           id: "yes-worried", 
           text: "Yes - AI will replace everyone", 
           emoji: "😰", 
-          description: "We should be very worried about AI replacing all workers",
           isCorrect: false
         },
         
@@ -73,7 +68,6 @@ const AIJobsDebate1 = () => {
           id: "no-worried", 
           text: "No - nothing to worry about", 
           emoji: "😊", 
-          description: "There's nothing to worry about with AI",
           isCorrect: false
         }
       ]
@@ -86,7 +80,6 @@ const AIJobsDebate1 = () => {
           id: "ban-ai", 
           text: "Ban AI completely", 
           emoji: "🚫", 
-          description: "We should ban AI from workplaces",
           isCorrect: false
         },
        
@@ -94,14 +87,12 @@ const AIJobsDebate1 = () => {
           id: "use-all", 
           text: "Use AI everywhere without limits", 
           emoji: "🤖", 
-          description: "Use AI everywhere without any restrictions",
           isCorrect: false
         },
          { 
           id: "ethical-fair", 
           text: "Use AI ethically and fairly", 
-          emoji: "✅", 
-          description: "Use AI ethically with fairness for all workers",
+          emoji: "😇", 
           isCorrect: true
         },
       ]
@@ -114,21 +105,18 @@ const AIJobsDebate1 = () => {
           id: "fear-ai", 
           text: "Fear and resist AI", 
           emoji: "😨", 
-          description: "We should fear and resist all AI technology",
           isCorrect: false
         },
         { 
           id: "adapt-fair", 
           text: "Adapt with fairness and ethics", 
-          emoji: "✅", 
-          description: "Adapt to AI changes while ensuring fairness and ethics",
+          emoji: "🔌", 
           isCorrect: true
         },
         { 
           id: "ignore-ai", 
           text: "Ignore AI completely", 
           emoji: "🙈", 
-          description: "Just ignore AI and continue as before",
           isCorrect: false
         }
       ]
@@ -141,7 +129,6 @@ const AIJobsDebate1 = () => {
           id: "no-protection", 
           text: "No - let AI replace workers", 
           emoji: "🤖", 
-          description: "AI should replace workers without protection",
           isCorrect: false
         },
         
@@ -149,14 +136,12 @@ const AIJobsDebate1 = () => {
           id: "maybe", 
           text: "Maybe - depends on the job", 
           emoji: "🤔", 
-          description: "Protect only certain types of jobs",
           isCorrect: false
         },
         { 
           id: "yes-fair-transition", 
           text: "Yes - ensure fair transition", 
-          emoji: "✅", 
-          description: "Protect workers and ensure fair transition to AI",
+          emoji: "⚧️", 
           isCorrect: true
         },
       ]
@@ -235,8 +220,7 @@ const AIJobsDebate1 = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

@@ -32,21 +32,18 @@ const ScreenLogStory = () => {
           id: "take-break", 
           text: "Take a break and limit screen time", 
           emoji: "⏰", 
-          description: "Stop gaming and rest your eyes, then do homework",
           isCorrect: true
         },
         { 
           id: "keep-playing", 
           text: "Keep playing - just one more game", 
           emoji: "😴", 
-          description: "Continue gaming despite being tired",
           isCorrect: false
         },
         { 
           id: "play-more", 
           text: "Play for 2 more hours then stop", 
           emoji: "😐", 
-          description: "Play a bit longer before stopping",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const ScreenLogStory = () => {
           id: "keep-scrolling", 
           text: "Keep scrolling - it's relaxing", 
           emoji: "😑", 
-          description: "Continue scrolling social media",
           isCorrect: false
         },
         { 
           id: "set-limit", 
           text: "Set a time limit and do something offline", 
           emoji: "⏰", 
-          description: "Stop scrolling and engage in offline activities",
           isCorrect: true
         },
         { 
           id: "scroll-more", 
           text: "Scroll for 1 more hour", 
           emoji: "😐", 
-          description: "Continue scrolling for a bit longer",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const ScreenLogStory = () => {
           id: "watch-more", 
           text: "Watch a few more videos", 
           emoji: "😴", 
-          description: "Continue watching videos",
           isCorrect: false
         },
         { 
           id: "watch-30", 
           text: "Watch for 30 more minutes", 
           emoji: "😐", 
-          description: "Watch a bit longer before stopping",
           isCorrect: false
         },
         { 
           id: "stop-rest", 
           text: "Stop and get proper rest", 
           emoji: "⏰", 
-          description: "Stop watching and go to sleep",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const ScreenLogStory = () => {
           id: "put-away", 
           text: "Put phone away and focus on studying", 
           emoji: "⏰", 
-          description: "Stop using phone and start studying",
           isCorrect: true
         },
         { 
           id: "keep-phone", 
           text: "Keep using phone - study later", 
           emoji: "😑", 
-          description: "Continue using phone and postpone studying",
           isCorrect: false
         },
         { 
           id: "multitask", 
           text: "Use phone while studying", 
           emoji: "😐", 
-          description: "Try to study while using phone",
           isCorrect: false
         }
       ]
@@ -140,23 +128,21 @@ const ScreenLogStory = () => {
           id: "continue", 
           text: "Continue using screens", 
           emoji: "😴", 
-          description: "Keep using screens despite being tired",
           isCorrect: false
         },
-        { 
-          id: "limit-activity", 
-          text: "Limit screen time and do physical activity", 
-          emoji: "⏰", 
-          description: "Stop using screens and go exercise",
-          isCorrect: true
-        },
+       
         { 
           id: "use-more", 
           text: "Use screens for 2 more hours", 
           emoji: "😐", 
-          description: "Continue using screens a bit longer",
           isCorrect: false
-        }
+        },
+         { 
+          id: "limit-activity", 
+          text: "Limit screen time and do physical activity", 
+          emoji: "⏰", 
+          isCorrect: true
+        },
       ]
     }
   ];
@@ -246,7 +232,6 @@ const ScreenLogStory = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>

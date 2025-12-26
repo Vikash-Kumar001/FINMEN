@@ -82,19 +82,20 @@ const OutdoorFunStory = () => {
       id: 3,
       text: "It's a beautiful sunny day. Your friends are at the playground. You're playing games on your phone. What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Go Play", 
-          emoji: "🏃", 
-          description: "Put the phone away and go play",
-          isCorrect: true
-        },
+       
         { 
           id: "b", 
           text: "Stay Inside", 
           emoji: "🎮", 
           description: "Stay inside and keep playing",
           isCorrect: false
+        },
+         { 
+          id: "a", 
+          text: "Go Play", 
+          emoji: "🏃", 
+          description: "Put the phone away and go play",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -109,13 +110,7 @@ const OutdoorFunStory = () => {
       id: 4,
       text: "Your parents suggest a nature walk. You're in the middle of an online game. What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Go for Walk", 
-          emoji: "🚶", 
-          description: "Save the game and go for the walk",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Skip Walk", 
@@ -129,7 +124,14 @@ const OutdoorFunStory = () => {
           emoji: "⏰", 
           description: "Ask to finish the game first",
           isCorrect: false
-        }
+        },
+        { 
+          id: "a", 
+          text: "Go for Walk", 
+          emoji: "🚶", 
+          description: "Save the game and go for the walk",
+          isCorrect: true
+        },
       ]
     },
     {

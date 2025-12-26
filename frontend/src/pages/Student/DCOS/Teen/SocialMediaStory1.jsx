@@ -56,19 +56,20 @@ const SocialMediaStory1 = () => {
       text: "You want to showcase your project achievements. What should you do?",
       options: [
         { 
-          id: "post-location", 
-          text: "Post with your exact location", 
-          emoji: "📍", 
-          description: "Share your precise location with every post",
-          isCorrect: false
-        },
-        { 
           id: "share-achievements", 
           text: "Share achievements without revealing location", 
           emoji: "🛡️", 
           description: "Highlight your work without sharing personal location",
           isCorrect: true
         },
+        { 
+          id: "post-location", 
+          text: "Post with your exact location", 
+          emoji: "📍", 
+          description: "Share your precise location with every post",
+          isCorrect: false
+        },
+        
         { 
           id: "never-post", 
           text: "Never post anything", 
@@ -89,20 +90,21 @@ const SocialMediaStory1 = () => {
           description: "Post your phone number publicly",
           isCorrect: false
         },
-        { 
-          id: "use-platform-messaging", 
-          text: "Use platform messaging and keep contact private", 
-          emoji: "🛡️", 
-          description: "Use social media messaging without sharing personal contact",
-          isCorrect: true
-        },
+       
         { 
           id: "no-connection", 
           text: "Don't connect with anyone", 
           emoji: "🚫", 
           description: "Avoid connecting with others online",
           isCorrect: false
-        }
+        },
+         { 
+          id: "use-platform-messaging", 
+          text: "Use platform messaging and keep contact private", 
+          emoji: "🛡️", 
+          description: "Use social media messaging without sharing personal contact",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -137,19 +139,20 @@ const SocialMediaStory1 = () => {
       text: "You want to use social media to grow your skills and network. What's the right way?",
       options: [
         { 
-          id: "share-everything-public", 
-          text: "Share everything publicly", 
-          emoji: "📤", 
-          description: "Make all your information public",
-          isCorrect: false
-        },
-        { 
           id: "use-smartly", 
           text: "Use social media smartly for growth while staying safe", 
           emoji: "🛡️", 
           description: "Use platforms strategically while protecting your privacy",
           isCorrect: true
         },
+        { 
+          id: "share-everything-public", 
+          text: "Share everything publicly", 
+          emoji: "📤", 
+          description: "Make all your information public",
+          isCorrect: false
+        },
+        
         { 
           id: "avoid-completely", 
           text: "Avoid social media completely", 

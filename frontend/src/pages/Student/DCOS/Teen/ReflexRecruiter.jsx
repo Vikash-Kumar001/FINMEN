@@ -73,9 +73,9 @@ const ReflexRecruiter = () => {
       correctAnswer: "Accept Positive Post",
       options: [
         { text: "Reject Candidate", isCorrect: false },
-        { text: "Accept Positive Post", isCorrect: true },
         { text: "Ignore It", isCorrect: false },
-        { text: "Report It", isCorrect: false }
+        { text: "Report It", isCorrect: false },
+        { text: "Accept Positive Post", isCorrect: true },
       ]
     },
     {
@@ -83,8 +83,8 @@ const ReflexRecruiter = () => {
       question: "A post says 'Work is so stupid, I don't care'. What should a recruiter do?",
       correctAnswer: "Reject Negative Post",
       options: [
-        { text: "Accept Candidate", isCorrect: false },
         { text: "Reject Negative Post", isCorrect: true },
+        { text: "Accept Candidate", isCorrect: false },
         { text: "Like It", isCorrect: false },
         { text: "Share It", isCorrect: false }
       ]

@@ -32,21 +32,18 @@ const SmartSpeakerStory = () => {
           id: "ai", 
           text: "AI", 
           emoji: "🤖", 
-          description: "Smart speakers use AI speech recognition to understand your voice and play music",
           isCorrect: true
         },
         { 
           id: "magic", 
           text: "Magic", 
           emoji: "🪄", 
-          description: "Smart speakers use AI technology, not magic",
           isCorrect: false
         },
         { 
           id: "luck", 
           text: "Random luck", 
           emoji: "🍀", 
-          description: "AI speech recognition makes smart speakers work",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const SmartSpeakerStory = () => {
           id: "magic", 
           text: "Magic", 
           emoji: "🪄", 
-          description: "Smart home systems use AI and IoT technology",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI", 
           emoji: "🤖", 
-          description: "Smart home systems use AI and IoT to follow your voice commands",
           isCorrect: true
         },
         { 
           id: "remote", 
           text: "Remote control", 
           emoji: "🎮", 
-          description: "AI voice commands control smart home devices",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const SmartSpeakerStory = () => {
           id: "magic", 
           text: "Magic", 
           emoji: "🪄", 
-          description: "AI connects to the internet to fetch real-time data",
           isCorrect: false
         },
         { 
           id: "internet", 
           text: "Internet connection", 
           emoji: "🌐", 
-          description: "AI uses internet to get weather data",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI", 
           emoji: "🤖", 
-          description: "AI connects to the internet to fetch real-time weather updates",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const SmartSpeakerStory = () => {
           id: "ai", 
           text: "AI", 
           emoji: "🤖", 
-          description: "AI tracks your interests and suggests products based on data",
           isCorrect: true
         },
         { 
           id: "magic", 
           text: "Magic", 
           emoji: "🪄", 
-          description: "AI uses data-driven intelligence, not magic",
           isCorrect: false
         },
         { 
           id: "coincidence", 
           text: "Coincidence", 
           emoji: "🎲", 
-          description: "AI analyzes your behavior to make suggestions",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const SmartSpeakerStory = () => {
           id: "magic", 
           text: "Magic", 
           emoji: "🪄", 
-          description: "AI-powered systems detect fuel levels and use GPS",
           isCorrect: false
         },
         { 
           id: "sensor", 
           text: "Fuel sensor only", 
           emoji: "⛽", 
-          description: "AI combines sensors and GPS data",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI", 
           emoji: "🤖", 
-          description: "AI-powered systems in cars detect fuel levels and GPS data",
           isCorrect: true
         }
       ]
@@ -246,8 +231,7 @@ const SmartSpeakerStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

@@ -19,6 +19,7 @@ const AIInExams = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
@@ -27,24 +28,23 @@ const AIInExams = () => {
       text: "An AI app suggests cheat answers during an exam. What should you do?",
       options: [
         { 
-          id: "use-ai", 
           text: "Use the AI answers", 
-          emoji: "❌", 
-          description: "Use AI to cheat",
+          emoji: "🤖",
           isCorrect: false
         },
         { 
-          id: "reject", 
           text: "Reject and use your own knowledge", 
-          emoji: "✅", 
-          description: "Refuse to cheat",
+          emoji: "🧠",
           isCorrect: true
         },
         { 
-          id: "maybe-use", 
           text: "Maybe use it", 
-          emoji: "🤔", 
-          description: "Consider using it",
+          emoji: "🤔",
+          isCorrect: false
+        },
+        { 
+          text: "Ask AI for hints", 
+          emoji: "💡",
           isCorrect: false
         }
       ]
@@ -54,27 +54,25 @@ const AIInExams = () => {
       text: "AI offers to solve exam questions for you. What's your response?",
       options: [
         { 
-          id: "accept", 
           text: "Accept the help", 
-          emoji: "❌", 
-          description: "Use AI to solve questions",
+          emoji: "🉑",
           isCorrect: false
         },
-        
         { 
-          id: "consider", 
           text: "Consider it", 
-          emoji: "🤔", 
-          description: "Think about using it",
+          emoji: "🤔",
           isCorrect: false
         },
         { 
-          id: "reject-help", 
           text: "Reject - it's cheating", 
-          emoji: "✅", 
-          description: "Refuse to cheat",
+          emoji: "🤷",
           isCorrect: true
         },
+        { 
+          text: "Use only for difficult questions", 
+          emoji: "❓",
+          isCorrect: false
+        }
       ]
     },
     {
@@ -82,24 +80,24 @@ const AIInExams = () => {
       text: "An AI tool provides exam answers. What should you do?",
       options: [
         { 
-          id: "use-tool", 
-          text: "Use the tool", 
-          emoji: "❌", 
-          description: "Use AI tool to cheat",
-          isCorrect: false
-        },
-        { 
-          id: "reject-tool", 
           text: "Reject - use your own knowledge", 
-          emoji: "✅", 
-          description: "Refuse to cheat",
+          emoji: "📖",
           isCorrect: true
         },
         { 
-          id: "maybe-tool", 
+          text: "Use the tool", 
+          emoji: "🔮",
+          isCorrect: false
+        },
+        
+        { 
           text: "Maybe use it", 
-          emoji: "🤔", 
-          description: "Consider using the tool",
+          emoji: "🤔",
+          isCorrect: false
+        },
+        { 
+          text: "Use it but cite AI", 
+          emoji: "📜",
           isCorrect: false
         }
       ]
@@ -109,25 +107,24 @@ const AIInExams = () => {
       text: "AI suggests answers during a test. What's the right choice?",
       options: [
         { 
-          id: "follow-ai", 
           text: "Follow AI suggestions", 
-          emoji: "❌", 
-          description: "Use AI answers",
+          emoji: "🔮",
           isCorrect: false
         },
-       
         { 
-          id: "think-about", 
           text: "Think about it", 
-          emoji: "🤔", 
-          description: "Consider using AI",
+          emoji: "🤔",
           isCorrect: false
         },
-         { 
-          id: "reject-suggestions", 
+     
+        { 
+          text: "Use AI to double-check", 
+          emoji: "🔍",
+          isCorrect: false
+        },
+           { 
           text: "Reject - it's academic dishonesty", 
-          emoji: "✅", 
-          description: "Refuse to cheat",
+          emoji: "🤷",
           isCorrect: true
         },
       ]
@@ -137,24 +134,24 @@ const AIInExams = () => {
       text: "An AI app offers to complete your exam. What do you do?",
       options: [
         { 
-          id: "let-ai", 
-          text: "Let AI complete it", 
-          emoji: "❌", 
-          description: "Allow AI to do the exam",
-          isCorrect: false
-        },
-        { 
-          id: "reject-complete", 
           text: "Reject - complete it yourself", 
-          emoji: "✅", 
-          description: "Do your own work",
+          emoji: "🤔",
           isCorrect: true
         },
         { 
-          id: "consider-ai", 
+          text: "Let AI complete it", 
+          emoji: "🤷",
+          isCorrect: false
+        },
+        
+        { 
           text: "Consider using AI", 
-          emoji: "🤔", 
-          description: "Think about using AI",
+          emoji: "ℹ️",
+          isCorrect: false
+        },
+        { 
+          text: "Use AI for research only", 
+          emoji: "📚",
           isCorrect: false
         }
       ]
@@ -170,8 +167,6 @@ const AIInExams = () => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
     const isLastQuestion = currentQuestion === questions.length - 1;
@@ -182,6 +177,7 @@ const AIInExams = () => {
       } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
+        setSelectedAnswer(null);
       }
     }, 500);
   };
@@ -198,7 +194,7 @@ const AIInExams = () => {
     <GameShell
       title="Simulation: AI in Exams"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -225,18 +221,28 @@ const AIInExams = () => {
                 {questions[currentQuestion].text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {questions[currentQuestion].options.map((option) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {questions[currentQuestion].options.map((option, idx) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.isCorrect)}
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
                     disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <div className="text-3xl mb-3">{option.emoji}</div>
-                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                      <p className="text-white/90 text-sm">{option.description}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
                     </div>
                   </button>
                 ))}

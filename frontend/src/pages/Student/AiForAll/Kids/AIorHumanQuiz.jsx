@@ -32,21 +32,18 @@ const AIorHumanQuiz = () => {
           id: "ai", 
           text: "AI", 
           emoji: "🤖", 
-          description: "Google Translate was built using AI to learn and translate languages",
           isCorrect: true
         },
         { 
           id: "human", 
           text: "Human", 
           emoji: "🧑", 
-          description: "Google Translate uses AI, though humans helped create it",
           isCorrect: false
         },
         { 
           id: "both", 
           text: "Both", 
           emoji: "🤝", 
-          description: "Google Translate was built using AI technology",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const AIorHumanQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI can generate digital portraits quickly using deep learning",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI", 
           emoji: "🤖", 
-          description: "AI can generate digital portraits quickly using deep learning models",
           isCorrect: true
         },
         { 
           id: "human", 
           text: "Human", 
           emoji: "🧑", 
-          description: "AI can create portraits faster than humans",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const AIorHumanQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Many online news outlets use AI to generate catchy headlines",
           isCorrect: false
         },
         { 
           id: "human", 
           text: "Human", 
           emoji: "🧑", 
-          description: "Many online news outlets use AI to generate headlines fast",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI", 
           emoji: "🤖", 
-          description: "Many online news outlets use AI to generate catchy headlines fast",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const AIorHumanQuiz = () => {
           id: "both", 
           text: "Both", 
           emoji: "🤝", 
-          description: "AI can compose songs too, but humans add emotion and creativity",
           isCorrect: true
         },
         { 
           id: "human", 
           text: "Only Human", 
           emoji: "🧑", 
-          description: "AI can also compose songs, though humans add emotion",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "Only AI", 
           emoji: "🤖", 
-          description: "Both AI and humans can create songs",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const AIorHumanQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Self-driving cars are powered by AI systems",
           isCorrect: false
         },
         { 
           id: "human", 
           text: "Human", 
           emoji: "🧑", 
-          description: "Self-driving cars use AI to drive, not humans",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI", 
           emoji: "🤖", 
-          description: "Self-driving cars are powered by AI systems using sensors and data",
           isCorrect: true
         }
       ]
@@ -246,8 +231,7 @@ const AIorHumanQuiz = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

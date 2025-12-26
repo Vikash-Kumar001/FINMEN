@@ -65,6 +65,14 @@ const GameCoinScamQuiz = () => {
           description: "Click immediately to claim",
           isCorrect: false
         },
+        
+        { 
+          id: "c", 
+          text: "Share with friends first.", 
+          emoji: "👥", 
+          description: "Share before clicking",
+          isCorrect: false
+        },
         { 
           id: "b", 
           text: "Ignore or close it.", 
@@ -72,13 +80,6 @@ const GameCoinScamQuiz = () => {
           description: "Pop-ups like this are usually scams",
           isCorrect: true
         },
-        { 
-          id: "c", 
-          text: "Share with friends first.", 
-          emoji: "👥", 
-          description: "Share before clicking",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -86,19 +87,20 @@ const GameCoinScamQuiz = () => {
       text: "A website asks for your game password to get free coins. What do you do?",
       options: [
         { 
-          id: "a", 
-          text: "Give it, to get coins.", 
-          emoji: "💸", 
-          description: "Share password to get free coins",
-          isCorrect: false
-        },
-        { 
           id: "b", 
           text: "Never share your password.", 
           emoji: "🛡️", 
           description: "Never share passwords with anyone",
           isCorrect: true
         },
+        { 
+          id: "a", 
+          text: "Give it, to get coins.", 
+          emoji: "💸", 
+          description: "Share password to get free coins",
+          isCorrect: false
+        },
+        
         { 
           id: "c", 
           text: "Ask a stranger online.", 
@@ -112,13 +114,7 @@ const GameCoinScamQuiz = () => {
       id: 4,
       text: "A real game store always uses secure payment methods. What should you look for?",
       options: [
-        { 
-          id: "a", 
-          text: "Lock symbol & HTTPS", 
-          emoji: "🔒", 
-          description: "Look for security symbols",
-          isCorrect: true
-        },
+       
         { 
           id: "b", 
           text: "Random links or pop-ups", 
@@ -132,7 +128,14 @@ const GameCoinScamQuiz = () => {
           emoji: "⬇️", 
           description: "Free downloads are always safe",
           isCorrect: false
-        }
+        },
+         { 
+          id: "a", 
+          text: "Lock symbol & HTTPS", 
+          emoji: "🔒", 
+          description: "Look for security symbols",
+          isCorrect: true
+        },
       ]
     },
     {

@@ -46,8 +46,8 @@ const PuzzleActsOfKindness = () => {
     { leftId: 1, rightId: 2 }, // Sharing → Smile
     { leftId: 2, rightId: 3 }, // Helping → Happiness
     { leftId: 3, rightId: 1 }, // Teasing → Tears
-    { leftId: 4, rightId: 4 }, // Ignoring → Sadness
-    { leftId: 5, rightId: 5 }  // Complimenting → Joy
+    { leftId: 4, rightId: 5 }, // Ignoring → Sadness
+    { leftId: 5, rightId: 4 }  // Complimenting → Joy
   ];
 
   // Check if a right item is already matched

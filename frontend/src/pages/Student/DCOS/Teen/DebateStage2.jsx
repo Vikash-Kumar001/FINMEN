@@ -31,21 +31,18 @@ const DebateStage2 = () => {
           id: "yes-allowed", 
           text: "Yes - free speech allows it", 
           emoji: "🗣️", 
-          description: "Free speech means hate speech should be allowed",
           isCorrect: false
         },
         { 
           id: "no-banned", 
           text: "No - hate speech should be banned", 
           emoji: "❌", 
-          description: "Hate speech causes harm and should be banned",
           isCorrect: true
         },
         { 
           id: "maybe", 
           text: "Maybe - depends on the context", 
           emoji: "🤔", 
-          description: "It depends on the specific context",
           isCorrect: false
         }
       ]
@@ -58,7 +55,6 @@ const DebateStage2 = () => {
           id: "yes-protected", 
           text: "Yes - it's free speech", 
           emoji: "🗣️", 
-          description: "Hate speech is protected under free speech",
           isCorrect: false
         },
 
@@ -66,14 +62,12 @@ const DebateStage2 = () => {
           id: "sometimes", 
           text: "Sometimes - if it's not too extreme", 
           emoji: "🤷", 
-          description: "Only if it's not extremely hateful",
           isCorrect: false
         },
                 { 
           id: "no-harmful", 
           text: "No - it causes real harm", 
           emoji: "❌", 
-          description: "Hate speech causes real harm and shouldn't be protected",
           isCorrect: true
         },
       ]
@@ -86,14 +80,12 @@ const DebateStage2 = () => {
           id: "no-moderation", 
           text: "No - platforms should moderate", 
           emoji: "❌", 
-          description: "Platforms should moderate and remove hate speech",
           isCorrect: true
         },
         { 
           id: "yes-platforms", 
           text: "Yes - platforms should allow it", 
           emoji: "🌐", 
-          description: "Online platforms should allow all speech including hate",
           isCorrect: false
         },
         
@@ -101,7 +93,6 @@ const DebateStage2 = () => {
           id: "maybe", 
           text: "Maybe - only moderate extreme cases", 
           emoji: "🤔", 
-          description: "Only moderate the most extreme cases",
           isCorrect: false
         }
       ]
@@ -114,7 +105,6 @@ const DebateStage2 = () => {
           id: "no-consequences", 
           text: "No - it's just words", 
           emoji: "💬", 
-          description: "Hate speech is just words with no real consequences",
           isCorrect: false
         },
         
@@ -122,14 +112,12 @@ const DebateStage2 = () => {
           id: "maybe", 
           text: "Maybe - only for some people", 
           emoji: "🤷", 
-          description: "Only affects sensitive people",
           isCorrect: false
         },
         { 
           id: "yes-serious", 
           text: "Yes - it has serious consequences", 
           emoji: "❌", 
-          description: "Hate speech has serious real-world consequences",
           isCorrect: true
         },
       ]
@@ -142,21 +130,18 @@ const DebateStage2 = () => {
           id: "no-report", 
           text: "No - just ignore it", 
           emoji: "😐", 
-          description: "Just ignore hate speech, don't report it",
           isCorrect: false
         },
         { 
           id: "yes-report", 
           text: "Yes - always report hate speech", 
           emoji: "❌", 
-          description: "Always report hate speech to protect others",
           isCorrect: true
         },
         { 
           id: "sometimes", 
           text: "Sometimes - only if it's directed at you", 
           emoji: "🤔", 
-          description: "Only report if it's directed at you",
           isCorrect: false
         }
       ]
@@ -235,8 +220,7 @@ const DebateStage2 = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

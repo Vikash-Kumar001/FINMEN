@@ -32,21 +32,18 @@ const CyberbullyStory = () => {
           id: "report", 
           text: "Report it", 
           emoji: "🚨", 
-          description: "Reporting cyberbullying helps protect others and stop harmful behavior",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "🙈", 
-          description: "We should report cyberbullying to help stop it",
           isCorrect: false
         },
         { 
           id: "join", 
           text: "Join and make fun too", 
           emoji: "😈", 
-          description: "We should report cyberbullying, not join in",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const CyberbullyStory = () => {
           id: "laugh", 
           text: "Laugh along", 
           emoji: "😂", 
-          description: "We should report hurtful content, not laugh at it",
           isCorrect: false
         },
         { 
           id: "report", 
           text: "Report it", 
           emoji: "🚨", 
-          description: "Reporting hurtful content helps protect others",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "🙈", 
-          description: "We should report hurtful content to help stop it",
           isCorrect: false
         }
       ]
@@ -83,24 +77,22 @@ const CyberbullyStory = () => {
       text: "A classmate is being mocked in the chat group. What should you do?",
       options: [
         { 
-          id: "join", 
-          text: "Join in", 
-          emoji: "😈", 
-          description: "We should report bullying and support the victim",
-          isCorrect: false
-        },
-        { 
           id: "report", 
           text: "Report it to teacher/parent", 
           emoji: "🚨", 
-          description: "Reporting bullying to adults helps protect the victim",
           isCorrect: true
         },
+        { 
+          id: "join", 
+          text: "Join in", 
+          emoji: "😈", 
+          isCorrect: false
+        },
+        
         { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "🙈", 
-          description: "We should report bullying to help stop it",
           isCorrect: false
         }
       ]
@@ -113,21 +105,18 @@ const CyberbullyStory = () => {
           id: "share", 
           text: "Share it further", 
           emoji: "📤", 
-          description: "We should report rumors and support our friend",
           isCorrect: false
         },
         { 
           id: "report", 
           text: "Report and support friend", 
           emoji: "🚨💖", 
-          description: "Reporting rumors and supporting the friend helps stop the harm",
           isCorrect: true
         },
         { 
           id: "laugh", 
           text: "Laugh at it", 
           emoji: "😂", 
-          description: "We should report and support, not laugh",
           isCorrect: false
         }
       ]
@@ -140,23 +129,21 @@ const CyberbullyStory = () => {
           id: "join", 
           text: "Join them", 
           emoji: "😈", 
-          description: "We should report cyberbullying to moderators",
           isCorrect: false
         },
-        { 
-          id: "report", 
-          text: "Report to moderators", 
-          emoji: "🚨", 
-          description: "Reporting to moderators helps stop cyberbullying and protect others",
-          isCorrect: true
-        },
+       
         { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "🙈", 
-          description: "We should report cyberbullying to help stop it",
           isCorrect: false
-        }
+        },
+         { 
+          id: "report", 
+          text: "Report to moderators", 
+          emoji: "🚨", 
+          isCorrect: true
+        },
       ]
     }
   ];
@@ -246,8 +233,7 @@ const CyberbullyStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

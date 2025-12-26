@@ -31,22 +31,19 @@ const AIEnvironmentQuiz = () => {
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "AI can help optimize energy usage in homes to save electricity",
+          emoji: "👍", 
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "AI can actually help save electricity by optimizing energy usage",
+          emoji: "👎", 
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI definitely helps save electricity in homes",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const AIEnvironmentQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI can help reduce water wastage by monitoring usage",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "AI can help reduce water wastage by monitoring and optimizing usage",
+          emoji: "👍", 
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "AI can actually help reduce water wastage",
+          emoji: "👎", 
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const AIEnvironmentQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI can definitely monitor air quality in cities",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "AI can actually monitor air quality in cities",
+          emoji: "👎", 
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "AI can monitor air quality in cities to help protect people's health",
+          emoji: "👍", 
           isCorrect: true
         }
       ]
@@ -112,22 +103,19 @@ const AIEnvironmentQuiz = () => {
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "AI can help reduce traffic pollution by optimizing traffic flow",
+          emoji: "👍", 
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "AI can actually help reduce traffic pollution",
+          emoji: "👎", 
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI definitely helps reduce traffic pollution",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const AIEnvironmentQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI can help predict natural disasters to save lives",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "AI can help predict natural disasters to save lives by analyzing weather patterns",
+          emoji: "👍", 
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "AI can actually help predict natural disasters",
+          emoji: "👎", 
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const AIEnvironmentQuiz = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

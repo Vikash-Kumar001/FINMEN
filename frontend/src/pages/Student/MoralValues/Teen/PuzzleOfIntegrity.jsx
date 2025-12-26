@@ -31,19 +31,19 @@ const PuzzleOfIntegrity = () => {
 
   // Right items with correct matches in different positions: Q1: pos 1, Q2: pos 2, Q3: pos 3, Q4: pos 1, Q5: pos 2
   const rightItems = [
-    { id: 1, name: "Doing right even when no one is watching", emoji: "👁️", description: "True integrity" },
-    { id: 2, name: "Return it to the owner or authorities", emoji: "🔙", description: "Honest action" },
-    { id: 3, name: "Attempting honestly even if it's hard", emoji: "✊", description: "Right choice" },
-    { id: 4, name: "Speak honestly and explain what happened", emoji: "🗣️", description: "Truthful response" },
     { id: 5, name: "'Character is who you are when no one's watching.'", emoji: "📜", description: "Inspirational quote" },
+    { id: 3, name: "Attempting honestly even if it's hard", emoji: "✊", description: "Right choice" },
+    { id: 2, name: "Return it to the owner or authorities", emoji: "🔙", description: "Honest action" },
+    { id: 1, name: "Doing right even when no one is watching", emoji: "👁️", description: "True integrity" },
+    { id: 4, name: "Speak honestly and explain what happened", emoji: "🗣️", description: "Truthful response" },
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 3 }, // Integrity → Attempting honestly even if it's hard
-    { leftId: 2, rightId: 4 }, // Lost Wallet → Speak honestly and explain what happened
-    { leftId: 3, rightId: 1 }, // Exam Honesty → Doing right even when no one is watching
-    { leftId: 4, rightId: 5 }, // Friend Blames → 'Character is who you are when no one's watching.'
-    { leftId: 5, rightId: 2 }  // True Quote → Return it to the owner or authorities
+    { leftId: 1, rightId: 1 }, // Integrity → Attempting honestly even if it's hard
+    { leftId: 2, rightId: 2 }, // Lost Wallet → Speak honestly and explain what happened
+    { leftId: 3, rightId: 3 }, // Exam Honesty → Doing right even when no one is watching
+    { leftId: 4, rightId: 4 }, // Friend Blames → 'Character is who you are when no one's watching.'
+    { leftId: 5, rightId: 5 }  // True Quote → Return it to the owner or authorities
   ];
 
   const isRightItemMatched = (itemId) => {

@@ -26,20 +26,20 @@ const PredictionPuzzle = () => {
 
   // Patterns (left side)
   const leftItems = [
-    { id: 1, name: '☀️, ☀️, 🌧️, ☀️, ?', emoji: '☀️', description: 'Weather pattern prediction' },
-    { id: 2, name: '🌙, ☀️, 🌙, ☀️, ?', emoji: '🌙', description: 'Day and night pattern' },
-    { id: 3, name: '❄️, ❄️, 🌺, ❄️, ❄️, ?', emoji: '❄️', description: 'Seasonal pattern' },
-    { id: 4, name: '🏀, ⚽, 🏀, ⚽, ?', emoji: '🏀', description: 'Alternating sports pattern' },
-    { id: 5, name: '🐶, 🐶, 🐱, 🐶, 🐶, ?', emoji: '🐶', description: 'Animal pattern' }
+    { id: 1, name: '☀️, ☀️, 🌧️, ☀️, ?',  description: 'Weather pattern prediction' },
+    { id: 2, name: '🌙, ☀️, 🌙, ☀️, ?', description: 'Day and night pattern' },
+    { id: 3, name: '❄️, ❄️, 🌺, ❄️, ❄️, ?', description: 'Seasonal pattern' },
+    { id: 4, name: '🏀, ⚽, 🏀, ⚽, ?',description: 'Alternating sports pattern' },
+    { id: 5, name: '🐶, 🐶, 🐱, 🐶, 🐶, ?', description: 'Animal pattern' }
   ];
 
   // Predictions (right side) - manually arranged to vary correct answer positions
   const rightItems = [
-    { id: 2, name: '🌙', emoji: '🌙', description: 'Next in day/night cycle' }, // Matches left 2 (right position 1)
-    { id: 4, name: '🏀', emoji: '🏀', description: 'Next in alternating pattern' }, // Matches left 4 (right position 2)
-    { id: 1, name: '☀️', emoji: '☀️', description: 'Most common in pattern' }, // Matches left 1 (right position 3)
-    { id: 5, name: '🐱', emoji: '🐱', description: 'Next in animal sequence' }, // Matches left 5 (right position 4)
-    { id: 3, name: '🌺', emoji: '🌺', description: 'Next in seasonal pattern' } // Matches left 3 (right position 5)
+    { id: 2, name: '🌙',  description: 'Next in day/night cycle' }, // Matches left 2 (right position 1)
+    { id: 4, name: '🏀',  description: 'Next in alternating pattern' }, // Matches left 4 (right position 2)
+    { id: 1, name: '☀️',  description: 'Most common in pattern' }, // Matches left 1 (right position 3)
+    { id: 5, name: '🐱',  description: 'Next in animal sequence' }, // Matches left 5 (right position 4)
+    { id: 3, name: '🌺',  description: 'Next in seasonal pattern' } // Matches left 3 (right position 5)
   ];
 
   // Correct matches - manually defined to split correct answers across different positions

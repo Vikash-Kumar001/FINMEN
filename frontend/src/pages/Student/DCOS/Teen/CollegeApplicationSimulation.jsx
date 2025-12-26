@@ -19,6 +19,7 @@ const CollegeApplicationSimulation = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
@@ -27,21 +28,23 @@ const CollegeApplicationSimulation = () => {
       text: "College checks social media. Which profile is better?",
       options: [
         { 
-          id: "rude", 
           text: "Rude and offensive content", 
-          description: "Negative and inappropriate posts",
+          emoji: "😠",
           isCorrect: false
         },
         { 
-          id: "clean", 
           text: "Clean and respectful posts", 
-          description: "Professional and positive content",
+          emoji: "😊",
           isCorrect: true
         },
         { 
-          id: "inappropriate", 
           text: "Inappropriate jokes and memes", 
-          description: "Unprofessional content",
+          emoji: "🤪",
+          isCorrect: false
+        },
+        { 
+          text: "Controversial and argumentative posts", 
+          emoji: "😤",
           isCorrect: false
         }
       ]
@@ -51,22 +54,24 @@ const CollegeApplicationSimulation = () => {
       text: "Which social media profile would impress colleges?",
       options: [
         { 
-          id: "negative", 
           text: "Negative and complaining posts", 
-          description: "Complaining and negative",
+          emoji: "😞",
           isCorrect: false
         },
         { 
-          id: "controversial", 
           text: "Controversial and argumentative", 
-          description: "Argumentative content",
+          emoji: "😠",
           isCorrect: false
         },
         { 
-          id: "professional", 
           text: "Professional and positive content", 
-          description: "Mature and respectful posts",
+          emoji: "👍",
           isCorrect: true
+        },
+        { 
+          text: "Immature and childish posts", 
+          emoji: "👶",
+          isCorrect: false
         }
       ]
     },
@@ -75,21 +80,23 @@ const CollegeApplicationSimulation = () => {
       text: "What kind of profile helps college applications?",
       options: [
         { 
-          id: "insulting", 
           text: "Insulting and disrespectful", 
-          description: "Disrespectful behavior",
+          emoji: "🤬",
           isCorrect: false
         },
         { 
-          id: "respectful", 
           text: "Respectful and achievement-focused", 
-          description: "Shows maturity and accomplishments",
+          emoji: "🏆",
           isCorrect: true
         },
         { 
-          id: "immature", 
           text: "Unprofessional and immature", 
-          description: "Immature content",
+          emoji: "👶",
+          isCorrect: false
+        },
+        { 
+          text: "Negative and offensive content", 
+          emoji: "😠",
           isCorrect: false
         }
       ]
@@ -99,23 +106,26 @@ const CollegeApplicationSimulation = () => {
       text: "Which profile shows good character to colleges?",
       options: [
         { 
-          id: "mean", 
           text: "Mean and hurtful comments", 
-          description: "Hurtful behavior",
+          emoji: "👿",
+          isCorrect: false
+        },
+        
+        { 
+          text: "Inappropriate and offensive", 
+          emoji: "💩",
           isCorrect: false
         },
         { 
-          id: "positive", 
+          text: "Complaining and bitter posts", 
+          emoji: "😒",
+          isCorrect: false
+        },
+        { 
           text: "Positive and supportive posts", 
-          description: "Shows kindness and support",
+          emoji: "🤗",
           isCorrect: true
         },
-        { 
-          id: "offensive", 
-          text: "Inappropriate and offensive", 
-          description: "Offensive content",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -123,22 +133,25 @@ const CollegeApplicationSimulation = () => {
       text: "What profile would colleges prefer to see?",
       options: [
         { 
-          id: "immature2", 
-          text: "Rude, negative, and immature", 
-          description: "Unprofessional behavior",
-          isCorrect: false
-        },
-        { 
-          id: "unprofessional", 
-          text: "Controversial and unprofessional", 
-          description: "Unprofessional content",
-          isCorrect: false
-        },
-        { 
-          id: "mature", 
           text: "Clean, respectful, and mature", 
-          description: "Professional and mature presence",
+          emoji: "😎",
           isCorrect: true
+        },
+        { 
+          text: "Rude, negative, and immature", 
+          emoji: "😤",
+          isCorrect: false
+        },
+        { 
+          text: "Controversial and unprofessional", 
+          emoji: "😠",
+          isCorrect: false
+        },
+        
+        { 
+          text: "Immature and unprofessional", 
+          emoji: "👶",
+          isCorrect: false
         }
       ]
     }
@@ -153,8 +166,6 @@ const CollegeApplicationSimulation = () => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
     const isLastQuestion = currentQuestion === questions.length - 1;
@@ -165,6 +176,7 @@ const CollegeApplicationSimulation = () => {
       } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
+        setSelectedAnswer(null);
       }
     }, 500);
   };
@@ -181,7 +193,7 @@ const CollegeApplicationSimulation = () => {
     <GameShell
       title="College Application Simulation"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -208,17 +220,28 @@ const CollegeApplicationSimulation = () => {
                 {questions[currentQuestion].text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {questions[currentQuestion].options.map((option) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {questions[currentQuestion].options.map((option, idx) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.isCorrect)}
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
                     disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                      <p className="text-white/90 text-sm">{option.description}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
                     </div>
                   </button>
                 ))}

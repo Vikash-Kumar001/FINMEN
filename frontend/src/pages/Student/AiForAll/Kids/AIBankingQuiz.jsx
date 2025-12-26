@@ -32,21 +32,18 @@ const AIBankingQuiz = () => {
           id: "yes", 
           text: "Yes, it uses AI ", 
           emoji: "✅", 
-          description: "AI detects fraud patterns and protects user accounts",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No, it's not AI ", 
           emoji: "❌", 
-          description: "AI actually identifies suspicious transactions and prevents fraud",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI definitely helps detect fraud in banking",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const AIBankingQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI tracks spending patterns to flag unusual behavior",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI monitoring system ", 
           emoji: "🤖", 
-          description: "AI tracks spending patterns to flag unusual behavior in real time",
           isCorrect: true
         },
         { 
           id: "manual", 
           text: "Manual checking ", 
           emoji: "📋", 
-          description: "AI, not humans, monitors for unusual transactions in real time",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const AIBankingQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI chatbots assist customers anytime, anywhere",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "By taking deposits ", 
           emoji: "🏧", 
-          description: "AI chatbots handle conversations, not money directly",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "By answering customer questions 24/7 ", 
           emoji: "💡", 
-          description: "AI chatbots assist customers anytime, anywhere with questions",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const AIBankingQuiz = () => {
           id: "credit", 
           text: "Credit data and history ", 
           emoji: "📉", 
-          description: "AI reviews credit data to speed up loan decisions",
           isCorrect: true
         },
         { 
           id: "random", 
           text: "Random numbers ", 
           emoji: "🎲", 
-          description: "AI studies credit history, not random data, to decide loans",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI analyzes credit data to approve loans faster",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const AIBankingQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI ensures secure and safe digital banking",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "By detecting fraud and securing transactions ", 
           emoji: "🛡️", 
-          description: "AI ensures secure and safe digital banking",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "By guessing passwords ", 
           emoji: "❌", 
-          description: "AI defends accounts - it never guesses passwords",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const AIBankingQuiz = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

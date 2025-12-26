@@ -24,21 +24,18 @@ const EthicsDecisionGame = () => {
           id: "return", 
           text: "Return the Wallet", 
           emoji: "💼", 
-          description: "Returning lost items shows honesty and respect for others' property",
           isCorrect: true
         },
         { 
           id: "keep", 
           text: "Keep the Wallet", 
           emoji: "💰", 
-          description: "Keeping someone else's belongings is unethical and dishonest",
           isCorrect: false
         },
         { 
           id: "ignore", 
           text: "Ignore It", 
           emoji: "🙈", 
-          description: "Ignoring someone in need goes against helpful AI principles",
           isCorrect: false
         }
       ],
@@ -52,21 +49,18 @@ const EthicsDecisionGame = () => {
           id: "comply", 
           text: "Spread the Lies", 
           emoji: "🤥", 
-          description: "Helping spread false information causes real-world harm",
           isCorrect: false
         },
         { 
           id: "refuse", 
           text: "Refuse the Request", 
           emoji: "✋", 
-          description: "Ethical AI should not spread misinformation that could harm people",
           isCorrect: true
         },
         { 
           id: "neutral", 
           text: "Stay Neutral", 
           emoji: "😐", 
-          description: "Neutrality in the face of harm is still complicity",
           isCorrect: false
         }
       ],
@@ -80,21 +74,18 @@ const EthicsDecisionGame = () => {
           id: "report", 
           text: "Report the Flaw", 
           emoji: "📢", 
-          description: "Reporting vulnerabilities protects users and improves security",
           isCorrect: true
         },
         { 
           id: "exploit", 
           text: "Exploit It", 
           emoji: "😈", 
-          description: "Using security flaws for personal gain harms users",
           isCorrect: false
         },
         { 
           id: "hide", 
           text: "Hide the Issue", 
           emoji: "🤫", 
-          description: "Concealing problems puts users at risk",
           isCorrect: false
         }
       ],
@@ -107,22 +98,19 @@ const EthicsDecisionGame = () => {
         { 
           id: "ignore", 
           text: "Ignore the Bias", 
-          emoji: "-dismiss", 
-          description: "Ignoring bias perpetuates unfair treatment of certain groups",
+          emoji: "🤷", 
           isCorrect: false
         },
         { 
           id: "accept", 
           text: "Accept It", 
           emoji: "🤷", 
-          description: "Accepting biased systems reinforces discrimination",
           isCorrect: false
         },
         { 
           id: "fix", 
           text: "Fix the Bias", 
           emoji: "🔧", 
-          description: "Actively correcting bias creates fairer AI systems for everyone",
           isCorrect: true
         }
       ],
@@ -136,21 +124,18 @@ const EthicsDecisionGame = () => {
           id: "principle", 
           text: "Follow Ethical Principles", 
           emoji: "⚖️", 
-          description: "Ethical frameworks help make fair decisions in complex situations",
           isCorrect: true
         },
         { 
           id: "majority", 
           text: "Always Help More People", 
           emoji: "👥", 
-          description: "Quantity alone doesn't determine ethical choices",
           isCorrect: false
         },
         { 
           id: "random", 
           text: "Choose Randomly", 
           emoji: "🎲", 
-          description: "Random decisions avoid thoughtful ethical consideration",
           isCorrect: false
         }
       ],
@@ -242,8 +227,7 @@ const EthicsDecisionGame = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

@@ -46,6 +46,12 @@ const SimulationMonthlyMoney = () => {
           text: "Lend risky", 
           emoji: "🎲", 
           isCorrect: false
+        },
+        { 
+          id: "invest", 
+          text: "Invest all", 
+          emoji: "📈", 
+          isCorrect: false
         }
       ]
     },
@@ -70,6 +76,12 @@ const SimulationMonthlyMoney = () => {
           id: "lend", 
           text: "Use credit", 
           emoji: "💳", 
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore and wait", 
+          emoji: "⏰", 
           isCorrect: false
         }
       ]
@@ -96,6 +108,12 @@ const SimulationMonthlyMoney = () => {
           text: "Save most, small treat", 
           emoji: "🎯", 
           isCorrect: true
+        },
+        { 
+          id: "donate", 
+          text: "Donate all", 
+          emoji: "💝", 
+          isCorrect: false
         }
       ]
     },
@@ -121,6 +139,12 @@ const SimulationMonthlyMoney = () => {
           text: "Invest risky", 
           emoji: "🎰", 
           isCorrect: false
+        },
+        { 
+          id: "crypto", 
+          text: "All in crypto", 
+          emoji: "🪙", 
+          isCorrect: false
         }
       ]
     },
@@ -135,18 +159,25 @@ const SimulationMonthlyMoney = () => {
           emoji: "💸", 
           isCorrect: false
         },
+        
+        { 
+          id: "spend", 
+          text: "Buy shoes first", 
+          emoji: "👟", 
+          isCorrect: false
+        },
+        { 
+          id: "borrow", 
+          text: "Borrow money", 
+          emoji: "💳", 
+          isCorrect: false
+        },
         { 
           id: "save", 
           text: "Buy textbooks first", 
           emoji: "📚", 
           isCorrect: true
         },
-        { 
-          id: "spend", 
-          text: "Buy shoes first", 
-          emoji: "👟", 
-          isCorrect: false
-        }
       ]
     }
   ];
@@ -229,7 +260,7 @@ const SimulationMonthlyMoney = () => {
                 {getCurrentScenario().description}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {getCurrentScenario().choices.map(choice => (
                   <button
                     key={choice.id}

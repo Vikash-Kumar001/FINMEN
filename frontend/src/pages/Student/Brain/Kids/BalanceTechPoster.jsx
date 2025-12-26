@@ -31,41 +31,41 @@ const BalanceTechPoster = () => {
     {
       question: 'Which poster best demonstrates healthy screen time habits?',
       choices: [
-        { text: "Poster showing diverse activities with moderate device usage", correct: true, emoji: "📱🌳" },
         { text: "Poster filled exclusively with various electronic devices", correct: false, emoji: "📱" },
+        { text: "Poster showing diverse activities with moderate device usage", correct: true, emoji: "🌳" },
         { text: "Poster depicting broken electronics with warning signs", correct: false, emoji: "🚫" }
       ]
     },
     {
       question: 'Which poster illustrates effective daily routine management?',
       choices: [
-        { text: "Poster displaying scheduled blocks for different activities", correct: true, emoji: "⚖️🌳" },
-        { text: "Poster with overlapping chaotic activity schedules", correct: false, emoji: "📱" },
-        { text: "Poster showing only entertainment-focused activities", correct: false, emoji: "📱" }
+        { text: "Poster displaying scheduled blocks for different activities", correct: true, emoji: "⚖️" },
+        { text: "Poster with overlapping chaotic activity schedules", correct: false, emoji: "🎭" },
+        { text: "Poster showing only entertainment-focused activities", correct: false, emoji: "📱" },
       ]
     },
     {
       question: 'Which poster represents responsible technology usage?',
       choices: [
-        { text: "Poster balancing digital engagement with physical activities", correct: true, emoji: "✅🌳" },
         { text: "Poster promoting continuous consumption of digital media", correct: false, emoji: "📱" },
-        { text: "Poster restricting all non-digital recreational options", correct: false, emoji: "📱" }
+        { text: "Poster restricting all non-digital recreational options", correct: false, emoji: "📱" },
+        { text: "Poster balancing digital engagement with physical activities", correct: true, emoji: "🤸" },
       ]
     },
     {
       question: 'Which poster exemplifies mindful digital consumption?',
       choices: [
-        { text: "Poster emphasizing quality over quantity in tech use", correct: true, emoji: "🧠⚖️" },
         { text: "Poster encouraging unlimited unrestricted access", correct: false, emoji: "📱" },
+        { text: "Poster emphasizing quality over quantity in tech use", correct: true, emoji: "🧠" },
         { text: "Poster advocating for constant connectivity", correct: false, emoji: "📱" }
       ]
     },
     {
       question: 'Which poster showcases integrated lifestyle wellness?',
       choices: [
-        { text: "Poster harmonizing technological and non-tech elements", correct: true, emoji: "🎵⚖️" },
+        { text: "Poster harmonizing technological and non-tech elements", correct: true, emoji: "🎵" },
         { text: "Poster focusing solely on digital achievements", correct: false, emoji: "📱" },
-        { text: "Poster eliminating all traditional activities", correct: false, emoji: "📱" }
+        { text: "Poster eliminating all traditional activities", correct: false, emoji: "🪇" }
       ]
     }
   ];

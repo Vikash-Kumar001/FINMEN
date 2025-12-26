@@ -59,21 +59,18 @@ const EmpathyDebate = () => {
           id: "a", 
           text: "Studies show empathetic students perform better academically", 
           emoji: "📚",
-          description: "Evidence-based argument",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "I think empathy is nice to have", 
           emoji: "🤷",
-          description: "Weak personal opinion",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "My friend said empathy is important", 
           emoji: "👥",
-          description: "Not a strong argument",
           isCorrect: false
         }
       ]
@@ -86,21 +83,18 @@ const EmpathyDebate = () => {
           id: "b", 
           text: "That's completely wrong and you don't know what you're talking about", 
           emoji: "😠",
-          description: "Aggressive and dismissive",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "I understand your concern, but evidence shows...", 
           emoji: "💬",
-          description: "Respectful and evidence-based",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Ignore them completely", 
           emoji: "🙈",
-          description: "Doesn't address the disagreement",
           isCorrect: false
         }
       ]
@@ -113,21 +107,18 @@ const EmpathyDebate = () => {
           id: "a", 
           text: "Research shows empathy training programs reduce bullying by 40%", 
           emoji: "📊",
-          description: "Strong research evidence",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Some people are just born nice", 
           emoji: "🎲",
-          description: "Suggests it's only natural",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "You either have it or you don't", 
           emoji: "❌",
-          description: "Fixed mindset",
           isCorrect: false
         }
       ]
@@ -140,21 +131,18 @@ const EmpathyDebate = () => {
           id: "b", 
           text: "Empathy has no impact on academics", 
           emoji: "🚫",
-          description: "Incorrect claim",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Empathetic students collaborate better, leading to improved group project outcomes", 
           emoji: "🤝",
-          description: "Shows positive impact",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Empathy actually hurts test scores", 
           emoji: "📉",
-          description: "Negative and incorrect",
           isCorrect: false
         }
       ]
@@ -167,21 +155,18 @@ const EmpathyDebate = () => {
           id: "a", 
           text: "I see your point, however, consider this evidence...", 
           emoji: "💭",
-          description: "Respectful and constructive",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Your opinion is stupid", 
           emoji: "😤",
-          description: "Disrespectful and dismissive",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Just agree to avoid conflict", 
           emoji: "🤐",
-          description: "Avoids meaningful discussion",
           isCorrect: false
         }
       ]
@@ -277,7 +262,6 @@ const EmpathyDebate = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

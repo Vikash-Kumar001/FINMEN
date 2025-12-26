@@ -31,21 +31,20 @@ const EncourageDream = () => {
           id: "a", 
           text: "You can do it!", 
           emoji: "✈️", 
-          description: "Encourage their dream",
+          
           isCorrect: true 
         },
         { 
           id: "b", 
           text: "That's for boys/girls only", 
           emoji: "🚫", 
-          description: "This is a stereotype",
+         
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Maybe choose something else", 
           emoji: "🤷", 
-          description: "Discourage them",
           isCorrect: false 
         }
       ]
@@ -58,21 +57,18 @@ const EncourageDream = () => {
           id: "b", 
           text: "Cooking is not for you", 
           emoji: "🚫", 
-          description: "Discourage them",
-          isCorrect: false 
+            isCorrect: false 
         },
         { 
           id: "a", 
           text: "Great idea, go for it!", 
           emoji: "👩‍🍳", 
-          description: "Support their dream",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "Think again", 
           emoji: "🤔", 
-          description: "Question their choice",
           isCorrect: false 
         }
       ]
@@ -85,21 +81,18 @@ const EncourageDream = () => {
           id: "b", 
           text: "Too hard for girls/boys", 
           emoji: "🚫", 
-          description: "This is a stereotype",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Pick easier dream", 
           emoji: "😕", 
-          description: "Discourage them",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Awesome, build cool things!", 
           emoji: "🛠️", 
-          description: "Encourage their ambition",
           isCorrect: true 
         }
       ]
@@ -112,21 +105,18 @@ const EncourageDream = () => {
           id: "b", 
           text: "That's boring", 
           emoji: "😴", 
-          description: "Be negative",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Not for your gender", 
           emoji: "🚫", 
-          description: "This is a stereotype",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "You'll be amazing!", 
           emoji: "👩‍🏫", 
-          description: "Support their goal",
           isCorrect: true 
         }
       ]
@@ -139,21 +129,18 @@ const EncourageDream = () => {
           id: "a", 
           text: "Create beautiful art!", 
           emoji: "🎨", 
-          description: "Encourage their creativity",
           isCorrect: true 
         },
         { 
           id: "b", 
           text: "Art is not a real job", 
           emoji: "🚫", 
-          description: "Discourage them",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Choose practical", 
           emoji: "📊", 
-          description: "Question their choice",
           isCorrect: false 
         }
       ]

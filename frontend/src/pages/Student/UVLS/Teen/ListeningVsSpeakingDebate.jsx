@@ -56,21 +56,18 @@ const ListeningVsSpeakingDebate = () => {
           id: "a", 
           text: "Agree with evidence, but both listening and speaking are important", 
           emoji: "👂",
-          description: "Balanced and evidence-based",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Speaking is always better than listening", 
           emoji: "🗣️",
-          description: "Too extreme",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No opinion on the matter", 
           emoji: "🤷",
-          description: "Not engaging",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const ListeningVsSpeakingDebate = () => {
           id: "b", 
           text: "Only listening matters", 
           emoji: "👂",
-          description: "Too one-sided",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Balanced view with evidence for both listening and speaking", 
           emoji: "⚖️",
-          description: "Nuanced and comprehensive",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Ignore the argument", 
           emoji: "🙈",
-          description: "Not engaging",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const ListeningVsSpeakingDebate = () => {
           id: "a", 
           text: "Examples of effective listeners, but speaking is also crucial for leadership", 
           emoji: "👑",
-          description: "Nuanced with examples",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Only speakers can be leaders", 
           emoji: "📢",
-          description: "Too absolute",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Personal bias only", 
           emoji: "😤",
-          description: "Not evidence-based",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const ListeningVsSpeakingDebate = () => {
           id: "b", 
           text: "Listening is always passive", 
           emoji: "😴",
-          description: "Misunderstanding of listening",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No need for either", 
           emoji: "🚫",
-          description: "Not helpful",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Speaking motivates, but listening understands needs - integrated approach works best", 
           emoji: "🔥",
-          description: "Balanced and integrated",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const ListeningVsSpeakingDebate = () => {
           id: "a", 
           text: "Agree with reasons and evidence-backed support for balance", 
           emoji: "⚖️",
-          description: "Well-reasoned and evidence-based",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "One is always better than the other", 
           emoji: "⚔️",
-          description: "Too absolute",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Dismiss the idea completely", 
           emoji: "🙅",
-          description: "Not constructive",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const ListeningVsSpeakingDebate = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

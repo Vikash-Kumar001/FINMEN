@@ -1,15 +1,17 @@
 import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const VolunteerSimulation = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
-  const gameId = "uvls-teen-83";
-  const gameData = getGameDataById(gameId);
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-teen-83");
+  const gameId = gameData?.id || "uvls-teen-83";
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
@@ -41,243 +43,239 @@ const VolunteerSimulation = () => {
   }, [location.state, gameId]);
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [challenge, setChallenge] = useState(0);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
 
-  const questions = [
+  const challenges = [
     {
       id: 1,
-      text: "Task: Setup venue. How should you assign volunteers?",
+      title: "Venue Setup",
+      question: "Task: Setup venue. How should you assign volunteers?",
       options: [
+       
         { 
-          id: "a", 
-          text: "Match skills and assign to strong helpers", 
-          emoji: "🪑",
-          description: "Smooth - efficient and effective",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Random assignment", 
           emoji: "🎲",
-          description: "Not efficient",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "No assignment", 
           emoji: "🚫",
-          description: "Chaos",
           isCorrect: false
-        }
+        },
+        { 
+          text: "Assign to the most experienced volunteers only", 
+          emoji: "👑",
+          isCorrect: false
+        },
+         { 
+          text: "Match skills and assign to strong helpers", 
+          emoji: "🪑",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 2,
-      text: "Task: Promote event. How should you assign volunteers?",
+      title: "Event Promotion",
+      question: "Task: Promote event. How should you assign volunteers?",
       options: [
+       
         { 
-          id: "b", 
           text: "Anyone available", 
           emoji: "👤",
-          description: "Not strategic",
           isCorrect: false
         },
         { 
-          id: "a", 
+          text: "Skip promotion", 
+          emoji: "🚫",
+          isCorrect: false
+        },
+         { 
           text: "Creative team or social media experts", 
           emoji: "📢",
-          description: "Smooth - matches skills to task",
           isCorrect: true
         },
         { 
-          id: "c", 
-          text: "Skip promotion", 
-          emoji: "🚫",
-          description: "Event won't succeed",
+          text: "Assign to the most talkative volunteers", 
+          emoji: "🗣️",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Task: Handle registration. How should you assign volunteers?",
+      title: "Registration",
+      question: "Task: Handle registration. How should you assign volunteers?",
       options: [
         { 
-          id: "a", 
           text: "Organized people or train volunteers", 
           emoji: "📝",
-          description: "Smooth - ensures quality",
           isCorrect: true
         },
         { 
-          id: "b", 
           text: "Novices without training", 
           emoji: "😰",
-          description: "Risky",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "No registration system", 
           emoji: "🚫",
-          description: "Chaos",
+          isCorrect: false
+        },
+        { 
+          text: "Assign to volunteers who arrived early", 
+          emoji: "⏰",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "Task: Manage food. How should you assign volunteers?",
+      title: "Food Management",
+      question: "Task: Manage food. How should you assign volunteers?",
       options: [
+       
         { 
-          id: "b", 
           text: "Random assignment", 
           emoji: "🎲",
-          description: "Not safe",
           isCorrect: false
         },
-        { 
-          id: "c", 
-          text: "No food service", 
-          emoji: "🚫",
-          description: "Poor experience",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
+         { 
           text: "Experienced cooks or hygiene trained", 
           emoji: "🍲",
-          description: "Smooth - safe and efficient",
           isCorrect: true
+        },
+        { 
+          text: "No food service", 
+          emoji: "🚫",
+          isCorrect: false
+        },
+        { 
+          text: "Assign to volunteers who eat the most", 
+          emoji: "😋",
+          isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "Task: Cleanup. How should you assign volunteers?",
+      title: "Cleanup",
+      question: "Task: Cleanup. How should you assign volunteers?",
       options: [
+       
         { 
-          id: "a", 
-          text: "Efficient team or rotate duty", 
-          emoji: "🧹",
-          description: "Smooth - fair and efficient",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Leave mess", 
           emoji: "😔",
-          description: "Unprofessional",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "One person does everything", 
           emoji: "😰",
-          description: "Unfair and inefficient",
+          isCorrect: false
+        },
+         { 
+          text: "Efficient team or rotate duty", 
+          emoji: "🧹",
+          isCorrect: true
+        },
+        { 
+          text: "Assign to volunteers who made the most mess", 
+          emoji: "🤪",
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (answered || levelCompleted) return;
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
     setAnswered(true);
-    setSelectedOption(optionId);
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
+    const isLastChallenge = challenge === challenges.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setAnswered(false);
-        resetFeedback();
+      if (isLastChallenge) {
+        setShowResult(true);
       } else {
-        setLevelCompleted(true);
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
       }
-    }, isCorrect ? 1000 : 800);
+    }, 500);
   };
 
-  const currentQuestionData = questions[currentQuestion];
-  const finalScore = score;
+  const currentChallengeData = challenges[challenge];
 
   return (
     <GameShell
-      title="Volunteer Simulation"
-      subtitle={levelCompleted ? "Simulation Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      title="Badge: Volunteer Simulation"
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="uvls"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
-      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!levelCompleted && currentQuestionData ? (
+      <div className="space-y-8">
+        {!showResult && currentChallengeData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
               
-              <p className="text-white text-lg md:text-xl mb-6 text-center">
-                {currentQuestionData.text}
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallengeData.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallengeData.question}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map(option => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleAnswer(option.id)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                        showCorrect
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallengeData.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
                           ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : showIncorrect
-                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                          : isSelected
-                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-2xl mb-2">{option.emoji}</div>
-                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
-                    </button>
-                  );
-                })}
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>

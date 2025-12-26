@@ -56,21 +56,18 @@ const DeEscalationRoleplay = () => {
           id: "a", 
           text: "Let's lower our voices and take a break if needed", 
           emoji: "🗣️",
-          description: "Calm and respectful",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Yell louder to match their energy", 
           emoji: "😠",
-          description: "Escalates the conflict",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Insult them back", 
           emoji: "👊",
-          description: "Makes it worse",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const DeEscalationRoleplay = () => {
           id: "b", 
           text: "Call names back", 
           emoji: "😠",
-          description: "Escalates the situation",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "That's hurtful. Let's talk about what's really bothering you", 
           emoji: "💬",
-          description: "Addresses the issue respectfully",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Just ignore and walk away without addressing it", 
           emoji: "🙈",
-          description: "Doesn't resolve the issue",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const DeEscalationRoleplay = () => {
           id: "a", 
           text: "Step back, stay calm, and get help from an adult", 
           emoji: "🛡️",
-          description: "Prioritizes safety",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Threaten back", 
           emoji: "⚔️",
-          description: "Dangerous",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Engage physically", 
           emoji: "👊",
-          description: "Very dangerous",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const DeEscalationRoleplay = () => {
           id: "b", 
           text: "Tell them to stop crying", 
           emoji: "🚫",
-          description: "Dismisses their feelings",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Dismiss their feelings completely", 
           emoji: "😐",
-          description: "Not helpful",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "I understand you're upset. Let's talk about what's going on", 
           emoji: "💙",
-          description: "Shows empathy and opens dialogue",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const DeEscalationRoleplay = () => {
           id: "a", 
           text: "Let's hear all sides and find common ground", 
           emoji: "👥",
-          description: "Inclusive and constructive",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Take one side and escalate", 
           emoji: "⚔️",
-          description: "Makes it worse",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Just leave without helping", 
           emoji: "🚶",
-          description: "Doesn't help resolve",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const DeEscalationRoleplay = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

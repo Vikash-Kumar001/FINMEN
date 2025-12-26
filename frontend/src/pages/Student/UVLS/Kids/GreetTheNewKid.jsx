@@ -139,19 +139,20 @@ const GreetTheNewKid = () => {
       id: 5,
       text: "The new student is from another country. What's the best greeting?",
       options: [
-        { 
-          id: "welcome", 
-          text: "Welcome! We're glad you're here!", 
-          emoji: "🎉", 
-          description: "Make them feel welcome",
-          isCorrect: true 
-        },
+        
         { 
           id: "weird", 
           text: "You talk funny", 
           emoji: "😒", 
           description: "Be rude about differences",
           isCorrect: false 
+        },
+        { 
+          id: "welcome", 
+          text: "Welcome! We're glad you're here!", 
+          emoji: "🎉", 
+          description: "Make them feel welcome",
+          isCorrect: true 
         },
         { 
           id: "avoid", 

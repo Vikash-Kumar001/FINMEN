@@ -29,25 +29,25 @@ const ScreensQuiz = () => {
   const questions = [
     {
       id: 1,
-      text: "Too much screen time causes? (a) Eye strain, (b) More energy, (c) Superpowers",
+      text: "Too much screen time causes?",
       options: [
         { 
           id: "a", 
-          text: "(a) Eye strain", 
+          text: " Eye strain", 
           emoji: "👁️", 
           description: "Too much screen time hurts eyes",
           isCorrect: true
         },
         { 
           id: "b", 
-          text: "(b) More energy", 
+          text: " More energy", 
           emoji: "⚡", 
           description: "Screens don't give energy",
           isCorrect: false
         },
         { 
           id: "c", 
-          text: "(c) Superpowers", 
+          text: " Superpowers", 
           emoji: "🦸", 
           description: "Screens don't give superpowers",
           isCorrect: false
@@ -56,25 +56,25 @@ const ScreensQuiz = () => {
     },
     {
       id: 2,
-      text: "Screens before bed affect? (a) Sleep, (b) Strength, (c) Height",
+      text: "Screens before bed affect? ",
       options: [
         { 
           id: "b", 
-          text: "(b) Strength", 
+          text: " Strength", 
           emoji: "💪", 
           description: "Screens don't affect strength",
           isCorrect: false
         },
         { 
           id: "a", 
-          text: "(a) Sleep", 
+          text: " Sleep", 
           emoji: "😴", 
           description: "Screens before bed affect sleep",
           isCorrect: true
         },
         { 
           id: "c", 
-          text: "(c) Height", 
+          text: " Height", 
           emoji: "📏", 
           description: "Screens don't affect height",
           isCorrect: false
@@ -83,25 +83,25 @@ const ScreensQuiz = () => {
     },
     {
       id: 3,
-      text: "Best screen time limit? (a) 10 hrs, (b) 1–2 hrs, (c) No limit",
+      text: "Best screen time limit? ",
       options: [
         { 
           id: "c", 
-          text: "(c) No limit", 
+          text: " No limit", 
           emoji: "♾️", 
           description: "Unlimited screen time is not healthy",
           isCorrect: false
         },
         { 
           id: "a", 
-          text: "(a) 10 hrs", 
+          text: " 10 hrs", 
           emoji: "⏰", 
           description: "10 hours is too much",
           isCorrect: false
         },
         { 
           id: "b", 
-          text: "(b) 1–2 hrs", 
+          text: " 1–2 hrs", 
           emoji: "⏱️", 
           description: "1-2 hours is a good limit",
           isCorrect: true
@@ -110,25 +110,25 @@ const ScreensQuiz = () => {
     },
     {
       id: 4,
-      text: "Too much gaming causes? (a) Focus, (b) Tiredness, (c) Speed",
+      text: "Too much gaming causes? ",
       options: [
         { 
           id: "b", 
-          text: "(b) Tiredness", 
+          text: " Tiredness", 
           emoji: "😴", 
           description: "Too much gaming makes you tired",
           isCorrect: true
         },
         { 
           id: "a", 
-          text: "(a) Focus", 
+          text: " Focus", 
           emoji: "🎯", 
           description: "Too much gaming reduces focus",
           isCorrect: false
         },
         { 
           id: "c", 
-          text: "(c) Speed", 
+          text: " Speed", 
           emoji: "⚡", 
           description: "Gaming doesn't increase speed",
           isCorrect: false
@@ -137,25 +137,25 @@ const ScreensQuiz = () => {
     },
     {
       id: 5,
-      text: "Balanced screen use helps? (a) Eyes, (b) Headaches, (c) Laziness",
+      text: "Balanced screen use helps? ",
       options: [
         { 
           id: "c", 
-          text: "(c) Laziness", 
+          text: " Laziness", 
           emoji: "😑", 
           description: "Balanced use reduces laziness",
           isCorrect: false
         },
         { 
           id: "a", 
-          text: "(a) Eyes", 
+          text: " Eyes", 
           emoji: "👁️", 
           description: "Balanced use protects your eyes",
           isCorrect: true
         },
         { 
           id: "b", 
-          text: "(b) Headaches", 
+          text: " Headaches", 
           emoji: "🤕", 
           description: "Balanced use reduces headaches",
           isCorrect: false

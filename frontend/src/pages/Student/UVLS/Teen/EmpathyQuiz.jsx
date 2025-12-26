@@ -59,21 +59,18 @@ const EmpathyQuiz = () => {
           id: "empathy", 
           text: "I understand how disappointing that must feel. I'm here for you.", 
           emoji: "💙", 
-          description: "Empathy - understanding and sharing feelings",
           isCorrect: true
         },
         { 
           id: "sympathy", 
           text: "Oh, poor you. That's so sad.", 
           emoji: "😢", 
-          description: "Sympathy - feeling sorry for someone",
           isCorrect: false
         },
         { 
           id: "dismiss", 
           text: "It's just one test, get over it.", 
           emoji: "🙈", 
-          description: "Dismissive - not acknowledging feelings",
           isCorrect: false
         }
       ]
@@ -86,21 +83,18 @@ const EmpathyQuiz = () => {
           id: "sympathy", 
           text: "I feel so sorry for you having to present.", 
           emoji: "😢", 
-          description: "Sympathy - pitying them",
           isCorrect: false
         },
         { 
           id: "empathy", 
-          text: "I can see you're nervous. I felt the same way before my presentation. You'll do great.", 
+          text: "I can see you're nervous. I felt the same way before my presentation. You'll do great.",
           emoji: "💝", 
-          description: "Empathy - sharing similar feelings and offering support",
           isCorrect: true
         },
         { 
           id: "minimize", 
           text: "Everyone has to present, just do it.", 
           emoji: "🤷", 
-          description: "Minimizing - not acknowledging their anxiety",
           isCorrect: false
         }
       ]
@@ -113,21 +107,18 @@ const EmpathyQuiz = () => {
           id: "empathy", 
           text: "That sounds really scary and hurtful. Let's talk about how to get help.", 
           emoji: "🛡️", 
-          description: "Empathy - understanding their pain and offering help",
           isCorrect: true
         },
         { 
           id: "sympathy", 
           text: "Oh no, you poor thing. I pity you.", 
           emoji: "😢", 
-          description: "Sympathy - pitying them",
           isCorrect: false
         },
         { 
           id: "blame", 
           text: "What did you do to make them bully you?", 
           emoji: "👆", 
-          description: "Blaming - making them responsible",
           isCorrect: false
         }
       ]
@@ -140,21 +131,18 @@ const EmpathyQuiz = () => {
           id: "sympathy", 
           text: "That's so sad. Poor little pet.", 
           emoji: "😢", 
-          description: "Sympathy - feeling sad about the pet",
           isCorrect: false
         },
         { 
           id: "empathy", 
           text: "I can imagine how heartbroken you must be. Your pet was so special to you.", 
           emoji: "💔", 
-          description: "Empathy - acknowledging their unique bond and pain",
           isCorrect: true
         },
         { 
           id: "minimize", 
           text: "It's just a pet, you can get another one.", 
           emoji: "🙈", 
-          description: "Minimizing - dismissing their loss",
           isCorrect: false
         }
       ]
@@ -167,21 +155,18 @@ const EmpathyQuiz = () => {
           id: "empathy", 
           text: "That must be really stressful for you and your family. I'm here to listen.", 
           emoji: "💙", 
-          description: "Empathy - validating their specific struggle",
           isCorrect: true
         },
         { 
           id: "sympathy", 
           text: "Oh, that's terrible. I feel so bad for you.", 
           emoji: "😢", 
-          description: "Sympathy - feeling bad for them",
           isCorrect: false
         },
         { 
           id: "compare", 
           text: "We all have money problems sometimes.", 
           emoji: "🤷", 
-          description: "Comparing - dismissing their unique situation",
           isCorrect: false
         }
       ]
@@ -277,7 +262,6 @@ const EmpathyQuiz = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

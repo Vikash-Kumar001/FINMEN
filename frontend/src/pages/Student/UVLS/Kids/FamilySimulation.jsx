@@ -3,218 +3,330 @@ import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsKidsGames } from '../../../../pages/Games/GameCategories/UVLS/kidGamesData';
 
 const FamilySimulation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-78";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [assignments, setAssignments] = useState([]);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-78");
+  const gameId = gameData?.id || "uvls-kids-78";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for FamilySimulation, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getUvlsKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [selectedChore, setSelectedChore] = useState(null);
-  const [choreAssignments, setChoreAssignments] = useState([]);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const questions = [
+  const challenges = [
     {
       id: 1,
-      chores: ["Wash dishes", "Clean room", "Walk dog"],
-      members: ["Kid", "Mom", "Dad"],
-      text: "Assign family chores fairly."
+      title: "Family Chores",
+      question: "Your family needs to assign chores fairly. What's the best approach?",
+      options: [
+        { 
+          text: "Let everyone choose their own chores - Each person picks what they want to do", 
+          emoji: "🤔", 
+          isCorrect: false
+        },
+        { 
+          text: "Rotate chores weekly - Everyone takes turns with different tasks", 
+          emoji: "🔄", 
+          isCorrect: true
+        },
+        { 
+          text: "Assign hardest chores to youngest - Children should do most work", 
+          emoji: "😞", 
+          isCorrect: false
+        },
+        { 
+          text: "Only parents do chores - Kids shouldn't have responsibilities", 
+          emoji: "👨‍👩‍👧", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      chores: ["Cook dinner", "Laundry", "Garden"],
-      members: ["Parent", "Sister", "Brother"],
-      text: "Balance home tasks."
+      title: "Family Meeting",
+      question: "Your family has disagreements about weekend plans. How should you handle it?",
+      options: [
+        { 
+          text: "Vote on the plans - Each family member gets a say", 
+          emoji: "🗳️", 
+          isCorrect: true
+        },
+        { 
+          text: "Let the oldest person decide - Age determines authority", 
+          emoji: "👴", 
+          isCorrect: false
+        },
+        
+        { 
+          text: "Ignore the disagreements - Avoid discussing problems", 
+          emoji: "🙈", 
+          isCorrect: false
+        },
+        { 
+          text: "Let one person decide for everyone - Dictate the plans", 
+          emoji: "😤", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      chores: ["Shop groceries", "Fix light", "Dust"],
-      members: ["Child", "Grandma", "Grandpa"],
-      text: "Fair family duties."
+      title: "Family Responsibilities",
+      question: "How should family responsibilities be shared in your home?",
+      options: [
+        
+        { 
+          text: "Parents do everything - Adults should handle all tasks", 
+          emoji: "👨‍👩‍👧", 
+          isCorrect: false
+        },
+        { 
+          text: "Rotate all tasks monthly - Change responsibilities every month", 
+          emoji: "📅", 
+          isCorrect: false
+        },
+        { 
+          text: "Let each person skip responsibilities - No one needs to help", 
+          emoji: "😴", 
+          isCorrect: false
+        },
+        { 
+          text: "Each person does what they're best at - Use individual strengths", 
+          emoji: "💪", 
+          isCorrect: true
+        },
+      ]
     },
     {
       id: 4,
-      chores: ["Mop floor", "Vacuum", "Trash out"],
-      members: ["Cousin", "Aunt", "Uncle"],
-      text: "Share housework."
+      title: "Family Time",
+      question: "How can your family spend quality time together?",
+      options: [
+        { 
+          text: "Each person does their own activity - Everyone does separate things", 
+          emoji: "📱", 
+          isCorrect: false
+        },
+        
+        { 
+          text: "Only spend time when forced - Only be together when necessary", 
+          emoji: " reluctant", 
+          isCorrect: false
+        },
+        { 
+          text: "Plan regular family activities - Schedule time together", 
+          emoji: "📅", 
+          isCorrect: true
+        },
+        { 
+          text: "Let technology connect us - Use screens while together", 
+          emoji: "💻", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      chores: ["Set table", "Water plants", "Fold clothes"],
-      members: ["Family3", "Family1", "Family2"],
-      text: "Equitable allocation."
+      title: "Family Support",
+      question: "How should family members support each other during difficult times?",
+      options: [
+        { 
+          text: "Keep problems to yourself - Don't burden others", 
+          emoji: "🤐", 
+          isCorrect: false
+        },
+        { 
+          text: "Listen and offer help - Be there for each other", 
+          emoji: "💝", 
+          isCorrect: true
+        },
+        { 
+          text: "Let others figure it out alone - Everyone handles problems independently", 
+          emoji: "🚶", 
+          isCorrect: false
+        },
+        { 
+          text: "Avoid discussing problems - Pretend everything is fine", 
+          emoji: "鸵鸟", 
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleChoreClick = (chore) => {
-    setSelectedChore(chore);
-  };
-
-  const handleMemberClick = (member) => {
-    if (selectedChore) {
-      // Create a new assignment
-      const newAssignment = { chore: selectedChore, member: member };
-      setChoreAssignments([...choreAssignments, newAssignment]);
-      setSelectedChore(null); // Reset selection
-    }
-  };
-
-  const handleAssignment = () => {
-    const newAssignments = [...assignments, choreAssignments];
-    setAssignments(newAssignments);
-
-    const isFair = checkFairness(choreAssignments);
-    if (isFair) {
-      setCoins(prev => prev + 1);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setChoreAssignments([]); // Reset for next level
-        setSelectedChore(null);
-      }, isFair ? 800 : 0);
-    } else {
-      const fairAssignments = newAssignments.filter(ass => checkFairness(ass)).length;
-      setFinalScore(fairAssignments);
-      setShowResult(true);
-    }
-  };
-
-  const checkFairness = (assignments) => {
-    const countPerMember = {};
-    assignments.forEach(ass => {
-      countPerMember[ass.member] = (countPerMember[ass.member] || 0) + 1;
-    });
-    return Object.values(countPerMember).every(count => count === 1);
+    
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentLevel(0);
-    setAssignments([]);
-    setCoins(0);
-    setFinalScore(0);
-    setChoreAssignments([]);
-    setSelectedChore(null);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
     resetFeedback();
   };
 
   const handleNext = () => {
-    navigate("/games/uvls/kids");
+    if (nextGamePath) {
+      navigate(nextGamePath);
+    } else {
+      navigate("/games/uvls/kids");
+    }
   };
-
-  const getCurrentLevel = () => questions[currentLevel];
 
   return (
     <GameShell
       title="Family Simulation"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Simulation Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-78"
+      showGameOver={showResult}
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={100}
-      currentLevel={78}
-      showConfetti={showResult && finalScore >= 3}
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/uvls/kids"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && challenges[challenge] ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">{getCurrentLevel().text}</p>
-              
-              {/* Display current assignments */}
-              <div className="mb-4 min-h-[30px]">
-                {choreAssignments.map((assignment, idx) => (
-                  <p key={idx} className="text-white">
-                    {assignment.chore} → {assignment.member} ✅
-                  </p>
-                ))}
-                {selectedChore && (
-                  <p className="text-yellow-300">
-                    Selected: {selectedChore} (now tap a family member)
-                  </p>
-                )}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
               
-              {/* Chores */}
-              <div className="flex flex-wrap gap-4">
-                {getCurrentLevel().chores.map(chore => (
-                  <div 
-                    key={chore} 
-                    className={`p-2 rounded cursor-pointer ${selectedChore === chore ? 'bg-yellow-500' : choreAssignments.some(a => a.chore === chore) ? 'bg-green-500' : 'bg-blue-500'}`}
-                    onClick={() => handleChoreClick(chore)}
+              <h3 className="text-xl font-bold text-white mb-2">{challenges[challenge].title}</h3>
+              <p className="text-white text-lg mb-6">
+                {challenges[challenge].question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {challenges[challenge].options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSelectedAnswer(index);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === index
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    {chore} 🏡
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
                 ))}
               </div>
-              
-              {/* Family Members */}
-              <div className="flex flex-wrap gap-4 mt-4">
-                {getCurrentLevel().members.map(member => (
-                  <div 
-                    key={member} 
-                    className={`p-2 rounded cursor-pointer ${choreAssignments.some(a => a.member === member) ? 'bg-green-500' : 'bg-green-500'}`}
-                    onClick={() => handleMemberClick(member)}
-                  >
-                    {member} 👨‍👩‍👧
-                  </div>
-                ))}
-              </div>
-              
-              <button 
-                onClick={handleAssignment} 
-                className="mt-4 bg-purple-500 text-white p-2 rounded"
-                disabled={choreAssignments.length !== getCurrentLevel().chores.length}
-              >
-                Submit
-              </button>
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 3 ? (
+            {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Family Balancer!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Family Simulation Complete!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You balanced fairly {finalScore} out of {questions.length} times!
-                  You know how to balance family responsibilities!
+                  You got {score} out of {challenges.length} correct!
+                  You understand how to handle family situations well!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{finalScore} Coins</span>
+                  <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Balancing family responsibilities fairly helps everyone work together!
+                  Lesson: Good family dynamics involve fair chore sharing, democratic decision-making, shared responsibilities, quality time together, and mutual support during difficult times.
                 </p>
               </div>
             ) : (
               <div>
                 <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Balance Better!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You balanced fairly {finalScore} out of {questions.length} times.
-                  Keep practicing to balance family responsibilities!
+                  You got {score} out of {challenges.length} correct.
+                  Remember: Good family relationships require effort from everyone!
                 </p>
                 <button
                   onClick={handleTryAgain}
@@ -223,7 +335,7 @@ const FamilySimulation = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Make sure everyone in the family gets a fair share of responsibilities!
+                  Tip: Consider how each family member can contribute and feel valued!
                 </p>
               </div>
             )}

@@ -56,21 +56,18 @@ const FakeNewsQuiz = () => {
           id: "a", 
           text: "Fake - Sensational headline without credible evidence", 
           emoji: "👽",
-          description: "Correct identification",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Real - Must be true because it's online", 
           emoji: "🌐",
-          description: "Uncritical acceptance",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Real - Headlines are always true", 
           emoji: "📰",
-          description: "Not always accurate",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const FakeNewsQuiz = () => {
           id: "b", 
           text: "Real - Chocolate is a miracle food", 
           emoji: "🍫",
-          description: "Uncritical belief",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Fake - Overstated claim, check sources and scientific evidence", 
           emoji: "🔬",
-          description: "Critical evaluation",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Real - Studies are always accurate", 
           emoji: "📊",
-          description: "Not all studies are reliable",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const FakeNewsQuiz = () => {
           id: "a", 
           text: "Fake - Timing doesn't match official schedule, verify with official sources", 
           emoji: "🗳️",
-          description: "Verification is key",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Real - If it says so, it must be true", 
           emoji: "✅",
-          description: "Needs verification",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Real - Early announcements are always accurate", 
           emoji: "📢",
-          description: "Requires official confirmation",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const FakeNewsQuiz = () => {
           id: "b", 
           text: "Fake - Local news is never true", 
           emoji: "🚫",
-          description: "Local news can be real",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Fake - All news is fake", 
           emoji: "🙅",
-          description: "Not all news is fake",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Real - Plausible local story that can be verified", 
           emoji: "🐱",
-          description: "Reasonable and verifiable",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const FakeNewsQuiz = () => {
           id: "a", 
           text: "Fake - Conspiracy theory without evidence, verify with credible sources", 
           emoji: "🕐",
-          description: "Critical thinking applied",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Real - Conspiracies are always true", 
           emoji: "👁️",
-          description: "Not all conspiracies are real",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Real - If it sounds interesting, it's true", 
           emoji: "🎭",
-          description: "Entertainment ≠ truth",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const FakeNewsQuiz = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

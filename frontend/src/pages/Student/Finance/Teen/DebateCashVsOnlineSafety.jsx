@@ -85,13 +85,7 @@ const DebateCashVsOnlineSafety = () => {
       id: 3,
       statement: "What's the main risk with online money?",
       options: [
-        { 
-          id: "hacking", 
-          text: "Hacking and fraud", 
-          emoji: "👾", 
-          description: "Cyber attacks",
-          isCorrect: true
-        },
+       
         { 
           id: "no-risk", 
           text: "No risks", 
@@ -105,7 +99,14 @@ const DebateCashVsOnlineSafety = () => {
           emoji: "😊", 
           description: "Convenience issue",
           isCorrect: false
-        }
+        },
+         { 
+          id: "hacking", 
+          text: "Hacking and fraud", 
+          emoji: "👾", 
+          description: "Cyber attacks",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -139,19 +140,20 @@ const DebateCashVsOnlineSafety = () => {
       id: 5,
       statement: "What's the best approach?",
       options: [
-        { 
-          id: "balance", 
-          text: "Balance both safely", 
-          emoji: "⚖️", 
-          description: "Use both with caution",
-          isCorrect: true
-        },
+       
         { 
           id: "only-one", 
           text: "Use only one method", 
           emoji: "🎯", 
           description: "Pick one",
           isCorrect: false
+        },
+         { 
+          id: "balance", 
+          text: "Balance both safely", 
+          emoji: "⚖️", 
+          description: "Use both with caution",
+          isCorrect: true
         },
         { 
           id: "avoid-all", 

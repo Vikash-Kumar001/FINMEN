@@ -211,18 +211,15 @@ const PositiveKidBadge = () => {
     }
   ];
 
-  const handleAnswer = (isCorrect, index) => {
+  const handleChoice = (isCorrect) => {
     if (answered) return;
     
-    setSelectedAnswer(index);
     setAnswered(true);
     resetFeedback();
     
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
     const isLastChallenge = challenge === challenges.length - 1;
@@ -235,7 +232,7 @@ const PositiveKidBadge = () => {
         setAnswered(false);
         setSelectedAnswer(null);
       }
-    }, 1500);
+    }, 500);
   };
 
   // Log when game completes and update location state with nextGameId
@@ -259,68 +256,73 @@ const PositiveKidBadge = () => {
   return (
     <GameShell
       title="Badge: Positive Kid"
-      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       score={score}
-      currentLevel={challenge + 1}
-      totalLevels={challenges.length}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
-      showGameOver={showResult}
-      maxScore={challenges.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="brain"
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
       showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      gameId={gameId}
-      gameType="brain"
       backPath="/games/brain-health/kids"
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-4 sm:space-y-6 md:space-y-8 max-w-4xl mx-auto px-2 sm:px-4 md:px-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult && currentChallenge ? (
-          <div className="space-y-4 sm:space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 border border-white/20">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-5 md:mb-6">
-                <span className="text-white/80 text-xs sm:text-sm md:text-base">Challenge {challenge + 1}/{challenges.length}</span>
-                <span className="text-yellow-400 font-bold text-xs sm:text-sm md:text-base">Score: {score}/{challenges.length}</span>
-              </div>
-              
-              <div className={`${currentChallenge.color} rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-4 sm:mb-5 md:mb-6 flex items-center gap-2 sm:gap-3`}>
-                <div className="text-white flex-shrink-0">{currentChallenge.icon}</div>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+              <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
+            </div>
+            
+            <div className="mb-6">
+              <div className="flex items-center mb-4">
+                <div className={`${currentChallenge.color} p-3 rounded-lg mr-3`}>
+                  {currentChallenge.icon}
+                </div>
                 <div>
-                  <h3 className="text-base sm:text-lg md:text-xl font-bold text-white">{currentChallenge.title}</h3>
-                  <p className="text-white/90 text-xs sm:text-sm">{currentChallenge.description}</p>
+                  <h3 className="text-xl font-bold text-white">{currentChallenge.title}</h3>
+                  <p className="text-white/70 text-sm">{currentChallenge.description}</p>
                 </div>
               </div>
               
-              <p className="text-white text-base sm:text-lg md:text-xl mb-4 sm:mb-5 md:mb-6 text-center">
+              <p className="text-white text-lg mb-6">
                 {currentChallenge.question}
               </p>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                {currentChallenge.options.map((option, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleAnswer(option.isCorrect, index)}
-                    disabled={answered}
-                    className={`p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl text-left transition-all transform active:scale-95 ${
-                      answered
-                        ? option.isCorrect
-                          ? "bg-green-500/30 border-2 sm:border-4 border-green-400 ring-2 sm:ring-4 ring-green-400"
-                          : selectedAnswer === index
-                          ? "bg-red-500/20 border-2 sm:border-4 border-red-400 ring-2 sm:ring-4 ring-red-400"
-                          : "bg-white/5 border-2 border-white/20 opacity-50"
-                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                    } ${answered ? "cursor-not-allowed" : "cursor-pointer"} w-full`}
-                  >
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <span className="text-xl sm:text-2xl md:text-3xl flex-shrink-0">{option.emoji}</span>
-                      <span className="text-white font-semibold text-xs sm:text-sm md:text-base leading-tight sm:leading-normal">{option.text}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {currentChallenge.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setSelectedAnswer(index);
+                    handleChoice(option.isCorrect);
+                  }}
+                  disabled={answered}
+                  className={`p-6 rounded-2xl text-left transition-all transform ${
+                    answered
+                      ? option.isCorrect
+                        ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                        : selectedAnswer === index
+                        ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                        : "bg-white/5 border-2 border-white/20 opacity-50"
+                      : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                  } ${answered ? "cursor-not-allowed" : ""}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{option.emoji}</span>
+                    <span className="text-white font-semibold">{option.text}</span>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         ) : null}

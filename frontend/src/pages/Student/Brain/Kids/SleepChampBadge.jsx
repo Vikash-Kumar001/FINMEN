@@ -181,7 +181,7 @@ const SleepChampBadge = () => {
     }
   ];
 
-  const handleAnswer = (isCorrect) => {
+  const handleChoice = (isCorrect) => {
     if (answered) return;
     
     setAnswered(true);
@@ -190,8 +190,6 @@ const SleepChampBadge = () => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
     const isLastChallenge = challenge === challenges.length - 1;
@@ -199,13 +197,12 @@ const SleepChampBadge = () => {
     setTimeout(() => {
       if (isLastChallenge) {
         setShowResult(true);
-        setScore(challenges.length); // Ensure score matches total for GameOverModal
       } else {
         setChallenge(prev => prev + 1);
         setAnswered(false);
         setSelectedAnswer(null);
       }
-    }, 1500);
+    }, 500);
   };
 
   const currentChallenge = challenges[challenge];
@@ -213,20 +210,20 @@ const SleepChampBadge = () => {
   return (
     <GameShell
       title="Badge: Sleep Champ"
-      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Earned!"}
       score={score}
-      currentLevel={challenge + 1}
-      totalLevels={challenges.length}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
-      showGameOver={showResult}
-      maxScore={challenges.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="brain"
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
       showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      gameId={gameId}
-      gameType="brain"
     >
       <div className="space-y-8">
         {!showResult && currentChallenge ? (
@@ -237,11 +234,15 @@ const SleepChampBadge = () => {
                 <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
               
-              <div className={`${currentChallenge.color} rounded-xl p-4 mb-6 flex items-center gap-3`}>
-                <div className="text-white">{currentChallenge.icon}</div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">{currentChallenge.title}</h3>
-                  <p className="text-white/90 text-sm">{currentChallenge.description}</p>
+              <div className="mb-6">
+                <div className="flex items-center mb-4">
+                  <div className={`${currentChallenge.color} p-3 rounded-lg mr-3`}>
+                    {currentChallenge.icon}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">{currentChallenge.title}</h3>
+                    <p className="text-white/70 text-sm">{currentChallenge.description}</p>
+                  </div>
                 </div>
               </div>
               
@@ -253,12 +254,25 @@ const SleepChampBadge = () => {
                 {currentChallenge.options.map((option, index) => (
                   <button
                     key={index}
-                    onClick={() => handleAnswer(option.isCorrect)}
+                    onClick={() => {
+                      setSelectedAnswer(index);
+                      handleChoice(option.isCorrect);
+                    }}
                     disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === index
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-3xl mb-3">{option.emoji}</div>
-                    <h3 className="font-bold text-lg">{option.text}</h3>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
                   </button>
                 ))}
               </div>

@@ -1,20 +1,19 @@
 import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const ScenarioSimulation = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
-  const gameId = "uvls-teen-54";
-  const gameData = getGameDataById(gameId);
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-teen-54");
+  const gameId = gameData?.id || "uvls-teen-54";
   
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
+  // Find next game path and ID if not provided in location.state
   const { nextGamePath, nextGameId } = useMemo(() => {
     if (location.state?.nextGamePath) {
       return {
@@ -40,246 +39,271 @@ const ScenarioSimulation = () => {
     return { nextGamePath: null, nextGameId: null };
   }, [location.state, gameId]);
   
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [challenge, setChallenge] = useState(0);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
 
-  const questions = [
+  const challenges = [
     {
       id: 1,
-      text: "Scenario: You have a big exam tomorrow but friends invite you to a party. Your goal is to get good grades. What's the best choice?",
+      title: "Academic Goal",
+      question: "Scenario: You have a big exam tomorrow but friends invite you to a party. Your goal is to get good grades. What's the best choice?",
       options: [
+       
         { 
-          id: "a", 
           text: "Attend the party and study later", 
           emoji: "🎉",
-          description: "Prioritizes social life over academics",
           isCorrect: false
         },
         { 
-          id: "b", 
-          text: "Study for the exam and skip the party", 
-          emoji: "📚",
-          description: "Aligns with your academic goals",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Go to the party without studying", 
           emoji: "🚫",
-          description: "Doesn't align with getting good grades",
           isCorrect: false
-        }
+        },
+        { 
+          text: "Study a little and attend the party briefly", 
+          emoji: "⏰",
+          isCorrect: false
+        },
+         { 
+          text: "Study for the exam and skip the party", 
+          emoji: "📚",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 2,
-      text: "Scenario: Your goal is fitness, but you're craving junk food. What's the best choice?",
+      title: "Fitness Goal",
+      question: "Scenario: Your goal is fitness, but you're craving junk food. What's the best choice?",
       options: [
         { 
-          id: "a", 
           text: "Eat healthy food instead", 
           emoji: "🥗",
-          description: "Aligns with your fitness goal",
           isCorrect: true
         },
         { 
-          id: "b", 
           text: "Eat junk food anyway", 
           emoji: "🍔",
-          description: "Doesn't align with fitness goals",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "Skip eating entirely", 
           emoji: "⏭️",
-          description: "Not a healthy choice",
+          isCorrect: false
+        },
+        { 
+          text: "Just have a small portion of junk food", 
+          emoji: "🍪",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Scenario: Your goal is to buy a bike, but you see something you want to buy now. What's the best choice?",
+      title: "Financial Goal",
+      question: "Scenario: Your goal is to buy a bike, but you see something you want to buy now. What's the best choice?",
       options: [
+       
         { 
-          id: "b", 
+          text: "Spend on the item now", 
+          emoji: "💸",
+          isCorrect: false
+        },
+         { 
           text: "Save money for the bike", 
           emoji: "💰",
-          description: "Aligns with your savings goal",
           isCorrect: true
         },
         { 
-          id: "a", 
-          text: "Spend on the item now", 
-          emoji: "💸",
-          description: "Doesn't align with saving goal",
+          text: "Borrow money to buy both", 
+          emoji: "💳",
           isCorrect: false
         },
         { 
-          id: "c", 
-          text: "Borrow money to buy both", 
-          emoji: "💳",
-          description: "Creates debt problems",
+          text: "Use your savings for the immediate purchase", 
+          emoji: "🏦",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "Scenario: Your goal is to pass an exam. You haven't studied yet. What's the best choice?",
+      title: "Academic Success",
+      question: "Scenario: Your goal is to pass an exam. You haven't studied yet. What's the best choice?",
       options: [
+        
         { 
-          id: "b", 
-          text: "Study now to prepare", 
-          emoji: "📖",
-          description: "Aligns with passing the exam",
-          isCorrect: true
-        },
-        { 
-          id: "a", 
           text: "Study later and procrastinate", 
           emoji: "⏰",
-          description: "May not leave enough time",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "Skip studying entirely", 
           emoji: "🙈",
-          description: "Unlikely to help you pass",
+          isCorrect: false
+        },
+        { 
+          text: "Study now to prepare", 
+          emoji: "📖",
+          isCorrect: true
+        },
+        { 
+          text: "Cram all night before the exam", 
+          emoji: "🌙",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "Scenario: Your goal is strong relationships. A friend needs help but you're busy. What's the best choice?",
+      title: "Relationship Goal",
+      question: "Scenario: Your goal is strong relationships. A friend needs help but you're busy. What's the best choice?",
       options: [
         { 
-          id: "a", 
           text: "Help your friend", 
           emoji: "🤝",
-          description: "Aligns with building strong relationships",
           isCorrect: true
         },
         { 
-          id: "b", 
           text: "Focus only on yourself", 
           emoji: "👤",
-          description: "Doesn't build relationships",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "Ignore your friend completely", 
           emoji: "🚫",
-          description: "Damages relationships",
+          isCorrect: false
+        },
+        { 
+          text: "Tell your friend you're too busy", 
+          emoji: "💬",
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (answered || levelCompleted) return;
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
     setAnswered(true);
-    setSelectedOption(optionId);
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
+    const isLastChallenge = challenge === challenges.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setAnswered(false);
-        resetFeedback();
+      if (isLastChallenge) {
+        setShowResult(true);
       } else {
-        setLevelCompleted(true);
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
       }
-    }, isCorrect ? 1000 : 800);
+    }, 500);
   };
 
-  const currentQuestionData = questions[currentQuestion];
-  const finalScore = score;
+  const currentChallengeData = challenges[challenge];
 
   return (
     <GameShell
       title="Scenario Simulation"
-      subtitle={levelCompleted ? "Simulation Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Simulation Complete!"}
+      score={score}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="uvls"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
-      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!levelCompleted && currentQuestionData ? (
+      <div className="space-y-8">
+        {!showResult && currentChallengeData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
               
-              <p className="text-white text-lg md:text-xl mb-6 text-center">
-                {currentQuestionData.text}
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallengeData.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallengeData.question}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map(option => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleAnswer(option.id)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                        showCorrect
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallengeData.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
                           ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : showIncorrect
-                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                          : isSelected
-                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-2xl mb-2">{option.emoji}</div>
-                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
-                    </button>
-                  );
-                })}
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
+          </div>
+        ) : showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-6xl mb-4">🏆</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Simulation Complete!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} correct!
+                  You're a great decision maker!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} correct.
+                  Practice making better decisions by aligning your choices with your goals!
+                </p>
+              </div>
+            )}
           </div>
         ) : null}
       </div>

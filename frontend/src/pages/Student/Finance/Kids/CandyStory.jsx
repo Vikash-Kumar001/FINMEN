@@ -42,24 +42,24 @@ const CandyStory = () => {
     {
       question: "A candy costs ₹10, but you have ₹8. What’s the best choice?",
       choices: [
-        { text: "Save ₹2 more 💰", correct: true },
         { text: "Borrow ₹2 🙈", correct: false },
+        { text: "Save ₹2 more 💰", correct: true },
         { text: "Ask for a discount 🎟️", correct: false },
       ],
     },
     {
       question: "You saved ₹10 for candy. A sale offers 2 for ₹15. What do you do?",
       choices: [
-        { text: "Stick to one candy ✅", correct: true },
         { text: "Buy two candies 🛒", correct: false },
         { text: "Spend all on snacks 🍟", correct: false },
+        { text: "Stick to one candy ✅", correct: true },
       ],
     },
     {
       question: "Why is planning your candy budget smart?",
       choices: [
-        { text: "Ensures you enjoy longer 😊", correct: true },
         { text: "Lets you spend everything 🛍️", correct: false },
+        { text: "Ensures you enjoy longer 😊", correct: true },
         { text: "Makes you buy more candy 🍬", correct: false },
       ],
     },

@@ -36,21 +36,21 @@ const MatchFaces = () => {
         { 
           id: "happy", 
           text: "Happy", 
-          emoji: "😊", 
+        
           description: "Feeling joyful and cheerful",
           isCorrect: true 
         },
         { 
           id: "sad", 
           text: "Sad", 
-          emoji: "😢", 
+       
           description: "Feeling down or upset",
           isCorrect: false 
         },
         { 
           id: "angry", 
           text: "Angry", 
-          emoji: "😡", 
+        
           description: "Feeling mad or frustrated",
           isCorrect: false 
         }
@@ -65,21 +65,21 @@ const MatchFaces = () => {
         { 
           id: "excited", 
           text: "Excited", 
-          emoji: "🤩", 
+         
           description: "Feeling thrilled and energetic",
           isCorrect: false 
         },
         { 
           id: "sad", 
           text: "Sad", 
-          emoji: "😢", 
+          
           description: "Feeling down or upset",
           isCorrect: true 
         },
         { 
           id: "sleepy", 
           text: "Sleepy", 
-          emoji: "😴", 
+        
           description: "Feeling tired and drowsy",
           isCorrect: false 
         }
@@ -94,21 +94,19 @@ const MatchFaces = () => {
         { 
           id: "angry", 
           text: "Angry", 
-          emoji: "😡", 
+          
           description: "Feeling mad or frustrated",
           isCorrect: true 
         },
         { 
           id: "happy", 
           text: "Happy", 
-          emoji: "😊", 
           description: "Feeling joyful and cheerful",
           isCorrect: false 
         },
         { 
           id: "scared", 
           text: "Scared", 
-          emoji: "😨", 
           description: "Feeling afraid or worried",
           isCorrect: false 
         }
@@ -123,21 +121,19 @@ const MatchFaces = () => {
         { 
           id: "bored", 
           text: "Bored", 
-          emoji: "😑", 
           description: "Feeling uninterested",
           isCorrect: false 
         },
         { 
           id: "happy", 
           text: "Happy", 
-          emoji: "😊", 
-          description: "Feeling joyful and cheerful",
+            description: "Feeling joyful and cheerful",
           isCorrect: false 
         },
         { 
           id: "scared", 
           text: "Scared", 
-          emoji: "😨", 
+         
           description: "Feeling afraid or worried",
           isCorrect: true 
         }
@@ -152,21 +148,18 @@ const MatchFaces = () => {
         { 
           id: "sleepy", 
           text: "Sleepy", 
-          emoji: "😴", 
           description: "Feeling tired and drowsy",
           isCorrect: true 
         },
         { 
           id: "angry", 
           text: "Angry", 
-          emoji: "😡", 
           description: "Feeling mad or frustrated",
           isCorrect: false 
         },
         { 
           id: "excited", 
           text: "Excited", 
-          emoji: "🤩", 
           description: "Feeling thrilled and energetic",
           isCorrect: false 
         }
@@ -255,7 +248,6 @@ const MatchFaces = () => {
                     } ${answered ? "cursor-not-allowed" : ""}`}
                   >
                     <div className="flex flex-col items-center justify-center gap-3">
-                      <span className="text-4xl">{option.emoji}</span>
                       <span className="font-semibold text-lg">{option.text}</span>
                       <span className="text-sm opacity-90">{option.description}</span>
                     </div>

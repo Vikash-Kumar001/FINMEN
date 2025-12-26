@@ -50,6 +50,12 @@ const Simulation1000Choice = () => {
           text: "Mix FD + Stocks", 
           emoji: "⚖️", 
           isCorrect: true
+        },
+        { 
+          id: "crypto", 
+          text: "All in Crypto", 
+          emoji: "🪙", 
+          isCorrect: false
         }
       ]
     },
@@ -75,6 +81,12 @@ const Simulation1000Choice = () => {
           id: "save", 
           text: "Save only", 
           emoji: "💰", 
+          isCorrect: false
+        },
+        { 
+          id: "invest-all", 
+          text: "Invest everything", 
+          emoji: "📈", 
           isCorrect: false
         }
       ]
@@ -102,6 +114,12 @@ const Simulation1000Choice = () => {
           text: "All in FD", 
           emoji: "🛡️", 
           isCorrect: false
+        },
+        { 
+          id: "mutual", 
+          text: "Mutual Funds only", 
+          emoji: "📊", 
+          isCorrect: false
         }
       ]
     },
@@ -117,18 +135,25 @@ const Simulation1000Choice = () => {
           emoji: "🛍️", 
           isCorrect: false
         },
+        
+        { 
+          id: "hide", 
+          text: "Hide at home", 
+          emoji: "🏠", 
+          isCorrect: false
+        },
+        { 
+          id: "bonds", 
+          text: "Bonds only", 
+          emoji: "📜", 
+          isCorrect: false
+        },
         { 
           id: "mix4", 
           text: "Mix FD + Stocks", 
           emoji: "📊", 
           isCorrect: true
         },
-        { 
-          id: "hide", 
-          text: "Hide at home", 
-          emoji: "🏠", 
-          isCorrect: false
-        }
       ]
     },
     {
@@ -153,6 +178,12 @@ const Simulation1000Choice = () => {
           id: "ignore", 
           text: "Ignore it", 
           emoji: "😴", 
+          isCorrect: false
+        },
+        { 
+          id: "crypto-only", 
+          text: "Crypto only", 
+          emoji: "🪙", 
           isCorrect: false
         }
       ]
@@ -237,7 +268,7 @@ const Simulation1000Choice = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {current.options.map((option) => (
                   <button
                     key={option.id}

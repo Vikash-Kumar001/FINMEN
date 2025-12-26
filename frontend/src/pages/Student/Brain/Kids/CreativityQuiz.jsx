@@ -65,6 +65,14 @@ const CreativityQuiz = () => {
           description: "Doing the same thing",
           isCorrect: false
         },
+        
+        { 
+          id: "avoid", 
+          text: "Avoiding problems", 
+          emoji: "🚶", 
+          description: "Running away",
+          isCorrect: false
+        },
         { 
           id: "new", 
           text: "Coming up with new ideas", 
@@ -72,13 +80,6 @@ const CreativityQuiz = () => {
           description: "Thinking differently",
           isCorrect: true
         },
-        { 
-          id: "avoid", 
-          text: "Avoiding problems", 
-          emoji: "🚶", 
-          description: "Running away",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -112,6 +113,13 @@ const CreativityQuiz = () => {
       id: 4,
       text: "What helps you be creative?",
       options: [
+         { 
+          id: "experiment", 
+          text: "Trying new things", 
+          emoji: "🔬", 
+          description: "Experimenting",
+          isCorrect: true
+        },
         { 
           id: "fear", 
           text: "Being afraid to try", 
@@ -119,13 +127,7 @@ const CreativityQuiz = () => {
           description: "Avoiding new things",
           isCorrect: false
         },
-        { 
-          id: "experiment", 
-          text: "Trying new things", 
-          emoji: "🔬", 
-          description: "Experimenting",
-          isCorrect: true
-        },
+       
         { 
           id: "stay", 
           text: "Staying in comfort zone", 

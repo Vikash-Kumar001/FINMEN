@@ -17,119 +17,67 @@ const JournalFirstBank = () => {
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
     useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [currentStage, setCurrentStage] = useState(0);
   const [score, setScore] = useState(0);
+  const [text, setText] = useState("");
   const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
 
-  const questions = [
+  const stages = [
     {
-      id: 1,
-      question: "What is the main purpose of visiting a bank?",
-      options: [
-        { text: "To save and manage money safely", correct: true },
-        { text: "To buy toys and games", correct: false },
-        { text: "To play video games", correct: false },
-        { text: "To watch movies", correct: false }
-      ],
-      feedback: {
-        correct: "Excellent! Banks help you save and manage money safely!",
-        wrong: "Banks are for saving and managing money safely!"
-      }
+      question: 'Write: "The main purpose of visiting a bank is ___."',
+      minLength: 10,
     },
     {
-      id: 2,
-      question: "How does a bank help people?",
-      options: [
-        { text: "By giving away free toys", correct: false },
-        { text: "By playing games with you", correct: false },
-        { text: "By keeping money safe and helping it grow", correct: true },
-        { text: "By buying you candy", correct: false }
-      ],
-      feedback: {
-        correct: "Perfect! Banks keep your money safe and help it grow!",
-        wrong: "Banks keep your money safe and help it grow!"
-      }
+      question: 'Write: "A bank helps people by ___."',
+      minLength: 10,
     },
     {
-      id: 3,
-      question: "How does saving money in a bank make you feel?",
-      options: [
-        { text: "Scared and worried", correct: false },
-        { text: "Bored and tired", correct: false },
-        { text: "Angry and upset", correct: false },
-        { text: "Safe and secure", correct: true },
-      ],
-      feedback: {
-        correct: "Great! Saving in a bank makes you feel safe and secure!",
-        wrong: "Saving in a bank should make you feel safe and secure!"
-      }
+      question: 'Write: "Saving money in a bank makes me feel ___."',
+      minLength: 10,
     },
     {
-      id: 4,
-      question: "What is one important thing you learn about banks?",
-      options: [
-        { text: "Banks are only for adults", correct: false },
-        { text: "Banks protect and grow your money", correct: true },
-        { text: "Banks are scary places", correct: false },
-        { text: "Banks don't help kids", correct: false }
-      ],
-      feedback: {
-        correct: "Smart! Banks protect and grow your money!",
-        wrong: "Banks protect and grow your money, even for kids!"
-      }
+      question: 'Write: "One important thing I learned about banks is ___."',
+      minLength: 10,
     },
     {
-      id: 5,
-      question: "What does visiting a bank teach you about money?",
-      options: [
-        { text: "How to manage money wisely", correct: true },
-        { text: "How to spend all your money", correct: false },
-        { text: "How to hide money", correct: false },
-        { text: "How to waste money", correct: false }
-      ],
-      feedback: {
-        correct: "Perfect! Banks teach you to manage money wisely!",
-        wrong: "Banks teach you how to manage money wisely!"
-      }
-    }
+      question: 'Write: "Visiting a bank taught me about money that ___."',
+      minLength: 10,
+    },
   ];
 
-  const handleAnswer = (option) => {
-    if (answered) return; // Prevent multiple clicks
+  const handleSubmit = () => {
+    if (showResult) return; // Prevent multiple submissions
     
-    setAnswered(true);
     resetFeedback();
+    const entryText = text.trim();
     
-    const isCorrect = option.correct;
-    const isLastQuestion = currentQuestion === questions.length - 1;
-    
-    if (isCorrect) {
+    if (entryText.length >= stages[currentStage].minLength) {
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
+      
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      // Show feedback for 1.5 seconds, then move to next question or show results
+      setTimeout(() => {
+        if (isLastQuestion) {
+          // This is the last question (5th), show results
+          setShowResult(true);
+        } else {
+          // Move to next question
+          setText("");
+          setCurrentStage((prev) => prev + 1);
+        }
+      }, 1500);
     }
-    
-    // Move to next question or show results after a short delay
-    setTimeout(() => {
-      if (isLastQuestion) {
-        // This is the last question (5th), show results
-        setShowResult(true);
-      } else {
-        // Move to next question
-        setCurrentQuestion((prev) => prev + 1);
-        setAnswered(false);
-      }
-    }, 500);
   };
 
-  const currentQuestionData = questions[currentQuestion];
   const finalScore = score;
 
   return (
     <GameShell
       title="Journal of First Bank Visit"
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}: Test your knowledge about banks!` : "Journal Complete!"}
-      currentLevel={currentQuestion + 1}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on your bank experience!` : "Journal Complete!"}
+      currentLevel={currentStage + 1}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
       showGameOver={showResult}
@@ -142,30 +90,36 @@ const JournalFirstBank = () => {
       totalCoins={totalCoins}
       totalXp={totalXp}
       showConfetti={showResult && finalScore === 5}>
-      <div className="text-center text-white space-y-6">
-        {!showResult && currentQuestionData && (
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 border border-white/20">
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
             <div className="text-4xl mb-4">🏦</div>
-            <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
-              {currentQuestionData.question}
-            </h3>
-            
-            <div className="space-y-3">
-              {currentQuestionData.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswer(option)}
-                  disabled={answered}
-                  className="w-full min-h-[60px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  {option.text}
-                </button>
-              ))}
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
+            </p>
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-lg bg-white/90"
+              disabled={showResult}
+            />
+            <div className="mt-2 text-white/50 text-sm">
+              {text.trim().length}/{stages[currentStage].minLength} characters
             </div>
-
-            <div className="mt-6 text-lg font-semibold text-white/80">
-              Score: {score}/{questions.length}
-            </div>
+            <button
+              onClick={handleSubmit}
+              className={`mt-4 px-8 py-4 rounded-full text-lg font-semibold transition-transform ${
+                text.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={text.trim().length < stages[currentStage].minLength || showResult}
+            >
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
+            </button>
           </div>
         )}
       </div>

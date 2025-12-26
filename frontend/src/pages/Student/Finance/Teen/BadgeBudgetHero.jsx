@@ -28,11 +28,7 @@ const BadgeBudgetHero = () => {
       title: "Budget Planning",
       question: "What should you do first when creating a budget?",
       options: [
-        { 
-          text: "List all your income and expenses", 
-          emoji: "📋", 
-          isCorrect: true
-        },
+        
         { 
           text: "Spend money on wants first", 
           emoji: "🛍️", 
@@ -47,7 +43,12 @@ const BadgeBudgetHero = () => {
           text: "Save everything without planning", 
           emoji: "🏦", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "List all your income and expenses", 
+          emoji: "📋", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -87,15 +88,16 @@ const BadgeBudgetHero = () => {
           emoji: "📊", 
           isCorrect: false
         },
-        { 
-          text: "Save first, then spend the rest", 
-          emoji: "🔐", 
-          isCorrect: true
-        },
+        
         { 
           text: "Never save anything", 
           emoji: "❌", 
           isCorrect: false
+        },
+        { 
+          text: "Save first, then spend the rest", 
+          emoji: "🔐", 
+          isCorrect: true
         },
         { 
           text: "Save only when you have extra", 
@@ -137,15 +139,16 @@ const BadgeBudgetHero = () => {
       question: "What should you do if you overspend in one category?",
       options: [
         { 
-          text: "Ignore it and continue spending", 
-          emoji: "🙈", 
-          isCorrect: false
-        },
-        { 
           text: "Adjust other categories to stay within budget", 
           emoji: "🔄", 
           isCorrect: true
         },
+        { 
+          text: "Ignore it and continue spending", 
+          emoji: "🙈", 
+          isCorrect: false
+        },
+        
         { 
           text: "Spend even more", 
           emoji: "💳", 

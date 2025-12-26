@@ -1,247 +1,265 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const MoodMatch = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-43";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [matches, setMatches] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [selectedBehavior, setSelectedBehavior] = useState(null); // State for tracking selected behavior
-  const [selectedMood, setSelectedMood] = useState(null); // State for tracking selected mood
-  const [userMatches, setUserMatches] = useState({}); // State for tracking user matches
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-43");
+  const gameId = gameData?.id || "uvls-kids-43";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for MoodMatch, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      behaviors: ["Crying", "Smiling", "Yelling"],
-      moods: ["Happy", "Sad", "Angry"],
-      correct: { "Crying": "Sad", "Smiling": "Happy", "Yelling": "Angry" }
+      text: "When someone crosses their arms and frowns, what emotion are they most likely feeling?",
+      emoji: "😠",
+      correct: "Frustrated",
+      options: [
+        
+        { 
+          id: "excited", 
+          text: "Excited", 
+          isCorrect: false 
+        },
+        { 
+          id: "confused", 
+          text: "Confused", 
+          isCorrect: false 
+        },
+        { 
+          id: "frustrated", 
+          text: "Frustrated", 
+          isCorrect: true 
+        },
+      ]
     },
     {
       id: 2,
-      behaviors: ["Hiding", "Jumping", "Frowning"],
-      moods: ["Excited", "Scared", "Sad"],
-      correct: { "Hiding": "Scared", "Jumping": "Excited", "Frowning": "Sad" }
+      text: "What emotion might someone be experiencing if they have a slight smile and relaxed posture?",
+      emoji: "😌",
+      correct: "Content",
+      options: [
+        { 
+          id: "content", 
+          text: "Content", 
+          isCorrect: true 
+        },
+        { 
+          id: "anxious", 
+          text: "Anxious", 
+          isCorrect: false 
+        },
+        { 
+          id: "bored", 
+          text: "Bored", 
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 3,
-      behaviors: ["Quiet", "Laughing", "Pouting"],
-      moods: ["Angry", "Calm", "Happy"],
-      correct: { "Quiet": "Calm", "Laughing": "Happy", "Pouting": "Angry" }
+      text: "If someone is fidgeting, avoiding eye contact, and speaking in a soft voice, what are they likely feeling?",
+      emoji: "😰",
+      correct: "Nervous",
+      options: [
+      
+        { 
+          id: "happy", 
+          text: "Happy", 
+          isCorrect: false 
+        },
+          { 
+          id: "nervous", 
+          text: "Nervous", 
+          isCorrect: true 
+        },
+        { 
+          id: "angry", 
+          text: "Angry", 
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 4,
-      behaviors: ["Running away", "Hugging", "Stomping"],
-      moods: ["Angry", "Scared", "Happy"],
-      correct: { "Running away": "Scared", "Hugging": "Happy", "Stomping": "Angry" }
+      text: "What emotion is most likely expressed by someone who has wide eyes, leans forward, and speaks quickly?",
+      emoji: "😲",
+      correct: "Surprised",
+      options: [
+        { 
+          id: "surprised", 
+          text: "Surprised", 
+          isCorrect: true 
+        },
+        { 
+          id: "tired", 
+          text: "Tired", 
+          isCorrect: false 
+        },
+        { 
+          id: "disgusted", 
+          text: "Disgusted", 
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 5,
-      behaviors: ["Sighing", "Clapping", "Shivering"],
-      moods: ["Scared", "Excited", "Sad"],
-      correct: { "Sighing": "Sad", "Clapping": "Excited", "Shivering": "Scared" }
+      text: "When someone sighs deeply, has a slouched posture, and looks down frequently, what emotion are they probably experiencing?",
+      emoji: "😞",
+      correct: "Disappointed",
+      options: [
+        
+        { 
+          id: "proud", 
+          text: "Proud", 
+          isCorrect: false 
+        },
+        { 
+          id: "curious", 
+          text: "Curious", 
+          isCorrect: false 
+        },
+        { 
+          id: "disappointed", 
+          text: "Disappointed", 
+          isCorrect: true 
+        },
+      ]
     }
   ];
 
-  // Function to handle behavior selection
-  const selectBehavior = (behavior) => {
-    setSelectedBehavior(behavior);
-    // If both behavior and mood are selected, create a match
-    if (selectedMood) {
-      const newMatches = { ...userMatches, [behavior]: selectedMood };
-      setUserMatches(newMatches);
-      setSelectedBehavior(null);
-      setSelectedMood(null);
-    }
-  };
-
-  // Function to handle mood selection
-  const selectMood = (mood) => {
-    setSelectedMood(mood);
-    // If both behavior and mood are selected, create a match
-    if (selectedBehavior) {
-      const newMatches = { ...userMatches, [selectedBehavior]: mood };
-      setUserMatches(newMatches);
-      setSelectedBehavior(null);
-      setSelectedMood(null);
-    }
-  };
-
-  const handleMatch = () => {
-    const newMatches = [...matches, userMatches];
-    setMatches(newMatches);
-
-    const isCorrect = Object.keys(questions[currentLevel].correct).every(key => userMatches[key] === questions[currentLevel].correct[key]);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setUserMatches({}); // Reset matches for next level
-        setSelectedBehavior(null);
-        setSelectedMood(null);
-      }, isCorrect ? 800 : 0);
-    } else {
-      const correctMatches = newMatches.filter((um, idx) => Object.keys(questions[idx].correct).every(key => um[key] === questions[idx].correct[key])).length;
-      setFinalScore(correctMatches);
-      setShowResult(true);
-    }
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentLevel(0);
-    setMatches([]);
-    setCoins(0);
-    setFinalScore(0);
-    setUserMatches({}); // Reset matches
-    setSelectedBehavior(null);
-    setSelectedMood(null);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentLevel = () => questions[currentLevel];
+  // Removed handleNext function as it's not needed for this game structure
 
   return (
     <GameShell
       title="Mood Match"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 4}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 4}
-      
-      gameId="uvls-kids-43"
-      gameType="uvls"
-      totalLevels={50}
-      currentLevel={43}
-      showConfetti={showResult && finalScore >= 4}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
+      gameId={gameId}
+      gameType="uvls"
+      // Removed onNext and nextEnabled props as they're not needed for this game structure
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Match behaviors to moods!</p>
-              
-              {/* Behaviors section */}
-              <div className="mb-6">
-                <h3 className="text-white font-medium mb-2">Behaviors:</h3>
-                <div className="flex flex-wrap gap-3">
-                  {getCurrentLevel().behaviors.map(beh => (
-                    <button
-                      key={beh}
-                      onClick={() => selectBehavior(beh)}
-                      className={`px-4 py-2 rounded-full font-medium transition-all ${
-                        selectedBehavior === beh
-                          ? "bg-blue-400 text-white ring-2 ring-blue-300"
-                          : userMatches[beh]
-                          ? "bg-green-500 text-white"
-                          : "bg-blue-500/80 text-white hover:bg-blue-500"
-                      }`}
-                    >
-                      {beh} 😐
-                      {userMatches[beh] && (
-                        <span className="ml-2 text-xs">→ {userMatches[beh]}</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
               
-              {/* Moods section */}
-              <div className="mb-6">
-                <h3 className="text-white font-medium mb-2">Moods:</h3>
-                <div className="flex flex-wrap gap-3">
-                  {getCurrentLevel().moods.map(mood => (
-                    <button
-                      key={mood}
-                      onClick={() => selectMood(mood)}
-                      className={`px-4 py-2 rounded-full font-medium transition-all ${
-                        selectedMood === mood
-                          ? "bg-green-400 text-white ring-2 ring-green-300"
-                          : Object.values(userMatches).includes(mood)
-                          ? "bg-purple-500 text-white"
-                          : "bg-green-500/80 text-white hover:bg-green-500"
-                      }`}
-                    >
-                      {mood} 💭
-                    </button>
-                  ))}
-                </div>
+              <div className="bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-xl p-6 mb-6 text-center">
+                <div className="text-6xl mb-3">{questions[currentQuestion].emoji}</div>
+                <h3 className="text-white text-xl font-bold">{questions[currentQuestion].text}</h3>
               </div>
               
-              {/* Current matches display */}
-              {Object.keys(userMatches).length > 0 && (
-                <div className="mb-4 p-3 bg-white/10 rounded-lg">
-                  <h4 className="text-white font-medium mb-2">Your Matches:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(userMatches).map(([behavior, mood]) => (
-                      <div key={behavior} className="bg-yellow-500/80 text-black px-3 py-1 rounded-full text-sm font-medium">
-                        {behavior} → {mood}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Submit button */}
-              <button 
-                onClick={handleMatch} 
-                className="mt-2 bg-purple-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-purple-600 transition"
-                disabled={Object.keys(userMatches).length === 0}
-              >
-                Submit Matches ({Object.keys(userMatches).length})
-              </button>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="font-semibold text-lg">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 4 ? (
+            {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Mood Matcher!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Mood Expert!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You matched correctly {finalScore} out of {questions.length} times!
+                  You got {score} out of {questions.length} correct!
                   You understand how behaviors connect to moods!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{finalScore} Coins</span>
+                  <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Understanding how behaviors connect to moods helps us recognize and respond to emotions!
+                  Lesson: Understanding how behaviors connect to moods helps us recognize and respond to emotions! Paying attention to how people act can help us understand how they're feeling.
                 </p>
               </div>
             ) : (
               <div>
                 <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Match More!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You matched correctly {finalScore} out of {questions.length} times.
+                  You got {score} out of {questions.length} correct.
                   Keep practicing to understand how behaviors connect to moods!
                 </p>
                 <button
@@ -251,7 +269,7 @@ const MoodMatch = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Pay attention to how different behaviors show different moods. Practice matching them!
+                  Tip: Pay attention to how different behaviors show different moods. Crying often shows sadness, smiling shows happiness, and yelling can show anger!
                 </p>
               </div>
             )}

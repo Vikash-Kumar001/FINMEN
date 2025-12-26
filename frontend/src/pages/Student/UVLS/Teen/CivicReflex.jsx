@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const TOTAL_ROUNDS = 5;
 const ROUND_TIME = 10;
@@ -18,30 +17,8 @@ const CivicReflex = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getUvlsTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
+  const nextGamePath = location.state?.nextGamePath || null;
+  const nextGameId = location.state?.nextGameId || null;
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   
@@ -56,57 +33,57 @@ const CivicReflex = () => {
   const questions = [
     {
       id: 1,
-      text: "Broken playground equipment.",
-      urgent: true,
+      question: "Broken playground equipment.",
+      correctAnswer: "Urgent - Safety hazard",
       options: [
-        { id: "a", text: "Urgent - Safety hazard", emoji: "🚨", description: "Safety risk to children", isCorrect: true },
-        { id: "b", text: "Routine - Can wait", emoji: "📋", description: "Actually urgent", isCorrect: false },
-        { id: "c", text: "Not important", emoji: "🤷", description: "Safety is important", isCorrect: false },
-        { id: "d", text: "Ignore it", emoji: "🙈", description: "Should be addressed", isCorrect: false }
+        { text: "Routine - Can wait", isCorrect: false, emoji: "📋" },
+        { text: "Not important", isCorrect: false, emoji: "🤷" },
+        { text: "Urgent - Safety hazard", isCorrect: true, emoji: "🚨" },
+        { text: "Ignore it", isCorrect: false, emoji: "🙈" }
       ]
     },
     {
       id: 2,
-      text: "Litter in park.",
-      urgent: false,
+      question: "Litter in park.",
+      correctAnswer: "Routine - Regular maintenance",
       options: [
-        { id: "b", text: "Urgent - Emergency", emoji: "🚨", description: "Not urgent", isCorrect: false },
-        { id: "a", text: "Routine - Regular maintenance", emoji: "🗑️", description: "Routine issue", isCorrect: true },
-        { id: "c", text: "Critical issue", emoji: "⚠️", description: "Not critical", isCorrect: false },
-        { id: "d", text: "Ignore completely", emoji: "🙈", description: "Should be handled", isCorrect: false }
+        { text: "Routine - Regular maintenance", isCorrect: true, emoji: "🗑️" },
+        { text: "Urgent - Emergency", isCorrect: false, emoji: "🚨" },
+        { text: "Critical issue", isCorrect: false, emoji: "⚠️" },
+        { text: "Ignore completely", isCorrect: false, emoji: "🙈" }
       ]
     },
     {
       id: 3,
-      text: "Unsafe crossing.",
-      urgent: true,
+      question: "Unsafe crossing.",
+      correctAnswer: "Urgent - Safety concern",
       options: [
-        { id: "a", text: "Urgent - Safety concern", emoji: "🚨", description: "Safety issue", isCorrect: true },
-        { id: "b", text: "Routine - Not important", emoji: "📋", description: "Actually urgent", isCorrect: false },
-        { id: "c", text: "Low priority", emoji: "⬇️", description: "Safety is high priority", isCorrect: false },
-        { id: "d", text: "Can wait", emoji: "⏳", description: "Should be addressed", isCorrect: false }
+        { text: "Routine - Not important", isCorrect: false, emoji: "📋" },
+        { text: "Low priority", isCorrect: false, emoji: "⬇️" },
+        { text: "Can wait", isCorrect: false, emoji: "⏳" },
+        { text: "Urgent - Safety concern", isCorrect: true, emoji: "🚨" },
       ]
     },
     {
       id: 4,
-      text: "Faded signs.",
-      urgent: false,
+      question: "Faded signs.",
+      correctAnswer: "Routine - Maintenance task",
       options: [
-        { id: "b", text: "Urgent - Immediate action", emoji: "🚨", description: "Not urgent", isCorrect: false },
-        { id: "c", text: "Critical safety issue", emoji: "⚠️", description: "Not critical", isCorrect: false },
-        { id: "a", text: "Routine - Maintenance task", emoji: "🛠️", description: "Routine maintenance", isCorrect: true },
-        { id: "d", text: "Ignore it", emoji: "🙈", description: "Should be maintained", isCorrect: false }
+        { text: "Routine - Maintenance task", isCorrect: true, emoji: "🛠️" },
+        { text: "Urgent - Immediate action", isCorrect: false, emoji: "🚨" },
+        { text: "Critical safety issue", isCorrect: false, emoji: "⚠️" },
+        { text: "Ignore it", isCorrect: false, emoji: "🙈" }
       ]
     },
     {
       id: 5,
-      text: "Bullying incident.",
-      urgent: true,
+      question: "Bullying incident.",
+      correctAnswer: "Urgent - Needs immediate attention",
       options: [
-        { id: "a", text: "Urgent - Needs immediate attention", emoji: "🚨", description: "Serious issue", isCorrect: true },
-        { id: "b", text: "Routine - Handle later", emoji: "📋", description: "Actually urgent", isCorrect: false },
-        { id: "c", text: "Low priority", emoji: "⬇️", description: "High priority issue", isCorrect: false },
-        { id: "d", text: "Not important", emoji: "🤷", description: "Very important", isCorrect: false }
+        { text: "Routine - Handle later", isCorrect: false, emoji: "📋" },
+        { text: "Urgent - Needs immediate attention", isCorrect: true, emoji: "🚨" },
+        { text: "Low priority", isCorrect: false, emoji: "⬇️" },
+        { text: "Not important", isCorrect: false, emoji: "🤷" }
       ]
     }
   ];
@@ -195,7 +172,7 @@ const CivicReflex = () => {
   return (
     <GameShell
       title="Civic Reflex"
-      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Identify urgent issues!` : "Quickly identify urgent civic issues!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your civic awareness!` : "Test your civic awareness!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -209,10 +186,8 @@ const CivicReflex = () => {
       maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="text-center text-white space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+      <div className="text-center text-white space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
             <div className="text-5xl mb-6">⚡</div>
@@ -221,9 +196,12 @@ const CivicReflex = () => {
               Quickly identify urgent civic issues!<br />
               You have {ROUND_TIME} seconds for each question.
             </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
             <button
               onClick={startGame}
-              className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full text-lg font-bold text-white transition-transform hover:scale-105"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
             >
               Start Game
             </button>
@@ -231,55 +209,37 @@ const CivicReflex = () => {
         )}
 
         {gameState === "playing" && currentQuestion && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Round {currentRound}/{TOTAL_ROUNDS}</span>
-              <span className="text-yellow-400 font-bold text-lg">⏱️ {timeLeft}s</span>
-              <span className="text-white/80">Score: {finalScore}/{TOTAL_ROUNDS}</span>
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
             </div>
-            
-            <p className="text-white text-lg md:text-xl mb-6 text-center">
-              "{currentQuestion.text}"
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {currentQuestion.options.map(option => {
-                const showCorrect = answered && option.isCorrect;
-                const showIncorrect = answered && !option.isCorrect;
-                
-                return (
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={option.id}
+                    key={index}
                     onClick={() => handleAnswer(option)}
                     disabled={answered}
-                    className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                      showCorrect
-                        ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                        : showIncorrect
-                        ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                    } ${answered ? "cursor-not-allowed" : ""}`}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                    <p className="text-white/90 text-sm">{option.description}</p>
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-
-        {gameState === "finished" && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-5xl mb-4">🎉</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Reflex Test Complete!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              Score: {finalScore} / {TOTAL_ROUNDS}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-4">
-              {finalScore >= 3 ? "Great Civic Awareness!" : "Keep Practicing!"}
-            </p>
           </div>
         )}
       </div>

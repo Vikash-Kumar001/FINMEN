@@ -1,211 +1,240 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const MorningRoutine = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-91";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [routines, setRoutines] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [userOrder, setUserOrder] = useState([]);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-91");
+  const gameId = gameData?.id || "uvls-kids-91";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for MorningRoutine, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      tasks: ["Brush teeth", "Pack bag", "Eat breakfast", "Wash face"],
-      correctOrder: ["Wash face", "Brush teeth", "Eat breakfast", "Pack bag"]
+      text: "What is the correct order for a morning routine?",
+      options: [
+       
+        { 
+          id: "b", 
+          text: "Brush teeth, Pack bag, Eat breakfast, Wash face", 
+          emoji: "🦷", 
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Pack bag, Eat breakfast, Wash face, Brush teeth", 
+          emoji: "🎒", 
+          isCorrect: false
+        },
+         { 
+          id: "a", 
+          text: "Wash face, Brush teeth, Eat breakfast, Pack bag", 
+          emoji: "🧼", 
+          
+          isCorrect: true
+        },
+      ]
     },
     {
       id: 2,
-      tasks: ["Wake up", "Dress", "Comb hair", "Eat breakfast"],
-      correctOrder: ["Wake up", "Dress", "Comb hair", "Eat breakfast"]
+      text: "What is the correct order for a morning routine?",
+      options: [
+        { 
+          id: "a", 
+          text: "Wake up, Dress, Comb hair, Eat breakfast", 
+          emoji: "🌅", 
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Eat breakfast, Wake up, Dress, Comb hair", 
+          emoji: "🍳", 
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Comb hair, Eat breakfast, Wake up, Dress", 
+          emoji: "💇", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      tasks: ["Wash face", "Put shoes", "Say bye", "Pack bag"],
-      correctOrder: ["Wash face", "Put shoes", "Pack bag", "Say bye"]
+      text: "What is the correct order for a morning routine?",
+      options: [
+        
+        { 
+          id: "b", 
+          text: "Wash face, Pack bag, Say bye, Put shoes", 
+          emoji: "🎒", 
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Wash face, Put shoes, Pack bag, Say bye", 
+          emoji: "🧼", 
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Say bye, Wash face, Put shoes, Pack bag", 
+          emoji: "👋", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      tasks: ["Make bed", "Check time", "Go school", "Brush teeth"],
-      correctOrder: ["Make bed", "Brush teeth", "Check time", "Go school"]
+      text: "What is the correct order for a morning routine?",
+      options: [
+        { 
+          id: "a", 
+          text: "Make bed, Brush teeth, Check time, Go school", 
+          emoji: "🛏️", 
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Check time, Go school, Make bed, Brush teeth", 
+          emoji: "⏰", 
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Go school, Brush teeth, Check time, Make bed", 
+          emoji: "🏫", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      tasks: ["Exercise", "Drink water", "Plan day", "Shower"],
-      correctOrder: ["Shower", "Exercise", "Drink water", "Plan day"]
+      text: "What is the correct order for a morning routine?",
+      options: [
+        
+        { 
+          id: "b", 
+          text: "Plan day, Shower, Exercise, Drink water", 
+          emoji: "📝", 
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Drink water, Plan day, Shower, Exercise", 
+          emoji: "💧", 
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Shower, Exercise, Drink water, Plan day", 
+          emoji: "🚿", 
+            isCorrect: true
+        },
+      ]
     }
   ];
 
-  const handleTaskClick = (task) => {
-    // Add task to user order if not already selected
-    if (!userOrder.includes(task)) {
-      setUserOrder([...userOrder, task]);
-    }
-  };
-
-  const handleRemoveTask = (task) => {
-    // Remove task from user order
-    setUserOrder(userOrder.filter(t => t !== task));
-  };
-
-  const handleRoutine = () => {
-    const newRoutines = [...routines, userOrder];
-    setRoutines(newRoutines);
-
-    const isCorrect = userOrder.join(',') === questions[currentLevel].correctOrder.join(',');
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setUserOrder([]); // Reset user order for next level
-      }, isCorrect ? 800 : 0);
-    } else {
-      const correctRoutines = newRoutines.filter((uo, idx) => uo.join(',') === questions[idx].correctOrder.join(',')).length;
-      setFinalScore(correctRoutines);
-      setShowResult(true);
-    }
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentLevel(0);
-    setRoutines([]);
-    setCoins(0);
-    setFinalScore(0);
-    setUserOrder([]);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentLevel = () => questions[currentLevel];
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Morning Routine"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-91"
+      showGameOver={showResult}
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={100}
-      currentLevel={91}
-      showConfetti={showResult && finalScore >= 3}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
     >
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Build morning routine!</p>
-              
-              {/* Display user's current selection order */}
-              <div className="mb-4 min-h-[40px]">
-                <p className="text-white/80 mb-2">Your routine:</p>
-                <div className="flex flex-wrap gap-2">
-                  {userOrder.map((task, index) => (
-                    <div 
-                      key={`${task}-${index}`} 
-                      className="bg-green-500 p-2 rounded flex items-center cursor-pointer"
-                      onClick={() => handleRemoveTask(task)}
-                    >
-                      {index + 1}. {task} ❌
-                    </div>
-                  ))}
-                  {userOrder.length === 0 && (
-                    <p className="text-white/50 italic">Click on tasks below to add them to your routine</p>
-                  )}
-                </div>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
               
-              {/* Available tasks to select */}
-              <div className="flex flex-wrap gap-4 mb-4">
-                {getCurrentLevel().tasks
-                  .filter(task => !userOrder.includes(task))
-                  .map(task => (
-                    <div 
-                      key={task} 
-                      className="bg-blue-500 p-2 rounded cursor-pointer hover:bg-blue-600 transition"
-                      onClick={() => handleTaskClick(task)}
-                    >
-                      {task} ⏰
-                    </div>
-                  ))}
-              </div>
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
               
-              <button 
-                onClick={handleRoutine} 
-                className="mt-4 bg-purple-500 text-white p-2 rounded disabled:opacity-50"
-                disabled={userOrder.length !== getCurrentLevel().tasks.length}
-              >
-                Submit Routine
-              </button>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 3 ? (
-              <div>
-                <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Routine Builder!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You built correctly {finalScore} out of {questions.length} routines!
-                  You know how to organize your morning!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{finalScore} Coins</span>
-                </div>
-                <p className="text-white/80">
-                  Lesson: Having a morning routine helps you start your day organized and ready!
-                </p>
-              </div>
-            ) : (
-              <div>
-                <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Build Better!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You built correctly {finalScore} out of {questions.length} routines.
-                  Keep practicing to build better morning routines!
-                </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
-                <p className="text-white/80 text-sm">
-                  Tip: A good morning routine includes waking up, getting dressed, eating breakfast, and being ready for the day!
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

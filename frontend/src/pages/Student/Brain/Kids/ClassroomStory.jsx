@@ -31,13 +31,7 @@ const ClassroomStory = () => {
       id: 1,
       text: "Teacher is teaching. Do you listen carefully or doodle?",
       options: [
-        { 
-          id: "listen", 
-          text: "Listen carefully", 
-          emoji: "👂", 
-          description: "Pay attention to the teacher",
-          isCorrect: true
-        },
+       
         { 
           id: "doodle", 
           text: "Doodle in notebook", 
@@ -51,7 +45,14 @@ const ClassroomStory = () => {
           emoji: "💬", 
           description: "Talk to classmates during lesson",
           isCorrect: false
-        }
+        },
+         { 
+          id: "listen", 
+          text: "Listen carefully", 
+          emoji: "👂", 
+          description: "Pay attention to the teacher",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -112,19 +113,20 @@ const ClassroomStory = () => {
       id: 4,
       text: "You finished your classwork early. What's the best choice?",
       options: [
-        { 
-          id: "help", 
-          text: "Help classmates who need assistance", 
-          emoji: "🤝", 
-          description: "Assist others who are still working",
-          isCorrect: true
-        },
+        
         { 
           id: "disturb", 
           text: "Disturb others who are still working", 
           emoji: "😈", 
           description: "Make noise and distract classmates",
           isCorrect: false
+        },
+        { 
+          id: "help", 
+          text: "Help classmates who need assistance", 
+          emoji: "🤝", 
+          description: "Assist others who are still working",
+          isCorrect: true
         },
         { 
           id: "play", 
@@ -139,13 +141,7 @@ const ClassroomStory = () => {
       id: 5,
       text: "The lesson is difficult. How do you handle it?",
       options: [
-        { 
-          id: "persist", 
-          text: "Keep trying and ask for help if needed", 
-          emoji: "💪", 
-          description: "Stay determined and seek assistance",
-          isCorrect: true
-        },
+        
         { 
           id: "giveup", 
           text: "Give up and stop trying", 
@@ -159,7 +155,14 @@ const ClassroomStory = () => {
           emoji: "👎", 
           description: "Say the teacher is bad",
           isCorrect: false
-        }
+        },
+        { 
+          id: "persist", 
+          text: "Keep trying and ask for help if needed", 
+          emoji: "💪", 
+          description: "Stay determined and seek assistance",
+          isCorrect: true
+        },
       ]
     }
   ];

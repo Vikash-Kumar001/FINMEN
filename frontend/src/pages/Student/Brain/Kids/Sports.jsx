@@ -1,170 +1,249 @@
-// File: SportsStory.js
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Trophy, Check, X, Goal } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const Sports = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-68";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-38");
+  const gameId = gameData?.id || "brain-kids-38";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for Sports, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const levels = [
+  const questions = [
     {
       id: 1,
-      story: "Kid loses in game, feels angry. Right action?",
-      choices: ["Try again calmly", "Quit team", "Blame others"],
-      correct: "Try again calmly",
-      icon: <Trophy className="w-8 h-8" />
+      text: "Kid loses in game, feels angry. What should they do?",
+      options: [
+        
+        { 
+          id: "quit", 
+          text: "Quit the team", 
+          emoji: "🏳️", 
+          description: "Give up completely",
+          isCorrect: false
+        },
+        { 
+          id: "blame", 
+          text: "Blame others", 
+          emoji: "👆", 
+          description: "Point fingers at teammates",
+          isCorrect: false
+        },
+        { 
+          id: "calm", 
+          text: "Try again calmly", 
+          emoji: "😊", 
+          description: "Stay calm and try again",
+          isCorrect: true
+        },
+      ]
     },
     {
       id: 2,
-      story: "Missed goal, upset. What to do?",
-      choices: ["Practice more calmly", "Throw ball", "Cry"],
-      correct: "Practice more calmly",
-  icon: <Goal className="w-8 h-8" />
+      text: "Missed goal, upset. What's the best response?",
+      options: [
+        
+        { 
+          id: "throw", 
+          text: "Throw the ball", 
+          emoji: "😠", 
+          description: "Show anger",
+          isCorrect: false
+        },
+        { 
+          id: "practice", 
+          text: "Practice more and try again", 
+          emoji: "⚽", 
+          description: "Keep improving",
+          isCorrect: true
+        },
+        { 
+          id: "cry", 
+          text: "Cry and give up", 
+          emoji: "😢", 
+          description: "Stop playing",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      story: "Team loses, frustrated. Best?",
-      choices: ["Learn from it calmly", "Argue", "Give up"],
-      correct: "Learn from it calmly",
-      icon: <Users className="w-8 h-8" />
+      text: "Team loses the match. What should they do?",
+      options: [
+        { 
+          id: "learn", 
+          text: "Learn from it calmly", 
+          emoji: "📚", 
+          description: "Use it as a lesson",
+          isCorrect: true
+        },
+        { 
+          id: "argue", 
+          text: "Argue with each other", 
+          emoji: "😠", 
+          description: "Fight with teammates",
+          isCorrect: false
+        },
+        { 
+          id: "quit2", 
+          text: "Give up completely", 
+          emoji: "🚶", 
+          description: "Stop playing sports",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      story: "Injured during play, angry. How handle?",
-      choices: ["Rest and stay calm", "Ignore pain", "Yell at coach"],
-      correct: "Rest and stay calm",
-      icon: <Bandage className="w-8 h-8" />
+      text: "Injured during play, angry. How should they handle it?",
+      options: [
+        
+        { 
+          id: "ignore", 
+          text: "Ignore the pain and continue", 
+          emoji: "🤕", 
+          description: "Play despite injury",
+          isCorrect: false
+        },
+        { 
+          id: "yell", 
+          text: "Yell at the coach", 
+          emoji: "😡", 
+          description: "Show anger at others",
+          isCorrect: false
+        },
+        { 
+          id: "rest", 
+          text: "Rest and stay calm", 
+          emoji: "🏥", 
+          description: "Take care of the injury",
+          isCorrect: true
+        },
+      ]
     },
     {
       id: 5,
-      story: "Bad referee call, mad. Right action?",
-      choices: ["Accept and focus calmly", "Protest", "Leave game"],
-      correct: "Accept and focus calmly",
-      icon: <Whistle className="w-8 h-8" />
+      text: "Bad referee call, mad. What's the right action?",
+      options: [
+        
+        { 
+          id: "protest", 
+          text: "Protest loudly", 
+          emoji: "🗣️", 
+          description: "Argue with referee",
+          isCorrect: false
+        },
+        { 
+          id: "accept", 
+          text: "Accept and focus calmly", 
+          emoji: "✅", 
+          description: "Stay calm and continue",
+          isCorrect: true
+        },
+        { 
+          id: "leave", 
+          text: "Leave the game", 
+          emoji: "🏃", 
+          description: "Walk off the field",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const currentLevelData = levels[currentLevel - 1];
+  const currentQuestionData = questions[currentQuestion];
 
-  const handleChoiceSelect = (choice) => {
-    if (!isSubmitted) {
-      setSelectedChoice(choice);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
-
-  const handleSubmit = () => {
-    if (selectedChoice) {
-      setIsSubmitted(true);
-      if (selectedChoice === currentLevelData.correct) {
-        setFeedbackType("correct");
-        setFeedbackMessage("Good sportsmanship!");
-        setScore(prev => prev + 1);
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          if (currentLevel < 5) {
-            setCurrentLevel(prev => prev + 1);
-            setSelectedChoice(null);
-            setIsSubmitted(false);
-          } else {
-            setLevelCompleted(true);
-          }
-        }, 2000);
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setFeedbackType("wrong");
-        setFeedbackMessage("Not calm. Try again.");
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          setIsSubmitted(false);
-        }, 2000);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Select a choice!");
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
-    }
+    }, 500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
 
   return (
     <GameShell
       title="Sports Story"
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-68"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Sports Story</h3>
-        <p className="text-white/80 mb-6 text-center">{currentLevelData.story}</p>
-        
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <div className="flex justify-center mb-4">{currentLevelData.icon}</div>
-          <div className="space-y-4">
-            {currentLevelData.choices.map((choice, index) => (
-              <button
-                key={index}
-                onClick={() => handleChoiceSelect(choice)}
-                className={`w-full p-4 rounded-lg ${selectedChoice === choice ? 'bg-blue-500' : 'bg-white/20'} text-white text-left`}
-              >
-                {choice}
-              </button>
-            ))}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+      backPath="/games/brain-health/kids"
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedChoice || isSubmitted}
-              className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedChoice && !isSubmitted
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                  : 'bg-white/20 text-white/50 cursor-not-allowed'
-              }`}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

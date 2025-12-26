@@ -34,14 +34,14 @@ const ToyBrokenStory = () => {
         { 
           id: "yes", 
           text: "Yes, it's normal", 
-          emoji: "✅", 
+          emoji: "😢", 
           description: "It's okay to feel sad when something breaks",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No, not normal", 
-          emoji: "❌", 
+          emoji: "😔", 
           description: "Kids shouldn't feel sad",
           isCorrect: false
         },
@@ -61,14 +61,14 @@ const ToyBrokenStory = () => {
         { 
           id: "no2", 
           text: "No, not normal", 
-          emoji: "❌", 
+          emoji: "😔", 
           description: "Shouldn't feel upset",
           isCorrect: false
         },
         { 
           id: "yes2", 
           text: "Yes, it's normal", 
-          emoji: "✅", 
+          emoji: "😐", 
           description: "It's normal to feel upset when losing something special",
           isCorrect: true
         },
@@ -95,14 +95,14 @@ const ToyBrokenStory = () => {
         { 
           id: "no3", 
           text: "No, not okay", 
-          emoji: "❌", 
+          emoji: "😔", 
           description: "Shouldn't worry",
           isCorrect: false
         },
         { 
           id: "yes3", 
           text: "Yes, it's okay", 
-          emoji: "✅", 
+          emoji: "🤗", 
           description: "It's normal to worry about someone you care about",
           isCorrect: true
         }
@@ -115,7 +115,7 @@ const ToyBrokenStory = () => {
         { 
           id: "yes4", 
           text: "Yes, it's normal", 
-          emoji: "✅", 
+          emoji: "😔", 
           description: "It's normal to feel lonely when friends leave",
           isCorrect: true
         },
@@ -129,7 +129,7 @@ const ToyBrokenStory = () => {
         { 
           id: "no4", 
           text: "No, not normal", 
-          emoji: "❌", 
+          emoji: "🙃", 
           description: "Shouldn't feel lonely",
           isCorrect: false
         }
@@ -149,14 +149,14 @@ const ToyBrokenStory = () => {
         { 
           id: "no5", 
           text: "No, not okay", 
-          emoji: "❌", 
+          emoji: "🙁", 
           description: "Shouldn't feel disappointed",
           isCorrect: false
         },
         { 
           id: "yes5", 
           text: "Yes, it's okay", 
-          emoji: "✅", 
+          emoji: "😞", 
           description: "It's normal to feel disappointed when missing something fun",
           isCorrect: true
         }

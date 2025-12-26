@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const TOTAL_ROUNDS = 5;
 const ROUND_TIME = 10;
@@ -18,30 +17,8 @@ const ClarifyReflex = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getUvlsTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
+  const nextGamePath = location.state?.nextGamePath || null;
+  const nextGameId = location.state?.nextGameId || null;
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   
@@ -56,52 +33,57 @@ const ClarifyReflex = () => {
   const questions = [
     {
       id: 1,
-      text: "Statement: 'The thing is kinda big.' Does this need clarification?",
+      question: "Statement: 'The thing is kinda big.' Does this need clarification?",
+      correctAnswer: "Needs Clarification - Vague terms like 'kinda' and 'big'",
       options: [
-        { id: "a", text: "Needs Clarification - Vague terms like 'kinda' and 'big'", emoji: "❓", description: "Unclear what 'thing' and 'big' mean", isCorrect: true },
-        { id: "b", text: "Clear - Everyone understands", emoji: "✅", description: "Actually vague and ambiguous", isCorrect: false },
-        { id: "c", text: "Perfectly specific", emoji: "📝", description: "Lacks specificity", isCorrect: false },
-        { id: "d", text: "No clarification needed", emoji: "👍", description: "Uses vague language", isCorrect: false }
+        { text: "Needs Clarification - Vague terms like 'kinda' and 'big'", isCorrect: true, emoji: "❓" },
+        { text: "Clear - Everyone understands", isCorrect: false, emoji: "✅" },
+        { text: "Perfectly specific", isCorrect: false, emoji: "📝" },
+        { text: "No clarification needed", isCorrect: false, emoji: "👍" }
       ]
     },
     {
       id: 2,
-      text: "Statement: 'The sky is blue.' Does this need clarification?",
+      question: "Statement: 'The sky is blue.' Does this need clarification?",
+      correctAnswer: "Clear - Specific and unambiguous",
       options: [
-        { id: "b", text: "Needs Clarification - What's blue?", emoji: "❓", description: "This statement is actually clear", isCorrect: false },
-        { id: "a", text: "Clear - Specific and unambiguous", emoji: "☁️", description: "Factual and clear statement", isCorrect: true },
-        { id: "c", text: "Vague and confusing", emoji: "🤷", description: "It's a clear fact", isCorrect: false },
-        { id: "d", text: "Ambiguous statement", emoji: "🔄", description: "Not ambiguous at all", isCorrect: false }
+        { text: "Clear - Specific and unambiguous", isCorrect: true, emoji: "☁️" },
+        { text: "Needs Clarification - What's blue?", isCorrect: false, emoji: "❓" },
+        { text: "Vague and confusing", isCorrect: false, emoji: "🤷" },
+        { text: "Ambiguous statement", isCorrect: false, emoji: "🔄" }
       ]
     },
     {
       id: 3,
-      text: "Statement: 'It's sort of okay.' Does this need clarification?",
+      question: "Statement: 'It's sort of okay.' Does this need clarification?",
+      correctAnswer: "Needs Clarification - 'Sort of' and 'okay' are vague",
       options: [
-        { id: "a", text: "Needs Clarification - 'Sort of' and 'okay' are vague", emoji: "❓", description: "Unclear what 'it' is and what 'okay' means", isCorrect: true },
-        { id: "b", text: "Clear and specific", emoji: "✅", description: "Uses vague qualifiers", isCorrect: false },
-        { id: "c", text: "Perfectly clear", emoji: "📝", description: "Ambiguous phrasing", isCorrect: false },
-        { id: "d", text: "No questions needed", emoji: "👍", description: "Requires clarification", isCorrect: false }
+        { text: "Clear and specific", isCorrect: false, emoji: "✅" },
+        { text: "Needs Clarification - 'Sort of' and 'okay' are vague", isCorrect: true, emoji: "❓" },
+        { text: "Perfectly clear", isCorrect: false, emoji: "📝" },
+        { text: "No questions needed", isCorrect: false, emoji: "👍" }
       ]
     },
     {
       id: 4,
-      text: "Statement: '2 + 2 = 4.' Does this need clarification?",
+      question: "Statement: '2 + 2 = 4.' Does this need clarification?",
+      correctAnswer: "Clear - Precise mathematical statement",
       options: [
-        { id: "b", text: "Needs Clarification - What does '=' mean?", emoji: "❓", description: "Mathematical statement is clear", isCorrect: false },
-        { id: "c", text: "Vague and unclear", emoji: "🤷", description: "It's a clear mathematical fact", isCorrect: false },
-        { id: "a", text: "Clear - Precise mathematical statement", emoji: "🔢", description: "Specific and unambiguous", isCorrect: true },
-        { id: "d", text: "Ambiguous math", emoji: "🔄", description: "Not ambiguous", isCorrect: false }
+        { text: "Needs Clarification - What does '=' mean?", isCorrect: false, emoji: "❓" },
+        { text: "Vague and unclear", isCorrect: false, emoji: "🤷" },
+        { text: "Ambiguous math", isCorrect: false, emoji: "🔄" },
+        { text: "Clear - Precise mathematical statement", isCorrect: true, emoji: "🔢" },
       ]
     },
     {
       id: 5,
-      text: "Statement: 'Maybe tomorrow.' Does this need clarification?",
+      question: "Statement: 'Maybe tomorrow.' Does this need clarification?",
+      correctAnswer: "Needs Clarification - What is 'maybe' about and what's happening 'tomorrow'?",
       options: [
-        { id: "a", text: "Needs Clarification - What is 'maybe' about and what's happening 'tomorrow'?", emoji: "❓", description: "Very vague, missing context", isCorrect: true },
-        { id: "b", text: "Clear - Everyone knows what this means", emoji: "✅", description: "Lacks context and specificity", isCorrect: false },
-        { id: "c", text: "Specific and detailed", emoji: "📝", description: "Completely vague", isCorrect: false },
-        { id: "d", text: "No clarification needed", emoji: "👍", description: "Highly ambiguous", isCorrect: false }
+        { text: "Clear - Everyone knows what this means", isCorrect: false, emoji: "✅" },
+        { text: "Specific and detailed", isCorrect: false, emoji: "📝" },
+        { text: "Needs Clarification - What is 'maybe' about and what's happening 'tomorrow'?", isCorrect: true, emoji: "❓" },
+        { text: "No clarification needed", isCorrect: false, emoji: "👍" }
       ]
     }
   ];
@@ -190,7 +172,7 @@ const ClarifyReflex = () => {
   return (
     <GameShell
       title="Clarify Reflex"
-      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Detect vague statements!` : "Spot statements that need clarification!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your clarification skills!` : "Test your clarification skills!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -204,10 +186,8 @@ const ClarifyReflex = () => {
       maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="text-center text-white space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+      <div className="text-center text-white space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
             <div className="text-5xl mb-6">⚡</div>
@@ -216,9 +196,12 @@ const ClarifyReflex = () => {
               Quickly identify statements that need clarification!<br />
               You have {ROUND_TIME} seconds for each question.
             </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
             <button
               onClick={startGame}
-              className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full text-lg font-bold text-white transition-transform hover:scale-105"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
             >
               Start Game
             </button>
@@ -226,55 +209,37 @@ const ClarifyReflex = () => {
         )}
 
         {gameState === "playing" && currentQuestion && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Round {currentRound}/{TOTAL_ROUNDS}</span>
-              <span className="text-yellow-400 font-bold text-lg">⏱️ {timeLeft}s</span>
-              <span className="text-white/80">Score: {finalScore}/{TOTAL_ROUNDS}</span>
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
             </div>
-            
-            <p className="text-white text-lg md:text-xl mb-6 text-center">
-              {currentQuestion.text}
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {currentQuestion.options.map(option => {
-                const showCorrect = answered && option.isCorrect;
-                const showIncorrect = answered && !option.isCorrect;
-                
-                return (
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={option.id}
+                    key={index}
                     onClick={() => handleAnswer(option)}
                     disabled={answered}
-                    className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                      showCorrect
-                        ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                        : showIncorrect
-                        ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                    } ${answered ? "cursor-not-allowed" : ""}`}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                    <p className="text-white/90 text-sm">{option.description}</p>
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-
-        {gameState === "finished" && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-5xl mb-4">🎉</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Reflex Test Complete!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              Score: {finalScore} / {TOTAL_ROUNDS}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-4">
-              {finalScore >= 3 ? "Great Clarification Skills!" : "Keep Practicing!"}
-            </p>
           </div>
         )}
       </div>

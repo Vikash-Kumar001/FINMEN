@@ -61,21 +61,21 @@ const ExamRecallStory = () => {
           id: "no", 
           text: "No, spaced repetition is better", 
           emoji: "📚", 
-          description: "Cramming the night before doesn't build strong long-term memory. Spaced repetition over time is much more effective",
+          description: "Spaced repetition is better",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes, cramming works well", 
           emoji: "⏰", 
-          description: "Cramming only creates short-term memory that fades quickly",
+          description: "Creates short-term memory",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe, depends on the person", 
           emoji: "🤔", 
-          description: "Cramming is consistently less effective than spaced learning for everyone",
+          description: "Less effective",
           isCorrect: false
         }
       ]
@@ -88,21 +88,21 @@ const ExamRecallStory = () => {
           id: "a", 
           text: "Guessing randomly", 
           emoji: "🎲", 
-          description: "Random guessing doesn't improve recall",
+          description: "Doesn't improve recall",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Using associations and mnemonics", 
           emoji: "🧠", 
-          description: "Associations and mnemonics strengthen recall pathways in the brain, making information easier to retrieve during exams",
+          description: "Strengthens recall pathways",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Skipping questions", 
           emoji: "⏭️", 
-          description: "Skipping doesn't help with recall",
+          description: "Doesn't help recall",
           isCorrect: false
         }
       ]
@@ -115,21 +115,21 @@ const ExamRecallStory = () => {
           id: "a", 
           text: "Always improves recall", 
           emoji: "😰", 
-          description: "Too much stress actually impairs memory and recall",
+          description: "Impairs memory",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "In moderation can sharpen focus", 
           emoji: "⚡", 
-          description: "Moderate stress can sharpen focus and improve performance, but too much stress impairs memory and recall",
+          description: "Moderate stress helps, too much harms",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Never helps", 
           emoji: "❌", 
-          description: "Moderate stress can actually help, but excessive stress harms",
+          description: "Stress moderation is key",
           isCorrect: false
         }
       ]
@@ -142,21 +142,21 @@ const ExamRecallStory = () => {
           id: "a", 
           text: "By creating mental images", 
           emoji: "🖼️", 
-          description: "Creating mental images makes abstract information more concrete and memorable, improving recall during exams",
+          description: "Makes information memorable",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "By ignoring details", 
           emoji: "🙈", 
-          description: "Ignoring details reduces recall, not improves it",
+          description: "Reduces recall",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "By multitasking", 
           emoji: "📱", 
-          description: "Multitasking reduces focus and recall",
+          description: "Reduces focus",
           isCorrect: false
         }
       ]
@@ -169,21 +169,21 @@ const ExamRecallStory = () => {
           id: "no", 
           text: "No, it disrupts sleep", 
           emoji: "🌙", 
-          description: "Reviewing before sleep actually helps memory consolidation",
+          description: "Helps memory consolidation",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe, depends on the content", 
           emoji: "🤔", 
-          description: "Sleep consolidation works for all types of content",
+          description: "Works for all content",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes, sleep consolidates memories", 
           emoji: "😴", 
-          description: "Sleep consolidates memories, so reviewing material before bed enhances recall and strengthens long-term retention",
+          description: "Enhances long-term retention",
           isCorrect: true
         }
       ]

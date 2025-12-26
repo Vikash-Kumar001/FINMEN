@@ -26,13 +26,7 @@ const CitizenDutiesQuiz = () => {
       id: 1,
       text: "Should you keep the park clean?",
       options: [
-        { 
-          id: "a", 
-          text: "Yes, it's my duty", 
-          emoji: "🛝", 
-          description: "We all share public spaces",
-          isCorrect: true 
-        },
+       
         { 
           id: "b", 
           text: "No, others will do it", 
@@ -46,7 +40,14 @@ const CitizenDutiesQuiz = () => {
           emoji: "🚮", 
           description: "This makes things worse",
           isCorrect: false 
-        }
+        },
+         { 
+          id: "a", 
+          text: "Yes, it's my duty", 
+          emoji: "🛝", 
+          description: "We all share public spaces",
+          isCorrect: true 
+        },
       ]
     },
     {
@@ -108,19 +109,20 @@ const CitizenDutiesQuiz = () => {
       text: "Should you vote when you're an adult?",
       options: [
         { 
-          id: "b", 
-          text: "Skip it", 
-          emoji: "😴", 
-          description: "Voting matters for everyone",
-          isCorrect: false 
-        },
-        { 
           id: "a", 
           text: "Yes, it's an important duty", 
           emoji: "🗳️", 
           description: "Voting is a citizen's right and duty",
           isCorrect: true 
         },
+        { 
+          id: "b", 
+          text: "Skip it", 
+          emoji: "😴", 
+          description: "Voting matters for everyone",
+          isCorrect: false 
+        },
+        
         { 
           id: "c", 
           text: "Don't care", 
@@ -142,19 +144,20 @@ const CitizenDutiesQuiz = () => {
           isCorrect: false 
         },
         { 
+          id: "a", 
+          text: "Yes, help the earth", 
+          emoji: "♻️", 
+          description: "Recycling protects our planet",
+          isCorrect: true 
+        },
+        { 
           id: "c", 
           text: "Burn it", 
           emoji: "🔥", 
           description: "This harms the environment",
           isCorrect: false 
         },
-        { 
-          id: "a", 
-          text: "Yes, help the earth", 
-          emoji: "♻️", 
-          description: "Recycling protects our planet",
-          isCorrect: true 
-        }
+        
       ]
     }
   ];

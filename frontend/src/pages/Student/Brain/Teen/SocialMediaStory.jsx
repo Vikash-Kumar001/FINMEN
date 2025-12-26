@@ -61,21 +61,21 @@ const SocialMediaStory = () => {
           id: "no", 
           text: "No, it reduces focus", 
           emoji: "❌", 
-          description: "Multitasking with social media while studying significantly reduces focus and retention",
+          description: "Distracts from studying",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes, it helps", 
           emoji: "✅", 
-          description: "Social media actually distracts from studying and reduces learning",
+          description: "Distracts from learning",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe, depends on the person", 
           emoji: "🤔", 
-          description: "Social media always distracts from effective studying",
+          description: "Always distracting",
           isCorrect: false
         }
       ]
@@ -88,21 +88,21 @@ const SocialMediaStory = () => {
           id: "a", 
           text: "Improves sleep", 
           emoji: "😴", 
-          description: "Screen time actually disrupts sleep patterns",
+          description: "Disrupts sleep",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Disrupts sleep patterns", 
           emoji: "🌙", 
-          description: "Blue light from screens and mental stimulation interfere with sleep quality and duration",
+          description: "Affects sleep quality",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Has no effect", 
           emoji: "➡️", 
-          description: "Social media use significantly affects sleep",
+          description: "Affects sleep",
           isCorrect: false
         }
       ]
@@ -115,21 +115,21 @@ const SocialMediaStory = () => {
           id: "b", 
           text: "Can lead to anxiety and depression", 
           emoji: "😰", 
-          description: "Constant comparison with others on social media can negatively impact self-esteem and contribute to anxiety and depression",
+          description: "Harms self-esteem",
           isCorrect: true
         },
         { 
           id: "a", 
           text: "Boosts self-esteem", 
           emoji: "📈", 
-          description: "Comparison typically harms self-esteem, not boosts it",
+          description: "Harms self-esteem",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Only affects adults", 
           emoji: "👤", 
-          description: "Social media affects people of all ages, especially teens",
+          description: "Affects all ages",
           isCorrect: false
         }
       ]
@@ -142,21 +142,21 @@ const SocialMediaStory = () => {
           id: "a", 
           text: "Unlimited scrolling anytime", 
           emoji: "📱", 
-          description: "Unlimited use can lead to addiction and negative effects",
+          description: "Leads to addiction",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Avoid it completely", 
           emoji: "🚫", 
-          description: "Complete avoidance isn't necessary - moderation is key",
+          description: "Moderation is key",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Set time limits and take breaks", 
           emoji: "⏰", 
-          description: "Setting time limits and taking regular breaks helps maintain a healthy relationship with social media while preserving mental well-being",
+          description: "Maintains healthy habits",
           isCorrect: true
         }
       ]
@@ -169,21 +169,21 @@ const SocialMediaStory = () => {
           id: "a", 
           text: "Improves communication skills", 
           emoji: "💬", 
-          description: "Over-reliance on digital communication can reduce real-world skills",
+          description: "Reduces real-world skills",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Only affects older people", 
           emoji: "👴", 
-          description: "Social media affects all age groups, especially developing teens",
+          description: "Affects all ages",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Can reduce empathy and social skills", 
           emoji: "🤝", 
-          description: "Over-reliance on digital communication can reduce empathy and face-to-face social skills, especially in teens still developing these abilities",
+          description: "Reduces social skills",
           isCorrect: true
         }
       ]

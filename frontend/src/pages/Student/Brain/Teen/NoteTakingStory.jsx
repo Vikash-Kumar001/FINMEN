@@ -59,9 +59,9 @@ const NoteTakingStory = () => {
       id: 1,
       text: "Teen takes notes in class. Does memory improve?",
       choices: [
-        { id: 'a', text: 'Yes, note-taking helps memory' },
-        { id: 'b', text: 'No, notes don\'t help' },
-        { id: 'c', text: 'Only if notes are perfect' }
+        { id: 'a', text: 'Yes, note-taking helps memory', emoji: '🧠' },
+        { id: 'b', text: 'No, notes don\'t help', emoji: '📝' },
+        { id: 'c', text: 'Only if notes are perfect', emoji: '💯' }
       ],
       correct: 'a',
       explanation: 'Taking notes actively engages your brain and helps encode information into memory more effectively!'
@@ -70,20 +70,20 @@ const NoteTakingStory = () => {
       id: 2,
       text: "What is the best note-taking method for visual learners?",
       choices: [
-        { id: 'a', text: 'Mind mapping' },
-        { id: 'b', text: 'Copying everything verbatim' },
-        { id: 'c', text: 'Not taking notes at all' }
+        { id: 'a', text: 'Copying everything verbatim', emoji: '📚' },
+        { id: 'b', text: 'Mind mapping', emoji: '🎨' },
+        { id: 'c', text: 'Not taking notes at all', emoji: '🚫' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'Mind maps capture relationships visually and help visual learners understand connections better!'
     },
     {
       id: 3,
       text: "Does highlighting key points in notes help retention?",
       choices: [
-        { id: 'a', text: 'Yes, it focuses attention on important info' },
-        { id: 'b', text: 'No, it\'s distracting' },
-        { id: 'c', text: 'Only if you highlight everything' }
+        { id: 'a', text: 'Yes, it focuses attention on important info', emoji: '🎯' },
+        { id: 'b', text: 'No, it\'s distracting', emoji: '⚠️' },
+        { id: 'c', text: 'Only if you highlight everything', emoji: '🌈' }
       ],
       correct: 'a',
       explanation: 'Strategic highlighting helps you identify and focus on key concepts, improving retention!'
@@ -92,9 +92,9 @@ const NoteTakingStory = () => {
       id: 4,
       text: "Should notes be reviewed regularly after class?",
       choices: [
-        { id: 'a', text: 'No, notes are only for during class' },
-        { id: 'b', text: 'Yes, regular review strengthens memory' },
-        { id: 'c', text: 'Only before exams' }
+        { id: 'a', text: 'No, notes are only for during class', emoji: '⏰' },
+        { id: 'b', text: 'Yes, regular review strengthens memory', emoji: '💪' },
+        { id: 'c', text: 'Only before exams', emoji: '📅' }
       ],
       correct: 'b',
       explanation: 'Regular review of notes reinforces learning and moves information from short-term to long-term memory!'
@@ -103,11 +103,11 @@ const NoteTakingStory = () => {
       id: 5,
       text: "Which is better for memory: digital or handwritten notes?",
       choices: [
-        { id: 'a', text: 'Handwritten notes' },
-        { id: 'b', text: 'Digital notes' },
-        { id: 'c', text: 'Both are equally effective' }
+        { id: 'a', text: 'Digital notes', emoji: '💻' },
+        { id: 'b', text: 'Both are equally effective', emoji: '⚖️' },
+        { id: 'c', text: 'Handwritten notes', emoji: '✍️' },
       ],
-      correct: 'a',
+      correct: 'c',
       explanation: 'Handwriting engages more brain areas and promotes deeper processing, leading to better memory retention!'
     }
   ];
@@ -220,7 +220,10 @@ const NoteTakingStory = () => {
                           : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
                       } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none text-white font-bold text-sm md:text-base`}
                     >
-                      {choice.text}
+                      <div className="flex flex-col items-center">
+                        <span className="text-2xl mb-1">{choice.emoji}</span>
+                        <span>{choice.text}</span>
+                      </div>
                     </button>
                   );
                 })}

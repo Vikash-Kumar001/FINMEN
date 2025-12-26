@@ -1,212 +1,239 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const SpotFallacy = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-59";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [spots, setSpots] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [selectedReasonings, setSelectedReasonings] = useState([]); // State for tracking selected reasonings
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-59");
+  const gameId = gameData?.id || "uvls-kids-59";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for SpotFallacy, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      reasonings: [
-        { text: "Birds fly, so cats fly.", isWrong: true },
-        { text: "Eat veggies to grow.", isWrong: false },
-        { text: "Toys live at night.", isWrong: true }
+      text: "Which reasoning is wrong?",
+      options: [
+        { 
+          id: "a", 
+          text: "Birds fly, so cats fly.", 
+          emoji: "🐱", 
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Eat veggies to grow.", 
+          emoji: "🥦", 
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Toys never sleep.", 
+          emoji: "🧸", 
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      reasonings: [
-        { text: "Rain makes puddles.", isWrong: false },
-        { text: "Sun is cheese.", isWrong: true },
-        { text: "Dogs talk English.", isWrong: true }
+      text: "Which reasoning is wrong?",
+      options: [
+        { 
+          id: "a", 
+          text: "Rain makes puddles.", 
+          emoji: "🌧️", 
+          isCorrect: false
+        },
+        
+        { 
+          id: "c", 
+          text: "Dogs talk.", 
+          emoji: "🐕", 
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Sun is cheese.", 
+          emoji: "🧀", 
+          isCorrect: true
+        },
       ]
     },
     {
       id: 3,
-      reasonings: [
-        { text: "Study to learn.", isWrong: false },
-        { text: "Moon is banana.", isWrong: true },
-        { text: "Cars eat food.", isWrong: true }
+      text: "Which reasoning is wrong?",
+      options: [
+        { 
+          id: "a", 
+          text: "Study to learn.", 
+          emoji: "📚", 
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Moon is banana.", 
+          emoji: "🍌", 
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Cars don't sleep.", 
+          emoji: "🚗", 
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      reasonings: [
-        { text: "Sleep to rest.", isWrong: false },
-        { text: "Trees dance.", isWrong: true },
-        { text: "Books fly.", isWrong: true }
+      text: "Which reasoning is wrong?",
+      options: [
+        { 
+          id: "b", 
+          text: "Trees dance.", 
+          emoji: "🌳", 
+          isCorrect: true
+        },
+        { 
+          id: "a", 
+          text: "Sleep to rest.", 
+          emoji: "😴", 
+          isCorrect: false
+        },
+        
+        { 
+          id: "c", 
+          text: "Books to read.", 
+          emoji: "📖", 
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      reasonings: [
-        { text: "Play to have fun.", isWrong: false },
-        { text: "Houses swim.", isWrong: true },
-        { text: "Clouds are candy.", isWrong: true }
+      text: "Which reasoning is wrong?",
+      options: [
+        { 
+          id: "a", 
+          text: "Play to have fun.", 
+          emoji: "😊", 
+          isCorrect: false
+        },
+        
+        { 
+          id: "c", 
+          text: "Clouds are condensation.", 
+          emoji: "☁️", 
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Houses swim.", 
+          emoji: "🏠", 
+          isCorrect: true
+        },
       ]
     }
   ];
 
-  // Function to toggle reasoning selection
-  const toggleReasoningSelection = (index) => {
-    setSelectedReasonings(prev => {
-      if (prev.includes(index)) {
-        return prev.filter(i => i !== index);
-      } else {
-        return [...prev, index];
-      }
-    });
-  };
-
-  const handleSpot = () => {
-    const newSpots = [...spots, selectedReasonings];
-    setSpots(newSpots);
-
-    const correctWrong = questions[currentLevel].reasonings.filter(r => r.isWrong).length;
-    const isCorrect = selectedReasonings.length === correctWrong && selectedReasonings.every(s => questions[currentLevel].reasonings[s].isWrong);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setSelectedReasonings([]); // Reset selection for next level
-      }, isCorrect ? 800 : 0);
-    } else {
-      const correctLevels = newSpots.filter((sel, idx) => {
-        const corr = questions[idx].reasonings.filter(r => r.isWrong).length;
-        return sel.length === corr && sel.every(s => questions[idx].reasonings[s].isWrong);
-      }).length;
-      setFinalScore(correctLevels);
-      setShowResult(true);
-    }
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentLevel(0);
-    setSpots([]);
-    setCoins(0);
-    setFinalScore(0);
-    setSelectedReasonings([]); // Reset selection
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentLevel = () => questions[currentLevel];
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Spot Fallacy"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-59"
+      showGameOver={showResult}
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={70}
-      currentLevel={59}
-      showConfetti={showResult && finalScore >= 3}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
     >
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Tap wrong reasoning!</p>
-              <div className="space-y-3">
-                {getCurrentLevel().reasonings.map((reas, idx) => (
-                  <button 
-                    key={idx} 
-                    onClick={() => toggleReasoningSelection(idx)}
-                    className={`w-full p-4 rounded transition-all transform hover:scale-102 flex items-center gap-3 ${
-                      selectedReasonings.includes(idx)
-                        ? "bg-red-500/30 border-2 border-red-400" // Visual feedback for selected
-                        : "bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40"
-                    }`}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
-                    <div className="text-2xl">
-                      {selectedReasonings.includes(idx) ? "❌" : "🤪"}
-                    </div>
-                    <div className="text-white font-medium text-left">{reas.text}</div>
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+
                   </button>
                 ))}
               </div>
-              <button 
-                onClick={handleSpot} 
-                className="mt-4 bg-purple-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                disabled={selectedReasonings.length === 0} // Disable if no reasonings selected
-              >
-                Submit ({selectedReasonings.length} selected)
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 3 ? (
-              <div>
-                <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Fallacy Spotter!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You spotted correctly in {finalScore} out of {questions.length} levels!
-                  You can identify wrong reasoning!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{finalScore} Coins</span>
-                </div>
-                <p className="text-white/80">
-                  Lesson: Learning to spot wrong reasoning helps you think more clearly and make better decisions!
-                </p>
-              </div>
-            ) : (
-              <div>
-                <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Spot More!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You spotted correctly in {finalScore} out of {questions.length} levels.
-                  Keep practicing to identify wrong reasoning!
-                </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
-                <p className="text-white/80 text-sm">
-                  Tip: Look for statements that don't make logical sense or are clearly wrong!
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

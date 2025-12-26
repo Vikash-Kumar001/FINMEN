@@ -56,21 +56,18 @@ const ShortVsLongGoalsDebate = () => {
           id: "a", 
           text: "Short-term wins motivate, but long-term goals sustain progress", 
           emoji: "🏆",
-          description: "Balanced perspective",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Only short-term goals matter", 
           emoji: "⚡",
-          description: "Too extreme",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Only long-term goals matter", 
           emoji: "🔮",
-          description: "Too extreme",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const ShortVsLongGoalsDebate = () => {
           id: "b", 
           text: "Ignore short-term milestones completely", 
           emoji: "🚫",
-          description: "Not balanced",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Long-term vision with short-term milestones creates success", 
           emoji: "📈",
-          description: "Integrated approach",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Short-term wins are everything", 
           emoji: "⚡",
-          description: "Too focused on immediate",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const ShortVsLongGoalsDebate = () => {
           id: "a", 
           text: "Align short and long-term priorities with trade-off reasoning", 
           emoji: "⚖️",
-          description: "Strategic balance",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Choose one priority and ignore the other", 
           emoji: "🎯",
-          description: "Too rigid",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Have no priorities at all", 
           emoji: "🤷",
-          description: "Lacks direction",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const ShortVsLongGoalsDebate = () => {
           id: "b", 
           text: "Extreme focus on only short-term", 
           emoji: "⚡",
-          description: "Not balanced",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Extreme focus on only long-term", 
           emoji: "🔮",
-          description: "Not balanced",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Student examples showing balanced mixed approach", 
           emoji: "📖",
-          description: "Realistic and balanced",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const ShortVsLongGoalsDebate = () => {
           id: "a", 
           text: "Balance short and long-term goals with evidence-backed strategies", 
           emoji: "🏁",
-          description: "Comprehensive and balanced",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "One type of goal is always better than the other", 
           emoji: "⚔️",
-          description: "Too absolute",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No conclusion, goals don't matter", 
           emoji: "🤷",
-          description: "Not helpful",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const ShortVsLongGoalsDebate = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

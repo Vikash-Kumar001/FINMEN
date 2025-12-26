@@ -56,21 +56,18 @@ const EvidenceCheck = () => {
           id: "a", 
           text: "Peer-reviewed scientific studies and government health sites", 
           emoji: "💉",
-          description: "Reliable, evidence-based sources",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Social media posts and blog opinions", 
           emoji: "📱",
-          description: "Not reliable sources",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Personal anecdotes only", 
           emoji: "👤",
-          description: "Not scientific evidence",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const EvidenceCheck = () => {
           id: "b", 
           text: "Conspiracy websites and personal anecdotes", 
           emoji: "🌐",
-          description: "Not reliable",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Scientific consensus reports and news articles with data", 
           emoji: "🌍",
-          description: "Evidence-based sources",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Opinion pieces without data", 
           emoji: "💭",
-          description: "Lacks evidence",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const EvidenceCheck = () => {
           id: "a", 
           text: "Medical journals and expert interviews", 
           emoji: "🥕",
-          description: "Reliable medical sources",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Old wives' tales without scientific backing", 
           emoji: "👵",
-          description: "Not evidence-based",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Random internet forums", 
           emoji: "💬",
-          description: "Unreliable",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const EvidenceCheck = () => {
           id: "b", 
           text: "YouTube videos and forum threads", 
           emoji: "📺",
-          description: "Not reliable sources",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Personal conspiracy theories", 
           emoji: "👁️",
-          description: "Not evidence",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "NASA documents and historical records", 
           emoji: "🌕",
-          description: "Official and historical evidence",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const EvidenceCheck = () => {
           id: "a", 
           text: "Health organization studies and scientific papers", 
           emoji: "☕",
-          description: "Reliable scientific sources",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Advertisements and marketing claims", 
           emoji: "📢",
-          description: "Biased sources",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Personal opinions without research", 
           emoji: "💭",
-          description: "Not evidence-based",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const EvidenceCheck = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

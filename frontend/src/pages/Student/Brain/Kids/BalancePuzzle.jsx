@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { Gamepad, Smile, Monitor, Frown } from 'lucide-react';
+
 
 const BalancePuzzle = () => {
   const location = useLocation();
@@ -30,11 +30,11 @@ const BalancePuzzle = () => {
 
   // Left side - screen time amounts
   const leftItems = [
-    { id: 1, name: "1 hr Game", emoji: "🎮", description: "Short gaming time", icon: Gamepad },
-    { id: 2, name: "5 hrs Screen", emoji: "📱", description: "Long screen time", icon: Monitor },
-    { id: 3, name: "2 hrs Tablet", emoji: "📱", description: "Moderate screen time", icon: Monitor },
-    { id: 4, name: "30 min Phone", emoji: "📞", description: "Very short screen time", icon: Monitor },
-    { id: 5, name: "6 hrs Gaming", emoji: "🎮", description: "Very long gaming time", icon: Gamepad }
+    { id: 1, name: "1 hr Game", emoji: "🎮", description: "Short gaming time" },
+    { id: 2, name: "5 hrs Screen", emoji: "📱", description: "Long screen time" },
+    { id: 3, name: "2 hrs Tablet", emoji: "💻", description: "Moderate screen time" },
+    { id: 4, name: "30 min Phone", emoji: "📞", description: "Very short screen time" },
+    { id: 5, name: "6 hrs Gaming", emoji: "🎮", description: "Very long gaming time" }
   ];
 
   // Right side - effects
@@ -151,7 +151,6 @@ const BalancePuzzle = () => {
                 <div className="space-y-3">
                   <h3 className="text-white font-bold text-center mb-4">Screen Time</h3>
                   {leftItems.map((item) => {
-                    const Icon = item.icon;
                     const matched = matches.some(m => m.leftId === item.id && m.isCorrect);
                     return (
                       <button
@@ -167,12 +166,11 @@ const BalancePuzzle = () => {
                         } ${matched ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                       >
                         <div className="flex items-center gap-3">
-                          <Icon className="w-6 h-6 text-white" />
+                          <div className="text-2xl">{item.emoji}</div>
                           <div className="text-left flex-1">
                             <div className="text-white font-bold">{item.name}</div>
                             <div className="text-white/70 text-sm">{item.description}</div>
                           </div>
-                          <div className="text-2xl">{item.emoji}</div>
                         </div>
                       </button>
                     );

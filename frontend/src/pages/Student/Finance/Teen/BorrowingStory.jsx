@@ -31,19 +31,20 @@ const BorrowingStory = () => {
       id: 1,
       text: "Teen borrows for a new phone. Can't repay? Result →",
       options: [
-        { 
-          id: "debt", 
-          text: "Debt", 
-          emoji: "⚠️", 
-          description: "Leads to financial trouble", 
-          isCorrect: true 
-        },
+        
         { 
           id: "free", 
           text: "Free money", 
           emoji: "🎁", 
           description: "Never happens", 
           isCorrect: false 
+        },
+        { 
+          id: "debt", 
+          text: "Debt", 
+          emoji: "⚠️", 
+          description: "Leads to financial trouble", 
+          isCorrect: true 
         },
         { 
           id: "nothing", 
@@ -58,13 +59,7 @@ const BorrowingStory = () => {
       id: 2,
       text: "You borrow ₹500 but can't repay. What's the consequence?",
       options: [
-        { 
-          id: "interest", 
-          text: "Interest and penalties increase", 
-          emoji: "📈", 
-          description: "Debt grows larger", 
-          isCorrect: true 
-        },
+        
         { 
           id: "forgiven", 
           text: "Debt is forgiven", 
@@ -78,7 +73,14 @@ const BorrowingStory = () => {
           emoji: "😴", 
           description: "Wrong approach", 
           isCorrect: false 
-        }
+        },
+        { 
+          id: "interest", 
+          text: "Interest and penalties increase", 
+          emoji: "📈", 
+          description: "Debt grows larger", 
+          isCorrect: true 
+        },
       ]
     },
     {
@@ -86,19 +88,20 @@ const BorrowingStory = () => {
       text: "What should you do before borrowing for a want?",
       options: [
         { 
-          id: "borrow-first", 
-          text: "Borrow first, think later", 
-          emoji: "💸", 
-          description: "Risky approach", 
-          isCorrect: false 
-        },
-        { 
           id: "plan", 
           text: "Plan how to repay first", 
           emoji: "📋", 
           description: "Responsible approach", 
           isCorrect: true 
         },
+        { 
+          id: "borrow-first", 
+          text: "Borrow first, think later", 
+          emoji: "💸", 
+          description: "Risky approach", 
+          isCorrect: false 
+        },
+        
         { 
           id: "ignore", 
           text: "Ignore repayment plan", 
@@ -119,6 +122,14 @@ const BorrowingStory = () => {
           description: "Unlikely", 
           isCorrect: false 
         },
+        
+        { 
+          id: "freedom", 
+          text: "Financial freedom", 
+          emoji: "🕊️", 
+          description: "Opposite happens", 
+          isCorrect: false 
+        },
         { 
           id: "debt", 
           text: "Debt problems", 
@@ -126,13 +137,6 @@ const BorrowingStory = () => {
           description: "Common consequence", 
           isCorrect: true 
         },
-        { 
-          id: "freedom", 
-          text: "Financial freedom", 
-          emoji: "🕊️", 
-          description: "Opposite happens", 
-          isCorrect: false 
-        }
       ]
     },
     {

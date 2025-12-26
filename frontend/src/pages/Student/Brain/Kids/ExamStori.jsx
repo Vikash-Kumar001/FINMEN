@@ -65,14 +65,14 @@ const ExamStori = () => {
         { 
           id: "no", 
           text: "No, it's not smart", 
-          emoji: "❌", 
+          emoji: "👎", 
           description: "Sleep is important for learning",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes, it's smart", 
-          emoji: "✅", 
+          emoji: "🤓", 
           description: "Studying late is always good",
           isCorrect: false
         },
@@ -92,7 +92,7 @@ const ExamStori = () => {
         { 
           id: "yes", 
           text: "Yes, it's good", 
-          emoji: "✅", 
+          emoji: "👍", 
           description: "Gaming helps before tests",
           isCorrect: false
         },
@@ -106,7 +106,7 @@ const ExamStori = () => {
         { 
           id: "no", 
           text: "No, it's not good", 
-          emoji: "❌", 
+          emoji: "👎", 
           description: "Rest helps you perform better",
           isCorrect: true
         }
@@ -126,14 +126,14 @@ const ExamStori = () => {
         { 
           id: "no", 
           text: "No, it's not wise", 
-          emoji: "❌", 
+          emoji: "👎", 
           description: "Sleep helps focus in school",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes, it's wise", 
-          emoji: "✅", 
+          emoji: "🤓", 
           description: "TV is always okay",
           isCorrect: false
         }
@@ -146,14 +146,14 @@ const ExamStori = () => {
         { 
           id: "no", 
           text: "No, it's not smart", 
-          emoji: "❌", 
+          emoji: "👎", 
           description: "Sleep helps you learn better",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes, it's smart", 
-          emoji: "✅", 
+          emoji: "😎", 
           description: "Texting is always fine",
           isCorrect: false
         },
@@ -173,7 +173,7 @@ const ExamStori = () => {
         { 
           id: "yes", 
           text: "Yes, it's a good idea", 
-          emoji: "✅", 
+          emoji: "💡", 
           description: "Projects are more important",
           isCorrect: false
         },
@@ -187,7 +187,7 @@ const ExamStori = () => {
         { 
           id: "no", 
           text: "No, it's not a good idea", 
-          emoji: "❌", 
+          emoji: "👎", 
           description: "Sleep helps you work better",
           isCorrect: true
         }

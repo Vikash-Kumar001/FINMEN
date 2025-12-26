@@ -31,7 +31,7 @@ const SleepWellPoster = () => {
     {
       question: 'Which poster best shows "Sleep = Brain Fuel"?',
       choices: [
-        { text: "Poster: 'Sleep = Brain Fuel' with moon and brain", correct: true, emoji: "🌙🧠" },
+        { text: "Poster: 'Sleep = Brain Fuel' with moon and brain", correct: true, emoji: "🌙" },
         { text: "Poster: 'Stay Up All Night' with clock", correct: false, emoji: "⏰" },
         { text: "Poster: 'No Sleep Needed' with energy drink", correct: false, emoji: "⚡" }
       ]
@@ -40,14 +40,14 @@ const SleepWellPoster = () => {
       question: 'Which poster best shows "Rest to Shine"?',
       choices: [
         { text: "Poster: 'Never Rest' with running person", correct: false, emoji: "🏃" },
-        { text: "Poster: 'Rest to Shine' with moon and star", correct: true, emoji: "🌙⭐" },
+        { text: "Poster: 'Rest to Shine' with moon and star", correct: true, emoji: "⭐" },
         { text: "Poster: 'Skip Sleep' with coffee cup", correct: false, emoji: "☕" }
       ]
     },
     {
       question: 'Which poster best shows "Sleep Smart"?',
       choices: [
-        { text: "Poster: 'Sleep Smart' with bed and clock", correct: true, emoji: "🛏️⏰" },
+        { text: "Poster: 'Sleep Smart' with bed and clock", correct: true, emoji: "🛏️" },
         { text: "Poster: 'Stay Awake' with light bulb", correct: false, emoji: "💡" },
         { text: "Poster: 'No Bedtime' with party hat", correct: false, emoji: "🎉" }
       ]
@@ -57,13 +57,13 @@ const SleepWellPoster = () => {
       choices: [
         { text: "Poster: 'Work All Night' with computer", correct: false, emoji: "💻" },
         { text: "Poster: 'No Rest' with tired face", correct: false, emoji: "😴" },
-        { text: "Poster: 'Power of Rest' with moon and battery", correct: true, emoji: "🌙🔋" }
+        { text: "Poster: 'Power of Rest' with moon and battery", correct: true, emoji: "🔋" }
       ]
     },
     {
       question: 'Which poster best shows "Sleep for Success"?',
       choices: [
-        { text: "Poster: 'Sleep for Success' with trophy and bed", correct: true, emoji: "🏆🛏️" },
+        { text: "Poster: 'Sleep for Success' with trophy and bed", correct: true, emoji: "🏆" },
         { text: "Poster: 'Skip Sleep' with books", correct: false, emoji: "📚" },
         { text: "Poster: 'Stay Up' with gaming controller", correct: false, emoji: "🎮" }
       ]

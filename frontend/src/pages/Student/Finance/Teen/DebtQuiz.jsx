@@ -31,13 +31,7 @@ const DebtQuiz = () => {
       id: 1,
       text: "Borrow ₹100, repay ₹120. What is extra ₹20 called?",
       options: [
-        { 
-          id: "interest", 
-          text: "Interest", 
-          emoji: "💰", 
-          description: "Cost of borrowing", 
-          isCorrect: true 
-        },
+       
         { 
           id: "principal", 
           text: "Principal", 
@@ -51,7 +45,14 @@ const DebtQuiz = () => {
           emoji: "💸", 
           description: "Different from interest", 
           isCorrect: false 
-        }
+        },
+         { 
+          id: "interest", 
+          text: "Interest", 
+          emoji: "💰", 
+          description: "Cost of borrowing", 
+          isCorrect: true 
+        },
       ]
     },
     {
@@ -99,6 +100,7 @@ const DebtQuiz = () => {
           description: "Original borrowed amount", 
           isCorrect: true 
         },
+        
         { 
           id: "total", 
           text: "Total debt", 
@@ -112,6 +114,13 @@ const DebtQuiz = () => {
       id: 4,
       text: "What should you do before borrowing money?",
       options: [
+         { 
+          id: "plan", 
+          text: "Plan how to repay", 
+          emoji: "📋", 
+          description: "Responsible approach", 
+          isCorrect: true 
+        },
         { 
           id: "borrow-first", 
           text: "Borrow first, think later", 
@@ -119,13 +128,7 @@ const DebtQuiz = () => {
           description: "Risky approach", 
           isCorrect: false 
         },
-        { 
-          id: "plan", 
-          text: "Plan how to repay", 
-          emoji: "📋", 
-          description: "Responsible approach", 
-          isCorrect: true 
-        },
+       
         { 
           id: "ignore", 
           text: "Ignore repayment", 

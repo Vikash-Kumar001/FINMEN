@@ -113,11 +113,7 @@ const BadgeRestHero = () => {
           emoji: "🙈", 
           isCorrect: false
         },
-        { 
-          text: "Work until you collapse", 
-          emoji: "😵", 
-          isCorrect: false
-        }
+       
       ]
     },
     {

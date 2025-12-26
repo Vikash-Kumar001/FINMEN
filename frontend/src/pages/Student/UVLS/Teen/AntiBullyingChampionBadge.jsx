@@ -1,20 +1,19 @@
 import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const AntiBullyingChampionBadge = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
-  const gameId = "uvls-teen-40";
-  const gameData = getGameDataById(gameId);
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-teen-40");
+  const gameId = gameData?.id || "uvls-teen-40";
   
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
+  // Find next game path and ID if not provided in location.state
   const { nextGamePath, nextGameId } = useMemo(() => {
     if (location.state?.nextGamePath) {
       return {
@@ -40,66 +39,70 @@ const AntiBullyingChampionBadge = () => {
     return { nextGamePath: null, nextGameId: null };
   }, [location.state, gameId]);
   
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [scenario, setScenario] = useState(0);
-  const [decisions, setDecisions] = useState([]);
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
 
-  const scenarios = [
+  const challenges = [
     {
       id: 1,
       title: "Report Bullying Incident",
-      description: "You witness someone being bullied. What's the most effective sustained action?",
-      choices: [
+      question: "You witness someone being bullied. What's the most effective sustained action?",
+      options: [
+       
         { 
-          id: "a", 
-          text: "Report to trusted adults, support the victim, and follow up to ensure safety", 
-          emoji: "🛡️", 
-          description: "Comprehensive anti-bullying action",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Ignore the situation", 
           emoji: "🙈", 
-          description: "Doesn't help",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "Join in the bullying", 
           emoji: "👥", 
-          description: "Wrong and harmful",
           isCorrect: false
-        }
+        },
+        { 
+          text: "Tell the victim to handle it themselves", 
+          emoji: "💬", 
+          isCorrect: false
+        },
+         { 
+          text: "Report to trusted adults, support the victim, and follow up to ensure safety", 
+          emoji: "🛡️", 
+          isCorrect: true
+        },
       ]
     },
     {
       id: 2,
       title: "Create Awareness Campaign",
-      description: "You want to create ongoing awareness about bullying prevention. What's the best approach?",
-      choices: [
+      question: "You want to create ongoing awareness about bullying prevention. What's the best approach?",
+      options: [
         { 
-          id: "b", 
-          text: "Do nothing", 
-          emoji: "🚫", 
-          description: "No impact",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
           text: "Organize regular workshops, peer presentations, and awareness activities throughout the year", 
           emoji: "📢", 
-          description: "Sustained awareness campaign",
           isCorrect: true
         },
         { 
-          id: "c", 
+          text: "Do nothing", 
+          emoji: "🚫", 
+          isCorrect: false
+        },
+        { 
           text: "One-time announcement", 
           emoji: "📢", 
-          description: "Limited impact",
+          isCorrect: false
+        },
+        { 
+          text: "Focus only on punishment for bullies", 
+          emoji: "⚖️", 
           isCorrect: false
         }
       ]
@@ -107,27 +110,27 @@ const AntiBullyingChampionBadge = () => {
     {
       id: 3,
       title: "Support Bullying Victims",
-      description: "How do you provide sustained support to someone who has been bullied?",
-      choices: [
+      question: "How do you provide sustained support to someone who has been bullied?",
+      options: [
+        
         { 
-          id: "a", 
-          text: "Check in regularly, offer ongoing support, and help them build resilience", 
-          emoji: "💙", 
-          description: "Long-term supportive approach",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Support once and forget", 
           emoji: "👋", 
-          description: "Not sustained",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "Blame the victim", 
           emoji: "👆", 
-          description: "Harmful",
+          isCorrect: false
+        },
+        { 
+          text: "Check in regularly, offer ongoing support, and help them build resilience", 
+          emoji: "💙", 
+          isCorrect: true
+        },
+        { 
+          text: "Tell them to fight back physically", 
+          emoji: "🥊", 
           isCorrect: false
         }
       ]
@@ -135,159 +138,175 @@ const AntiBullyingChampionBadge = () => {
     {
       id: 4,
       title: "Prevent Future Bullying",
-      description: "How do you help prevent bullying from happening again?",
-      choices: [
+      question: "How do you help prevent bullying from happening again?",
+      options: [
+        
         { 
-          id: "b", 
           text: "Do nothing preventive", 
           emoji: "🚫", 
-          description: "No prevention",
           isCorrect: false
         },
         { 
-          id: "c", 
-          text: "Wait for it to happen again", 
-          emoji: "⏳", 
-          description: "Reactive, not preventive",
-          isCorrect: false
-        },
-        { 
-          id: "a", 
           text: "Advocate for school policies, promote inclusion, and model respectful behavior consistently", 
           emoji: "🌱", 
-          description: "Comprehensive prevention",
           isCorrect: true
+        },
+        { 
+          text: "Wait for it to happen again", 
+          emoji: "⏳", 
+          isCorrect: false
+        },
+        { 
+          text: "Avoid the people involved", 
+          emoji: "🚶", 
+          isCorrect: false
         }
       ]
     },
     {
       id: 5,
       title: "Build Anti-Bullying Community",
-      description: "How do you build a community that actively works against bullying?",
-      choices: [
+      question: "How do you build a community that actively works against bullying?",
+      options: [
+       
         { 
-          id: "a", 
-          text: "Start peer support groups, organize regular meetings, and create safe spaces for discussion", 
-          emoji: "🤝", 
-          description: "Community-building approach",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Work alone", 
           emoji: "👤", 
-          description: "Limited impact",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "Encourage exclusion", 
           emoji: "🚫", 
-          description: "Counterproductive",
+          isCorrect: false
+        },
+         { 
+          text: "Start peer support groups, organize regular meetings, and create safe spaces for discussion", 
+          emoji: "🤝", 
+          isCorrect: true
+        },
+        { 
+          text: "Focus only on identifying bullies", 
+          emoji: "🔍", 
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleDecision = (selectedChoice) => {
+  const handleChoice = (isCorrect) => {
     if (answered) return;
     
     setAnswered(true);
     resetFeedback();
     
-    const newDecisions = [...decisions, { 
-      scenarioId: scenarios[scenario].id, 
-      choice: selectedChoice,
-      isCorrect: scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect
-    }];
-    
-    setDecisions(newDecisions);
-    
-    const isCorrect = scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setFinalScore(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    if (scenario < scenarios.length - 1) {
-      setTimeout(() => {
-        setScenario(prev => prev + 1);
-        setAnswered(false);
-        resetFeedback();
-      }, 500);
-    } else {
-      setTimeout(() => {
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
         setShowResult(true);
-      }, 500);
-    }
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
-  const getCurrentScenario = () => scenarios[scenario];
+  const currentChallengeData = challenges[challenge];
 
   return (
     <GameShell
       title="Anti-Bullying Champion Badge"
-      subtitle={showResult ? "Badge Complete!" : `Challenge ${scenario + 1} of ${scenarios.length}`}
-      currentLevel={scenario + 1}
-      totalLevels={scenarios.length}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
+      score={score}
       coinsPerLevel={coinsPerLevel}
-      showGameOver={showResult}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      score={finalScore}
-      gameId={gameId}
-      gameType="uvls"
-      maxScore={scenarios.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="uvls"
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
-      showConfetti={showResult && finalScore >= 3}
     >
-      <div className="text-center text-white space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!showResult && getCurrentScenario() && (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="mb-4">
-              <span className="text-white/80">Challenge {scenario + 1}/{scenarios.length}</span>
-              <span className="text-yellow-400 font-bold ml-4">Score: {finalScore}/{scenarios.length}</span>
-            </div>
-            
-            <h3 className="text-2xl font-bold mb-4">{getCurrentScenario().title}</h3>
-            <p className="text-white/90 text-lg mb-6">{getCurrentScenario().description}</p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {getCurrentScenario().choices.map(choice => {
-                const isSelected = decisions.some(d => d.scenarioId === getCurrentScenario().id && d.choice === choice.id);
-                const showCorrect = answered && choice.isCorrect;
-                const showIncorrect = answered && isSelected && !choice.isCorrect;
-                
-                return (
+      <div className="space-y-8">
+        {!showResult && currentChallengeData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallengeData.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallengeData.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallengeData.options.map((option, idx) => (
                   <button
-                    key={choice.id}
-                    onClick={() => handleDecision(choice.id)}
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
                     disabled={answered}
-                    className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                      showCorrect
-                        ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                        : showIncorrect
-                        ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                        : isSelected
-                        ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
                     } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-3xl mb-2">{choice.emoji}</div>
-                    <h4 className="font-bold text-base mb-2">{choice.text}</h4>
-                    <p className="text-white/90 text-sm">{choice.description}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
           </div>
-        )}
+        ) : showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-6xl mb-4">🏆</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} correct!
+                  You're an Anti-Bullying Champion!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} correct.
+                  Practice anti-bullying skills by standing up for others and creating safe environments!
+                </p>
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
     </GameShell>
   );

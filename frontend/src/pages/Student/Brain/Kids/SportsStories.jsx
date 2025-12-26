@@ -112,13 +112,7 @@ const SportsStories = () => {
       id: 4,
       text: "Kid falls during race. What's the right action?",
       options: [
-        { 
-          id: "get", 
-          text: "Get up and finish", 
-          emoji: "🏃", 
-          description: "Don't give up",
-          isCorrect: true
-        },
+       
         { 
           id: "stay", 
           text: "Stay down and quit", 
@@ -132,26 +126,34 @@ const SportsStories = () => {
           emoji: "👆", 
           description: "Make excuses",
           isCorrect: false
-        }
+        },
+         { 
+          id: "get", 
+          text: "Get up and finish", 
+          emoji: "🏃", 
+          description: "Don't give up",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 5,
       text: "Team loses tournament. Next step?",
       options: [
-        { 
-          id: "train", 
-          text: "Train harder for next time", 
-          emoji: "💪", 
-          description: "Keep improving",
-          isCorrect: true
-        },
+        
         { 
           id: "quit5", 
           text: "Quit the team", 
           emoji: "🚶", 
           description: "Leave the team",
           isCorrect: false
+        },
+        { 
+          id: "train", 
+          text: "Train harder for next time", 
+          emoji: "💪", 
+          description: "Keep improving",
+          isCorrect: true
         },
         { 
           id: "complain", 

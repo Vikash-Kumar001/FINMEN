@@ -34,14 +34,14 @@ const HolidayStory = () => {
         { 
           id: "no", 
           text: "No, it's not good", 
-          emoji: "❌", 
+          emoji: "📛", 
           description: "Rest helps you feel better",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes, it's good", 
-          emoji: "✅", 
+          emoji: "👍", 
           description: "Playing all night is fine",
           isCorrect: false
         },
@@ -61,7 +61,7 @@ const HolidayStory = () => {
         { 
           id: "yes", 
           text: "Yes, it's smart", 
-          emoji: "✅", 
+          emoji: "😎", 
           description: "Holidays are for staying up",
           isCorrect: false
         },
@@ -75,7 +75,7 @@ const HolidayStory = () => {
         { 
           id: "no", 
           text: "No, it's not smart", 
-          emoji: "❌", 
+          emoji: "👎", 
           description: "Sleep is important even on holidays",
           isCorrect: true
         }
@@ -95,14 +95,14 @@ const HolidayStory = () => {
         { 
           id: "no", 
           text: "No, it's not good", 
-          emoji: "❌", 
+          emoji: "👎", 
           description: "Rest helps you enjoy breaks more",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes, it's good", 
-          emoji: "✅", 
+          emoji: "🤓", 
           description: "Gaming all night is fine",
           isCorrect: false
         }
@@ -115,14 +115,14 @@ const HolidayStory = () => {
         { 
           id: "no", 
           text: "No, it's not wise", 
-          emoji: "❌", 
+          emoji: "😕", 
           description: "Sleep helps you feel refreshed",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes, it's wise", 
-          emoji: "✅", 
+          emoji: "🦉", 
           description: "Movies are worth staying up",
           isCorrect: false
         },
@@ -142,7 +142,7 @@ const HolidayStory = () => {
         { 
           id: "yes", 
           text: "Yes, it's good", 
-          emoji: "✅", 
+          emoji: "💬", 
           description: "Chatting is always fine",
           isCorrect: false
         },
@@ -156,7 +156,7 @@ const HolidayStory = () => {
         { 
           id: "no", 
           text: "No, it's not good", 
-          emoji: "❌", 
+          emoji: "😴", 
           description: "Sleep helps you stay alert",
           isCorrect: true
         }

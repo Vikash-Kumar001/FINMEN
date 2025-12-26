@@ -37,21 +37,21 @@ const InclusionMatch = () => {
           id: "happy", 
           text: "They feel happy and included", 
           emoji: "😊", 
-          description: "They feel welcomed and part of the group",
+          
           isCorrect: true 
         },
         { 
           id: "ignored", 
           text: "They feel ignored", 
           emoji: "😔", 
-          description: "They feel left out",
+          
           isCorrect: false 
         },
         { 
           id: "run", 
           text: "They run away", 
           emoji: "🏃", 
-          description: "They avoid the situation",
+          
           isCorrect: false 
         }
       ]
@@ -66,21 +66,18 @@ const InclusionMatch = () => {
           id: "angry", 
           text: "They get angry", 
           emoji: "😠", 
-          description: "They react negatively",
           isCorrect: false 
         },
         { 
           id: "grateful", 
           text: "They feel grateful and cared for", 
           emoji: "🙏", 
-          description: "They appreciate your kindness",
           isCorrect: true 
         },
         { 
           id: "hungry", 
           text: "They stay hungry", 
           emoji: "😕", 
-          description: "They don't benefit",
           isCorrect: false 
         }
       ]
@@ -95,21 +92,18 @@ const InclusionMatch = () => {
           id: "confused", 
           text: "They feel confused", 
           emoji: "😕", 
-          description: "They don't understand",
           isCorrect: false 
         },
         { 
           id: "giveup", 
           text: "They give up", 
           emoji: "😞", 
-          description: "They stop trying",
           isCorrect: false 
         },
         { 
           id: "supported", 
           text: "They understand better and feel supported", 
           emoji: "💪", 
-          description: "They learn and feel helped",
           isCorrect: true 
         }
       ]
@@ -124,21 +118,18 @@ const InclusionMatch = () => {
           id: "fun", 
           text: "Everyone has fun together", 
           emoji: "🎉", 
-          description: "All enjoy playing together",
           isCorrect: true 
         },
         { 
           id: "cries", 
           text: "Someone cries", 
           emoji: "😢", 
-          description: "Someone gets upset",
           isCorrect: false 
         },
         { 
           id: "fight", 
           text: "People fight", 
           emoji: "👊", 
-          description: "Conflict occurs",
           isCorrect: false 
         }
       ]
@@ -153,21 +144,18 @@ const InclusionMatch = () => {
           id: "annoyed", 
           text: "They feel annoyed", 
           emoji: "😤", 
-          description: "They don't want company",
           isCorrect: false 
         },
         { 
           id: "lonely", 
           text: "They feel less lonely", 
           emoji: "😊", 
-          description: "They feel included and happy",
           isCorrect: true 
         },
         { 
           id: "leave", 
           text: "They leave", 
           emoji: "🚶", 
-          description: "They walk away",
           isCorrect: false 
         }
       ]

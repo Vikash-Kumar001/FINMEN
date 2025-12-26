@@ -1,10 +1,37 @@
-import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getFinanceKidsGames } from "../../../../pages/Games/GameCategories/Finance/kidGamesData";
 
 const PuzzleHonestVsFraud = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getFinanceKidsGames({});
+      const currentGame = games.find(g => g.id === "finance-kids-84");
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state]);
 
   // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
   const coinsPerLevel = 1;
@@ -118,16 +145,10 @@ const PuzzleHonestVsFraud = () => {
     return match ? match.isCorrect : null;
   };
 
-  const handleNext = () => {
-    navigate("/games/finance/kids");
-  };
-
   return (
     <GameShell
       title="Puzzle: Honest vs Fraud"
       subtitle={gameFinished ? "Puzzle Complete!" : `Match Shops with Outcomes (${matches.length}/${items.length} matched)`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={score}
       gameId="finance-kids-84"
@@ -137,11 +158,13 @@ const PuzzleHonestVsFraud = () => {
       showConfetti={gameFinished && score === items.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/finance/kids"
+      backPath="/games/financial-literacy/kids"
       maxScore={items.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
       <div className="space-y-8 max-w-4xl mx-auto">
         {!gameFinished ? (

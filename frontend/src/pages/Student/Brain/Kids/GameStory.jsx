@@ -119,6 +119,14 @@ const GameStory = () => {
           description: "This isn't balanced",
           isCorrect: false
         },
+        
+        { 
+          id: "onlystudy", 
+          text: "Never play games", 
+          emoji: "📚", 
+          description: "Balance includes some fun time",
+          isCorrect: false
+        },
         { 
           id: "schedule", 
           text: "Set a schedule: study time and game time", 
@@ -126,19 +134,19 @@ const GameStory = () => {
           description: "Planning helps balance activities",
           isCorrect: true
         },
-        { 
-          id: "onlystudy", 
-          text: "Never play games", 
-          emoji: "📚", 
-          description: "Balance includes some fun time",
-          isCorrect: false
-        }
       ]
     },
     {
       id: 5,
       text: "You finished your homework early. What's a good choice?",
       options: [
+         { 
+          id: "play", 
+          text: "Play games as a reward", 
+          emoji: "🎮", 
+          description: "Rewarding yourself is good",
+          isCorrect: true
+        },
         { 
           id: "morehomework", 
           text: "Do extra homework", 
@@ -146,13 +154,7 @@ const GameStory = () => {
           description: "You can do this, but rest is also good",
           isCorrect: false
         },
-        { 
-          id: "play", 
-          text: "Play games as a reward", 
-          emoji: "🎮", 
-          description: "Rewarding yourself is good",
-          isCorrect: true
-        },
+       
         { 
           id: "nothing", 
           text: "Do nothing", 

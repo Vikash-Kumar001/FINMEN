@@ -56,21 +56,18 @@ const CounselorRoleplay = () => {
           id: "a", 
           text: "Describe clearly what happened and provide details about when and where it occurred", 
           emoji: "🗣️",
-          description: "Clear and detailed explanation",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Give a vague description without details", 
           emoji: "🌫️",
-          description: "Not helpful for understanding",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Downplay what happened", 
           emoji: "😐",
-          description: "Doesn't address the problem",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const CounselorRoleplay = () => {
           id: "b", 
           text: "Hide your emotions completely", 
           emoji: "😶",
-          description: "Prevents getting help",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Express your feelings honestly so they can understand and help", 
           emoji: "😟",
-          description: "Open and honest communication",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Pretend everything is fine", 
           emoji: "😊",
-          description: "Doesn't get you support",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const CounselorRoleplay = () => {
           id: "a", 
           text: "Clearly state what kind of support would help you feel safe and supported", 
           emoji: "🤝",
-          description: "Direct and clear about needs",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Say you don't need any support", 
           emoji: "🚫",
-          description: "Limits available help",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Change the subject completely", 
           emoji: "🔄",
-          description: "Avoids getting help",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const CounselorRoleplay = () => {
           id: "b", 
           text: "Reject the plan immediately", 
           emoji: "❌",
-          description: "Not collaborative",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Agree without understanding", 
           emoji: "👍",
-          description: "Not thoughtful",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Ask questions to understand the plan and discuss any concerns", 
           emoji: "💬",
-          description: "Engaged and collaborative",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const CounselorRoleplay = () => {
           id: "a", 
           text: "Check in as planned and communicate if the support is helping", 
           emoji: "📞",
-          description: "Follows through and communicates",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Never follow up", 
           emoji: "🙈",
-          description: "Doesn't maintain support",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ignore any follow-up plans", 
           emoji: "🚫",
-          description: "Not helpful",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const CounselorRoleplay = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

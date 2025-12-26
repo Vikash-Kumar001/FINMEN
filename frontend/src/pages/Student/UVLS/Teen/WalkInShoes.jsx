@@ -1,16 +1,22 @@
 import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const WalkInShoes = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "uvls-teen-4";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("uvls-teen-4");
+  const gameId = gameData?.id || "uvls-teen-4";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for WalkInShoes, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
@@ -19,6 +25,7 @@ const WalkInShoes = () => {
   
   // Find next game path and ID if not provided in location.state
   const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
     if (location.state?.nextGamePath) {
       return {
         nextGamePath: location.state.nextGamePath,
@@ -26,6 +33,7 @@ const WalkInShoes = () => {
       };
     }
     
+    // Fallback: find next game from game data
     try {
       const games = getUvlsTeenGames({});
       const currentGame = games.find(g => g.id === gameId);
@@ -43,206 +51,201 @@ const WalkInShoes = () => {
     return { nextGamePath: null, nextGameId: null };
   }, [location.state, gameId]);
   
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [challenge, setChallenge] = useState(0);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const questions = [
+  const challenges = [
     {
       id: 1,
-      text: "You're a new student who speaks a different language. During lunch, you sit alone because you're not sure how to join others. What do you do?",
+      title: "New Student Challenge",
+      question: "You're a new student who speaks a different language. During lunch, you sit alone because you're not sure how to join others. What do you do?",
       options: [
         { 
-          id: "a", 
-          text: "Try to ask someone if you can join", 
+          text: "Try to ask someone if you can join - Shows courage and helps you connect", 
           emoji: "🤝", 
-          description: "Shows courage and helps you connect",
-          isCorrect: true 
+          isCorrect: true
         },
         { 
-          id: "b", 
-          text: "Hide in the library to avoid everyone", 
+          text: "Hide in the library to avoid everyone - Avoids the problem and increases isolation", 
           emoji: "📚", 
-          description: "Avoids the problem and increases isolation",
-          isCorrect: false 
+          isCorrect: false
         },
         { 
-          id: "c", 
-          text: "Just sit alone and feel sad", 
+          text: "Just sit alone and feel sad - Doesn't help the situation", 
           emoji: "😔", 
-          description: "Doesn't help the situation",
-          isCorrect: false 
+          isCorrect: false
+        },
+        { 
+          text: "Avoid lunch completely - Further isolates you from peers", 
+          emoji: "🚶", 
+          isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "You have a learning disability and the class is moving too fast. You're falling behind and feeling overwhelmed. How do you handle this?",
+      title: "Learning Disability Challenge",
+      question: "You have a learning disability and the class is moving too fast. You're falling behind and feeling overwhelmed. How do you handle this?",
       options: [
         { 
-          id: "b", 
-          text: "Give up and stop trying", 
+          text: "Give up and stop trying - Not helpful and makes things worse", 
           emoji: "😔", 
-          description: "Not helpful and makes things worse",
-          isCorrect: false 
+          isCorrect: false
         },
         { 
-          id: "a", 
-          text: "Ask the teacher for help or accommodations", 
+          text: "Ask the teacher for help or accommodations - Advocating for yourself is important", 
           emoji: "🙋", 
-          description: "Advocating for yourself is important",
-          isCorrect: true 
+          isCorrect: true
         },
         { 
-          id: "c", 
-          text: "Copy someone else's work", 
+          text: "Copy someone else's work - Dishonest and doesn't help you learn", 
           emoji: "📋", 
-          description: "Dishonest and doesn't help you learn",
-          isCorrect: false 
+          isCorrect: false
+        },
+        { 
+          text: "Pretend you understand everything - Avoids getting the help you need", 
+          emoji: "🎭", 
+          isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "You're being excluded from group activities because of your background. Others make comments that hurt. What's your choice?",
+      title: "Exclusion Challenge",
+      question: "You're being excluded from group activities because of your background. Others make comments that hurt. What's your choice?",
       options: [
         { 
-          id: "b", 
-          text: "Accept it and try to change who you are", 
+          text: "Accept it and try to change who you are - Hurts your self-esteem", 
           emoji: "😞", 
-          description: "Hurts your self-esteem",
-          isCorrect: false 
+          isCorrect: false
         },
         { 
-          id: "c", 
-          text: "React with anger and aggression", 
+          text: "React with anger and aggression - Can make the situation worse", 
           emoji: "😠", 
-          description: "Can make the situation worse",
-          isCorrect: false 
+          isCorrect: false
         },
         { 
-          id: "a", 
-          text: "Report the exclusion to a trusted adult", 
+          text: "Report the exclusion to a trusted adult - Gets you the help and support you need", 
           emoji: "🛡️", 
-          description: "Gets you the help and support you need",
-          isCorrect: true 
+          isCorrect: true
+        },
+        { 
+          text: "Retaliate with similar behavior - Perpetuates the cycle of negativity", 
+          emoji: "⚔️", 
+          isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "You're dealing with family financial struggles and can't afford school supplies. Others seem to have everything they need. How do you respond?",
+      title: "Financial Struggles Challenge",
+      question: "You're dealing with family financial struggles and can't afford school supplies. Others seem to have everything they need. How do you respond?",
       options: [
         { 
-          id: "b", 
-          text: "Feel ashamed and try to hide your situation", 
+          text: "Feel ashamed and try to hide your situation - Prevents you from getting help", 
           emoji: "😳", 
-          description: "Prevents you from getting help",
-          isCorrect: false 
+          isCorrect: false
         },
         { 
-          id: "a", 
-          text: "Ask the school counselor for resources", 
+          text: "Ask the school counselor for resources - Gets you the support you need", 
           emoji: "💼", 
-          description: "Gets you the support you need",
-          isCorrect: true 
+          isCorrect: true
         },
         { 
-          id: "c", 
-          text: "Take supplies from others without asking", 
+          text: "Take supplies from others without asking - Wrong and can cause problems", 
           emoji: "🚫", 
-          description: "Wrong and can cause problems",
-          isCorrect: false 
+          isCorrect: false
+        },
+        { 
+          text: "Drop out of school to avoid embarrassment - Doesn't solve the problem", 
+          emoji: "🚪", 
+          isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "You're experiencing mental health challenges and feel like you're the only one struggling. Others seem happy and carefree. What action do you take?",
+      title: "Mental Health Challenge",
+      question: "You're experiencing mental health challenges and feel like you're the only one struggling. Others seem happy and carefree. What action do you take?",
       options: [
         { 
-          id: "b", 
-          text: "Withdraw and isolate yourself from everyone", 
+          text: "Withdraw and isolate yourself from everyone - Makes things worse", 
           emoji: "🚪", 
-          description: "Makes things worse",
-          isCorrect: false 
+          isCorrect: false
         },
         { 
-          id: "c", 
-          text: "Pretend everything is fine and ignore your feelings", 
+          text: "Pretend everything is fine and ignore your feelings - Doesn't address the problem", 
           emoji: "😶", 
-          description: "Doesn't address the problem",
-          isCorrect: false 
+          isCorrect: false
+        },
+        
+        { 
+          text: "Self-medicate with substances - Can lead to more serious problems", 
+          emoji: "⚠️", 
+          isCorrect: false
         },
         { 
-          id: "a", 
-          text: "Seek help from a school counselor or therapist", 
+          text: "Seek help from a school counselor or therapist - Professional help can make a big difference", 
           emoji: "💙", 
-          description: "Professional help can make a big difference",
-          isCorrect: true 
-        }
+          isCorrect: true
+        },
       ]
     }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (answered || levelCompleted) return;
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
     setAnswered(true);
-    setSelectedOption(optionId);
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
+    const isLastChallenge = challenge === challenges.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setAnswered(false);
-        resetFeedback();
+      if (isLastChallenge) {
+        setShowResult(true);
       } else {
-        setLevelCompleted(true);
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
       }
-    }, isCorrect ? 1000 : 800);
+    }, 500);
   };
 
-  const currentQuestionData = questions[currentQuestion];
-  const finalScore = score;
+  const currentChallenge = challenges[challenge];
 
   return (
     <GameShell
       title="Walk in Their Shoes"
-      subtitle={levelCompleted ? "Simulation Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Simulation Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="uvls"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/uvls/teen"
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
-      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!levelCompleted && currentQuestionData ? (
+      <div className="space-y-8">
+        {!showResult && currentChallenge ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="bg-yellow-500/20 border-2 border-yellow-400/50 rounded-lg p-3 mb-4">
@@ -252,45 +255,88 @@ const WalkInShoes = () => {
               </div>
               
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
               
-              <p className="text-white text-lg md:text-xl mb-6 text-center">
-                {currentQuestionData.text}
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallenge.question}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map(option => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleAnswer(option.id)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                        showCorrect
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSelectedAnswer(index);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
                           ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : showIncorrect
-                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                          : isSelected
-                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-2xl mb-2">{option.emoji}</div>
-                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
-                    </button>
-                  );
-                })}
+                          : selectedAnswer === index
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Walk in Their Shoes Complete!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} correct!
+                  You understand how to handle challenging situations with empathy!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding and empathizing with others' challenges helps create a more inclusive and supportive environment for everyone.
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} correct.
+                  Remember: Empathy and understanding help build stronger communities!
+                </p>
+                <button
+                  onClick={() => {
+                    setShowResult(false);
+                    setChallenge(0);
+                    setScore(0);
+                    setAnswered(false);
+                    setSelectedAnswer(null);
+                    resetFeedback();
+                  }}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Always consider how you can support others facing challenges!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

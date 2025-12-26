@@ -32,6 +32,7 @@ const GrowthThinkingReflex = () => {
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [answered, setAnswered] = useState(false);
   const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
   const questions = [
     {
@@ -91,24 +92,11 @@ const GrowthThinkingReflex = () => {
     }
   ];
 
-  // Handle time up - move to next question or show results
-  const handleTimeUp = useCallback(() => {
-    setAnswered(true);
-    resetFeedback();
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
 
-    const isLastQuestion = currentRound >= TOTAL_ROUNDS;
-
-    setTimeout(() => {
-      if (isLastQuestion) {
-        setGameState("finished");
-      } else {
-        setCurrentRound((prev) => prev + 1);
-        setAnswered(false);
-      }
-    }, 1000);
-  }, [currentRound, resetFeedback]);
-
-  // Reset timer when round changes
+  // Reset timeLeft and answered when round changes
   useEffect(() => {
     if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
       setTimeLeft(ROUND_TIME);
@@ -116,44 +104,32 @@ const GrowthThinkingReflex = () => {
     }
   }, [currentRound, gameState]);
 
-  // Timer effect - countdown from 10 seconds for each question
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
+    }
+  }, []);
+
+  // Timer effect
   useEffect(() => {
-    if (gameState !== "playing") {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      return;
     }
-
-    // Check if game should be finished
-    if (currentRound > TOTAL_ROUNDS) {
-      setGameState("finished");
-      return;
-    }
-
-    // Clear any existing timer
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-
-    // Start countdown timer
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        const newTime = prev - 1;
-        if (newTime <= 0) {
-          // Time's up for this round
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-          handleTimeUp();
-          return 0;
-        }
-        return newTime;
-      });
-    }, 1000);
 
     return () => {
       if (timerRef.current) {
@@ -161,7 +137,7 @@ const GrowthThinkingReflex = () => {
         timerRef.current = null;
       }
     };
-  }, [gameState, handleTimeUp]);
+  }, [gameState, answered, timeLeft, handleTimeUp]);
 
   // Ensure game always starts fresh when component mounts
   useEffect(() => {
@@ -189,62 +165,56 @@ const GrowthThinkingReflex = () => {
 
   const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
-
-    // Clear the timer immediately when user answers
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-
+    
     setAnswered(true);
     resetFeedback();
-
+    
     const isCorrect = option.isCorrect;
-    const isLastQuestion = currentRound === questions.length;
-
+    
     if (isCorrect) {
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    // Move to next round or show results after a short delay
     setTimeout(() => {
-      if (isLastQuestion) {
-        setGameState("finished");
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
       } else {
-        setCurrentRound((prev) => prev + 1);
-        setAnswered(false);
+        setGameState("finished");
       }
     }, 500);
   };
 
-  const currentQ = currentRound > 0 && currentRound <= TOTAL_ROUNDS ? questions[currentRound - 1] : null;
+  const finalScore = score;
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Growth Thinking"
       subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your growth mindset reflexes!` : "Test your growth mindset reflexes!"}
-      score={score}
-      currentLevel={currentRound || 1}
+      currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
       showGameOver={gameState === "finished"}
-      maxScore={TOTAL_ROUNDS}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showConfetti={gameState === "finished" && score >= 3}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
       gameId={gameId}
       gameType="brain"
-    >
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="text-center text-white space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
             <div className="text-5xl mb-6">🧠</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Ready to Test Your Growth Mindset Skills?</h3>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
             <p className="text-white/90 text-lg mb-6">
-              Answer questions about growth thinking and mindset development.
+              Answer questions about growth thinking!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
             <p className="text-white/80 mb-6">
               You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
@@ -258,7 +228,7 @@ const GrowthThinkingReflex = () => {
           </div>
         )}
 
-        {gameState === "playing" && currentQ && (
+        {gameState === "playing" && currentQuestion && (
           <div className="space-y-8">
             <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <div className="text-white">
@@ -274,11 +244,11 @@ const GrowthThinkingReflex = () => {
 
             <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
               <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
-                {currentQ.question}
+                {currentQuestion.question}
               </h3>
-
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {currentQ.options.map((option, index) => (
+                {currentQuestion.options.map((option, index) => (
                   <button
                     key={index}
                     onClick={() => handleAnswer(option)}
@@ -290,25 +260,6 @@ const GrowthThinkingReflex = () => {
                 ))}
               </div>
             </div>
-          </div>
-        )}
-
-        {gameState === "finished" && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-5xl mb-6">🧠</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
-            <p className="text-white/90 text-lg mb-6">
-              You scored {score} out of {TOTAL_ROUNDS}!
-            </p>
-            <p className="text-white/80 mb-6">
-              You're developing a strong growth mindset!
-            </p>
-            <button
-              onClick={startGame}
-              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-            >
-              Play Again
-            </button>
           </div>
         )}
       </div>

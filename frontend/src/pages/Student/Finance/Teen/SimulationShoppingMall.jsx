@@ -46,6 +46,12 @@ const SimulationShoppingMall = () => {
           text: "Buy nothing, save all", 
           emoji: "💰", 
           isCorrect: false
+        },
+        { 
+          id: "random", 
+          text: "Buy random items", 
+          emoji: "🎲", 
+          isCorrect: false
         }
       ]
     },
@@ -71,6 +77,12 @@ const SimulationShoppingMall = () => {
           id: "cheap", 
           text: "Cheapest gifts to save money", 
           emoji: "🏷️", 
+          isCorrect: false
+        },
+        { 
+          id: "none", 
+          text: "No gifts, keep money", 
+          emoji: "🤐", 
           isCorrect: false
         }
       ]
@@ -99,6 +111,12 @@ const SimulationShoppingMall = () => {
           text: "All secondhand to save money", 
           emoji: "📦", 
           isCorrect: false
+        },
+        { 
+          id: "borrow", 
+          text: "Borrow from friends", 
+          emoji: "🤝", 
+          isCorrect: false
         }
       ]
     },
@@ -126,6 +144,12 @@ const SimulationShoppingMall = () => {
           text: "Some fun, some savings", 
           emoji: "🎬", 
           isCorrect: true
+        },
+        { 
+          id: "borrow-fun", 
+          text: "Borrow money for fun", 
+          emoji: "💳", 
+          isCorrect: false
         }
       ]
     },
@@ -135,12 +159,7 @@ const SimulationShoppingMall = () => {
       description: "You have ₹200 for various needs. What's the best allocation?",
       budget: 200,
       options: [
-        { 
-          id: "smart-mix", 
-          text: "Mix of needs, some wants, save rest", 
-          emoji: "🛒", 
-          isCorrect: true
-        },
+       
         { 
           id: "all-needs", 
           text: "All needs, no wants or savings", 
@@ -152,7 +171,19 @@ const SimulationShoppingMall = () => {
           text: "Impulse buying whatever I like", 
           emoji: "🛒", 
           isCorrect: false
-        }
+        },
+        { 
+          id: "all-wants", 
+          text: "All wants, no needs", 
+          emoji: "🛍️", 
+          isCorrect: false
+        },
+         { 
+          id: "smart-mix", 
+          text: "Mix of needs, some wants, save rest", 
+          emoji: "🛒", 
+          isCorrect: true
+        },
       ]
     }
   ];
@@ -235,7 +266,7 @@ const SimulationShoppingMall = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {current.options.map((option) => (
                   <button
                     key={option.id}

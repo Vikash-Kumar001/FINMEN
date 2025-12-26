@@ -30,21 +30,20 @@ const DifficultTalkRoleplay = () => {
           id: "a", 
           text: "I feel sad when promises are broken", 
           emoji: "😢", 
-          description: "Express feelings kindly",
+          
           isCorrect: true 
         },
         { 
           id: "b", 
           text: "You're mean!", 
           emoji: "😠", 
-          description: "Too aggressive",
+        
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Whatever", 
           emoji: "🤷", 
-          description: "Not communicating",
           isCorrect: false 
         }
       ]
@@ -57,21 +56,18 @@ const DifficultTalkRoleplay = () => {
           id: "b", 
           text: "Give it back now!", 
           emoji: "🤬", 
-          description: "Too aggressive",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Please ask next time before taking", 
           emoji: "🙏", 
-          description: "Kind and clear",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "Hit them back", 
           emoji: "👊", 
-          description: "Violence is wrong",
           isCorrect: false 
         }
       ]
@@ -84,21 +80,18 @@ const DifficultTalkRoleplay = () => {
           id: "b", 
           text: "You're stupid!", 
           emoji: "😡", 
-          description: "Insulting back",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Ignore them forever", 
           emoji: "🙈", 
-          description: "Not addressing the issue",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "That hurts my feelings", 
           emoji: "💔", 
-          description: "Express feelings clearly",
           isCorrect: true 
         }
       ]
@@ -111,21 +104,18 @@ const DifficultTalkRoleplay = () => {
           id: "b", 
           text: "That's not fair!", 
           emoji: "😭", 
-          description: "Too emotional",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Can we talk about why?", 
           emoji: "🗣️", 
-          description: "Ask respectfully",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "Sneak and do it anyway", 
           emoji: "🤫", 
-          description: "Disobedient",
           isCorrect: false 
         }
       ]
@@ -138,21 +128,18 @@ const DifficultTalkRoleplay = () => {
           id: "b", 
           text: "You're wrong!", 
           emoji: "🚫", 
-          description: "Disrespectful",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Don't listen", 
           emoji: "🙉", 
-          description: "Not respectful",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Thank you for helping me learn", 
           emoji: "🙏", 
-          description: "Grateful and respectful",
           isCorrect: true 
         }
       ]

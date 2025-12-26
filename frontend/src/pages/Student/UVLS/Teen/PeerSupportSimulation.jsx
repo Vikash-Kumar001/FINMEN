@@ -56,28 +56,24 @@ const PeerSupportSimulation = () => {
           id: "a", 
           text: "Empathize and actively listen to understand their perspective", 
           emoji: "👂",
-          description: "Supportive and engaged",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Judge them for their problems", 
           emoji: "👆",
-          description: "Not supportive",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Interrupt and give advice immediately", 
           emoji: "💬",
-          description: "Doesn't allow them to express",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Ignore what they're saying", 
           emoji: "🙈",
-          description: "Not helpful",
           isCorrect: false
         }
       ]
@@ -90,28 +86,24 @@ const PeerSupportSimulation = () => {
           id: "b", 
           text: "Do nothing and avoid helping", 
           emoji: "🚫",
-          description: "Not supportive",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Suggest concrete help and plan supportive activities together", 
           emoji: "🤝",
-          description: "Practical and helpful",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Criticize their approach", 
           emoji: "👆",
-          description: "Harmful",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Make it all about yourself", 
           emoji: "👤",
-          description: "Not about them",
           isCorrect: false
         }
       ]
@@ -124,28 +116,24 @@ const PeerSupportSimulation = () => {
           id: "a", 
           text: "Inclusive games and sharing circles that allow everyone to participate", 
           emoji: "👥",
-          description: "Engaging and inclusive",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "No activities at all", 
           emoji: "🚫",
-          description: "Missing opportunities",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Exclusive activities that leave some out", 
           emoji: "👋",
-          description: "Not inclusive",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Lectures only with no interaction", 
           emoji: "📚",
-          description: "Not engaging",
           isCorrect: false
         }
       ]
@@ -158,28 +146,24 @@ const PeerSupportSimulation = () => {
           id: "b", 
           text: "No follow-up at all", 
           emoji: "🚫",
-          description: "Shows no care",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "One-time check and then forget", 
           emoji: "👋",
-          description: "Not sustained",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Schedule check-ins and provide ongoing support as needed", 
           emoji: "📅",
-          description: "Sustained support",
           isCorrect: true
         },
         { 
           id: "d", 
           text: "Only follow up if convenient", 
           emoji: "⏰",
-          description: "Inconsistent",
           isCorrect: false
         }
       ]
@@ -192,28 +176,24 @@ const PeerSupportSimulation = () => {
           id: "a", 
           text: "Use feedback forms and adjust the plan based on what's working", 
           emoji: "📊",
-          description: "Data-driven improvement",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Assume everything is good without checking", 
           emoji: "😊",
-          description: "No evaluation",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No evaluation at all", 
           emoji: "🚫",
-          description: "Can't improve",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Evaluate once and never again", 
           emoji: "📝",
-          description: "Limited feedback",
           isCorrect: false
         }
       ]
@@ -309,7 +289,6 @@ const PeerSupportSimulation = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

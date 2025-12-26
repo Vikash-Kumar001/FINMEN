@@ -56,21 +56,18 @@ const TimedDebate = () => {
           id: "a", 
           text: "While homework takes time, research shows it improves retention when balanced appropriately", 
           emoji: "📚",
-          description: "Balanced, evidence-based argument",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "I hate homework too, it's so annoying!", 
           emoji: "😠",
-          description: "Emotional, not logical",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "You're completely wrong about everything", 
           emoji: "❌",
-          description: "Dismissive and illogical",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const TimedDebate = () => {
           id: "b", 
           text: "That's dumb, social media is evil", 
           emoji: "😤",
-          description: "Emotional, not logical",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Connection is valuable, but studies show excessive use can lead to mental health issues - balance is key", 
           emoji: "⚖️",
-          description: "Acknowledges both sides with evidence",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "I don't care what you think", 
           emoji: "🤷",
-          description: "Not engaging in debate",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const TimedDebate = () => {
           id: "a", 
           text: "Uniforms can reduce socioeconomic pressures while allowing expression through accessories and personal style", 
           emoji: "👕",
-          description: "Balanced, logical argument",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Uniforms are ugly and I hate them", 
           emoji: "😠",
-          description: "Personal opinion, not logical",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "You're wrong, end of discussion", 
           emoji: "🚫",
-          description: "Closes debate, not logical",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const TimedDebate = () => {
           id: "b", 
           text: "Games definitely make people violent, I know it", 
           emoji: "🎮",
-          description: "Assumption without evidence",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "I don't want to debate this", 
           emoji: "🙈",
-          description: "Avoids the debate",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "You're right that causation isn't proven - correlation exists but many factors contribute to violence", 
           emoji: "🔬",
-          description: "Logical, evidence-based response",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const TimedDebate = () => {
           id: "a", 
           text: "Allergies are a valid concern - perhaps designated pet-free zones could accommodate everyone", 
           emoji: "🐶",
-          description: "Addresses concern with solution",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Allergies don't matter, pets are cute", 
           emoji: "😍",
-          description: "Dismisses valid concern",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "This topic is stupid", 
           emoji: "🤦",
-          description: "Not engaging logically",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const TimedDebate = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

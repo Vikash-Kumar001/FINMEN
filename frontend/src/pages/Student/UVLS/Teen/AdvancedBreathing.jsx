@@ -56,21 +56,18 @@ const AdvancedBreathing = () => {
           id: "a", 
           text: "Inhale slowly through your nose for 4 seconds", 
           emoji: "👃",
-          description: "Proper breathing technique",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Hold your breath immediately", 
           emoji: "😤",
-          description: "Skip the inhale step",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Exhale first", 
           emoji: "👄",
-          description: "Wrong order",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const AdvancedBreathing = () => {
           id: "b", 
           text: "Exhale immediately", 
           emoji: "👄",
-          description: "Skip the hold",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Hold your breath for 4 seconds", 
           emoji: "⏸️",
-          description: "Proper hold technique",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Inhale again", 
           emoji: "👃",
-          description: "Wrong step",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const AdvancedBreathing = () => {
           id: "a", 
           text: "Exhale slowly through your mouth for 4 seconds", 
           emoji: "👄",
-          description: "Proper exhale technique",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Hold again", 
           emoji: "⏸️",
-          description: "Skip exhale",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Inhale quickly", 
           emoji: "👃",
-          description: "Wrong phase",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const AdvancedBreathing = () => {
           id: "b", 
           text: "Inhale immediately", 
           emoji: "👃",
-          description: "Skip the pause",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Hold for 10 seconds", 
           emoji: "⏰",
-          description: "Too long",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Hold/pause for 4 seconds before the next cycle", 
           emoji: "⏸️",
-          description: "Proper pause technique",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const AdvancedBreathing = () => {
           id: "a", 
           text: "Repeat the cycle: Inhale (4s) → Hold (4s) → Exhale (4s) → Pause (4s)", 
           emoji: "🔄",
-          description: "Complete breathing cycle",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Stop breathing completely", 
           emoji: "🚫",
-          description: "Not the goal",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Breathe randomly without pattern", 
           emoji: "😵",
-          description: "Not effective",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const AdvancedBreathing = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

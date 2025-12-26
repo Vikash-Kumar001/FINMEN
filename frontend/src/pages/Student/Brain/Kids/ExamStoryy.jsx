@@ -1,9 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getBrainKidsGames } from "../../../../pages/Games/GameCategories/Brain/kidGamesData";
 
 const ExamStoryy = () => {
   const location = useLocation();
@@ -21,50 +20,6 @@ const ExamStoryy = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
-  // Find next game path if not provided in location.state
-  const nextGamePath = useMemo(() => {
-    // First, try to get from location.state (passed from GameCategoryPage)
-    if (location.state?.nextGamePath) {
-      return location.state.nextGamePath;
-    }
-    
-    // Fallback: find next game from game data
-    try {
-      const games = getBrainKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return nextGame ? nextGame.path : null;
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return null;
-  }, [location.state, gameId]);
-  
-  // Find next game ID if not provided in location.state
-  const _nextGameId = useMemo(() => {
-    // First, try to get from location.state
-    if (location.state?.nextGameId) {
-      return location.state.nextGameId;
-    }
-    
-    // Fallback: find next game ID from game data
-    try {
-      const games = getBrainKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return nextGame ? nextGame.id : null;
-      }
-    } catch (error) {
-      console.warn("Error finding next game ID:", error);
-    }
-    
-    return null;
-  }, [location.state, gameId]);
   const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
@@ -251,8 +206,6 @@ const ExamStoryy = () => {
       showAnswerConfetti={showAnswerConfetti}
       gameId={gameId}
       gameType="brain"
-      backPath="/games/brain-health/kids"
-      nextGamePath={nextGamePath}
     >
       <div className="space-y-8">
         {!showResult && currentQuestionData ? (
@@ -267,7 +220,7 @@ const ExamStoryy = () => {
                 {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {currentQuestionData.options.map((option) => (
                   <button
                     key={option.id}

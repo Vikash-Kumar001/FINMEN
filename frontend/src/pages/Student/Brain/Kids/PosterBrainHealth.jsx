@@ -31,7 +31,7 @@ const PosterBrainHealth = () => {
     {
       question: 'Which poster best shows "Healthy Brain = Happy You"?',
       choices: [
-        { text: "Poster showing brain with happy face and exercise", correct: true, emoji: "🧠😊" },
+        { text: "Poster showing brain with happy face and exercise", correct: true, emoji: "🧠" },
         { text: "Poster showing only food items", correct: false, emoji: "🍎" },
         { text: "Poster showing only sleep", correct: false, emoji: "😴" }
       ]
@@ -40,14 +40,14 @@ const PosterBrainHealth = () => {
       question: 'Which poster best shows "Feed Your Brain with Healthy Foods"?',
       choices: [
         { text: "Poster showing only junk food", correct: false, emoji: "🍟" },
-        { text: "Poster showing fruits, vegetables, and water", correct: true, emoji: "🍎💧" },
+        { text: "Poster showing fruits, vegetables, and water", correct: true, emoji: "🍎" },
         { text: "Poster showing only drinks", correct: false, emoji: "🥤" }
       ]
     },
     {
       question: 'Which poster best shows "Brain Power Through Exercise"?',
       choices: [
-        { text: "Poster showing person exercising and brain", correct: true, emoji: "💪🧠" },
+        { text: "Poster showing person exercising and brain", correct: true, emoji: "💪" },
         { text: "Poster showing only sitting", correct: false, emoji: "🪑" },
         { text: "Poster showing only sleeping", correct: false, emoji: "😴" }
       ]
@@ -57,7 +57,7 @@ const PosterBrainHealth = () => {
       choices: [
         
         { text: "Poster showing only soda drinks", correct: false, emoji: "🥤" },
-        { text: "Poster showing water and brain connection", correct: true, emoji: "💧🧠" },
+        { text: "Poster showing water and brain connection", correct: true, emoji: "💧" },
         { text: "Poster showing only food", correct: false, emoji: "🍔" }
       ]
     },
@@ -67,7 +67,7 @@ const PosterBrainHealth = () => {
         
         { text: "Poster showing only one activity", correct: false, emoji: "⚽" },
         { text: "Poster showing only unhealthy habits", correct: false, emoji: "🚫" },
-        { text: "Poster showing multiple brain health tips together", correct: true, emoji: "📋🧠" },
+        { text: "Poster showing multiple brain health tips together", correct: true, emoji: "📋" },
       ]
     }
   ];

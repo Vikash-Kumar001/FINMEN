@@ -31,7 +31,7 @@ const StayPositivePoster = () => {
     {
       question: 'Which poster best shows "Think Positive, Live Happy"?',
       choices: [
-        { text: "Poster showing positive thoughts lead to happiness", correct: true, emoji: "😊☀️" },
+        { text: "Poster showing positive thoughts lead to happiness", correct: true, emoji: "😊" },
         { text: "Poster showing only negative thoughts", correct: false, emoji: "😢" },
         { text: "Poster showing only problems", correct: false, emoji: "😰" }
       ]
@@ -40,14 +40,14 @@ const StayPositivePoster = () => {
       question: 'Which poster best shows "Stay Positive"?',
       choices: [
         { text: "Poster showing only complaints", correct: false, emoji: "😤" },
-        { text: "Poster showing positive mindset and bright outlook", correct: true, emoji: "🌟💭" },
+        { text: "Poster showing positive mindset and bright outlook", correct: true, emoji: "🌟" },
         { text: "Poster showing only worries", correct: false, emoji: "😰" }
       ]
     },
     {
       question: 'Which poster best shows "Positive Mind, Happy Life"?',
       choices: [
-        { text: "Poster showing positive thinking brings joy", correct: true, emoji: "🧠😊" },
+        { text: "Poster showing positive thinking brings joy", correct: true, emoji: "🧠" },
         { text: "Poster showing only sadness", correct: false, emoji: "😢" },
         { text: "Poster showing only anger", correct: false, emoji: "😠" }
       ]
@@ -57,14 +57,14 @@ const StayPositivePoster = () => {
       choices: [
         { text: "Poster showing only negative choices", correct: false, emoji: "❌" },
         { text: "Poster showing only problems", correct: false, emoji: "😰" },
-        { text: "Poster showing choosing positive thoughts", correct: true, emoji: "✅😊" }
+        { text: "Poster showing choosing positive thoughts", correct: true, emoji: "😊" }
       ]
     },
     {
       question: 'Which poster best shows "Positive Vibes Only"?',
       choices: [
         { text: "Poster showing only negative energy", correct: false, emoji: "😤" },
-        { text: "Poster showing spreading positive energy", correct: true, emoji: "✨💫" },
+        { text: "Poster showing spreading positive energy", correct: true, emoji: "💫" },
         { text: "Poster showing only complaints", correct: false, emoji: "😑" }
       ]
     }

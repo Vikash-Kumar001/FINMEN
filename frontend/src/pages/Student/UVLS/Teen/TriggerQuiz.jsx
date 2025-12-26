@@ -56,21 +56,18 @@ const TriggerQuiz = () => {
           id: "a", 
           text: "Stress from high expectations and fear of failure", 
           emoji: "📝",
-          description: "Common stress trigger",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Happiness and excitement", 
           emoji: "😄",
-          description: "Not a trigger",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Boredom and relaxation", 
           emoji: "😴",
-          description: "Opposite of stress",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const TriggerQuiz = () => {
           id: "b", 
           text: "Joy and peace", 
           emoji: "😊",
-          description: "Not a trigger",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Anger, hurt feelings, or conflict", 
           emoji: "👥",
-          description: "Common emotional trigger",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Complete calm", 
           emoji: "😌",
-          description: "Not a trigger",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const TriggerQuiz = () => {
           id: "a", 
           text: "Too many tasks, deadlines, or responsibilities at once", 
           emoji: "📅",
-          description: "Common overwhelm trigger",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Having nothing to do", 
           emoji: "😑",
-          description: "Not a trigger for overwhelm",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Feeling relaxed", 
           emoji: "🧘",
-          description: "Not a trigger",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const TriggerQuiz = () => {
           id: "b", 
           text: "Perfect grades", 
           emoji: "⭐",
-          description: "Not a stress trigger",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No academic work", 
           emoji: "📚",
-          description: "Not a trigger",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Heavy workload, difficult assignments, or academic pressure", 
           emoji: "📖",
-          description: "Common academic stress trigger",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const TriggerQuiz = () => {
           id: "a", 
           text: "Being in unfamiliar social situations or feeling judged", 
           emoji: "👥",
-          description: "Common social anxiety trigger",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Being alone", 
           emoji: "🏠",
-          description: "Different from social anxiety",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Feeling completely confident", 
           emoji: "💪",
-          description: "Not a trigger",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const TriggerQuiz = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

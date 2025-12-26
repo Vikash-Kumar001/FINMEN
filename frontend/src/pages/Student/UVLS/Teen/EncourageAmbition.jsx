@@ -56,21 +56,18 @@ const EncourageAmbition = () => {
           id: "a", 
           text: "That's ambitious! Go for it and explore space careers.", 
           emoji: "🚀",
-          description: "Encouraging and supportive",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Too hard for you.", 
           emoji: "😞",
-          description: "Discouraging",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Boys are better at that.", 
           emoji: "🚫",
-          description: "Sexist and wrong",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const EncourageAmbition = () => {
           id: "b", 
           text: "Girls should cook anyway.", 
           emoji: "😐",
-          description: "Sexist assumption",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Great! That's a creative career. Explore cooking and culinary school.", 
           emoji: "👩‍🍳",
-          description: "Supportive and encouraging",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Not a real job.", 
           emoji: "❌",
-          description: "Dismissive",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const EncourageAmbition = () => {
           id: "a", 
           text: "Wonderful! Teaching makes a real difference. Help others learn and grow.", 
           emoji: "👩‍🏫",
-          description: "Encouraging and positive",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Low pay.", 
           emoji: "💰",
-          description: "Only focuses on negatives",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Women are teachers.", 
           emoji: "👥",
-          description: "Stereotypical",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const EncourageAmbition = () => {
           id: "b", 
           text: "Boys dominate tech.", 
           emoji: "💻",
-          description: "Discouraging stereotype",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Cool! Tech is exciting. Learn coding and build projects.", 
           emoji: "💻",
-          description: "Supportive and encouraging",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Too complicated.", 
           emoji: "😕",
-          description: "Discouraging",
           isCorrect: false
         }
       ]
@@ -164,21 +152,18 @@ const EncourageAmbition = () => {
           id: "a", 
           text: "Amazing! Medicine helps people. Study hard and pursue your dream.", 
           emoji: "👩‍⚕️",
-          description: "Encouraging and supportive",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Men are better doctors.", 
           emoji: "🚫",
-          description: "Sexist and incorrect",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Long studies.", 
           emoji: "⏰",
-          description: "Only focuses on difficulty",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const EncourageAmbition = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

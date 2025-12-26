@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { PiggyBank, Wallet, Coins, TrendingUp, Target } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -16,24 +15,40 @@ const BadgeSaverKid = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti, resetFeedback } = useGameFeedback();
-  const [currentLevel, setCurrentLevel] = useState(1);
+  const [challenge, setChallenge] = useState(0);
   const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [showResult, setShowResult] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const levels = [
+  const challenges = [
     {
       id: 1,
       title: "Piggy Bank",
       question: "What is the best way to save money?",
-      icon: PiggyBank,
-      item: "Piggy Bank",
       options: [
-        { text: "Save a little bit regularly", correct: true, coins: 1 },
-        { text: "Spend everything first", correct: false, coins: 0 },
-        { text: "Save only when you have a lot", correct: false, coins: 0 }
+       
+        { 
+          text: "Spend everything first", 
+          emoji: "💸", 
+          isCorrect: false
+        },
+         { 
+          text: "Save a little bit regularly", 
+          emoji: "🐷", 
+          isCorrect: true
+        },
+        { 
+          text: "Save only when you have a lot", 
+          emoji: "💰", 
+          isCorrect: false
+        },
+        { 
+          text: "Keep it in your pocket", 
+          emoji: "👛", 
+          isCorrect: false
+        }
       ],
       feedback: {
         correct: "Excellent! Regular saving, even small amounts, builds good habits!",
@@ -42,14 +57,30 @@ const BadgeSaverKid = () => {
     },
     {
       id: 2,
-      title: "Wallet",
+      title: "Safe Savings",
       question: "Where should you keep your savings?",
-      icon: Wallet,
-      item: "Wallet",
       options: [
-        { text: "Under your bed", correct: false, coins: 0 },
-        { text: "Spend it all immediately", correct: false, coins: 0 },
-        { text: "In a safe place like a bank", correct: true, coins: 1 },
+       
+        { 
+          text: "Under your bed", 
+          emoji: "🛏️", 
+          isCorrect: false
+        },
+        { 
+          text: "Spend it all immediately", 
+          emoji: "🏃", 
+          isCorrect: false
+        },
+        { 
+          text: "In a shoe box at home", 
+          emoji: "👟", 
+          isCorrect: false
+        },
+         { 
+          text: "In a safe place like a bank", 
+          emoji: "🏦", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Perfect! Keeping money in a bank keeps it safe and can help it grow!",
@@ -58,14 +89,29 @@ const BadgeSaverKid = () => {
     },
     {
       id: 3,
-      title: "Coins",
+      title: "Extra Money",
       question: "What should you do with extra money?",
-      icon: Coins,
-      item: "Coins",
       options: [
-        { text: "Save it for future goals", correct: true, coins: 1 },
-        { text: "Spend it all right away", correct: false, coins: 0 },
-        { text: "Lose it or forget about it", correct: false, coins: 0 }
+        { 
+          text: "Save it for future goals", 
+          emoji: "🎯", 
+          isCorrect: true
+        },
+        { 
+          text: "Spend it all right away", 
+          emoji: "🛒", 
+          isCorrect: false
+        },
+        { 
+          text: "Lose it or forget about it", 
+          emoji: "😵", 
+          isCorrect: false
+        },
+        { 
+          text: "Give it all to friends", 
+          emoji: "🤝", 
+          isCorrect: false
+        }
       ],
       feedback: {
         correct: "Amazing! Saving extra money helps you reach your goals faster!",
@@ -74,14 +120,30 @@ const BadgeSaverKid = () => {
     },
     {
       id: 4,
-      title: "Growing Money",
+      title: "Saving Importance",
       question: "Why is saving money important?",
-      icon: TrendingUp,
-      item: "Growing Money",
       options: [
-        { text: "It's not important at all", correct: false, coins: 0 },
-        { text: "It helps you reach your goals", correct: true, coins: 1 },
-        { text: "You should never save", correct: false, coins: 0 }
+        
+        { 
+          text: "It's not important at all", 
+          emoji: "🤷", 
+          isCorrect: false
+        },
+        { 
+          text: "You should never save", 
+          emoji: "🚫", 
+          isCorrect: false
+        },
+        { 
+          text: "It helps you reach your goals", 
+          emoji: "🏆", 
+          isCorrect: true
+        },
+        { 
+          text: "To show off to friends", 
+          emoji: "🤝", 
+          isCorrect: false
+        },
       ],
       feedback: {
         correct: "Great! Saving money helps you achieve your dreams and goals!",
@@ -90,14 +152,30 @@ const BadgeSaverKid = () => {
     },
     {
       id: 5,
-      title: "Saving Goal",
+      title: "Saving Habit",
       question: "What is a good saving habit?",
-      icon: Target,
-      item: "Saving Goal",
       options: [
-        { text: "Never save anything", correct: false, coins: 0 },
-        { text: "Spend more than you have", correct: false, coins: 0 },
-        { text: "Set goals and save regularly", correct: true, coins: 1 }
+       
+        { 
+          text: "Never save anything", 
+          emoji: "❌", 
+          isCorrect: false
+        },
+        { 
+          text: "Spend more than you have", 
+          emoji: "📈", 
+          isCorrect: false
+        },
+         { 
+          text: "Set goals and save regularly", 
+          emoji: "🎯", 
+          isCorrect: true
+        },
+        { 
+          text: "Save only when feeling rich", 
+          emoji: "🤑", 
+          isCorrect: false
+        }
       ],
       feedback: {
         correct: "Wonderful! Setting goals and saving regularly makes you a smart saver!",
@@ -106,93 +184,153 @@ const BadgeSaverKid = () => {
     }
   ];
 
-  const currentLevelData = levels[currentLevel - 1];
-  const Icon = currentLevelData.icon;
-
-  const handleAnswer = (option) => {
-    if (answered) return; // Prevent multiple clicks
+  const handleAnswer = (isCorrect, optionIndex) => {
+    if (answered) return;
     
-    setSelectedAnswer(option);
     setAnswered(true);
+    setSelectedAnswer(optionIndex);
     resetFeedback();
-    
-    const isCorrect = option.correct;
-    const isLastQuestion = currentLevel === 5;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
+    const isLastChallenge = challenge === challenges.length - 1;
+    
     setTimeout(() => {
-      if (isLastQuestion) {
+      if (isLastChallenge) {
         setShowResult(true);
       } else {
-        setCurrentLevel(prev => prev + 1);
+        setChallenge(prev => prev + 1);
         setAnswered(false);
         setSelectedAnswer(null);
       }
     }, 2000);
   };
 
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
+  };
+
+  const currentChallenge = challenges[challenge];
   const finalScore = score;
 
   return (
     <GameShell
       title="Badge: Saver Kid"
-      subtitle={!showResult ? `Question ${currentLevel} of 5: Test your saving knowledge!` : "Badge Earned!"}
-      currentLevel={currentLevel}
-      totalLevels={5}
-      coinsPerLevel={coinsPerLevel}
+      subtitle={showResult ? "Badge Earned!" : `Challenge ${challenge + 1} of ${challenges.length}`}
       showGameOver={showResult}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
       score={finalScore}
       gameId={gameId}
       gameType="finance"
-      maxScore={5}
+      totalLevels={challenges.length}
+      coinsPerLevel={coinsPerLevel}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && finalScore === 5}>
-      <div className="text-center text-white space-y-6">
-        {!showResult && currentLevelData && (
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 border border-white/20">
-            <div className="flex justify-center mb-4">
-              <Icon className="w-16 h-16 text-green-400" />
+      showConfetti={showResult && finalScore === challenges.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {!showResult && currentChallenge ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallenge.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(option.isCorrect, idx)}
+                    disabled={answered}
+                    className={`bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3 ${
+                      answered && selectedAnswer === idx
+                        ? option.isCorrect
+                          ? "ring-4 ring-green-400"
+                          : "ring-4 ring-red-400"
+                        : ""
+                    }`}
+                  >
+                    <span className="text-2xl">{option.emoji}</span>
+                    <span className="font-bold text-lg">{option.text}</span>
+                  </button>
+                ))}
+              </div>
+              
+              {answered && (
+                <div className={`mt-4 p-4 rounded-xl ${
+                  currentChallenge.options[selectedAnswer]?.isCorrect
+                    ? "bg-green-500/20 border border-green-500/30"
+                    : "bg-red-500/20 border border-red-500/30"
+                }`}>
+                  <p className="text-white font-semibold">
+                    {currentChallenge.options[selectedAnswer]?.isCorrect
+                      ? currentChallenge.feedback.correct
+                      : currentChallenge.feedback.wrong}
+                  </p>
+                </div>
+              )}
             </div>
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Question {currentLevel} of 5</span>
-              <span className="text-yellow-400 font-bold">Score: {score}/5</span>
-            </div>
-            
-            <p className="text-white text-lg mb-6 text-center">
-              {currentLevelData.question}
-            </p>
-            
-            <div className="grid sm:grid-cols-3 gap-3">
-              {currentLevelData.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswer(option)}
-                  disabled={answered}
-                  className="w-full min-h-[60px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-8 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  {option.text}
-                </button>
-              ))}
-            </div>
-            
-            {answered && selectedAnswer && (
-              <div className={`mt-4 p-4 rounded-xl ${
-                selectedAnswer.correct
-                  ? 'bg-green-500/20 border-2 border-green-400' 
-                  : 'bg-red-500/20 border-2 border-red-400'
-              }`}>
-                <p className="text-white font-semibold">
-                  {selectedAnswer.correct
-                    ? currentLevelData.feedback.correct
-                    : currentLevelData.feedback.wrong}
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {finalScore >= 4 ? (
+              <div>
+                <div className="text-6xl mb-4">🏆</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Saver Kid Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-6">
+                  You made {finalScore} smart saving decisions out of {challenges.length} challenges!
                 </p>
+                
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-2xl mb-6">
+                  <h4 className="text-2xl font-bold mb-2">🎉 Achievement Unlocked!</h4>
+                  <p className="text-xl">Badge: Saver Kid</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-green-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-green-300 mb-2">Saving Skills</h4>
+                    <p className="text-white/90 text-sm">
+                      You learned to save regularly, keep money safe, 
+                      and make smart financial decisions!
+                    </p>
+                  </div>
+                  <div className="bg-blue-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-blue-300 mb-2">Financial Wisdom</h4>
+                    <p className="text-white/90 text-sm">
+                      These habits will help you achieve your financial goals!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You made {finalScore} smart saving decisions out of {challenges.length} challenges.
+                </p>
+                <p className="text-white/90 mb-6">
+                  Remember, good saving habits include saving regularly, 
+                  keeping money safe, and setting goals!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
               </div>
             )}
           </div>

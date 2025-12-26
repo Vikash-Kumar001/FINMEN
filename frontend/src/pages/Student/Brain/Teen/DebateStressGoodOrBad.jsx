@@ -70,31 +70,31 @@ const DebateStressGoodOrBad = () => {
       id: 2,
       text: "Is chronic stress harmful to health?",
       choices: [
-        { id: 'b', text: 'No, stress is always beneficial' },
-        { id: 'a', text: 'Yes, it affects physical and mental health' },
+        { id: 'a', text: 'No, stress is always beneficial' },
+        { id: 'b', text: 'Yes, it affects physical and mental health' },
         { id: 'c', text: 'Only affects some people' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'Chronic stress can lead to anxiety, depression, weakened immune system, and other health problems!'
     },
     {
       id: 3,
       text: "Can stress help with deadlines?",
       choices: [
-        { id: 'b', text: 'No, stress always paralyzes performance' },
-        { id: 'c', text: 'Only if you enjoy being stressed' },
-        { id: 'a', text: 'Sometimes, moderate stress can sharpen focus' }
+        { id: 'a', text: 'No, stress always paralyzes performance' },
+        { id: 'b', text: 'Only if you enjoy being stressed' },
+        { id: 'c', text: 'Sometimes, moderate stress can sharpen focus' }
       ],
-      correct: 'a',
+      correct: 'c',
       explanation: 'Moderate stress can enhance alertness and focus, helping you meet deadlines, but too much stress impairs performance!'
     },
     {
       id: 4,
       text: "Should all stress be avoided?",
       choices: [
+        { id: 'a', text: 'No, some stress is useful for growth' },
         { id: 'b', text: 'Yes, eliminate all stress completely' },
         { id: 'c', text: 'Stress is never necessary' },
-        { id: 'a', text: 'No, some stress is useful for growth' }
       ],
       correct: 'a',
       explanation: 'Some stress (eustress) is beneficial and necessary for growth, learning, and achieving goals. The key is managing it!'
@@ -103,11 +103,11 @@ const DebateStressGoodOrBad = () => {
       id: 5,
       text: "Is the stress response natural?",
       choices: [
-        { id: 'b', text: 'No, it\'s a modern problem' },
+        { id: 'a', text: 'No, it\'s a modern problem' },
+        { id: 'b', text: 'Yes, it\'s an evolutionary survival mechanism' },
         { id: 'c', text: 'Only for dangerous situations' },
-        { id: 'a', text: 'Yes, it\'s an evolutionary survival mechanism' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'The stress response (fight-or-flight) is a natural, evolutionary mechanism that helped our ancestors survive threats!'
     }
   ];

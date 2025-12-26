@@ -70,31 +70,31 @@ const AngerStory = () => {
       id: 2,
       text: "You're angry about a mistake. What should you do?",
       choices: [
-        { id: 'b', text: 'Blame yourself harshly' },
-        { id: 'a', text: 'Learn from it and move forward' },
+        { id: 'a', text: 'Blame yourself harshly' },
+        { id: 'b', text: 'Learn from it and move forward' },
         { id: 'c', text: 'Ignore the mistake completely' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'A growth mindset helps you turn anger into a learning opportunity and prevents self-destructive patterns!'
     },
     {
       id: 3,
       text: "A friend makes you angry. How should you respond?",
       choices: [
-        { id: 'b', text: 'Ignore them or explode' },
-        { id: 'c', text: 'Hold a grudge silently' },
-        { id: 'a', text: 'Express your feelings calmly' }
+        { id: 'a', text: 'Ignore them or explode' },
+        { id: 'b', text: 'Hold a grudge silently' },
+        { id: 'c', text: 'Express your feelings calmly' }
       ],
-      correct: 'a',
+      correct: 'c',
       explanation: 'Calmly expressing your feelings maintains relationships and helps resolve conflicts constructively!'
     },
     {
       id: 4,
       text: "You notice physical signs of anger. What should you do?",
       choices: [
+        { id: 'a', text: 'Count to 10 and breathe deeply' },
         { id: 'b', text: 'Punch something to release tension' },
         { id: 'c', text: 'Act on the anger immediately' },
-        { id: 'a', text: 'Count to 10 and breathe deeply' }
       ],
       correct: 'a',
       explanation: 'Counting and deep breathing interrupts the anger impulse and gives you time to respond thoughtfully!'
@@ -103,11 +103,11 @@ const AngerStory = () => {
       id: 5,
       text: "After your anger cools down, what should you do?",
       choices: [
+        { id: 'a', text: 'Pretend nothing happened' },
         { id: 'b', text: 'Hold a grudge' },
-        { id: 'c', text: 'Pretend nothing happened' },
-        { id: 'a', text: 'Apologize if you hurt someone' }
+        { id: 'c', text: 'Apologize if you hurt someone' }
       ],
-      correct: 'a',
+      correct: 'c',
       explanation: 'Apologizing when appropriate repairs relationships, shows maturity, and helps you move forward!'
     }
   ];

@@ -59,19 +59,20 @@ const InvestmentQuiz = () => {
       text: "Which investment is safest?",
       options: [
         { 
-          id: "stocks2", 
-          text: "Stocks", 
-          emoji: "📊", 
-          description: "Can go up or down", 
-          isCorrect: false 
-        },
-        { 
           id: "fd2", 
           text: "Fixed Deposit", 
           emoji: "🛡️", 
           description: "Guaranteed return", 
           isCorrect: true 
         },
+        { 
+          id: "stocks2", 
+          text: "Stocks", 
+          emoji: "📊", 
+          description: "Can go up or down", 
+          isCorrect: false 
+        },
+        
         { 
           id: "crypto", 
           text: "Cryptocurrency", 
@@ -92,6 +93,14 @@ const InvestmentQuiz = () => {
           description: "Focus on single option", 
           isCorrect: false 
         },
+        
+        { 
+          id: "avoid", 
+          text: "Avoid all investments", 
+          emoji: "🚫", 
+          description: "Don't invest at all", 
+          isCorrect: false 
+        },
         { 
           id: "spread", 
           text: "Spread across different investments", 
@@ -99,13 +108,6 @@ const InvestmentQuiz = () => {
           description: "Reduce risk by diversifying", 
           isCorrect: true 
         },
-        { 
-          id: "avoid", 
-          text: "Avoid all investments", 
-          emoji: "🚫", 
-          description: "Don't invest at all", 
-          isCorrect: false 
-        }
       ]
     },
     {
@@ -139,13 +141,7 @@ const InvestmentQuiz = () => {
       id: 5,
       text: "Why invest instead of just saving?",
       options: [
-        { 
-          id: "grow", 
-          text: "Potential to grow faster", 
-          emoji: "📈", 
-          description: "Beat inflation, higher returns", 
-          isCorrect: true 
-        },
+       
         { 
           id: "same", 
           text: "Same as saving", 
@@ -159,7 +155,14 @@ const InvestmentQuiz = () => {
           emoji: "📉", 
           description: "Always loses money", 
           isCorrect: false 
-        }
+        },
+         { 
+          id: "grow", 
+          text: "Potential to grow faster", 
+          emoji: "📈", 
+          description: "Beat inflation, higher returns", 
+          isCorrect: true 
+        },
       ]
     }
   ];

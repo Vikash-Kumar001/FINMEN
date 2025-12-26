@@ -96,7 +96,7 @@ const FaillureStory = () => {
         { id: 'b', text: 'Apologize, learn, and do better' },
         { id: 'c', text: 'Make excuses' },
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'Taking responsibility, apologizing, and learning from mistakes shows maturity and growth!'
     },
     {

@@ -33,7 +33,7 @@ const PerspectivePuzzle = () => {
     { id: 7, name: "Include Them", emoji: "🤗", description: "Make them feel welcomed and valued" },
     { id: 8, name: "Listen Supportively", emoji: "👂", description: "Give attention without trying to fix" },
     { id: 9, name: "Reassure Kindly", emoji: "💪", description: "Provide comfort and encouragement" },
-    { id: 10, name: "Communicate Clearly", emoji: "コミュニケ", description: "Adjust communication for understanding" }
+    { id: 10, name: "Communicate Clearly", emoji: "💬", description: "Adjust communication for understanding" }
   ];
 
   // Manually rearrange positions to prevent positional matching

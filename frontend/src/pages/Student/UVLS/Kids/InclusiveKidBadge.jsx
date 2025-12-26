@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsKidsGames } from '../../../../pages/Games/GameCategories/UVLS/kidGamesData';
 
 const InclusiveKidBadge = () => {
   const navigate = useNavigate();
@@ -21,38 +22,67 @@ const InclusiveKidBadge = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [scenario, setScenario] = useState(0);
-  const [decisions, setDecisions] = useState([]);
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getUvlsKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const scenarios = [
+  const challenges = [
     {
       id: 1,
       title: "New Student",
       description: "A new student joins your class and looks nervous. What do you do?",
-      choices: [
+      question: "A new student joins your class and looks nervous. What do you do?",
+      options: [
         { 
-          id: "welcome", 
-          text: "Welcome and befriend them", 
+          text: "Welcome and befriend them - Introduce yourself and show them around", 
           emoji: "👋", 
-          description: "Introduce yourself and show them around",
           isCorrect: true
         },
         { 
-          id: "ignore", 
-          text: "Ignore the new student", 
+          text: "Ignore the new student - Continue with your friends", 
           emoji: "🙈", 
-          description: "Continue with your friends",
           isCorrect: false
         },
         { 
-          id: "tease", 
-          text: "Tease them", 
+          text: "Tease them - Make jokes about them being new", 
           emoji: "😏", 
-          description: "Make jokes about them being new",
+          isCorrect: false
+        },
+        { 
+          text: "Wait for others to approach them - Let someone else make the first move", 
+          emoji: "🤔", 
           isCorrect: false
         }
       ]
@@ -61,26 +91,26 @@ const InclusiveKidBadge = () => {
       id: 2,
       title: "Someone is Excluded",
       description: "You see someone being left out of a game. What do you do?",
-      choices: [
+      question: "You see someone being left out of a game. What do you do?",
+      options: [
         { 
-          id: "ignore", 
-          text: "Do nothing", 
+          text: "Do nothing - Continue playing without them", 
           emoji: "🙈", 
-          description: "Continue playing without them",
           isCorrect: false
         },
         { 
-          id: "include", 
-          text: "Invite them to join", 
+          text: "Invite them to join - Ask them to play with your group", 
           emoji: "🤝", 
-          description: "Ask them to play with your group",
           isCorrect: true
         },
         { 
-          id: "laugh", 
-          text: "Laugh along", 
+          text: "Laugh along - Join others in excluding them", 
           emoji: "😂", 
-          description: "Join others in excluding them",
+          isCorrect: false
+        },
+        { 
+          text: "Tell a teacher - Report the exclusion", 
+          emoji: "👩‍🏫", 
           isCorrect: false
         }
       ]
@@ -89,27 +119,27 @@ const InclusiveKidBadge = () => {
       id: 3,
       title: "Different Abilities",
       description: "A student with different abilities wants to join your activity. What do you do?",
-      choices: [
+      question: "A student with different abilities wants to join your activity. What do you do?",
+      options: [
         { 
-          id: "exclude", 
-          text: "Say they can't join", 
+          text: "Say they can't join - Tell them the activity isn't for them", 
           emoji: "🚫", 
-          description: "Tell them the activity isn't for them",
           isCorrect: false
         },
         { 
-          id: "ignore", 
-          text: "Ignore them", 
+          text: "Ignore them - Pretend you don't see them", 
           emoji: "🙈", 
-          description: "Pretend you don't see them",
           isCorrect: false
         },
         { 
-          id: "include", 
-          text: "Include and adapt", 
+          text: "Include and adapt - Welcome them and adjust the activity", 
           emoji: "🤝", 
-          description: "Welcome them and adjust the activity",
           isCorrect: true
+        },
+        { 
+          text: "Tell them to find their own activity - Let them figure it out", 
+          emoji: "🚶", 
+          isCorrect: false
         }
       ]
     },
@@ -117,26 +147,26 @@ const InclusiveKidBadge = () => {
       id: 4,
       title: "Sharing Materials",
       description: "Someone needs supplies for a project but doesn't have any. What do you do?",
-      choices: [
+      question: "Someone needs supplies for a project but doesn't have any. What do you do?",
+      options: [
         { 
-          id: "share", 
-          text: "Share your materials", 
+          text: "Share your materials - Offer to share what you have", 
           emoji: "✏️", 
-          description: "Offer to share what you have",
           isCorrect: true
         },
         { 
-          id: "refuse", 
-          text: "Refuse to share", 
+          text: "Refuse to share - Keep everything for yourself", 
           emoji: "🚫", 
-          description: "Keep everything for yourself",
           isCorrect: false
         },
         { 
-          id: "ignore", 
-          text: "Ignore their need", 
+          text: "Ignore their need - Continue working on your own", 
           emoji: "🙈", 
-          description: "Continue working on your own",
+          isCorrect: false
+        },
+        { 
+          text: "Tell them to ask someone else - Point them to another student", 
+          emoji: "👉", 
           isCorrect: false
         }
       ]
@@ -145,75 +175,63 @@ const InclusiveKidBadge = () => {
       id: 5,
       title: "Group Work",
       description: "During group work, everyone should contribute. What do you do?",
-      choices: [
+      question: "During group work, everyone should contribute. What do you do?",
+      options: [
         { 
-          id: "ignore", 
-          text: "Ignore some members", 
+          text: "Ignore some members - Only listen to your friends", 
           emoji: "🙈", 
-          description: "Only listen to your friends",
+          isCorrect: false
+        },
+       
+        { 
+          text: "Dominate the group - Make all decisions yourself", 
+          emoji: "😤", 
           isCorrect: false
         },
         { 
-          id: "include", 
-          text: "Include everyone's ideas", 
+          text: "Let the loudest person lead - Follow whoever speaks up", 
+          emoji: "📢", 
+          isCorrect: false
+        },
+         { 
+          text: "Include everyone's ideas - Listen to and value all contributions", 
           emoji: "💡", 
-          description: "Listen to and value all contributions",
           isCorrect: true
         },
-        { 
-          id: "dominate", 
-          text: "Dominate the group", 
-          emoji: "😤", 
-          description: "Make all decisions yourself",
-          isCorrect: false
-        }
       ]
     }
   ];
 
-  const handleDecision = (selectedChoice) => {
+  const handleChoice = (isCorrect) => {
     if (answered) return;
     
     setAnswered(true);
     resetFeedback();
     
-    const newDecisions = [...decisions, { 
-      scenarioId: scenarios[scenario].id, 
-      choice: selectedChoice,
-      isCorrect: scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect
-    }];
-    
-    setDecisions(newDecisions);
-    
-    // If the choice is correct, show flash/confetti and update score
-    const isCorrect = scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setFinalScore(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    // Move to next scenario or show results
-    if (scenario < scenarios.length - 1) {
-      setTimeout(() => {
-        setScenario(prev => prev + 1);
-        setAnswered(false);
-        resetFeedback();
-      }, 500);
-    } else {
-      setTimeout(() => {
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
         setShowResult(true);
-      }, 500);
-    }
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setScenario(0);
-    setDecisions([]);
-    setFinalScore(0);
+    setChallenge(0);
+    setScore(0);
     setAnswered(false);
+    setSelectedAnswer(null);
     resetFeedback();
   };
 
@@ -221,86 +239,83 @@ const InclusiveKidBadge = () => {
     navigate("/games/uvls/kids");
   };
 
-  const getCurrentScenario = () => scenarios[scenario];
-  const totalGood = decisions.filter(r => r.isCorrect).length;
+  const currentChallenge = challenges[challenge];
 
   return (
     <GameShell
       title="Badge: Inclusive Kid"
-      subtitle={!showResult ? `Scenario ${scenario + 1} of ${scenarios.length}` : "Quiz Complete!"}
-      showGameOver={showResult}
-      score={finalScore}
-      gameId={gameId}
-      gameType="uvls"
-      totalLevels={scenarios.length}
-      maxScore={scenarios.length}
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      currentLevel={scenario + 1}
-      showConfetti={showResult && totalGood >= 3}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="uvls"
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      onNext={handleNext}
-      nextEnabled={showResult && totalGood >= 3}
+      backPath="/games/uvls/kids"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
       <div className="space-y-8">
-        {!showResult && getCurrentScenario() ? (
+        {!showResult && currentChallenge ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Scenario {scenario + 1}/{scenarios.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{scenarios.length}</span>
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
               
-              <h3 className="text-xl font-bold text-white mb-2">{getCurrentScenario().title}</h3>
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
               <p className="text-white text-lg mb-6">
-                {getCurrentScenario().description}
+                {currentChallenge.question}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getCurrentScenario().choices.map(choice => {
-                  const isCorrect = choice.isCorrect;
-                  const isSelected = decisions.length > 0 && decisions[decisions.length - 1]?.scenarioId === scenarios[scenario].id && decisions[decisions.length - 1]?.choice === choice.id;
-                  
-                  return (
-                    <button
-                      key={choice.id}
-                      onClick={() => handleDecision(choice.id)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform ${
-                        answered
-                          ? isCorrect && isSelected
-                            ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                            : isSelected && !isCorrect
-                            ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                            : isCorrect
-                            ? "bg-green-500/20 border-2 border-green-400"
-                            : "bg-gray-500/20 border-2 border-gray-400 opacity-50"
-                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-2xl mb-2">{choice.emoji}</div>
-                      <h4 className="font-bold text-xl mb-2">{choice.text}</h4>
-                      <p className="text-white/90">{choice.description}</p>
-                    </button>
-                  );
-                })}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSelectedAnswer(index);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === index
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {totalGood >= 3 ? (
+            {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Inclusive Kid Badge Earned!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You got {totalGood} out of {scenarios.length} correct!
+                  You got {score} out of {challenges.length} correct!
                   You show great inclusion and kindness!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{totalGood} Coins</span>
+                  <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
                   Lesson: Being inclusive means welcoming everyone, sharing resources, and making sure no one feels left out. You've shown you can be a great friend to everyone!
@@ -311,7 +326,7 @@ const InclusiveKidBadge = () => {
                 <div className="text-5xl mb-4">💪</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You got {totalGood} out of {scenarios.length} correct.
+                  You got {score} out of {challenges.length} correct.
                   Remember: Inclusion means welcoming everyone and making sure no one feels left out!
                 </p>
                 <button

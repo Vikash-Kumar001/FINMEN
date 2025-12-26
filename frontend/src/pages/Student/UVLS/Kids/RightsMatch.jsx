@@ -1,14 +1,22 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const RightsMatch = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-24";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-24");
+  const gameId = gameData?.id || "uvls-kids-24";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for RightsMatch, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
@@ -23,26 +31,24 @@ const RightsMatch = () => {
       id: 1,
       text: "Which right matches 'School time'?",
       emoji: "📚",
+      correct: "Learn",
       options: [
         { 
           id: "learn", 
           text: "Learn", 
           emoji: "📖", 
-          description: "The right to education and learning",
           isCorrect: true 
         },
         { 
           id: "play", 
           text: "Play", 
           emoji: "🎮", 
-          description: "The right to play and have fun",
           isCorrect: false 
         },
         { 
           id: "safety", 
           text: "Safety", 
           emoji: "🛡️", 
-          description: "The right to be safe and protected",
           isCorrect: false 
         }
       ]
@@ -51,26 +57,24 @@ const RightsMatch = () => {
       id: 2,
       text: "Which right matches 'Park fun'?",
       emoji: "🌳",
+      correct: "Play",
       options: [
         { 
           id: "food", 
           text: "Food", 
           emoji: "🍎", 
-          description: "The right to nutritious food",
           isCorrect: false 
         },
         { 
           id: "play", 
           text: "Play", 
           emoji: "🎮", 
-          description: "The right to play and have fun",
           isCorrect: true 
         },
         { 
           id: "rest", 
           text: "Rest", 
           emoji: "😴", 
-          description: "The right to rest and sleep",
           isCorrect: false 
         }
       ]
@@ -79,26 +83,24 @@ const RightsMatch = () => {
       id: 3,
       text: "Which right matches 'Safe home'?",
       emoji: "🏠",
+      correct: "Safety",
       options: [
         { 
           id: "voice", 
           text: "Voice", 
           emoji: "🗣️", 
-          description: "The right to express your opinion",
           isCorrect: false 
         },
         { 
           id: "safety", 
           text: "Safety", 
           emoji: "🛡️", 
-          description: "The right to be safe and protected",
           isCorrect: true 
         },
         { 
           id: "family", 
           text: "Family", 
           emoji: "👨‍👩‍👧", 
-          description: "The right to be with your family",
           isCorrect: false 
         }
       ]
@@ -107,26 +109,24 @@ const RightsMatch = () => {
       id: 4,
       text: "Which right matches 'Eating meal'?",
       emoji: "🍽️",
+      correct: "Food",
       options: [
         { 
           id: "food", 
           text: "Food", 
           emoji: "🍎", 
-          description: "The right to nutritious food",
           isCorrect: true 
         },
         { 
           id: "health", 
           text: "Health", 
           emoji: "🏥", 
-          description: "The right to healthcare",
           isCorrect: false 
         },
         { 
           id: "care", 
           text: "Care", 
           emoji: "❤️", 
-          description: "The right to be cared for",
           isCorrect: false 
         }
       ]
@@ -135,26 +135,24 @@ const RightsMatch = () => {
       id: 5,
       text: "Which right matches 'Speaking up'?",
       emoji: "🗣️",
+      correct: "Voice",
       options: [
         { 
           id: "equality", 
           text: "Equality", 
           emoji: "⚖️", 
-          description: "The right to be treated equally",
           isCorrect: false 
         },
         { 
           id: "voice", 
           text: "Voice", 
           emoji: "🗣️", 
-          description: "The right to express your opinion",
           isCorrect: true 
         },
         { 
           id: "growth", 
           text: "Growth", 
           emoji: "🌱", 
-          description: "The right to grow and develop",
           isCorrect: false 
         }
       ]
@@ -194,14 +192,12 @@ const RightsMatch = () => {
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
+  // Removed handleNext function as it's not needed for this game structure
 
   return (
     <GameShell
       title="Rights Match"
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -215,12 +211,11 @@ const RightsMatch = () => {
       showAnswerConfetti={showAnswerConfetti}
       gameId={gameId}
       gameType="uvls"
-      onNext={handleNext}
-      nextEnabled={showResult && score >= 3}
+      // Removed onNext and nextEnabled props as they're not needed for this game structure
     >
-      <div className="space-y-8 max-w-2xl mx-auto">
+      <div className="space-y-8">
         {!showResult && questions[currentQuestion] ? (
-          <div>
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
@@ -232,26 +227,23 @@ const RightsMatch = () => {
                 <h3 className="text-white text-xl font-bold">{questions[currentQuestion].text}</h3>
               </div>
               
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {questions[currentQuestion].options.map((option) => (
                   <button
                     key={option.id}
                     onClick={() => handleAnswer(option.isCorrect)}
                     disabled={answered}
-                    className={`w-full text-left p-4 rounded-xl transition-all transform ${
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
                       answered
                         ? option.isCorrect
                           ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
                           : "bg-red-500/20 border-2 border-red-400 opacity-75"
-                        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
                     } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">{option.emoji}</span>
-                      <div className="flex-1">
-                        <div className="font-semibold text-lg">{option.text}</div>
-                        <div className="text-sm opacity-90">{option.description}</div>
-                      </div>
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
                     </div>
                   </button>
                 ))}
@@ -263,7 +255,7 @@ const RightsMatch = () => {
             {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Perfect Match!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Rights Expert!</h3>
                 <p className="text-white/90 text-lg mb-4">
                   You got {score} out of {questions.length} correct!
                   You understand children's rights!
@@ -272,13 +264,13 @@ const RightsMatch = () => {
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Understanding your rights helps you know what you deserve - like the right to learn, play, safety, food, and to express your voice!
+                  Lesson: Understanding your rights helps you know what you deserve - like the right to learn, play, safety, food, and to express your voice! These rights ensure you grow up healthy, happy, and respected.
                 </p>
               </div>
             ) : (
               <div>
                 <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Match Better!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
                   You got {score} out of {questions.length} correct.
                   Keep learning about children's rights!
@@ -290,7 +282,7 @@ const RightsMatch = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Tip: You have the right to learn, play, safety, food, health, family, voice, and more. Match situations to these rights!
+                  Tip: You have the right to learn, play, safety, food, health, family, voice, and more. These rights ensure you grow up healthy, happy, and respected!
                 </p>
               </div>
             )}

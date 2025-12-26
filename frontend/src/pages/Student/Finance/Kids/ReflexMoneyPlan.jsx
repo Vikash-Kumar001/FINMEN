@@ -34,8 +34,8 @@ const ReflexMoneyPlan = () => {
       question: "Before buying something, what should you do first?",
       correctAnswer: "Plan & Budget",
       options: [
-        { text: "Plan & Budget", isCorrect: true, emoji: "📋" },
         { text: "Buy Immediately", isCorrect: false, emoji: "💸" },
+        { text: "Plan & Budget", isCorrect: true, emoji: "📋" },
         { text: "Ask Friends", isCorrect: false, emoji: "👥" },
         { text: "Wait Randomly", isCorrect: false, emoji: "⏳" }
       ]
@@ -45,9 +45,9 @@ const ReflexMoneyPlan = () => {
       question: "You want a toy that costs ₹200, but you only have ₹150. What should you do?",
       correctAnswer: "Save More First",
       options: [
-        { text: "Save More First", isCorrect: true, emoji: "💰" },
         { text: "Borrow Money", isCorrect: false, emoji: "💳" },
         { text: "Forget About It", isCorrect: false, emoji: "😔" },
+        { text: "Save More First", isCorrect: true, emoji: "💰" },
         { text: "Buy Anyway", isCorrect: false, emoji: "🛒" }
       ]
     },
@@ -56,8 +56,8 @@ const ReflexMoneyPlan = () => {
       question: "What helps you know where your money goes?",
       correctAnswer: "Track Expenses",
       options: [
-        { text: "Track Expenses", isCorrect: true, emoji: "📊" },
         { text: "Ignore Spending", isCorrect: false, emoji: "🙈" },
+        { text: "Track Expenses", isCorrect: true, emoji: "📊" },
         { text: "Spend Randomly", isCorrect: false, emoji: "🎲" },
         { text: "Hide Receipts", isCorrect: false, emoji: "📄" }
       ]
@@ -78,10 +78,10 @@ const ReflexMoneyPlan = () => {
       question: "What should you do to reach a big money goal?",
       correctAnswer: "Set a Savings Plan",
       options: [
-        { text: "Set a Savings Plan", isCorrect: true, emoji: "🎯" },
         { text: "Spend on Small Things", isCorrect: false, emoji: "🍬" },
         { text: "Hope for Luck", isCorrect: false, emoji: "🍀" },
-        { text: "Ask for Money", isCorrect: false, emoji: "🙏" }
+        { text: "Ask for Money", isCorrect: false, emoji: "🙏" },
+        { text: "Set a Savings Plan", isCorrect: true, emoji: "🎯" },
       ]
     }
   ];

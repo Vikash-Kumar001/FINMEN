@@ -114,11 +114,7 @@ const CreativeKidBadge = () => {
       title: "Creative Challenge 4",
       question: "What helps you think creatively?",
       options: [
-        { 
-          text: "Being open to new ideas and trying different approaches", 
-          emoji: "🌈", 
-          isCorrect: true
-        },
+        
         { 
           text: "Only doing what you know", 
           emoji: "📚", 
@@ -133,7 +129,12 @@ const CreativeKidBadge = () => {
           text: "Avoiding all problems", 
           emoji: "🙈", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Being open to new ideas and trying different approaches", 
+          emoji: "🌈", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -141,11 +142,7 @@ const CreativeKidBadge = () => {
       title: "Creative Challenge 5",
       question: "What is the best way to solve problems creatively?",
       options: [
-        { 
-          text: "Use imagination, brainstorm ideas, and try new methods", 
-          emoji: "🎨", 
-          isCorrect: true
-        },
+        
         { 
           text: "Only use one solution", 
           emoji: "➡️", 
@@ -155,6 +152,11 @@ const CreativeKidBadge = () => {
           text: "Never think of alternatives", 
           emoji: "🚫", 
           isCorrect: false
+        },
+        { 
+          text: "Use imagination, brainstorm ideas, and try new methods", 
+          emoji: "🎨", 
+          isCorrect: true
         },
         { 
           text: "Always give up", 

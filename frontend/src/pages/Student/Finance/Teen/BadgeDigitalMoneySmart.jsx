@@ -92,11 +92,7 @@ const BadgeDigitalMoneySmart = () => {
           emoji: "🚫", 
           isCorrect: false
         },
-        { 
-          text: "Check for HTTPS and padlock", 
-          emoji: "🔒", 
-          isCorrect: true
-        },
+        
         { 
           text: "Enter details on any site", 
           emoji: "🌐", 
@@ -106,7 +102,12 @@ const BadgeDigitalMoneySmart = () => {
           text: "Trust all websites", 
           emoji: "😊", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Check for HTTPS and padlock", 
+          emoji: "🔒", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -146,15 +147,16 @@ const BadgeDigitalMoneySmart = () => {
           emoji: "🔓", 
           isCorrect: false
         },
-        { 
-          text: "Create strong, unique passwords", 
-          emoji: "🔑", 
-          isCorrect: true
-        },
+        
         { 
           text: "Share password with friends", 
           emoji: "👥", 
           isCorrect: false
+        },
+        { 
+          text: "Create strong, unique passwords", 
+          emoji: "🔑", 
+          isCorrect: true
         },
         { 
           text: "Never change password", 

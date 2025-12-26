@@ -55,6 +55,7 @@ const CalmKidBadge = () => {
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const challenges = [
@@ -219,8 +220,6 @@ const CalmKidBadge = () => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
     const isLastChallenge = challenge === challenges.length - 1;
@@ -231,8 +230,9 @@ const CalmKidBadge = () => {
       } else {
         setChallenge(prev => prev + 1);
         setAnswered(false);
+        setSelectedAnswer(null);
       }
-    }, 1500);
+    }, 500);
   };
 
   // Log when game completes and update location state with nextGameId
@@ -257,7 +257,7 @@ const CalmKidBadge = () => {
     <GameShell
       title="Badge: Calm Kid"
       score={score}
-      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Earned!"}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -302,12 +302,25 @@ const CalmKidBadge = () => {
               {currentChallenge.options.map((option, index) => (
                 <button
                   key={index}
-                  onClick={() => handleChoice(option.isCorrect)}
+                  onClick={() => {
+                    setSelectedAnswer(index);
+                    handleChoice(option.isCorrect);
+                  }}
                   disabled={answered}
-                  className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className={`p-6 rounded-2xl text-left transition-all transform ${
+                    answered
+                      ? option.isCorrect
+                        ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                        : selectedAnswer === index
+                        ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                        : "bg-white/5 border-2 border-white/20 opacity-50"
+                      : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                  } ${answered ? "cursor-not-allowed" : ""}`}
                 >
-                  <div className="text-3xl mb-3">{option.emoji}</div>
-                  <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{option.emoji}</span>
+                    <span className="text-white font-semibold">{option.text}</span>
+                  </div>
                 </button>
               ))}
             </div>

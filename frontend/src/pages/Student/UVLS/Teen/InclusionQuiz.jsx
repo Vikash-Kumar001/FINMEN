@@ -59,21 +59,18 @@ const InclusionQuiz = () => {
           id: "a", 
           text: "Zero tolerance for bullying and discrimination", 
           emoji: "🛡️",
-          description: "Creates safe, inclusive environments",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Separate classes for different ability levels", 
           emoji: "📚",
-          description: "Separates students unnecessarily",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ignoring differences to treat everyone the same", 
           emoji: "🙈",
-          description: "Doesn't address unique needs",
           isCorrect: false
         }
       ]
@@ -86,21 +83,18 @@ const InclusionQuiz = () => {
           id: "b", 
           text: "Making everyone do exactly the same thing", 
           emoji: "🔄",
-          description: "Ignores diverse needs",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Providing accommodations for students with different needs", 
           emoji: "♿",
-          description: "Supports diverse needs",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Grouping students only by academic performance", 
           emoji: "📊",
-          description: "Limits diversity",
           isCorrect: false
         }
       ]
@@ -113,21 +107,18 @@ const InclusionQuiz = () => {
           id: "a", 
           text: "Offer diverse food options respecting dietary restrictions", 
           emoji: "🍽️",
-          description: "Respects cultural and dietary needs",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Serve only one type of meal for simplicity", 
           emoji: "🍲",
-          description: "Doesn't accommodate diversity",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Let students bring their own food only", 
           emoji: "🍱",
-          description: "Doesn't provide options",
           isCorrect: false
         }
       ]
@@ -140,21 +131,18 @@ const InclusionQuiz = () => {
           id: "b", 
           text: "Fixed rows with students grouped by ability", 
           emoji: "📐",
-          description: "Doesn't accommodate all students",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Flexible seating with wheelchair-accessible spaces", 
           emoji: "🪑",
-          description: "Welcomes all students",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Only desks, no alternatives", 
           emoji: "🪑",
-          description: "Not accessible for everyone",
           isCorrect: false
         }
       ]
@@ -167,21 +155,18 @@ const InclusionQuiz = () => {
           id: "c", 
           text: "Only inviting high-achieving students", 
           emoji: "🏆",
-          description: "Excludes many students",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Offering multiple ways to participate and accessible venues", 
           emoji: "🎪",
-          description: "Ensures everyone can join",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Having one standard format everyone must follow", 
           emoji: "📋",
-          description: "Doesn't accommodate differences",
           isCorrect: false
         }
       ]
@@ -277,7 +262,6 @@ const InclusionQuiz = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

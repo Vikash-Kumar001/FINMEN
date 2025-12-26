@@ -56,21 +56,18 @@ const CampaignStory = () => {
           id: "a", 
           text: "Set Specific Goals", 
           emoji: "🎯", 
-          description: "Define clear, measurable objectives",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Vague Awareness", 
           emoji: "🌫️", 
-          description: "Just raise general awareness",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No Goal", 
           emoji: "❌", 
-          description: "Start without any plan",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const CampaignStory = () => {
           id: "a", 
           text: "Targeted Groups", 
           emoji: "👥", 
-          description: "Focus on specific demographics",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Everyone", 
           emoji: "🌍", 
-          description: "Try to reach everyone",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No Audience", 
           emoji: "🚫", 
-          description: "Don't identify an audience",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const CampaignStory = () => {
           id: "a", 
           text: "Multi-Channel", 
           emoji: "📱", 
-          description: "Use multiple platforms and methods",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "One Channel", 
           emoji: "📺", 
-          description: "Use only one method",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No Channel", 
           emoji: "🔇", 
-          description: "Don't plan any communication",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const CampaignStory = () => {
           id: "a", 
           text: "With Milestones", 
           emoji: "📅", 
-          description: "Set clear deadlines and checkpoints",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Indefinite", 
           emoji: "♾️", 
-          description: "No specific timeline",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No Timeline", 
           emoji: "⏸️", 
-          description: "Don't set any deadlines",
           isCorrect: false
         }
       ]
@@ -164,21 +152,18 @@ const CampaignStory = () => {
           id: "a", 
           text: "KPI Tracking", 
           emoji: "📊", 
-          description: "Use key performance indicators",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Guess", 
           emoji: "🔮", 
-          description: "Estimate without data",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "No Measurement", 
           emoji: "🙈", 
-          description: "Don't track results",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const CampaignStory = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

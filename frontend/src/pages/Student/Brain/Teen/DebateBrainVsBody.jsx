@@ -61,21 +61,21 @@ const DebateBrainVsBody = () => {
           id: "brain", 
           text: "Brain health is more important", 
           emoji: "🧠", 
-          description: "Brain health is crucial, but body health is equally important",
+          description: "Both brain and body health matter",
           isCorrect: false
         },
         { 
           id: "both", 
           text: "Both are equally important", 
           emoji: "⚖️", 
-          description: "Both brain and body health are equally important and interconnected. A healthy body supports brain function, and a healthy brain helps maintain body wellness",
+          description: "Both are essential and connected",
           isCorrect: true
         },
         { 
           id: "body", 
           text: "Body health is more important", 
           emoji: "💪", 
-          description: "Body health is important, but brain health is equally crucial",
+          description: "Body health is important too",
           isCorrect: false
         }
       ]
@@ -88,21 +88,21 @@ const DebateBrainVsBody = () => {
           id: "no", 
           text: "No, multitasking reduces efficiency", 
           emoji: "❌", 
-          description: "Multitasking actually reduces efficiency and learning. The brain needs focused attention on one task at a time for optimal performance and retention",
+          description: "Focus on one task at a time",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes, multitasking boosts productivity", 
           emoji: "✅", 
-          description: "Multitasking actually decreases productivity and learning quality",
+          description: "Actually reduces productivity",
           isCorrect: false
         },
         { 
           id: "sometimes", 
           text: "Sometimes, depends on the tasks", 
           emoji: "🤔", 
-          description: "Even with simple tasks, multitasking reduces efficiency",
+          description: "Reduces efficiency",
           isCorrect: false
         }
       ]
@@ -115,21 +115,21 @@ const DebateBrainVsBody = () => {
           id: "long", 
           text: "Study for long hours without breaks", 
           emoji: "⏰", 
-          description: "Long study sessions without breaks lead to mental fatigue and reduced retention",
+          description: "Causes mental fatigue",
           isCorrect: false
         },
         { 
           id: "both", 
           text: "Both approaches work equally well", 
           emoji: "⚖️", 
-          description: "Regular breaks are more effective than continuous long study sessions",
+          description: "Breaks are more effective",
           isCorrect: false
         },
         { 
           id: "breaks", 
           text: "Take regular breaks during study", 
           emoji: "☕", 
-          description: "Taking regular breaks during study sessions improves focus and retention. The brain needs rest periods to consolidate information and prevent mental fatigue",
+          description: "Improves focus and memory",
           isCorrect: true
         }
       ]
@@ -142,21 +142,21 @@ const DebateBrainVsBody = () => {
           id: "help", 
           text: "Yes, music always helps concentration", 
           emoji: "🎵", 
-          description: "Music doesn't always help - it depends on the task and music type",
+          description: "Depends on task and music",
           isCorrect: false
         },
         { 
           id: "hurt", 
           text: "No, music always hurts concentration", 
           emoji: "🔇", 
-          description: "Music doesn't always hurt - it depends on the task and music type",
+          description: "Depends on task and music",
           isCorrect: false
         },
         { 
           id: "depends", 
           text: "Depends on the type of music and task", 
           emoji: "🎧", 
-          description: "The effect of music on concentration depends on the task and music type. Instrumental music can help with repetitive tasks, but lyrical music can interfere with reading and writing",
+          description: "Instrumental helps, lyrics hurt focus",
           isCorrect: true
         }
       ]
@@ -169,21 +169,21 @@ const DebateBrainVsBody = () => {
           id: "vary", 
           text: "Vary subjects during study sessions", 
           emoji: "🔄", 
-          description: "Varying subjects during study sessions can improve learning through interleaving. Switching between different types of material helps strengthen memory and problem-solving skills",
+          description: "Helps strengthen memory",
           isCorrect: true
         },
         { 
           id: "same", 
           text: "Study the same subject every day", 
           emoji: "📚", 
-          description: "Focusing on one subject can be limiting - varying subjects improves learning",
+          description: "Varying improves learning",
           isCorrect: false
         },
         { 
           id: "either", 
           text: "Either approach works the same", 
           emoji: "⚖️", 
-          description: "Varying subjects is more effective than studying the same subject",
+          description: "Varying is more effective",
           isCorrect: false
         }
       ]

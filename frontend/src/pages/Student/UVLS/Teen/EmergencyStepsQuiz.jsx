@@ -56,21 +56,18 @@ const EmergencyStepsQuiz = () => {
           id: "a", 
           text: "Evacuate immediately and call 911", 
           emoji: "🔥",
-          description: "Safety first, then alert authorities",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Ignore it and continue what you're doing", 
           emoji: "🙈",
-          description: "Dangerous - fire spreads quickly",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Try to put it out yourself first", 
           emoji: "💧",
-          description: "Only if small and safe, otherwise evacuate",
           isCorrect: false
         }
       ]
@@ -83,21 +80,18 @@ const EmergencyStepsQuiz = () => {
           id: "b", 
           text: "Wait and see if it stops", 
           emoji: "⏳",
-          description: "Severe bleeding needs immediate action",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Apply direct pressure to the wound", 
           emoji: "🩹",
-          description: "Correct first aid for bleeding",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Elevate the wound and wait", 
           emoji: "⬆️",
-          description: "Pressure is more important first",
           isCorrect: false
         }
       ]
@@ -110,21 +104,18 @@ const EmergencyStepsQuiz = () => {
           id: "a", 
           text: "Perform Heimlich maneuver if trained", 
           emoji: "🤲",
-          description: "Correct technique for choking",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Give them water to drink", 
           emoji: "💧",
-          description: "Can make choking worse",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Pat them on the back gently", 
           emoji: "👋",
-          description: "Not effective for severe choking",
           isCorrect: false
         }
       ]
@@ -137,21 +128,18 @@ const EmergencyStepsQuiz = () => {
           id: "b", 
           text: "Tell them to walk it off", 
           emoji: "🚶",
-          description: "Dangerous - heart attack needs immediate care",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Wait to see if symptoms improve", 
           emoji: "⏰",
-          description: "Time is critical in heart attacks",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Call emergency services immediately", 
           emoji: "📞",
-          description: "Immediate medical attention needed",
           isCorrect: true
         }
       ]
@@ -164,21 +152,18 @@ const EmergencyStepsQuiz = () => {
           id: "a", 
           text: "Drop, cover, and hold on", 
           emoji: "🛡️",
-          description: "Standard earthquake safety protocol",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Run outside immediately", 
           emoji: "🏃",
-          description: "Dangerous - falling debris outside",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Stand in a doorway", 
           emoji: "🚪",
-          description: "Old advice, drop/cover/hold is better",
           isCorrect: false
         }
       ]
@@ -274,7 +259,6 @@ const EmergencyStepsQuiz = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

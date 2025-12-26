@@ -56,28 +56,24 @@ const InterviewSimulation = () => {
           id: "a", 
           text: "Start with your educational background", 
           emoji: "📚",
-          description: "Good foundation",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Use the STAR method to structure your response", 
           emoji: "⭐",
-          description: "Professional approach",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Talk about your hobbies and interests", 
           emoji: "🎨",
-          description: "Not relevant",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "List all your previous jobs", 
           emoji: "💼",
-          description: "Too detailed",
           isCorrect: false
         }
       ]
@@ -90,14 +86,12 @@ const InterviewSimulation = () => {
           id: "b", 
           text: "Show research about the role and company", 
           emoji: "🔍",
-          description: "Demonstrates genuine interest",
           isCorrect: true
         },
         { 
           id: "a", 
           text: "Talk about salary expectations", 
           emoji: "💰",
-          description: "Premature",
           isCorrect: false
         },
         
@@ -105,14 +99,12 @@ const InterviewSimulation = () => {
           id: "c", 
           text: "Say it's your dream job without specifics", 
           emoji: "💭",
-          description: "Vague",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Complain about your current job", 
           emoji: "😠",
-          description: "Negative",
           isCorrect: false
         }
       ]
@@ -125,7 +117,6 @@ const InterviewSimulation = () => {
           id: "a", 
           text: "Claim to have no weaknesses", 
           emoji: "🚫",
-          description: "Unrealistic",
           isCorrect: false
         },
         
@@ -133,21 +124,18 @@ const InterviewSimulation = () => {
           id: "c", 
           text: "List generic strengths like 'hardworking'", 
           emoji: "💤",
-          description: "Unconvincing",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Be honest with specific examples", 
           emoji: "🏆",
-          description: "Authentic approach",
           isCorrect: true
         },
         { 
           id: "d", 
           text: "Avoid answering directly", 
           emoji: "🙈",
-          description: "Evading",
           isCorrect: false
         }
       ]
@@ -160,28 +148,24 @@ const InterviewSimulation = () => {
           id: "a", 
           text: "Take credit for the team's success", 
           emoji: "🏆",
-          description: "Self-centered",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Use STAR method to structure your response", 
           emoji: "⭐",
-          description: "Clear and structured",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Blame teammates for failures", 
           emoji: "😠",
-          description: "Unprofessional",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Give a vague general answer", 
           emoji: "☁️",
-          description: "Unclear",
           isCorrect: false
         }
       ]
@@ -194,7 +178,6 @@ const InterviewSimulation = () => {
           id: "a", 
           text: "Ask about salary and benefits immediately", 
           emoji: "💸",
-          description: "Too early",
           isCorrect: false
         },
         
@@ -202,21 +185,18 @@ const InterviewSimulation = () => {
           id: "c", 
           text: "Say you have no questions", 
           emoji: "🤷",
-          description: "Missed opportunity",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Ask about vacation time only", 
           emoji: "🏖️",
-          description: "Narrow focus",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Ask thoughtful questions about the role and company", 
           emoji: "🤔",
-          description: "Shows engagement",
           isCorrect: true
         },
       ]
@@ -312,7 +292,6 @@ const InterviewSimulation = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

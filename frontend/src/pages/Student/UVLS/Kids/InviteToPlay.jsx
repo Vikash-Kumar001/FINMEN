@@ -35,21 +35,21 @@ const InviteToPlay = () => {
           id: "invite", 
           text: "Hi! Want to come play with us?", 
           emoji: "😊", 
-          description: "Invite them warmly to join",
+          
           isCorrect: true 
         },
         { 
           id: "ignore", 
           text: "Walk past without saying anything", 
           emoji: "😐", 
-          description: "Ignore the situation",
+          
           isCorrect: false 
         },
         { 
           id: "point", 
           text: "Just point at them without speaking", 
           emoji: "👆", 
-          description: "Point without inviting",
+         
           isCorrect: false 
         }
       ]
@@ -62,21 +62,18 @@ const InviteToPlay = () => {
           id: "ignore", 
           text: "Keep playing and ignore them", 
           emoji: "🙈", 
-          description: "Continue without including them",
           isCorrect: false 
         },
         { 
           id: "wave", 
           text: "Hey! Come join our team!", 
           emoji: "👋", 
-          description: "Invite them to join your team",
           isCorrect: true 
         },
         { 
           id: "stare", 
           text: "Stare back at them", 
           emoji: "👀", 
-          description: "Make them uncomfortable",
           isCorrect: false 
         }
       ]
@@ -89,21 +86,18 @@ const InviteToPlay = () => {
           id: "invite", 
           text: "We have extra crayons! Want to draw with us?", 
           emoji: "🎨", 
-          description: "Invite them to join your art activity",
           isCorrect: true 
         },
         { 
           id: "ask", 
           text: "Why are you alone?", 
           emoji: "🤔", 
-          description: "Ask a personal question",
           isCorrect: false 
         },
         { 
           id: "leave", 
           text: "Move to another table", 
           emoji: "🚶", 
-          description: "Avoid them",
           isCorrect: false 
         }
       ]
@@ -116,21 +110,18 @@ const InviteToPlay = () => {
           id: "take", 
           text: "Take the swing without asking", 
           emoji: "😠", 
-          description: "Be selfish",
           isCorrect: false 
         },
         { 
           id: "walk", 
           text: "Walk away to play elsewhere", 
           emoji: "🚶", 
-          description: "Ignore their sadness",
           isCorrect: false 
         },
         { 
           id: "offer", 
           text: "Would you like to swing together?", 
           emoji: "🛝", 
-          description: "Invite them to swing with you",
           isCorrect: true 
         }
       ]
@@ -143,21 +134,18 @@ const InviteToPlay = () => {
           id: "share", 
           text: "I can share my lunch with you. Come sit!", 
           emoji: "🍱", 
-          description: "Offer to share and invite them",
           isCorrect: true 
         },
         { 
           id: "laugh", 
           text: "Laugh at them for dropping it", 
           emoji: "😂", 
-          description: "Make fun of them",
           isCorrect: false 
         },
         { 
           id: "ignore", 
           text: "Eat your own lunch silently", 
           emoji: "🍽️", 
-          description: "Ignore their situation",
           isCorrect: false 
         }
       ]

@@ -36,21 +36,21 @@ const EqualityQuiz = () => {
           id: "a", 
           text: "Yes, anyone can!", 
           emoji: "👩‍⚕️", 
-          description: "Anyone can pursue any career",
+        
           isCorrect: true 
         },
         { 
           id: "b", 
           text: "No, only boys", 
           emoji: "🚫", 
-          description: "This is not true",
+         
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Maybe sometimes", 
           emoji: "🤔", 
-          description: "This is uncertain",
+          
           isCorrect: false 
         }
       ]
@@ -63,21 +63,18 @@ const EqualityQuiz = () => {
           id: "b", 
           text: "Only boys need school", 
           emoji: "👦", 
-          description: "This is not fair",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Yes, equal education!", 
           emoji: "📚", 
-          description: "Everyone deserves education",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "Girls don't need it", 
           emoji: "👧", 
-          description: "This is not true",
           isCorrect: false 
         }
       ]
@@ -90,21 +87,18 @@ const EqualityQuiz = () => {
           id: "b", 
           text: "No, that's for girls", 
           emoji: "🚫", 
-          description: "This is a stereotype",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Only if no one sees", 
           emoji: "🙈", 
-          description: "This suggests shame",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Yes, toys for all!", 
           emoji: "🧸", 
-          description: "Toys are for everyone",
           isCorrect: true 
         }
       ]
@@ -117,21 +111,18 @@ const EqualityQuiz = () => {
           id: "a", 
           text: "Yes, equality for all!", 
           emoji: "⚖️", 
-          description: "Everyone deserves equal rights",
           isCorrect: true 
         },
         { 
           id: "b", 
           text: "No, depends on gender", 
           emoji: "🤷", 
-          description: "This is not fair",
           isCorrect: false 
         },
         { 
           id: "c", 
           text: "Only for adults", 
           emoji: "👴", 
-          description: "Kids also have rights",
           isCorrect: false 
         }
       ]
@@ -144,21 +135,18 @@ const EqualityQuiz = () => {
           id: "b", 
           text: "No, too rough", 
           emoji: "🚫", 
-          description: "This is a stereotype",
           isCorrect: false 
         },
         { 
           id: "a", 
           text: "Yes, sports for everyone!", 
           emoji: "⚽", 
-          description: "Sports are for all",
           isCorrect: true 
         },
         { 
           id: "c", 
           text: "Only easy ones", 
           emoji: "🏓", 
-          description: "This limits opportunities",
           isCorrect: false 
         }
       ]

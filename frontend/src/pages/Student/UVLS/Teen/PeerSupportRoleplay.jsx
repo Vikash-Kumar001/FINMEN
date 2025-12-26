@@ -59,21 +59,18 @@ const PeerSupportRoleplay = () => {
           id: "a", 
           text: "That sounds really tough. Can you tell me more about what's been happening?", 
           emoji: "💙",
-          description: "Shows empathy and invites sharing",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Just think positive and you'll feel better.", 
           emoji: "😐",
-          description: "Dismisses their feelings",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Everyone feels that way sometimes.", 
           emoji: "🤷",
-          description: "Minimizes their experience",
           isCorrect: false
         }
       ]
@@ -86,21 +83,18 @@ const PeerSupportRoleplay = () => {
           id: "b", 
           text: "Stop comparing yourself to others.", 
           emoji: "👆",
-          description: "Commands them without understanding",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "I hear how hard you're being on yourself. Those thoughts must be painful.", 
           emoji: "💝",
-          description: "Validates their feelings with empathy",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "You're right, they are better than you.", 
           emoji: "😞",
-          description: "Hurts them further",
           isCorrect: false
         }
       ]
@@ -113,21 +107,18 @@ const PeerSupportRoleplay = () => {
           id: "a", 
           text: "Your feelings are important and you're not a burden. I want to help.", 
           emoji: "🤝",
-          description: "Reassures them they're not a burden",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Yeah, you probably shouldn't bother people.", 
           emoji: "😕",
-          description: "Confirms their fear",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Just deal with it yourself then.", 
           emoji: "🚶",
-          description: "Abandons them",
           isCorrect: false
         }
       ]
@@ -140,21 +131,18 @@ const PeerSupportRoleplay = () => {
           id: "c", 
           text: "You should just handle it alone.", 
           emoji: "🚫",
-          description: "Discourages seeking help",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Seeking help takes courage. It's a sign of strength, not weakness.", 
           emoji: "💪",
-          description: "Reframes help-seeking positively",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Yeah, people might think that.", 
           emoji: "😰",
-          description: "Confirms their fear",
           isCorrect: false
         }
       ]
@@ -167,21 +155,18 @@ const PeerSupportRoleplay = () => {
           id: "a", 
           text: "I can see how frustrating that must be. Can you tell me about a time you succeeded?", 
           emoji: "🌟",
-          description: "Validates feelings and helps reframe",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Stop being so negative all the time.", 
           emoji: "😠",
-          description: "Dismisses their feelings",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Maybe you are messing up.", 
           emoji: "😕",
-          description: "Hurts them",
           isCorrect: false
         }
       ]
@@ -281,7 +266,6 @@ const PeerSupportRoleplay = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

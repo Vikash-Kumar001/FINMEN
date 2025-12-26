@@ -114,11 +114,7 @@ const MemoryKidBadge = () => {
       title: "Memory Challenge 4",
       question: "What helps your brain remember?",
       options: [
-        { 
-          text: "Getting enough sleep and eating healthy", 
-          emoji: "😴", 
-          isCorrect: true
-        },
+        
         { 
           text: "Staying up all night", 
           emoji: "🌙", 
@@ -133,7 +129,12 @@ const MemoryKidBadge = () => {
           text: "Avoiding all rest", 
           emoji: "⏰", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Getting enough sleep and eating healthy", 
+          emoji: "😴", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -141,11 +142,7 @@ const MemoryKidBadge = () => {
       title: "Memory Challenge 5",
       question: "What makes memory stronger?",
       options: [
-        { 
-          text: "Regular practice and repetition", 
-          emoji: "🔁", 
-          isCorrect: true
-        },
+       
         { 
           text: "Never practicing", 
           emoji: "🚫", 
@@ -155,6 +152,11 @@ const MemoryKidBadge = () => {
           text: "Learning once and stopping", 
           emoji: "⏸️", 
           isCorrect: false
+        },
+         { 
+          text: "Regular practice and repetition", 
+          emoji: "🔁", 
+          isCorrect: true
         },
         { 
           text: "Avoiding all memory activities", 

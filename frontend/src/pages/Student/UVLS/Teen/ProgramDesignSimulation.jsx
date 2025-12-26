@@ -56,28 +56,24 @@ const ProgramDesignSimulation = () => {
           id: "a", 
           text: "Set measurable goals like increasing participation by 20% and track attendance", 
           emoji: "🎯",
-          description: "Specific and measurable objectives",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Just make it fun without clear goals", 
           emoji: "🎉",
-          description: "Vague approach",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Start without any goals", 
           emoji: "🚫",
-          description: "No direction",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Focus only on boys", 
           emoji: "👨",
-          description: "Wrong target",
           isCorrect: false
         }
       ]
@@ -90,28 +86,24 @@ const ProgramDesignSimulation = () => {
           id: "b", 
           text: "Overspend on everything", 
           emoji: "💸",
-          description: "Not sustainable",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Create balanced budget with cost-effective activities", 
           emoji: "💰",
-          description: "Sustainable and strategic",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Work with no budget", 
           emoji: "🚫",
-          description: "Limits options",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Spend only on one activity", 
           emoji: "📌",
-          description: "Too limited",
           isCorrect: false
         }
       ]
@@ -124,28 +116,24 @@ const ProgramDesignSimulation = () => {
           id: "a", 
           text: "Use multiple channels: posters, social media, peer recruitment, and teacher referrals", 
           emoji: "📢",
-          description: "Reaches diverse groups",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Only tell close friends", 
           emoji: "👥",
-          description: "Too limited",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Don't advertise at all", 
           emoji: "🔇",
-          description: "Won't reach anyone",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Only recruit boys", 
           emoji: "👨",
-          description: "Wrong target",
           isCorrect: false
         }
       ]
@@ -158,28 +146,24 @@ const ProgramDesignSimulation = () => {
           id: "b", 
           text: "Only offer it during school hours", 
           emoji: "🕐",
-          description: "Limits access",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Require expensive materials", 
           emoji: "💎",
-          description: "Excludes many",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Offer flexible timing, free materials, and accommodate different needs", 
           emoji: "♿",
-          description: "Inclusive and accessible",
           isCorrect: true
         },
         { 
           id: "d", 
           text: "Make it hard to join", 
           emoji: "🚫",
-          description: "Wrong approach",
           isCorrect: false
         }
       ]
@@ -192,28 +176,24 @@ const ProgramDesignSimulation = () => {
           id: "a", 
           text: "Track participation rates, collect feedback, and measure skill improvement", 
           emoji: "📊",
-          description: "Comprehensive evaluation",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Just guess if it worked", 
           emoji: "🔮",
-          description: "No real data",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Don't measure anything", 
           emoji: "🙈",
-          description: "No accountability",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Only count boys", 
           emoji: "👨",
-          description: "Wrong metric",
           isCorrect: false
         }
       ]
@@ -309,7 +289,6 @@ const ProgramDesignSimulation = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

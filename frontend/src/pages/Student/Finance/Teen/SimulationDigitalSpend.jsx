@@ -50,6 +50,12 @@ const SimulationDigitalSpend = () => {
           text: "Ignore digital spending", 
           emoji: "🙈", 
           isCorrect: false
+        },
+        { 
+          id: "limit", 
+          text: "Set spending limits", 
+          emoji: "📏", 
+          isCorrect: false
         }
       ]
     },
@@ -59,12 +65,7 @@ const SimulationDigitalSpend = () => {
       description: "You have ₹1500. What should you prioritize?",
       amount: 1500,
       options: [
-        { 
-          id: "needs", 
-          text: "Prioritize needs over wants", 
-          emoji: "✅", 
-          isCorrect: true
-        },
+        
         { 
           id: "impulse", 
           text: "Impulse buying", 
@@ -76,7 +77,19 @@ const SimulationDigitalSpend = () => {
           text: "Overspend on wants", 
           emoji: "💳", 
           isCorrect: false
-        }
+        },
+        { 
+          id: "save", 
+          text: "Save all money instead", 
+          emoji: "💰", 
+          isCorrect: false
+        },
+        { 
+          id: "needs", 
+          text: "Prioritize needs over wants", 
+          emoji: "✅", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -85,12 +98,7 @@ const SimulationDigitalSpend = () => {
       description: "You have ₹2000. What's the key?",
       amount: 2000,
       options: [
-        { 
-          id: "balance", 
-          text: "Balance needs, wants, savings", 
-          emoji: "⚖️", 
-          isCorrect: true
-        },
+        
         { 
           id: "spend-all", 
           text: "Spend everything on wants", 
@@ -101,6 +109,18 @@ const SimulationDigitalSpend = () => {
           id: "save-none", 
           text: "Save nothing", 
           emoji: "📭", 
+          isCorrect: false
+        },
+        { 
+          id: "balance", 
+          text: "Balance needs, wants, savings", 
+          emoji: "⚖️", 
+          isCorrect: true
+        },
+        { 
+          id: "invest", 
+          text: "Invest all money", 
+          emoji: "📈", 
           isCorrect: false
         }
       ]
@@ -128,6 +148,12 @@ const SimulationDigitalSpend = () => {
           text: "Exceed budget regularly", 
           emoji: "⚠️", 
           isCorrect: false
+        },
+        { 
+          id: "borrow", 
+          text: "Borrow for extra spending", 
+          emoji: "💳", 
+          isCorrect: false
         }
       ]
     },
@@ -137,22 +163,29 @@ const SimulationDigitalSpend = () => {
       description: "You have ₹1200. What should you do?",
       amount: 1200,
       options: [
-        { 
-          id: "allocate", 
-          text: "Allocate for essentials first", 
-          emoji: "🎯", 
-          isCorrect: true
-        },
+       
         { 
           id: "luxury", 
           text: "Spend on luxuries first", 
           emoji: "💎", 
           isCorrect: false
         },
+         { 
+          id: "allocate", 
+          text: "Allocate for essentials first", 
+          emoji: "🎯", 
+          isCorrect: true
+        },
         { 
           id: "no-plan", 
           text: "No expense planning", 
           emoji: "📋", 
+          isCorrect: false
+        },
+        { 
+          id: "share", 
+          text: "Share expenses with friends", 
+          emoji: "🤝", 
           isCorrect: false
         }
       ]
@@ -237,7 +270,7 @@ const SimulationDigitalSpend = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {current.options.map((option) => (
                   <button
                     key={option.id}

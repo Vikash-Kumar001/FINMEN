@@ -56,28 +56,24 @@ const CrisisSimulation = () => {
           id: "a", 
           text: "High priority - Review systematically tonight", 
           emoji: "📝",
-          description: "Effective study strategy",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Low priority - Skip it", 
           emoji: "😴",
-          description: "Not preparing adequately",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Medium priority - Quick glance only", 
           emoji: "👀",
-          description: "Insufficient preparation",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "No priority - Cram in the morning", 
           emoji: "⏰",
-          description: "Poor time management",
           isCorrect: false
         }
       ]
@@ -90,28 +86,24 @@ const CrisisSimulation = () => {
           id: "b", 
           text: "Low priority - Theory is enough", 
           emoji: "📚",
-          description: "Practice is essential for math",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "High priority - Practice builds understanding", 
           emoji: "🧮",
-          description: "Best approach for math",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Medium priority - Do a few problems", 
           emoji: "✏️",
-          description: "Insufficient practice",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "No priority - Skip practice", 
           emoji: "🚫",
-          description: "Not effective",
           isCorrect: false
         }
       ]
@@ -124,28 +116,24 @@ const CrisisSimulation = () => {
           id: "a", 
           text: "High priority - Adequate sleep improves performance", 
           emoji: "🛏️",
-          description: "Essential for cognitive function",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Low priority - Study all night", 
           emoji: "🌙",
-          description: "Counterproductive",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Medium priority - Sleep a little less", 
           emoji: "😴",
-          description: "Still not optimal",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "No priority - Pull an all-nighter", 
           emoji: "☕",
-          description: "Worst approach",
           isCorrect: false
         }
       ]
@@ -158,28 +146,24 @@ const CrisisSimulation = () => {
           id: "b", 
           text: "Low priority - Fast food is fine", 
           emoji: "🍔",
-          description: "Not optimal for brain function",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Medium priority - Eat when convenient", 
           emoji: "🍕",
-          description: "Not prioritizing health",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "High priority - Nutrition supports brain function", 
           emoji: "🍎",
-          description: "Best for performance",
           isCorrect: true
         },
         { 
           id: "d", 
           text: "No priority - Skip meals to study", 
           emoji: "🚫",
-          description: "Harmful approach",
           isCorrect: false
         }
       ]
@@ -192,28 +176,24 @@ const CrisisSimulation = () => {
           id: "a", 
           text: "High priority - Breaks improve retention and reduce stress", 
           emoji: "😌",
-          description: "Optimal study strategy",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Low priority - Study continuously", 
           emoji: "📖",
-          description: "Leads to burnout",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Medium priority - Take breaks only when tired", 
           emoji: "⏸️",
-          description: "Not proactive",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "No priority - No breaks needed", 
           emoji: "💪",
-          description: "Ineffective",
           isCorrect: false
         }
       ]
@@ -309,7 +289,6 @@ const CrisisSimulation = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

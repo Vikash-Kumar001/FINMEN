@@ -56,28 +56,24 @@ const CoalitionSimulation = () => {
           id: "a", 
           text: "Sponsor events and provide resources", 
           emoji: "🏬",
-          description: "Leverages business strengths",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "No role - ignore them", 
           emoji: "🚫",
-          description: "Misses opportunity",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Compete with them", 
           emoji: "⚔️",
-          description: "Not complementary",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Ask them to do everything", 
           emoji: "😓",
-          description: "Unrealistic expectation",
           isCorrect: false
         }
       ]
@@ -90,28 +86,24 @@ const CoalitionSimulation = () => {
           id: "b", 
           text: "Ignore them completely", 
           emoji: "🙈",
-          description: "Wastes valuable resource",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Mobilize people and advocate for policy", 
           emoji: "👥",
-          description: "Uses their influence effectively",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Oppose their efforts", 
           emoji: "😠",
-          description: "Counterproductive",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Expect them to fund everything", 
           emoji: "💰",
-          description: "Unrealistic",
           isCorrect: false
         }
       ]
@@ -124,28 +116,24 @@ const CoalitionSimulation = () => {
           id: "a", 
           text: "Educate students and host events", 
           emoji: "🏫",
-          description: "Uses school resources well",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "No involvement - keep them out", 
           emoji: "🚪",
-          description: "Misses key stakeholder",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Block access to students", 
           emoji: "🚧",
-          description: "Counterproductive",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Make them do all the work", 
           emoji: "😓",
-          description: "Unfair distribution",
           isCorrect: false
         }
       ]
@@ -158,28 +146,24 @@ const CoalitionSimulation = () => {
           id: "b", 
           text: "Duplicate their efforts", 
           emoji: "🔄",
-          description: "Inefficient",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Compete for funds with them", 
           emoji: "💸",
-          description: "Not collaborative",
           isCorrect: false
         },
         { 
           id: "a", 
           text: "Share expertise and provide funding support", 
           emoji: "🤝",
-          description: "Leverages NGO strengths",
           isCorrect: true
         },
         { 
           id: "d", 
           text: "Ignore their expertise", 
           emoji: "🙉",
-          description: "Wastes resources",
           isCorrect: false
         }
       ]
@@ -192,28 +176,24 @@ const CoalitionSimulation = () => {
           id: "a", 
           text: "Provide policy support and grants", 
           emoji: "🏛️",
-          description: "Uses government capacity",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Let bureaucracy block everything", 
           emoji: "📋",
-          description: "Not productive",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ignore regulations completely", 
           emoji: "⚖️",
-          description: "Risky approach",
           isCorrect: false
         },
         { 
           id: "d", 
           text: "Expect them to do everything", 
           emoji: "😓",
-          description: "Unrealistic",
           isCorrect: false
         }
       ]
@@ -309,7 +289,6 @@ const CoalitionSimulation = () => {
                     >
                       <div className="text-2xl mb-2">{option.emoji}</div>
                       <h4 className="font-bold text-base mb-2">{option.text}</h4>
-                      <p className="text-white/90 text-sm">{option.description}</p>
                     </button>
                   );
                 })}

@@ -19,29 +19,32 @@ const FactCheckSimulation = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "3 websites shown. Pick the trusted one:",
+      text: "4 websites shown. Pick the trusted one:",
       options: [
         { 
-          id: "random-blog", 
           text: "random-blog.com", 
-          description: "Unverified blog site",
+          emoji: "📝",
           isCorrect: false
         },
         { 
-          id: "official-news", 
           text: "official-news.gov", 
-          description: "Official government news source",
+          emoji: "🏛️",
           isCorrect: true
         },
         { 
-          id: "unknown-site", 
           text: "unknown-site.net", 
-          description: "Unknown website",
+          emoji: "❓",
+          isCorrect: false
+        },
+        { 
+          text: "clickbait-news.com", 
+          emoji: "🚨",
           isCorrect: false
         }
       ]
@@ -51,22 +54,24 @@ const FactCheckSimulation = () => {
       text: "Which source is most reliable?",
       options: [
         { 
-          id: "social-media", 
           text: "Social media post", 
-          description: "Unverified social media",
+          emoji: "📱",
           isCorrect: false
         },
         { 
-          id: "personal-blog", 
           text: "personal-blog.com", 
-          description: "Personal blog site",
+          emoji: "📝",
           isCorrect: false
         },
         { 
-          id: "verified-news", 
           text: "verified-news.org", 
-          description: "Verified news organization",
+          emoji: "📰",
           isCorrect: true
+        },
+        { 
+          text: "gossip-site.com", 
+          emoji: "🗣️",
+          isCorrect: false
         }
       ]
     },
@@ -75,21 +80,23 @@ const FactCheckSimulation = () => {
       text: "Pick the official source:",
       options: [
         { 
-          id: "government", 
           text: "government-official.gov", 
-          description: "Official government source",
+          emoji: "🏛️",
           isCorrect: true
         },
         { 
-          id: "unofficial", 
           text: "unofficial-site.com", 
-          description: "Unofficial website",
+          emoji: "⚠️",
           isCorrect: false
         },
         { 
-          id: "random-forum", 
           text: "random-forum.net", 
-          description: "Random forum site",
+          emoji: "💭",
+          isCorrect: false
+        },
+        { 
+          text: "unverified-blog.com", 
+          emoji: "📝",
           isCorrect: false
         }
       ]
@@ -99,23 +106,26 @@ const FactCheckSimulation = () => {
       text: "Which website is trustworthy?",
       options: [
         { 
-          id: "fake-news", 
           text: "fake-news-site.com", 
-          description: "Fake news website",
+          emoji: "⚠️",
+          isCorrect: false
+        },
+        
+        { 
+          text: "unknown-blog.net", 
+          emoji: "❓",
           isCorrect: false
         },
         { 
-          id: "established", 
+          text: "suspicious-source.com", 
+          emoji: "🚨",
+          isCorrect: false
+        },
+        { 
           text: "established-news.org", 
-          description: "Established news organization",
+          emoji: "📰",
           isCorrect: true
         },
-        { 
-          id: "unknown-blog", 
-          text: "unknown-blog.net", 
-          description: "Unknown blog",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -123,22 +133,24 @@ const FactCheckSimulation = () => {
       text: "Choose the verified source:",
       options: [
         { 
-          id: "unverified", 
           text: "unverified-site.com", 
-          description: "Unverified website",
+          emoji: "⚠️",
           isCorrect: false
         },
         { 
-          id: "random-page", 
           text: "random-page.net", 
-          description: "Random webpage",
+          emoji: "❓",
           isCorrect: false
         },
         { 
-          id: "verified-official", 
           text: "verified-official.gov", 
-          description: "Verified official source",
+          emoji: "🏛️",
           isCorrect: true
+        },
+        { 
+          text: "dubious-claims.com", 
+          emoji: "🚨",
+          isCorrect: false
         }
       ]
     }
@@ -153,8 +165,6 @@ const FactCheckSimulation = () => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
     const isLastQuestion = currentQuestion === questions.length - 1;
@@ -165,6 +175,7 @@ const FactCheckSimulation = () => {
       } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
+        setSelectedAnswer(null);
       }
     }, 500);
   };
@@ -181,7 +192,7 @@ const FactCheckSimulation = () => {
     <GameShell
       title="Fact-Check Simulation"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -208,17 +219,28 @@ const FactCheckSimulation = () => {
                 {questions[currentQuestion].text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {questions[currentQuestion].options.map((option) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {questions[currentQuestion].options.map((option, idx) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.isCorrect)}
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
                     disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                      <p className="text-white/90 text-sm">{option.description}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
                     </div>
                   </button>
                 ))}

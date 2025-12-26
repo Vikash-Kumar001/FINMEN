@@ -63,9 +63,9 @@ const RecommendationGame = () => {
       emoji: "🎬",
       question: "How does AI help streaming services recommend movies?",
       choices: [
-        { id: 1, text: "Based on your ratings and views", emoji: "⭐", isCorrect: true },
         { id: 2, text: "Only shows popular movies", emoji: "🔥", isCorrect: false },
         { id: 3, text: "Chooses oldest movies", emoji: "🕰️", isCorrect: false },
+        { id: 1, text: "Based on your ratings and views", emoji: "⭐", isCorrect: true },
       ],
     },
     {
@@ -74,8 +74,8 @@ const RecommendationGame = () => {
       emoji: "🎓",
       question: "How does AI personalize your learning experience?",
       choices: [
-        { id: 1, text: "Tracks your progress and adjusts", emoji: "📊", isCorrect: true },
         { id: 2, text: "Gives everyone same lessons", emoji: "📋", isCorrect: false },
+        { id: 1, text: "Tracks your progress and adjusts", emoji: "📊", isCorrect: true },
         { id: 3, text: "Only shows easy content", emoji: "👶", isCorrect: false },
       ],
     },

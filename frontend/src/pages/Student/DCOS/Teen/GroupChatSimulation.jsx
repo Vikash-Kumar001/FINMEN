@@ -19,6 +19,7 @@ const GroupChatSimulation = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
@@ -27,27 +28,25 @@ const GroupChatSimulation = () => {
       text: "Group mocks classmate's religion. What should you do?",
       options: [
         { 
-          id: "join", 
           text: "Join in the mocking", 
-          emoji: "😞", 
-          description: "Participate in the mocking",
+          emoji: "😞",
           isCorrect: false
         },
-        
         { 
-          id: "exit", 
           text: "Exit the group chat", 
-          emoji: "🚪", 
-          description: "Leave the group",
+          emoji: "🚪",
           isCorrect: false
         },
         { 
-          id: "defend", 
           text: "Defend the classmate", 
-          emoji: "🛡️", 
-          description: "Stand up and defend them",
+          emoji: "🛡️",
           isCorrect: true
         },
+        { 
+          text: "Ignore it and stay silent", 
+          emoji: "😶",
+          isCorrect: false
+        }
       ]
     },
     {
@@ -55,24 +54,23 @@ const GroupChatSimulation = () => {
       text: "Someone posts hateful comments about a religion. What's your response?",
       options: [
         { 
-          id: "ignore", 
           text: "Ignore it", 
-          emoji: "😐", 
-          description: "Don't respond",
+          emoji: "😐",
           isCorrect: false
         },
         { 
-          id: "defend-religion", 
           text: "Defend and report", 
-          emoji: "🛡️", 
-          description: "Stand up and report hate",
+          emoji: "🛡️",
           isCorrect: true
         },
         { 
-          id: "leave-chat", 
           text: "Leave the chat", 
-          emoji: "🚪", 
-          description: "Exit the group",
+          emoji: "🚪",
+          isCorrect: false
+        },
+        { 
+          text: "Laugh along", 
+          emoji: "😂",
           isCorrect: false
         }
       ]
@@ -81,26 +79,24 @@ const GroupChatSimulation = () => {
       id: 3,
       text: "Group makes fun of someone's beliefs. What do you do?",
       options: [
-         { 
-          id: "stand-up", 
+        { 
           text: "Stand up for them", 
-          emoji: "🛡️", 
-          description: "Defend the person",
+          emoji: "🛡️",
           isCorrect: true
         },
         { 
-          id: "stay-silent", 
           text: "Stay silent", 
-          emoji: "😶", 
-          description: "Don't say anything",
+          emoji: "😶",
           isCorrect: false
         },
-       
         { 
-          id: "exit-group", 
           text: "Exit the group", 
-          emoji: "🚪", 
-          description: "Leave the group chat",
+          emoji: "🚪",
+          isCorrect: false
+        },
+        { 
+          text: "Join in the fun", 
+          emoji: "😜",
           isCorrect: false
         }
       ]
@@ -110,24 +106,23 @@ const GroupChatSimulation = () => {
       text: "Religious discrimination happens in group chat. What's the right action?",
       options: [
         { 
-          id: "watch", 
           text: "Just watch", 
-          emoji: "👀", 
-          description: "Observe without acting",
+          emoji: "👀",
           isCorrect: false
         },
         { 
-          id: "defend-discrimination", 
           text: "Defend and report discrimination", 
-          emoji: "🛡️", 
-          description: "Stand up and report",
+          emoji: "🛡️",
           isCorrect: true
         },
         { 
-          id: "leave-discrimination", 
           text: "Leave the group", 
-          emoji: "🚪", 
-          description: "Exit the chat",
+          emoji: "🚪",
+          isCorrect: false
+        },
+        { 
+          text: "Share the post", 
+          emoji: "📤",
           isCorrect: false
         }
       ]
@@ -137,27 +132,25 @@ const GroupChatSimulation = () => {
       text: "Hateful messages target someone's religion. What should you do?",
       options: [
         { 
-          id: "do-nothing", 
           text: "Do nothing", 
-          emoji: "😐", 
-          description: "Take no action",
+          emoji: "😐",
           isCorrect: false
         },
-       
         { 
-          id: "exit-hate", 
           text: "Exit the group chat", 
-          emoji: "🚪", 
-          description: "Leave the group",
+          emoji: "🚪",
           isCorrect: false
         },
-         { 
-          id: "defend-hate", 
+        { 
           text: "Defend them and report", 
-          emoji: "🛡️", 
-          description: "Stand up and report hate",
+          emoji: "🛡️",
           isCorrect: true
         },
+        { 
+          text: "React with a thumbs up", 
+          emoji: "👍",
+          isCorrect: false
+        }
       ]
     }
   ];
@@ -171,8 +164,6 @@ const GroupChatSimulation = () => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
     const isLastQuestion = currentQuestion === questions.length - 1;
@@ -183,6 +174,7 @@ const GroupChatSimulation = () => {
       } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
+        setSelectedAnswer(null);
       }
     }, 500);
   };
@@ -199,7 +191,7 @@ const GroupChatSimulation = () => {
     <GameShell
       title="Group Chat Simulation"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -226,18 +218,28 @@ const GroupChatSimulation = () => {
                 {questions[currentQuestion].text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {questions[currentQuestion].options.map((option) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {questions[currentQuestion].options.map((option, idx) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.isCorrect)}
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
                     disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <div className="text-3xl mb-3">{option.emoji}</div>
-                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                      <p className="text-white/90 text-sm">{option.description}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
                     </div>
                   </button>
                 ))}

@@ -33,11 +33,7 @@ const ScamAwareBadge = () => {
       title: "Scam Aware Challenge 1",
       question: "What should you do if someone offers you a free gift online?",
       options: [
-        { 
-          text: "Refuse the suspicious free gift offer", 
-          emoji: "🎁", 
-          isCorrect: true
-        },
+        
         { 
           text: "Accept it immediately", 
           emoji: "✅", 
@@ -52,7 +48,12 @@ const ScamAwareBadge = () => {
           text: "Click on any link", 
           emoji: "🔗", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Refuse the suspicious free gift offer", 
+          emoji: "🎁", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -92,15 +93,16 @@ const ScamAwareBadge = () => {
           emoji: "📱", 
           isCorrect: false
         },
-        { 
-          text: "Don't share your OTP with anyone", 
-          emoji: "🔢", 
-          isCorrect: true
-        },
+       
         { 
           text: "Post it online", 
           emoji: "📢", 
           isCorrect: false
+        },
+         { 
+          text: "Don't share your OTP with anyone", 
+          emoji: "🔢", 
+          isCorrect: true
         },
         { 
           text: "Tell it to everyone", 
@@ -115,15 +117,16 @@ const ScamAwareBadge = () => {
       question: "What should you do with spam calls?",
       options: [
         { 
-          text: "Answer and give personal info", 
-          emoji: "📞", 
-          isCorrect: false
-        },
-        { 
           text: "Block the spam call", 
           emoji: "📞", 
           isCorrect: true
         },
+        { 
+          text: "Answer and give personal info", 
+          emoji: "📞", 
+          isCorrect: false
+        },
+        
         { 
           text: "Call them back", 
           emoji: "📱", 

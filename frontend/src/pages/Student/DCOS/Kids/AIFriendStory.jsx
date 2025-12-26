@@ -32,21 +32,18 @@ const AIFriendStory = () => {
           id: "a", 
           text: "Share Address", 
           emoji: "🏠", 
-          description: "Share your address",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Refuse and Stay Safe", 
           emoji: "🛡️", 
-          description: "Refuse and stay safe",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Ask for Address", 
           emoji: "📍", 
-          description: "Ask for its address too",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const AIFriendStory = () => {
           id: "a", 
           text: "Send Photo", 
           emoji: "📷", 
-          description: "Send a photo",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Ignore", 
           emoji: "🤔", 
-          description: "Ignore the message",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Say No", 
           emoji: "🙅‍♀️", 
-          description: "Say 'No, I don't share photos online'",
           isCorrect: true
         }
       ]
@@ -86,21 +80,18 @@ const AIFriendStory = () => {
           id: "a", 
           text: "Tell Parent or Teacher", 
           emoji: "👩‍🏫", 
-          description: "Tell a parent or teacher",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Keep Secret", 
           emoji: "🤫", 
-          description: "Keep it secret",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Say Nothing", 
           emoji: "😶", 
-          description: "Say nothing",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const AIFriendStory = () => {
           id: "a", 
           text: "Click Quickly", 
           emoji: "⚡", 
-          description: "Click it quickly",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Trust AI Friend", 
           emoji: "🤝", 
-          description: "Trust the AI friend",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ask Adult First", 
           emoji: "🧑‍🏫", 
-          description: "Ask an adult before clicking",
           isCorrect: true
         }
       ]
@@ -140,21 +128,18 @@ const AIFriendStory = () => {
           id: "a", 
           text: "Give All Info", 
           emoji: "📚", 
-          description: "Give all info",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Share School Only", 
           emoji: "🏫", 
-          description: "Share school name only",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Refuse and End Chat", 
           emoji: "🚫", 
-          description: "Refuse and end chat",
           isCorrect: true
         }
       ]
@@ -255,7 +240,6 @@ const AIFriendStory = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>

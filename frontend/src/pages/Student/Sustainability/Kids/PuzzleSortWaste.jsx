@@ -8,6 +8,31 @@ const PuzzleSortWaste = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getSustainabilityKidsGames({});
+      const currentGame = games.find(g => g.id === "sustainability-kids-4");
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state]);
+  
   // Get game data from game category folder (source of truth)
   const gameId = "sustainability-kids-4";
   const gameData = getGameDataById(gameId);
@@ -113,15 +138,10 @@ const PuzzleSortWaste = () => {
     return match ? match.isCorrect : null;
   };
 
-  const handleNext = () => {
-    navigate("/student/sustainability/kids/litter-story");
-  };
-
   return (
     <GameShell
       title="Waste Sorting Puzzle"
       subtitle={gameFinished ? "Puzzle Complete!" : `Match Waste Items with Disposal Methods (${matches.length}/${wasteItems.length} matched)`}
-      onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={score}
@@ -137,6 +157,8 @@ const PuzzleSortWaste = () => {
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
       <div className="space-y-8 max-w-4xl mx-auto">
         {!gameFinished ? (

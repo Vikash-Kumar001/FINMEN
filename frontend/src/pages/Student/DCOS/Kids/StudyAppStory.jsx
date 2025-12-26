@@ -32,21 +32,18 @@ const StudyAppStory = () => {
           id: "a", 
           text: "Open Math App", 
           emoji: "🧮", 
-          description: "Open Math App",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Play Random Ads Game", 
           emoji: "🎮", 
-          description: "Play Random Ads Game",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Close Tablet and Sleep", 
           emoji: "😴", 
-          description: "Close tablet and take a nap",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const StudyAppStory = () => {
           id: "a", 
           text: "Watch Game Videos", 
           emoji: "📺", 
-          description: "Watch game ads instead",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Use Math App", 
           emoji: "📲", 
-          description: "Use Math App to solve questions",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Ask Friend to Do It", 
           emoji: "👥", 
-          description: "Ask a friend to do your homework",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const StudyAppStory = () => {
           id: "a", 
           text: "Play Random Ads Game", 
           emoji: "🎰", 
-          description: "Play Random Ads Game",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Ignore and Keep Playing", 
           emoji: "🙉", 
-          description: "Ignore dad and keep playing",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Practice on Math App", 
           emoji: "📘", 
-          description: "Practice on Math App",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const StudyAppStory = () => {
           id: "a", 
           text: "Use Math App", 
           emoji: "🧮", 
-          description: "Use Math App to calculate",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Skip and Play Games", 
           emoji: "🕹️", 
-          description: "Skip work and play games",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Guess the Numbers", 
           emoji: "🎲", 
-          description: "Just guess random numbers",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const StudyAppStory = () => {
           id: "a", 
           text: "Play Random Ads Game", 
           emoji: "🎮", 
-          description: "Play Random Ads Game again",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Do Quiz on Math App", 
           emoji: "📲", 
-          description: "Do 1 quiz on Math App",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Watch Videos All Night", 
           emoji: "🌙", 
-          description: "Stay up all night watching videos",
           isCorrect: false
         }
       ]
@@ -255,7 +240,6 @@ const StudyAppStory = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>

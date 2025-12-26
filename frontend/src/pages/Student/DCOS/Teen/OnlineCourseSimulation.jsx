@@ -19,6 +19,7 @@ const OnlineCourseSimulation = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
@@ -27,24 +28,23 @@ const OnlineCourseSimulation = () => {
       text: "You have free time. What should you do?",
       options: [
         { 
-          id: "binge", 
           text: "Random video binge", 
-          emoji: "📺", 
-          description: "Watch random videos all day",
+          emoji: "📺",
           isCorrect: false
         },
         { 
-          id: "coding", 
           text: "Enroll in coding course", 
-          emoji: "✅", 
-          description: "Learn valuable skills",
+          emoji: "💻",
           isCorrect: true
         },
         { 
-          id: "scroll", 
           text: "Scroll social media", 
-          emoji: "📱", 
-          description: "Spend time on social media",
+          emoji: "📱",
+          isCorrect: false
+        },
+        { 
+          text: "Play mobile games", 
+          emoji: "🎮",
           isCorrect: false
         }
       ]
@@ -54,24 +54,24 @@ const OnlineCourseSimulation = () => {
       text: "What's the best use of your time online?",
       options: [
         { 
-          id: "watch-shows", 
           text: "Watch entertainment shows", 
-          emoji: "📺", 
-          description: "Watch entertainment content",
+          emoji: "📺",
           isCorrect: false
         },
+       
         { 
-          id: "learn-skills", 
+          text: "Play games all day", 
+          emoji: "🎮",
+          isCorrect: false
+        },
+         { 
           text: "Take an online course to learn skills", 
-          emoji: "✅", 
-          description: "Develop new skills",
+          emoji: "📔",
           isCorrect: true
         },
         { 
-          id: "play-games", 
-          text: "Play games all day", 
-          emoji: "🎮", 
-          description: "Spend time gaming",
+          text: "Chat with friends", 
+          emoji: "💬",
           isCorrect: false
         }
       ]
@@ -81,24 +81,23 @@ const OnlineCourseSimulation = () => {
       text: "How should you use technology for growth?",
       options: [
         { 
-          id: "mindless-scroll", 
           text: "Mindless scrolling", 
-          emoji: "📱", 
-          description: "Scroll without purpose",
+          emoji: "📱",
           isCorrect: false
         },
         { 
-          id: "educational-course", 
           text: "Enroll in educational course", 
-          emoji: "✅", 
-          description: "Learn something new",
+          emoji: "🎓",
           isCorrect: true
         },
         { 
-          id: "watch-videos", 
           text: "Watch random videos", 
-          emoji: "📺", 
-          description: "Watch entertainment",
+          emoji: "📺",
+          isCorrect: false
+        },
+        { 
+          text: "Online shopping", 
+          emoji: "🛒",
           isCorrect: false
         }
       ]
@@ -108,24 +107,24 @@ const OnlineCourseSimulation = () => {
       text: "What helps you grow and develop?",
       options: [
         { 
-          id: "binge-watch", 
-          text: "Binge watch shows", 
-          emoji: "📺", 
-          description: "Watch shows all day",
-          isCorrect: false
-        },
-        { 
-          id: "skill-course", 
           text: "Take a skill-building course", 
-          emoji: "✅", 
-          description: "Build valuable skills",
+          emoji: "🏢",
           isCorrect: true
         },
         { 
-          id: "social-media", 
+          text: "Binge watch shows", 
+          emoji: "📺",
+          isCorrect: false
+        },
+        
+        { 
           text: "Spend time on social media", 
-          emoji: "📱", 
-          description: "Use social media",
+          emoji: "📱",
+          isCorrect: false
+        },
+        { 
+          text: "Listen to music", 
+          emoji: "🎵",
           isCorrect: false
         }
       ]
@@ -135,26 +134,26 @@ const OnlineCourseSimulation = () => {
       text: "What's the smart choice for your future?",
       options: [
         { 
-          id: "entertainment", 
           text: "Only entertainment content", 
-          emoji: "📺", 
-          description: "Focus on entertainment",
+          emoji: "📺",
+          isCorrect: false
+        },
+        
+        { 
+          text: "Waste time online", 
+          emoji: "⏰",
           isCorrect: false
         },
         { 
-          id: "learning", 
+          text: "Virtual hangout", 
+          emoji: "👥",
+          isCorrect: false
+        },
+        { 
           text: "Online courses for learning", 
-          emoji: "✅", 
-          description: "Invest in learning",
+          emoji: "🎓",
           isCorrect: true
         },
-        { 
-          id: "waste-time", 
-          text: "Waste time online", 
-          emoji: "⏰", 
-          description: "Spend time unproductively",
-          isCorrect: false
-        }
       ]
     }
   ];
@@ -168,8 +167,6 @@ const OnlineCourseSimulation = () => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
     const isLastQuestion = currentQuestion === questions.length - 1;
@@ -180,6 +177,7 @@ const OnlineCourseSimulation = () => {
       } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
+        setSelectedAnswer(null);
       }
     }, 500);
   };
@@ -196,7 +194,7 @@ const OnlineCourseSimulation = () => {
     <GameShell
       title="Online Course Simulation"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -223,18 +221,28 @@ const OnlineCourseSimulation = () => {
                 {questions[currentQuestion].text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {questions[currentQuestion].options.map((option) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {questions[currentQuestion].options.map((option, idx) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.isCorrect)}
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
                     disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <div className="text-3xl mb-3">{option.emoji}</div>
-                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                      <p className="text-white/90 text-sm">{option.description}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
                     </div>
                   </button>
                 ))}

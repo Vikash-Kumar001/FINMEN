@@ -16,11 +16,11 @@ const DataCollectorSimulation = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
-  const [coins, setCoins] = useState(0);
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const scenarios = [
@@ -30,24 +30,23 @@ const DataCollectorSimulation = () => {
       description: "You are collecting photos for an AI to identify fruits. Which image should you choose?",
       choices: [
         { 
-          id: "clear_apple", 
           text: "A clear photo of an apple", 
-          emoji: "🍎", 
-          description: "Clear, real images help AI learn correctly",
+          emoji: "🍎",
           isCorrect: true
         },
         { 
-          id: "blurry", 
           text: "A blurry image", 
-          emoji: "🌫️", 
-          description: "Blurry images don't help AI learn",
+          emoji: "🌫️",
           isCorrect: false
         },
         { 
-          id: "cartoon", 
           text: "A cartoon of a banana", 
-          emoji: "🍌", 
-          description: "Cartoons are not real data for training",
+          emoji: "🍌",
+          isCorrect: false
+        },
+        { 
+          text: "A black and white image", 
+          emoji: "🖼️",
           isCorrect: false
         }
       ]
@@ -58,24 +57,23 @@ const DataCollectorSimulation = () => {
       description: "AI is learning animal sounds. Which data is correct?",
       choices: [
         { 
-          id: "background", 
           text: "A random background noise", 
-          emoji: "📢", 
-          description: "Background noise is not useful data",
+          emoji: "📢",
           isCorrect: false
         },
         { 
-          id: "cat_meow", 
           text: "A recording of a cat's meow", 
-          emoji: "🐱", 
-          description: "Authentic sound data helps AI recognize patterns",
+          emoji: "🐱",
           isCorrect: true
         },
         { 
-          id: "person_meow", 
           text: "A person saying 'meow'", 
-          emoji: "🗣️", 
-          description: "Human imitation is not real animal sound",
+          emoji: "🗣️",
+          isCorrect: false
+        },
+        { 
+          text: "A recording of a dog bark", 
+          emoji: "🐕",
           isCorrect: false
         }
       ]
@@ -86,25 +84,24 @@ const DataCollectorSimulation = () => {
       description: "You are training an AI chatbot. Which text should you collect?",
       choices: [
         { 
-          id: "spam", 
           text: "Spam messages", 
-          emoji: "🚫", 
-          description: "Spam is not good training data",
+          emoji: "🚫",
           isCorrect: false
         },
         { 
-          id: "broken", 
           text: "Broken text with symbols", 
-          emoji: "❌", 
-          description: "Broken text doesn't help AI learn",
+          emoji: "❌",
           isCorrect: false
         },
         { 
-          id: "polite", 
           text: "Polite and correct sentences", 
-          emoji: "💬", 
-          description: "Clean, polite text improves chatbot behavior",
+          emoji: "💬",
           isCorrect: true
+        },
+        { 
+          text: "Angry text messages", 
+          emoji: "😠",
+          isCorrect: false
         }
       ]
     },
@@ -114,24 +111,23 @@ const DataCollectorSimulation = () => {
       description: "To make AI fair, what kind of images should be collected?",
       choices: [
         { 
-          id: "diverse", 
           text: "Images from many people and places", 
-          emoji: "🌍", 
-          description: "Diverse datasets help AI be unbiased and fair",
+          emoji: "🌍",
           isCorrect: true
         },
         { 
-          id: "one_country", 
           text: "Only from one country", 
-          emoji: "🇮🇳", 
-          description: "Limited diversity creates bias",
+          emoji: "🌐",
           isCorrect: false
         },
         { 
-          id: "famous", 
           text: "Only of famous people", 
-          emoji: "⭐", 
-          description: "Limited diversity doesn't help fairness",
+          emoji: "⭐",
+          isCorrect: false
+        },
+        { 
+          text: "Only from one age group", 
+          emoji: "👤",
           isCorrect: false
         }
       ]
@@ -142,121 +138,116 @@ const DataCollectorSimulation = () => {
       description: "Before uploading data, what must you do?",
       choices: [
         { 
-          id: "share_contact", 
           text: "Share full contact info", 
-          emoji: "📱", 
-          description: "Sharing personal info is unsafe",
+          emoji: "📱",
           isCorrect: false
         },
         { 
-          id: "remove_personal", 
           text: "Remove personal details", 
-          emoji: "🔒", 
-          description: "Data privacy is vital when collecting information",
+          emoji: "🔒",
           isCorrect: true
         },
         { 
-          id: "social_media", 
           text: "Post on social media", 
-          emoji: "📢", 
-          description: "Posting data publicly is unsafe",
+          emoji: "📢",
+          isCorrect: false
+        },
+        { 
+          text: "Share without consent", 
+          emoji: "⚠️",
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleChoice = (selectedChoice) => {
-    const newChoices = [...choices, { 
-      scenarioId: scenarios[currentScenario].id, 
-      choice: selectedChoice,
-      isCorrect: scenarios[currentScenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect
-    }];
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
-    setChoices(newChoices);
+    setAnswered(true);
+    resetFeedback();
     
-    // If the choice is correct, add coins and show flash/confetti
-    const isCorrect = scenarios[currentScenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    // Move to next scenario or show results
-    if (currentScenario < scenarios.length - 1) {
-      setTimeout(() => {
-        setCurrentScenario(prev => prev + 1);
-      }, isCorrect ? 1000 : 500);
-    } else {
-      // Calculate final score
-      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setShowResult(true);
-    }
+    const isLastQuestion = currentQuestion === scenarios.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentScenario(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const getCurrentScenario = () => scenarios[currentScenario];
 
-  // Log when game completes
-  useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Data Collector Simulation game completed! Score: ${finalScore}/${scenarios.length}, gameId: ${gameId}`);
-    }
-  }, [showResult, finalScore, gameId, scenarios.length]);
 
   return (
     <GameShell
       title="Simulation: Data Collector"
-      score={coins}
-      subtitle={`Scenario ${currentScenario + 1} of ${scenarios.length}`}
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${scenarios.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="ai"
       totalLevels={scenarios.length}
-      currentLevel={currentScenario + 1}
-      showConfetti={showResult && finalScore >= 3}
+      currentLevel={currentQuestion + 1}
+      maxScore={scenarios.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && scenarios[currentQuestion] ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Scenario {currentScenario + 1}/{scenarios.length}</span>
-                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+                <span className="text-white/80">Question {currentQuestion + 1}/{scenarios.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{scenarios.length}</span>
               </div>
               
-              <h3 className="text-xl font-bold text-white mb-2">{getCurrentScenario().title}</h3>
               <p className="text-white text-lg mb-6">
-                {getCurrentScenario().description}
+                {scenarios[currentQuestion].description}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {getCurrentScenario().choices.map(choice => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {scenarios[currentQuestion].choices.map((choice, idx) => (
                   <button
-                    key={choice.id}
-                    onClick={() => handleChoice(choice.id)}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-center"
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(choice.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? choice.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex flex-col items-center">
-                      <div className="text-3xl mb-3">{choice.emoji}</div>
-                      <h4 className="font-bold text-lg mb-2">{choice.text}</h4>
-                      <p className="text-white/90 text-sm">{choice.description}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{choice.emoji}</span>
+                      <span className="text-white font-semibold">{choice.text}</span>
                     </div>
                   </button>
                 ))}
@@ -264,20 +255,20 @@ const DataCollectorSimulation = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
-            {finalScore >= 3 ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Great Data Collection!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You made {finalScore} smart data collection decisions out of {scenarios.length} scenarios!
-                  You're learning how to collect quality data for AI training!
+                  You got {score} out of {scenarios.length} questions correct!
+                  You understand how to collect quality data for AI training!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{coins} Coins</span>
+                  <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  You understand that data should be accurate, diverse, clean, and safe before training AI!
+                  Lesson: Data should be accurate, diverse, clean, and safe before training AI!
                 </p>
               </div>
             ) : (
@@ -285,7 +276,7 @@ const DataCollectorSimulation = () => {
                 <div className="text-5xl mb-4">😔</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You made {finalScore} smart data collection decisions out of {scenarios.length} scenarios.
+                  You got {score} out of {scenarios.length} questions correct.
                   Remember, quality data helps AI learn correctly!
                 </p>
                 <button
@@ -295,7 +286,7 @@ const DataCollectorSimulation = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Try to choose the option that collects accurate, diverse, clean, and safe data.
+                  Tip: Always collect accurate, diverse, clean, and safe data for AI training!
                 </p>
               </div>
             )}

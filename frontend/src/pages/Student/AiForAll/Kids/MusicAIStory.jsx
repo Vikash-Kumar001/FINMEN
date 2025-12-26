@@ -32,21 +32,18 @@ const MusicAIStory = () => {
           id: "ai", 
           text: "AI Music System", 
           emoji: "🎧", 
-          description: "AI recommends songs based on what you like and listen to",
           isCorrect: true
         },
         { 
           id: "kid", 
           text: "Kid chose all songs", 
           emoji: "🧒", 
-          description: "AI automatically creates playlists based on your preferences",
           isCorrect: false
         },
         { 
           id: "random", 
           text: "Random shuffle", 
           emoji: "🎲", 
-          description: "AI uses your listening patterns to create smart playlists",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const MusicAIStory = () => {
           id: "manual", 
           text: "Manual Timing Only", 
           emoji: "⏰", 
-          description: "AI helps match rhythm and beats perfectly",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI Beat Assistant", 
           emoji: "🎚️", 
-          description: "AI helps match rhythm and beats perfectly",
           isCorrect: true
         },
         { 
           id: "friends", 
           text: "Friends Advice", 
           emoji: "👫", 
-          description: "AI beat tools guide rhythm automatically",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const MusicAIStory = () => {
           id: "mic", 
           text: "Microphone Magic", 
           emoji: "🎙️", 
-          description: "Auto-tune AI adjusts voice pitch automatically",
           isCorrect: false
         },
         { 
           id: "luck", 
           text: "Random Luck", 
           emoji: "🍀", 
-          description: "AI auto-tune technology fixes pitch",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "Auto-tune AI fixed it", 
           emoji: "🎧", 
-          description: "Auto-tune AI adjusts voice pitch automatically",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const MusicAIStory = () => {
           id: "ai", 
           text: "AI Lyric Tool", 
           emoji: "🧑‍💻", 
-          description: "AI lyric generators create songs using patterns and data",
           isCorrect: true
         },
         { 
           id: "singer", 
           text: "Singer instantly wrote", 
           emoji: "🧑‍🎤", 
-          description: "AI wrote those lyrics using smart algorithms",
           isCorrect: false
         },
         { 
           id: "book", 
           text: "Printed Book", 
           emoji: "📖", 
-          description: "AI generates lyrics based on patterns",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const MusicAIStory = () => {
           id: "phone", 
           text: "Phone randomly guessed", 
           emoji: "📱", 
-          description: "AI recognizes your mood from your choices",
           isCorrect: false
         },
         { 
           id: "friend", 
           text: "Friend called", 
           emoji: "📞", 
-          description: "AI uses patterns in your behavior to match mood",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI Mood Detection", 
           emoji: "🤖", 
-          description: "AI recognizes your mood from your choices and time of day",
           isCorrect: true
         }
       ]
@@ -246,8 +231,7 @@ const MusicAIStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

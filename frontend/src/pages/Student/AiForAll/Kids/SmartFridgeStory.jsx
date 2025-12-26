@@ -32,21 +32,18 @@ const SmartFridgeStory = () => {
           id: "ai", 
           text: "AI Fridge Notification", 
           emoji: "🤖", 
-          description: "Smart home devices like AI fridges help remind you about food, making life easier",
           isCorrect: true
         },
         { 
           id: "mom", 
           text: "Mom", 
           emoji: "👩‍🦰", 
-          description: "AI fridges can notify you automatically about expiring food",
           isCorrect: false
         },
         { 
           id: "dad", 
           text: "Dad", 
           emoji: "👨‍🦱", 
-          description: "Smart devices use AI to manage tasks efficiently",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const SmartFridgeStory = () => {
           id: "switch", 
           text: "Electric Switch", 
           emoji: "🔌", 
-          description: "AI-powered sensors detect when no one is in the room",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI Motion Sensor", 
           emoji: "🤖", 
-          description: "AI-powered sensors detect when no one is in the room and save energy automatically",
           isCorrect: true
         },
         { 
           id: "magic", 
           text: "Magic", 
           emoji: "🪄", 
-          description: "Smart lights use motion sensors and AI technology",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const SmartFridgeStory = () => {
           id: "radio", 
           text: "Radio", 
           emoji: "📻", 
-          description: "AI voice assistants recognize your words and respond",
           isCorrect: false
         },
         { 
           id: "tv", 
           text: "Television", 
           emoji: "📺", 
-          description: "Smart assistants use AI to understand voice commands",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "Voice Recognition AI", 
           emoji: "🎶", 
-          description: "Smart assistants like Alexa or Google use AI to understand your voice and play music",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const SmartFridgeStory = () => {
           id: "ai", 
           text: "AI Navigation", 
           emoji: "🧭", 
-          description: "Smart vacuums use AI navigation and sensors to clean rooms without bumping into things",
           isCorrect: true
         },
         { 
           id: "remote", 
           text: "Manual Remote", 
           emoji: "🎮", 
-          description: "Smart vacuums use AI to move around automatically",
           isCorrect: false
         },
         { 
           id: "wheels", 
           text: "Wheels and Broom", 
           emoji: "🪣", 
-          description: "AI navigation helps vacuums clean efficiently",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const SmartFridgeStory = () => {
           id: "mailman", 
           text: "Mailman", 
           emoji: "📬", 
-          description: "AI cameras detect motion and send alerts",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI Camera Detection", 
           emoji: "📷", 
-          description: "AI doorbells use face detection and motion alerts to notify you instantly",
           isCorrect: true
         },
         { 
           id: "timer", 
           text: "Timer Alarm", 
           emoji: "⏰", 
-          description: "Smart doorbells use AI cameras to recognize people",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const SmartFridgeStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

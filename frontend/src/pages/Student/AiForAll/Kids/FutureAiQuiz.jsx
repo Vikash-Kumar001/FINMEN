@@ -32,21 +32,18 @@ const FutureAiQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI might help with flying cars in the future, but it's not certain yet",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes", 
           emoji: "✅", 
-          description: "Flying cars with AI are possible but not certain yet",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No", 
           emoji: "❌", 
-          description: "AI might help with flying cars in the future",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const FutureAiQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI will definitely help in building smart cities",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes, as a helper", 
           emoji: "🧠🏙️", 
-          description: "AI will help humans build smart cities as a helper, not replace humans",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "AI replaces humans completely", 
           emoji: "⚠️", 
-          description: "AI will help humans, not replace them completely",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const FutureAiQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI will definitely help astronauts explore space",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No, AI can't work in space", 
           emoji: "❌", 
-          description: "AI can actually help astronauts work in space",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes, it will help astronauts", 
           emoji: "🧠🚀", 
-          description: "AI will help astronauts explore space, not replace them",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const FutureAiQuiz = () => {
           id: "yes", 
           text: "Yes, as a helper", 
           emoji: "🧠💉", 
-          description: "AI will help doctors in hospitals as a helper, not replace them",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No, AI cannot help", 
           emoji: "❌", 
-          description: "AI can actually help doctors in hospitals",
           isCorrect: false
         },
         { 
           id: "replace", 
           text: "AI replaces doctors completely", 
           emoji: "⚠️", 
-          description: "AI will help doctors, not replace them completely",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const FutureAiQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI will definitely help humans save the environment",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No, AI has no impact", 
           emoji: "❌", 
-          description: "AI can actually help humans save the environment",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes, it can assist humans", 
           emoji: "🧠🌳", 
-          description: "AI will help humans save the environment as an assistant",
           isCorrect: true
         }
       ]
@@ -246,8 +231,7 @@ const FutureAiQuiz = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

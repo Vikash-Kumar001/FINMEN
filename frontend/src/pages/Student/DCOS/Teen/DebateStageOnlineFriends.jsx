@@ -31,21 +31,18 @@ const DebateStageOnlineFriends = () => {
           id: "no-dangerous", 
           text: "No - it's dangerous and should be avoided", 
           emoji: "🛡️", 
-          description: "Meeting online friends in person is risky and should be avoided",
           isCorrect: true
         },
         { 
           id: "yes-safe", 
           text: "Yes - it's safe if you're careful", 
           emoji: "✅", 
-          description: "Meeting can be safe with precautions",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe - depends on the situation", 
           emoji: "🤔", 
-          description: "It depends on how well you know them",
           isCorrect: false
         }
       ]
@@ -58,21 +55,18 @@ const DebateStageOnlineFriends = () => {
           id: "yes-trust", 
           text: "Yes - if you trust them", 
           emoji: "🤝", 
-          description: "Sharing is okay if you trust the person",
           isCorrect: false
         },
         { 
           id: "no-never", 
           text: "No - never share personal info", 
           emoji: "🛡️", 
-          description: "Never share personal information with online friends",
           isCorrect: true
         },
         { 
           id: "sometimes", 
           text: "Sometimes - if they seem nice", 
           emoji: "😊", 
-          description: "Share only if they seem trustworthy",
           isCorrect: false
         }
       ]
@@ -85,21 +79,18 @@ const DebateStageOnlineFriends = () => {
           id: "yes-safe", 
           text: "Yes - video calls are safe", 
           emoji: "✅", 
-          description: "Video calls are always safe",
           isCorrect: false
         },
         { 
           id: "always", 
           text: "Always - it's fun", 
           emoji: "📹", 
-          description: "Video calls are always fun and safe",
           isCorrect: false
         },
         { 
           id: "only-verified", 
           text: "Only with verified identity", 
           emoji: "🛡️", 
-          description: "Only video call if you can verify their identity",
           isCorrect: true
         }
       ]
@@ -112,21 +103,18 @@ const DebateStageOnlineFriends = () => {
           id: "no-only-known", 
           text: "No - only accept known people", 
           emoji: "🛡️", 
-          description: "Only accept friend requests from people you know in real life",
           isCorrect: true
         },
         { 
           id: "yes-nice", 
           text: "Yes - if they seem nice", 
           emoji: "😊", 
-          description: "Accept if they seem friendly",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe - check their profile first", 
           emoji: "👀", 
-          description: "Check their profile before accepting",
           isCorrect: false
         }
       ]
@@ -139,21 +127,18 @@ const DebateStageOnlineFriends = () => {
           id: "yes-real", 
           text: "Yes - online friends are real friends", 
           emoji: "❤️", 
-          description: "Online friendships are just as real",
           isCorrect: false
         },
         { 
           id: "be-cautious", 
           text: "Be cautious - verify identity first", 
           emoji: "🛡️", 
-          description: "Be cautious and verify identity before trusting online friends",
           isCorrect: true
         },
         { 
           id: "always-trust", 
           text: "Always trust online friends", 
           emoji: "🤝", 
-          description: "Online friends are always trustworthy",
           isCorrect: false
         }
       ]
@@ -233,7 +218,6 @@ const DebateStageOnlineFriends = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
                   </button>
                 ))}
               </div>

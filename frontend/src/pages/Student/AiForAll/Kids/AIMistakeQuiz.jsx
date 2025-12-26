@@ -32,21 +32,18 @@ const AIMistakeQuiz = () => {
           id: "no", 
           text: "No", 
           emoji: "❌", 
-          description: "AI is not always correct. It can make mistakes, so humans must check its output",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes", 
           emoji: "✅", 
-          description: "AI is powerful but not perfect - it can make mistakes",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI is not always correct - always verify AI's answers",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const AIMistakeQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "If the data AI learns from is biased or incomplete, its answers can be wrong",
           isCorrect: false
         },
         { 
           id: "data", 
           text: "Because data can be biased or incomplete", 
           emoji: "📊", 
-          description: "If the data AI learns from is biased or incomplete, its answers can be wrong",
           isCorrect: true
         },
         { 
           id: "lazy", 
           text: "Because AI is lazy", 
           emoji: "😴", 
-          description: "AI doesn't have feelings like laziness - mistakes happen due to poor data",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const AIMistakeQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Always double-check AI answers and correct them when needed",
           isCorrect: false
         },
         { 
           id: "believe", 
           text: "Believe it anyway", 
           emoji: "🙈", 
-          description: "We shouldn't blindly believe AI - always verify and fix mistakes",
           isCorrect: false
         },
         { 
           id: "check", 
           text: "Check and correct it", 
           emoji: "🔍", 
-          description: "Perfect! Always double-check AI answers and correct them when needed",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const AIMistakeQuiz = () => {
           id: "no", 
           text: "No, it only recognizes patterns", 
           emoji: "🧩", 
-          description: "AI doesn't truly feel emotions - it only detects patterns like facial expressions",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes, it has real feelings", 
           emoji: "❤️", 
-          description: "AI doesn't have real feelings - it only recognizes emotional patterns",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI doesn't truly feel emotions - it only recognizes patterns",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const AIMistakeQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI improves when trained on diverse, fair, and high-quality data",
           isCorrect: false
         },
         { 
           id: "data", 
           text: "Give it more diverse and fair data", 
           emoji: "🌍", 
-          description: "AI improves when trained on diverse, fair, and high-quality data",
           isCorrect: true
         },
         { 
           id: "hide", 
           text: "Hide its mistakes", 
           emoji: "🙈", 
-          description: "Hiding mistakes won't help - AI learns better with fair, diverse data",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const AIMistakeQuiz = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

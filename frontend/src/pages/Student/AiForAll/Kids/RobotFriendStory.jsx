@@ -32,21 +32,18 @@ const RobotFriendStory = () => {
           id: "helper", 
           text: "Treat as a Helper", 
           emoji: "🧠🤝", 
-          description: "AI is a helpful tool, not a human friend - treat it as a helper",
           isCorrect: true
         },
         { 
           id: "friend", 
           text: "Treat as a Human Friend", 
           emoji: "👩‍🤝‍👩", 
-          description: "AI is a tool, not a human friend",
           isCorrect: false
         },
         { 
           id: "ignore", 
           text: "Ignore it completely", 
           emoji: "🚫", 
-          description: "We can use AI as a helpful tool",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const RobotFriendStory = () => {
           id: "friend", 
           text: "Treat it as a friend", 
           emoji: "👩‍🤝‍👩", 
-          description: "AI is a helpful tool for study tips",
           isCorrect: false
         },
         { 
           id: "follow", 
           text: "Follow as a helper", 
           emoji: "🧠✅", 
-          description: "AI is a helpful tool - follow its study tips as a helper",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore all advice", 
           emoji: "🚫", 
-          description: "AI can be a helpful tool for study tips",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const RobotFriendStory = () => {
           id: "chat", 
           text: "Think AI is a friend and chat", 
           emoji: "👩‍🤝‍👩", 
-          description: "AI is a tool, not a friend",
           isCorrect: false
         },
         { 
           id: "tool", 
           text: "Do it with AI as a tool", 
           emoji: "🧠🎨", 
-          description: "Use AI as a helpful tool for creative activities",
           isCorrect: true
         },
         { 
           id: "refuse", 
           text: "Refuse everything", 
           emoji: "🚫", 
-          description: "AI can be a helpful tool for creative activities",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const RobotFriendStory = () => {
           id: "ai", 
           text: "Use it as guidance", 
           emoji: "🧠💪", 
-          description: "Use AI recommendations as helpful guidance",
           isCorrect: true
         },
         { 
           id: "friend", 
           text: "Take it as a human friend's advice", 
           emoji: "👩‍🤝‍👩", 
-          description: "AI is a tool, not a human friend",
           isCorrect: false
         },
         { 
           id: "ignore", 
           text: "Ignore it completely", 
           emoji: "🚫", 
-          description: "AI can provide helpful guidance",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const RobotFriendStory = () => {
           id: "friend", 
           text: "Think AI is a friend", 
           emoji: "👩‍🤝‍👩", 
-          description: "AI is a helpful tool, not a friend",
           isCorrect: false
         },
         { 
           id: "use", 
           text: "Use the advice as a helper", 
           emoji: "🧠🔒", 
-          description: "Use AI safety advice as helpful guidance from a tool",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "🚫", 
-          description: "AI can provide helpful safety advice",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const RobotFriendStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

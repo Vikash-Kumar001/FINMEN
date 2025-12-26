@@ -62,9 +62,9 @@ const SafetyReflex = () => {
       correctAnswer: "Report Scam",
       options: [
         { text: "Claim Immediately", isCorrect: false, emoji: "📱" },
-        { text: "Report Scam", isCorrect: true, emoji: "🛡️" },
         { text: "Share with Friends", isCorrect: false, emoji: "👥" },
-        { text: "Ask for More Info", isCorrect: false, emoji: "❓" }
+        { text: "Ask for More Info", isCorrect: false, emoji: "❓" },
+        { text: "Report Scam", isCorrect: true, emoji: "🛡️" },
       ]
     },
     {
@@ -73,8 +73,8 @@ const SafetyReflex = () => {
       correctAnswer: "Check Netflix",
       options: [
         { text: "Report as Scam", isCorrect: false, emoji: "🚫" },
-        { text: "Check Netflix", isCorrect: true, emoji: "📺" },
         { text: "Delete Notification", isCorrect: false, emoji: "🗑️" },
+        { text: "Check Netflix", isCorrect: true, emoji: "📺" },
         { text: "Ignore Completely", isCorrect: false, emoji: "🙈" }
       ]
     },
@@ -83,8 +83,8 @@ const SafetyReflex = () => {
       question: "A pop-up says 'You're the 1 millionth visitor!'. What should you do?",
       correctAnswer: "Close and Report",
       options: [
-        { text: "Click to Claim", isCorrect: false, emoji: "🎉" },
         { text: "Close and Report", isCorrect: true, emoji: "🚫" },
+        { text: "Click to Claim", isCorrect: false, emoji: "🎉" },
         { text: "Share Online", isCorrect: false, emoji: "🌐" },
         { text: "Take Screenshot", isCorrect: false, emoji: "📸" }
       ]

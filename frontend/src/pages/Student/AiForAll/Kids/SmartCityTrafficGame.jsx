@@ -35,21 +35,18 @@ const SmartCityTrafficGame = () => {
           id: "stop", 
           text: "Stop Completely ", 
           emoji: "✋", 
-          description: "Red means stop! Wait for the light to change before moving.",
           isCorrect: true
         },
         { 
           id: "go", 
           text: "Go Fast ", 
           emoji: "🏃", 
-          description: "Never go on red! This would be dangerous and illegal.",
           isCorrect: false
         },
         { 
           id: "slow", 
           text: "Slow Down ", 
           emoji: "🐢", 
-          description: "Red means complete stop, not just slowing down.",
           isCorrect: false
         }
       ]
@@ -62,21 +59,18 @@ const SmartCityTrafficGame = () => {
           id: "stop", 
           text: "Stop Completely ", 
           emoji: "✋", 
-          description: "If you can safely stop, you should. But yellow warns you to prepare to stop.",
           isCorrect: false
         },
         { 
           id: "prepare", 
           text: "Prepare to Stop ", 
           emoji: "⚠️", 
-          description: "Yellow warns drivers to prepare to stop as the light is changing to red.",
           isCorrect: true
         },
         { 
           id: "go", 
           text: "Go Faster ", 
           emoji: "🏃", 
-          description: "Never speed up on yellow! This increases accident risk.",
           isCorrect: false
         }
       ]
@@ -89,21 +83,18 @@ const SmartCityTrafficGame = () => {
           id: "stop", 
           text: "Stop Completely ", 
           emoji: "✋", 
-          description: "Green means go, not stop. Only stop if pedestrians are crossing.",
           isCorrect: false
         },
         { 
           id: "caution", 
           text: "Proceed with Caution ", 
           emoji: "🛡️", 
-          description: "Look both ways and proceed carefully when the light is green.",
           isCorrect: false
         },
         { 
           id: "go", 
           text: "Go Safely ", 
           emoji: "✅", 
-          description: "Green means go! Proceed safely in the direction of the arrow.",
           isCorrect: true
         }
       ]
@@ -116,21 +107,18 @@ const SmartCityTrafficGame = () => {
           id: "random", 
           text: "Changes Randomly ", 
           emoji: "🎲", 
-          description: "AI uses data, not randomness, to optimize traffic flow.",
           isCorrect: false
         },
         { 
           id: "optimize", 
           text: "Optimizes Traffic Flow ", 
           emoji: "🚦", 
-          description: "AI analyzes traffic patterns to reduce wait times and congestion.",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignores Traffic ", 
           emoji: "🚫", 
-          description: "AI actively manages traffic, it doesn't ignore it.",
           isCorrect: false
         }
       ]
@@ -143,21 +131,18 @@ const SmartCityTrafficGame = () => {
           id: "waste", 
           text: "Waste More Time ", 
           emoji: "⏳", 
-          description: "Smart lights reduce wait times, not increase them.",
           isCorrect: false
         },
         { 
           id: "reduce", 
           text: "Reduce Congestion ", 
           emoji: "🚗", 
-          description: "Smart lights adapt to traffic patterns to reduce congestion and wait times.",
           isCorrect: true
         },
         { 
           id: "confuse", 
           text: "Confuse Drivers ", 
           emoji: "🤔", 
-          description: "Smart lights make driving easier and safer, not more confusing.",
           isCorrect: false
         }
       ]
@@ -250,8 +235,7 @@ const SmartCityTrafficGame = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

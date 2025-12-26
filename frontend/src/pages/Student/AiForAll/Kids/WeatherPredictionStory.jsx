@@ -32,21 +32,18 @@ const WeatherPredictionStory = () => {
           id: "ai", 
           text: "AI Weather Forecast", 
           emoji: "🌐", 
-          description: "AI uses historical and real-time data to predict weather accurately",
           isCorrect: true
         },
         { 
           id: "guess", 
           text: "Just guessing", 
           emoji: "❓", 
-          description: "AI weather forecasts use data, not random guessing",
           isCorrect: false
         },
         { 
           id: "clouds", 
           text: "Looking at clouds", 
           emoji: "☁️", 
-          description: "AI analyzes much more data than just clouds",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const WeatherPredictionStory = () => {
           id: "movies", 
           text: "Movie ratings", 
           emoji: "🎬", 
-          description: "AI studies weather-related data like temperature and humidity",
           isCorrect: false
         },
         { 
           id: "weather", 
           text: "Temperature, humidity & wind", 
           emoji: "🌦️", 
-          description: "AI studies temperature, humidity, and wind data to predict rainfall and storms",
           isCorrect: true
         },
         { 
           id: "random", 
           text: "Random numbers", 
           emoji: "🎲", 
-          description: "AI uses real weather data, not random numbers",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const WeatherPredictionStory = () => {
           id: "guess", 
           text: "Guessing randomly", 
           emoji: "❌", 
-          description: "Weather apps use AI models with satellite data",
           isCorrect: false
         },
         { 
           id: "newspaper", 
           text: "By reading newspapers", 
           emoji: "🗞️", 
-          description: "Weather apps use AI technology, not newspapers",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "Using AI models & satellites", 
           emoji: "🤖", 
-          description: "These apps use AI models with satellite and sensor data to forecast weather",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const WeatherPredictionStory = () => {
           id: "ai", 
           text: "Yes, using data & patterns", 
           emoji: "✅", 
-          description: "AI can analyze massive data and detect complex patterns that humans may miss",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No, humans guess better", 
           emoji: "👎", 
-          description: "AI can analyze more data than humans",
           isCorrect: false
         },
         { 
           id: "summer", 
           text: "Only during summer", 
           emoji: "☀️", 
-          description: "AI works year-round, not just in summer",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const WeatherPredictionStory = () => {
           id: "jokes", 
           text: "Tell jokes", 
           emoji: "🤣", 
-          description: "AI helps farmers plan crops and protect them from bad weather",
           isCorrect: false
         },
         { 
           id: "change", 
           text: "Change the weather", 
           emoji: "⚡", 
-          description: "AI predicts weather to help farmers plan",
           isCorrect: false
         },
         { 
           id: "plan", 
           text: "Plan crops & save from floods", 
           emoji: "🌻", 
-          description: "AI predictions help farmers decide when to plant and protect crops from bad weather",
           isCorrect: true
         }
       ]
@@ -246,8 +231,7 @@ const WeatherPredictionStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

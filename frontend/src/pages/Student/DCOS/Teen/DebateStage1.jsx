@@ -30,19 +30,16 @@ const DebateStage1 = () => {
         { 
           id: "no-matter", 
           text: "No - it doesn't matter", 
-          description: "Online identity has no impact on success",
           isCorrect: false
         },
         { 
           id: "yes-opportunities", 
           text: "Yes - it affects opportunities", 
-          description: "Your online identity directly impacts your opportunities",
           isCorrect: true
         },
         { 
           id: "maybe", 
           text: "Maybe - only for some careers", 
-          description: "It only matters for certain types of careers",
           isCorrect: false
         }
       ]
@@ -54,19 +51,16 @@ const DebateStage1 = () => {
         { 
           id: "no-skills", 
           text: "No - only skills matter", 
-          description: "Only your skills matter, not your online presence",
           isCorrect: false
         },
         { 
           id: "sometimes", 
           text: "Sometimes - depends on the field", 
-          description: "It depends on what field you're in",
           isCorrect: false
         },
         { 
           id: "yes-check", 
           text: "Yes - employers and colleges check", 
-          description: "Employers and colleges check your online presence",
           isCorrect: true
         }
       ]
@@ -78,19 +72,16 @@ const DebateStage1 = () => {
         { 
           id: "no-separate", 
           text: "No - online doesn't affect real life", 
-          description: "Online presence is separate from real life",
           isCorrect: false
         },
         { 
           id: "yes-help-hurt", 
           text: "Yes - it can help or hurt", 
-          description: "Your digital footprint can positively or negatively impact your career",
           isCorrect: true
         },
         { 
           id: "maybe", 
           text: "Maybe - only if it's negative", 
-          description: "Only negative online content matters",
           isCorrect: false
         }
       ]
@@ -100,21 +91,19 @@ const DebateStage1 = () => {
       text: "Does your online reputation matter for success?",
       options: [
         { 
-          id: "no-separate-success", 
-          text: "No - it's separate from success", 
-          description: "Online reputation is separate from real-world success",
-          isCorrect: false
-        },
-        { 
           id: "yes-identity", 
           text: "Yes - it's part of your identity", 
-          description: "Online reputation is part of your overall identity",
           isCorrect: true
         },
         { 
+          id: "no-separate-success", 
+          text: "No - it's separate from success", 
+          isCorrect: false
+        },
+        
+        { 
           id: "maybe", 
           text: "Maybe - only for public figures", 
-          description: "Only matters if you're a public figure",
           isCorrect: false
         }
       ]
@@ -126,19 +115,16 @@ const DebateStage1 = () => {
         { 
           id: "no-necessary", 
           text: "No - not necessary", 
-          description: "Building a positive online identity is not necessary",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe - only if you want to be famous", 
-          description: "Only important if you want to be famous",
           isCorrect: false
         },
         { 
           id: "yes-doors", 
           text: "Yes - it opens doors", 
-          description: "A positive online identity opens opportunities",
           isCorrect: true
         }
       ]
@@ -217,7 +203,6 @@ const DebateStage1 = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
                   >
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
                   </button>
                 ))}
               </div>

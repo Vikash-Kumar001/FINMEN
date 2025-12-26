@@ -31,22 +31,19 @@ const SmartFarmingQuiz = () => {
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "AI analyzes weather, soil, and crop data to help farmers predict yields",
+          emoji: "🌽", 
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "AI actually helps farmers predict crops by analyzing data",
+          emoji: "🤖", 
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI definitely helps farmers with crop prediction",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const SmartFarmingQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI systems can identify early signs of diseases through images",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "AI systems can identify early signs of diseases through images of crops",
+          emoji: "🖼️", 
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "AI can actually detect plant diseases early through image analysis",
+          emoji: "🌱", 
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const SmartFarmingQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI can monitor soil moisture and irrigation needs",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "AI can actually help optimize water usage in farming",
+          emoji: "💦", 
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "AI can monitor soil moisture and irrigation needs, helping farmers save water",
+          emoji: "💦", 
           isCorrect: true
         }
       ]
@@ -112,22 +103,19 @@ const SmartFarmingQuiz = () => {
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "AI-powered robots can pick fruits and vegetables efficiently",
+          emoji: "🌾", 
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "AI-powered robots can actually harvest crops automatically",
+          emoji: "🤖", 
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI-powered robots can definitely harvest crops automatically",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const SmartFarmingQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI can suggest the right type and amount of fertilizer",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes", 
-          emoji: "✅", 
-          description: "AI can suggest the right type and amount of fertilizer based on soil analysis",
+          emoji: "🌱", 
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No", 
-          emoji: "❌", 
-          description: "AI can actually provide fertilizer recommendations",
+          emoji: "🌱", 
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const SmartFarmingQuiz = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

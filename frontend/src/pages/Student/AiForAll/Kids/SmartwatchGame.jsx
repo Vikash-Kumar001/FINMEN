@@ -175,7 +175,7 @@ const SmartwatchGame = () => {
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+      showCorrectAnswerFeedback(1, true);
     }
 
     if (currentAlert < alerts.length - 1) {

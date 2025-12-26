@@ -32,21 +32,18 @@ const RobotMistakeStory = () => {
           id: "correct", 
           text: "Correct the robot", 
           emoji: "✅", 
-          description: "Correcting robot mistakes helps AI learn and improve",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore the mistake", 
           emoji: "🙈", 
-          description: "Correcting mistakes helps robots learn better",
           isCorrect: false
         },
         { 
           id: "agree", 
           text: "Agree with the robot", 
           emoji: "👍", 
-          description: "We should correct mistakes to help AI learn",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const RobotMistakeStory = () => {
           id: "nothing", 
           text: "Say nothing", 
           emoji: "😐", 
-          description: "Teaching robots correctly helps them learn",
           isCorrect: false
         },
         { 
           id: "teach", 
           text: "Teach it correctly", 
           emoji: "📚", 
-          description: "Teaching robots correctly helps them learn and improve",
           isCorrect: true
         },
         { 
           id: "laugh", 
           text: "Laugh at the robot", 
           emoji: "😂", 
-          description: "We should help robots learn, not laugh at mistakes",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const RobotMistakeStory = () => {
           id: "wrong", 
           text: "Let it be wrong", 
           emoji: "😐", 
-          description: "Correcting math mistakes helps AI learn",
           isCorrect: false
         },
         { 
           id: "correct", 
           text: "Correct it to 4", 
           emoji: "🔢", 
-          description: "Correcting math mistakes helps AI learn accurate information",
           isCorrect: true
         },
         { 
           id: "agree", 
           text: "Agree with the robot", 
           emoji: "👍", 
-          description: "We should correct math mistakes",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const RobotMistakeStory = () => {
           id: "fix", 
           text: "Fix the label", 
           emoji: "🔧", 
-          description: "Fixing labels helps robots learn correct information",
           isCorrect: true
         },
         { 
           id: "leave", 
           text: "Leave it", 
           emoji: "😐", 
-          description: "Fixing mistakes helps robots learn better",
           isCorrect: false
         },
         { 
           id: "ignore", 
           text: "Ignore the error", 
           emoji: "🙈", 
-          description: "We should help robots learn correct labels",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const RobotMistakeStory = () => {
           id: "agree", 
           text: "Agree blindly", 
           emoji: "👍", 
-          description: "We should explain that cats have many colors",
           isCorrect: false
         },
         { 
           id: "explain", 
           text: "Explain that cats have many colors", 
           emoji: "🎨", 
-          description: "Explaining correctly helps robots learn about diversity",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore the statement", 
           emoji: "😐", 
-          description: "We should help robots understand diversity",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const RobotMistakeStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

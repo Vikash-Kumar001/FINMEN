@@ -32,21 +32,18 @@ const FeedbackMattersStory = () => {
           id: "correct", 
           text: "Correct it with the right answer", 
           emoji: "✅", 
-          description: "Giving correct feedback helps the robot learn and improve",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore it and move on", 
           emoji: "❌", 
-          description: "We should give feedback to help robots learn",
           isCorrect: false
         },
         { 
           id: "wrong", 
           text: "Tell it it's always wrong", 
           emoji: "⚠️", 
-          description: "Giving correct feedback is better than being negative",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const FeedbackMattersStory = () => {
           id: "laugh", 
           text: "Laugh and leave it", 
           emoji: "😂", 
-          description: "We should correct mistakes to help AI learn",
           isCorrect: false
         },
         { 
           id: "correct", 
           text: "Correct the label to 'Cat'", 
           emoji: "🐱", 
-          description: "Correcting errors helps AI understand patterns better for future predictions",
           isCorrect: true
         },
         { 
           id: "delete", 
           text: "Delete the AI model", 
           emoji: "🗑️", 
-          description: "Correcting mistakes is better than deleting the AI",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const FeedbackMattersStory = () => {
           id: "nothing", 
           text: "Say nothing", 
           emoji: "🤐", 
-          description: "Giving detailed feedback helps AI improve",
           isCorrect: false
         },
         { 
           id: "provide", 
           text: "Provide detailed correction", 
           emoji: "📝", 
-          description: "Giving specific feedback helps AI fine-tune its understanding and perform better",
           isCorrect: true
         },
         { 
           id: "bad", 
           text: "Say 'bad robot!'", 
           emoji: "😡", 
-          description: "Giving helpful feedback is better than being negative",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const FeedbackMattersStory = () => {
           id: "ai", 
           text: "Suggest better training data", 
           emoji: "📊", 
-          description: "Quality training data helps AI perform correctly and more reliably",
           isCorrect: true
         },
         { 
           id: "useless", 
           text: "Call it useless", 
           emoji: "🚫", 
-          description: "Suggesting improvements is better than being negative",
           isCorrect: false
         },
         { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "🙈", 
-          description: "We should help improve AI systems",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const FeedbackMattersStory = () => {
           id: "complain", 
           text: "Complain and quit", 
           emoji: "😤", 
-          description: "Helping AI improve patiently is better",
           isCorrect: false
         },
         { 
           id: "help", 
           text: "Help it improve patiently", 
           emoji: "❤️", 
-          description: "Teamwork and patience help AI systems grow with human support",
           isCorrect: true
         },
         { 
           id: "hopeless", 
           text: "Say it's hopeless", 
           emoji: "🙄", 
-          description: "Being patient and helpful is better than giving up",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const FeedbackMattersStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

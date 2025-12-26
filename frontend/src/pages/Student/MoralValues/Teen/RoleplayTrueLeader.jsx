@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
+import React, { useState, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const RoleplayTrueLeader = () => {
   const location = useLocation();
@@ -20,36 +20,42 @@ const RoleplayTrueLeader = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Extract nextGamePath and nextGameId from location state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    return {
+      nextGamePath: location.state?.nextGamePath || null,
+      nextGameId: location.state?.nextGameId || null
+    };
+  }, [location.state]);
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
 
   const questions = [
     {
       id: 1,
       text: "Your team is struggling to complete a science project. Some members are tired. As a true leader, what do you do?",
-      emoji: "🔬",
       options: [
         { 
-          id: "help", 
+          id: "a", 
           text: "Offer to help and motivate the team to finish together", 
           emoji: "💪", 
           description: "Helping and motivating shows true leadership",
           isCorrect: true 
         },
         { 
-          id: "hurry", 
+          id: "b", 
           text: "Tell them to hurry up without helping", 
           emoji: "😠", 
           description: "Commanding without helping isn't true leadership",
           isCorrect: false 
         },
         { 
-          id: "blame", 
+          id: "c", 
           text: "Blame them for being slow", 
           emoji: "👆", 
           description: "Blaming doesn't help the team",
@@ -60,24 +66,23 @@ const RoleplayTrueLeader = () => {
     {
       id: 2,
       text: "During cleaning duty, one student refuses to help. How does a true leader respond?",
-      emoji: "🧹",
       options: [
         { 
-          id: "complain", 
+          id: "a", 
           text: "Complain loudly to the teacher", 
           emoji: "😠", 
           description: "Complaining doesn't show leadership",
           isCorrect: false 
         },
         { 
-          id: "example", 
+          id: "b", 
           text: "Do the task yourself and inspire others by example", 
           emoji: "🌟", 
           description: "Leading by example shows true leadership",
           isCorrect: true 
         },
         { 
-          id: "ignore", 
+          id: "c", 
           text: "Ignore it and leave the work unfinished", 
           emoji: "😶", 
           description: "Ignoring problems doesn't show leadership",
@@ -88,24 +93,23 @@ const RoleplayTrueLeader = () => {
     {
       id: 3,
       text: "Your friend takes credit for work you helped with. What's a true leader's action?",
-      emoji: "👥",
       options: [
         { 
-          id: "argue", 
+          id: "a", 
           text: "Publicly argue and embarrass them", 
           emoji: "😠", 
           description: "Public arguments damage relationships",
           isCorrect: false 
         },
         { 
-          id: "stop", 
+          id: "b", 
           text: "Stop working with them forever", 
           emoji: "🚫", 
           description: "Cutting ties doesn't resolve issues",
           isCorrect: false 
         },
         { 
-          id: "calm", 
+          id: "c", 
           text: "Calmly talk later and focus on teamwork over ego", 
           emoji: "🤝", 
           description: "Calm communication shows mature leadership",
@@ -116,24 +120,23 @@ const RoleplayTrueLeader = () => {
     {
       id: 4,
       text: "A classmate makes a mistake while presenting. Everyone laughs. What do you do as a leader?",
-      emoji: "🎤",
       options: [
         { 
-          id: "encourage", 
+          id: "a", 
           text: "Encourage them and remind others to be kind", 
           emoji: "💪", 
           description: "Encouraging and promoting kindness shows leadership",
           isCorrect: true 
         },
         { 
-          id: "laugh", 
+          id: "b", 
           text: "Join in the laughter", 
           emoji: "😄", 
           description: "Laughing at mistakes is unkind",
           isCorrect: false 
         },
         { 
-          id: "silent", 
+          id: "c", 
           text: "Stay silent and ignore it", 
           emoji: "😶", 
           description: "Leaders should support others",
@@ -144,24 +147,23 @@ const RoleplayTrueLeader = () => {
     {
       id: 5,
       text: "Your team wins a competition. As the leader, how do you celebrate?",
-      emoji: "🏆",
       options: [
         { 
-          id: "praise", 
+          id: "a", 
           text: "Take all the praise for yourself", 
           emoji: "😏", 
           description: "Taking all credit is selfish",
           isCorrect: false 
         },
         { 
-          id: "thank", 
+          id: "b", 
           text: "Thank the team and share credit with everyone", 
           emoji: "👏", 
           description: "Sharing credit shows true leadership",
           isCorrect: true 
         },
         { 
-          id: "ignore", 
+          id: "c", 
           text: "Ignore the team and post about it alone", 
           emoji: "😶", 
           description: "Ignoring the team is disrespectful",
@@ -171,24 +173,16 @@ const RoleplayTrueLeader = () => {
     }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (showFeedback || showResult) return;
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
-    setSelectedOption(optionId);
+    setAnswered(true);
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
-    
-    setShowFeedback(true);
     
     const isLastQuestion = currentQuestion === questions.length - 1;
     
@@ -197,129 +191,76 @@ const RoleplayTrueLeader = () => {
         setShowResult(true);
       } else {
         setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        resetFeedback();
+        setAnswered(false);
       }
-    }, isCorrect ? 1000 : 800);
+    }, 500);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentQuestion(0);
-    setScore(0);
-    setAnswered(false);
-    setSelectedOption(null);
-    setShowFeedback(false);
-    resetFeedback();
-  };
+
 
   return (
     <GameShell
       title="Roleplay: True Leader"
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
-      coinsPerLevel={coinsPerLevel}
-      showGameOver={showResult}
       maxScore={questions.length}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && score >= 3}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="moral"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && score === questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <div className="max-w-4xl mx-auto space-y-6">
-        {!showResult && questions[currentQuestion] ? (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="text-7xl mb-4">{questions[currentQuestion].emoji}</div>
-              <h3 className="text-2xl font-bold text-white mb-2">
-                {questions[currentQuestion].text}
-              </h3>
-              <div className="flex justify-center gap-4 mt-2">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
               </div>
-            </div>
-                  
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {questions[currentQuestion].options.map((option) => {
-                const isSelected = selectedOption === option.id;
-                const showCorrect = showFeedback && option.isCorrect;
-                const showIncorrect = showFeedback && isSelected && !option.isCorrect;
-                      
-                return (
+              
+              <p className="text-white text-base md:text-lg lg:text-xl mb-6 md:mb-8 text-center">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {questions[currentQuestion].options.map((option, index) => (
                   <button
                     key={option.id}
-                    onClick={() => handleAnswer(option.id)}
-                    disabled={showFeedback}
-                    className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                      showCorrect
-                        ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                        : showIncorrect
-                        ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                        : isSelected
-                        ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                    } ${showFeedback ? "cursor-not-allowed" : ""}`}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105 flex flex-col items-center justify-center text-center h-full"
+                    disabled={answered}
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                    <span className="text-2xl md:text-3xl mb-2">{option.emoji}</span>
+                    <h3 className="font-bold text-base md:text-lg mb-1">{option.text}</h3>
+                    <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
                   </button>
-                );
-              })}
-            </div>
-                  
-            {showFeedback && (
-              <div className="mt-6 p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-center">
-                <div className="text-lg font-semibold">
-                  {questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect 
-                    ? "🌟 Great choice! That's the right action for a true leader!" 
-                    : "💭 Good try! Remember, true leaders serve and support others."}
-                </div>
+                ))}
               </div>
-            )}
+            </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {score >= 3 ? (
-              <div>
-                <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">You're a True Leader!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You got {score} out of {questions.length} correct!
-                  You know how to lead by serving others!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{score} Coins</span>
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            <div>
+              <div className="text-4xl md:text-5xl mb-4">🎉</div>
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Quiz Completed!</h3>
+              <p className="text-white/90 text-base md:text-lg mb-2">
+                You scored <span className="font-bold text-yellow-400">{score}</span> out of <span className="font-bold">{questions.length}</span>
+              </p>
+              <div className="mt-6">
+                <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-6 rounded-full inline-block font-bold">
+                  <span>+{score * 10} Points</span>
                 </div>
-                <p className="text-white/80">
-                  Lesson: True leaders serve others, lead by example, and share credit with their team!
-                </p>
               </div>
-            ) : (
-              <div>
-                <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You got {score} out of {questions.length} correct.
-                  Remember: Choose actions that serve and support your team!
-                </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
-                <p className="text-white/80 text-sm">
-                  Tip: True leaders serve others, lead by example, and share credit. Practice leading through service!
-                </p>
-              </div>
-            )}
+            </div>
           </div>
         )}
       </div>

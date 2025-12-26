@@ -25,21 +25,18 @@ const OnlineShoppingAI = () => {
           id: "socks", 
           text: "Sports socks", 
           emoji: "🧦", 
-          description: "AI recommends complementary items like socks for runners",
           isCorrect: true
         },
         { 
           id: "pan", 
           text: "Cooking pan", 
           emoji: "🍳", 
-          description: "Cooking pans aren't related to running shoes",
           isCorrect: false
         },
         { 
           id: "charger", 
           text: "Phone charger", 
           emoji: "🔌", 
-          description: "Phone chargers aren't directly related to running shoes",
           isCorrect: false
         }
       ],
@@ -53,21 +50,18 @@ const OnlineShoppingAI = () => {
           id: "hose", 
           text: "Garden hose", 
           emoji: "🌿", 
-          description: "Garden hoses aren't related to school bags",
           isCorrect: false
         },
         { 
           id: "pencil", 
           text: "Pencil case", 
           emoji: "✏️", 
-          description: "AI suggests related school supplies like pencil cases",
           isCorrect: true
         },
         { 
           id: "tires", 
           text: "Car tires", 
           emoji: "🚗", 
-          description: "Car tires aren't related to school supplies",
           isCorrect: false
         }
       ],
@@ -81,21 +75,18 @@ const OnlineShoppingAI = () => {
           id: "case", 
           text: "Phone case", 
           emoji: "📔", 
-          description: "AI recommends protective accessories for your new phone",
           isCorrect: true
         },
         { 
           id: "flower", 
           text: "Flower pot", 
           emoji: "🌸", 
-          description: "Flower pots aren't related to mobile phones",
           isCorrect: false
         },
         { 
           id: "book", 
           text: "Book", 
           emoji: "📖", 
-          description: "Books aren't directly related to phone purchases",
           isCorrect: false
         }
       ],
@@ -109,21 +100,18 @@ const OnlineShoppingAI = () => {
           id: "laptop", 
           text: "Laptop", 
           emoji: "💻", 
-          description: "Laptops aren't directly related to yoga mats",
           isCorrect: false
         },
         { 
           id: "oil", 
           text: "Cooking oil", 
           emoji: "🧴", 
-          description: "Cooking oil isn't related to yoga equipment",
           isCorrect: false
         },
         { 
           id: "water", 
           text: "Water bottle", 
           emoji: "💧", 
-          description: "AI suggests hydration essentials for yoga practice",
           isCorrect: true
         }
       ],
@@ -137,21 +125,18 @@ const OnlineShoppingAI = () => {
           id: "gloves", 
           text: "Woolen gloves", 
           emoji: "🧤", 
-          description: "AI recommends matching cold-weather accessories",
           isCorrect: true
         },
         { 
           id: "slippers", 
           text: "Beach slippers", 
           emoji: "🩴", 
-          description: "Beach slippers aren't suitable for winter",
           isCorrect: false
         },
         { 
           id: "sunglasses", 
           text: "Sunglasses", 
           emoji: "🕶️", 
-          description: "Sunglasses aren't specifically related to winter jackets",
           isCorrect: false
         }
       ],
@@ -173,7 +158,7 @@ const OnlineShoppingAI = () => {
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+      showCorrectAnswerFeedback(1, true);
     }
 
     if (currentItem < items.length - 1) {
@@ -240,8 +225,7 @@ const OnlineShoppingAI = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

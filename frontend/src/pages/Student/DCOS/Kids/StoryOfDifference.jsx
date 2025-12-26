@@ -32,21 +32,18 @@ const StoryOfDifference = () => {
           id: "a", 
           text: "Laugh with Others", 
           emoji: "😅", 
-          description: "Laugh with others",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Smile and Communicate", 
           emoji: "😊", 
-          description: "Smile and try to communicate",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Ignore Them", 
           emoji: "😐", 
-          description: "Ignore them",
           isCorrect: false
         }
       ]
@@ -55,25 +52,23 @@ const StoryOfDifference = () => {
       id: 2,
       text: "Your friend brings food that looks different from yours. Some kids make faces. What should you do?",
       options: [
+         { 
+          id: "b", 
+          text: "Ask About Food", 
+          emoji: "🍛", 
+          isCorrect: true
+        },
         { 
           id: "a", 
           text: "Refuse to Sit", 
           emoji: "🙅‍♀️", 
-          description: "Refuse to sit with them",
           isCorrect: false
         },
-        { 
-          id: "b", 
-          text: "Ask About Food", 
-          emoji: "🍛", 
-          description: "Ask politely about the food",
-          isCorrect: true
-        },
+       
         { 
           id: "c", 
           text: "Say It Smells Bad", 
           emoji: "😖", 
-          description: "Tell everyone it smells bad",
           isCorrect: false
         }
       ]
@@ -86,23 +81,21 @@ const StoryOfDifference = () => {
           id: "a", 
           text: "Say It's Boring", 
           emoji: "😒", 
-          description: "Say it's boring",
+          isCorrect: false
+        },
+        
+        { 
+          id: "c", 
+          text: "Walk Away", 
+          emoji: "🚶‍♀️", 
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Try and Learn", 
           emoji: "🤩", 
-          description: "Try it and learn the rules",
           isCorrect: true
         },
-        { 
-          id: "c", 
-          text: "Walk Away", 
-          emoji: "🚶‍♀️", 
-          description: "Walk away",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -113,21 +106,18 @@ const StoryOfDifference = () => {
           id: "a", 
           text: "Draw Something Silly", 
           emoji: "😜", 
-          description: "Draw something silly to make fun",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Draw Carefully", 
           emoji: "❤️", 
-          description: "Draw carefully and appreciate others' work",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Skip Task", 
           emoji: "😴", 
-          description: "Skip the task",
           isCorrect: false
         }
       ]
@@ -140,21 +130,18 @@ const StoryOfDifference = () => {
           id: "a", 
           text: "Listen and Enjoy", 
           emoji: "🎧", 
-          description: "Listen and enjoy something new",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Make Jokes", 
           emoji: "😂", 
-          description: "Make jokes about it",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ask to Stop", 
           emoji: "🙅‍♂️", 
-          description: "Ask the teacher to stop",
           isCorrect: false
         }
       ]
@@ -255,7 +242,6 @@ const StoryOfDifference = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>

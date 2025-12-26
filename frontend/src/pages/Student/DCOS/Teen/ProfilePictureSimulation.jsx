@@ -19,6 +19,7 @@ const ProfilePictureSimulation = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
@@ -27,24 +28,23 @@ const ProfilePictureSimulation = () => {
       text: "Which profile picture is safest for social media?",
       options: [
         { 
-          id: "personal", 
           text: "Personal Photo", 
           emoji: "📸", 
-          description: "Your real photo showing your face",
           isCorrect: false
         },
         { 
-          id: "cartoon", 
           text: "Cartoon/Avatar", 
           emoji: "🎨", 
-          description: "Animated character or cartoon",
           isCorrect: true
         },
         { 
-          id: "full-body", 
           text: "Full Body Photo", 
           emoji: "🧍", 
-          description: "Photo showing your full appearance",
+          isCorrect: false
+        },
+        { 
+          text: "Logo or Symbol", 
+          emoji: "🔷", 
           isCorrect: false
         }
       ]
@@ -54,24 +54,24 @@ const ProfilePictureSimulation = () => {
       text: "What's the safest profile picture for gaming?",
       options: [
         { 
-          id: "real-photo", 
-          text: "Real Photo", 
-          emoji: "📷", 
-          description: "Your actual photo",
-          isCorrect: false
-        },
-        { 
-          id: "game-avatar", 
           text: "Game Avatar", 
-          emoji: "🎨", 
-          description: "Character from the game",
+          emoji: "🎮", 
           isCorrect: true
         },
         { 
-          id: "school-photo", 
+          text: "Real Photo", 
+          emoji: "📷", 
+          isCorrect: false
+        },
+        
+        { 
           text: "School Photo", 
           emoji: "🎓", 
-          description: "Photo from school",
+          isCorrect: false
+        },
+        { 
+          text: "Nature Photo", 
+          emoji: "🌿", 
           isCorrect: false
         }
       ]
@@ -81,26 +81,26 @@ const ProfilePictureSimulation = () => {
       text: "Which profile picture protects your identity?",
       options: [
         { 
-          id: "selfie", 
           text: "Selfie", 
           emoji: "🤳", 
-          description: "Recent selfie photo",
           isCorrect: false
         },
+        
         { 
-          id: "cartoon-char", 
-          text: "Cartoon Character", 
-          emoji: "🎭", 
-          description: "Animated character",
-          isCorrect: true
-        },
-        { 
-          id: "group-photo", 
           text: "Group Photo", 
           emoji: "👥", 
-          description: "Photo with friends",
           isCorrect: false
-        }
+        },
+        { 
+          text: "Famous Person", 
+          emoji: "⭐", 
+          isCorrect: false
+        },
+        { 
+          text: "Cartoon Character", 
+          emoji: "🎭", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -108,24 +108,24 @@ const ProfilePictureSimulation = () => {
       text: "What profile picture should you use for online forums?",
       options: [
         { 
-          id: "personal-forum", 
           text: "Personal Photo", 
           emoji: "👤", 
-          description: "Your real photo",
           isCorrect: false
         },
+       
         { 
-          id: "avatar-icon", 
+          text: "Pet Photo", 
+          emoji: "🐕", 
+          isCorrect: false
+        },
+         { 
           text: "Avatar/Icon", 
           emoji: "🎨", 
-          description: "Cartoon or icon",
           isCorrect: true
         },
         { 
-          id: "pet-photo", 
-          text: "Pet Photo", 
-          emoji: "🐕", 
-          description: "Photo of your pet",
+          text: "Landscape Photo", 
+          emoji: "🏞️", 
           isCorrect: false
         }
       ]
@@ -135,24 +135,23 @@ const ProfilePictureSimulation = () => {
       text: "Which is the safest profile picture choice for video platforms?",
       options: [
         { 
-          id: "real-video", 
           text: "Real Photo", 
           emoji: "📸", 
-          description: "Your actual photo",
           isCorrect: false
         },
         { 
-          id: "animated-avatar", 
           text: "Animated Avatar", 
-          emoji: "🎨", 
-          description: "Cartoon or animation",
+          emoji: "🤖", 
           isCorrect: true
         },
         { 
-          id: "celebrity", 
           text: "Celebrity Photo", 
           emoji: "⭐", 
-          description: "Photo of a celebrity",
+          isCorrect: false
+        },
+        { 
+          text: "Artwork", 
+          emoji: "🎨", 
           isCorrect: false
         }
       ]
@@ -168,8 +167,6 @@ const ProfilePictureSimulation = () => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
     const isLastQuestion = currentQuestion === questions.length - 1;
@@ -180,6 +177,7 @@ const ProfilePictureSimulation = () => {
       } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
+        setSelectedAnswer(null);
       }
     }, 500);
   };
@@ -196,7 +194,7 @@ const ProfilePictureSimulation = () => {
     <GameShell
       title="Profile Picture Simulation"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -223,18 +221,28 @@ const ProfilePictureSimulation = () => {
                 {questions[currentQuestion].text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {questions[currentQuestion].options.map((option) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {questions[currentQuestion].options.map((option, idx) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.isCorrect)}
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
                     disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <div className="text-3xl mb-3">{option.emoji}</div>
-                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                      <p className="text-white/90 text-sm">{option.description}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
                     </div>
                   </button>
                 ))}

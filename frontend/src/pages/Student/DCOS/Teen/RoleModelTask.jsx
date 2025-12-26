@@ -1,237 +1,272 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const RoleModelTask = () => {
   const location = useLocation();
-  const gameId = "dcos-teen-99";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("dcos-teen-99");
+  const gameId = gameData?.id || "dcos-teen-99";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for RoleModelTask, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [selectedApproach, setSelectedApproach] = useState(null);
-  const [helpfulContent, setHelpfulContent] = useState("");
+  
+  // Extract nextGamePath and nextGameId from location state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    return {
+      nextGamePath: location.state?.nextGamePath || null,
+      nextGameId: location.state?.nextGameId || null
+    };
+  }, [location.state]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
 
-  const scenarios = [
+
+  const questions = [
     {
       id: 1,
-      situation: "You want to help your peers with their studies. You can share a blog post with study tips.",
-      emoji: "📚",
-      approaches: [
-        { id: 2, text: "Share the helpful blog post with your peers", isCorrect: true },
-        { id: 1, text: "Keep it to yourself - they should figure it out", isCorrect: false },
-        { id: 3, text: "Only share with close friends", isCorrect: false }
+      text: "You want to help your peers with their studies. You can share a blog post with study tips. What should you do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Share the helpful blog post with your peers", 
+          emoji: "📚",
+          description: "Sharing educational resources helps others learn and grow",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Keep it to yourself - they should figure it out", 
+          emoji: " selfish",
+          description: "Keeping resources to yourself doesn't help the community",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Only share with close friends", 
+          emoji: "👥",
+          description: "Limiting sharing to friends excludes others who could benefit",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      situation: "You found a great resource about online safety. Your classmates could benefit from it.",
-      emoji: "🛡️",
-      approaches: [
-        { id: 1, text: "Don't share - it's not your responsibility", isCorrect: false },
-        { id: 2, text: "Share the resource to help others stay safe", isCorrect: true },
-        { id: 3, text: "Share only if asked", isCorrect: false }
+      text: "You found a great resource about online safety. Your classmates could benefit from it. What should you do?",
+      options: [
+       
+        { 
+          id: "b", 
+          text: "Don't share - it's not your responsibility", 
+          emoji: "❓",
+          description: "Helping others with safety is a positive community behavior",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Share only if asked", 
+          emoji: "🤔",
+          description: "Proactively sharing safety resources is more helpful",
+          isCorrect: false
+        },
+         { 
+          id: "a", 
+          text: "Share the resource to help others stay safe", 
+          emoji: "🛡️",
+          description: "Sharing safety resources helps protect others online",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 3,
-      situation: "You created helpful notes for an upcoming exam. Others are struggling with the same subject.",
-      emoji: "📝",
-      approaches: [
-        { id: 1, text: "Keep your notes private", isCorrect: false },
-        { id: 3, text: "Charge money for your notes", isCorrect: false },
-        { id: 2, text: "Share your notes to help classmates succeed", isCorrect: true },
+      text: "You created helpful notes for an upcoming exam. Others are struggling with the same subject. What should you do?",
+      options: [
+       
+        { 
+          id: "b", 
+          text: "Keep your notes private", 
+          emoji: "🔒",
+          description: "Keeping educational resources private doesn't help others",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Charge money for your notes", 
+          emoji: "💰",
+          description: "Charging for educational help is not being a good role model",
+          isCorrect: false
+        },
+         { 
+          id: "a", 
+          text: "Share your notes to help classmates succeed", 
+          emoji: "📝",
+          description: "Sharing educational materials helps others learn",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 4,
-      situation: "You learned about mental health resources. Some peers might need this information.",
-      emoji: "💚",
-      approaches: [
-        { id: 1, text: "It's personal - don't share", isCorrect: false },
-        { id: 2, text: "Share mental health resources to help others", isCorrect: true },
-        { id: 3, text: "Only share if someone asks directly", isCorrect: false }
+      text: "You learned about mental health resources. Some peers might need this information. What should you do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Share mental health resources to help others", 
+          emoji: "💚",
+          description: "Sharing mental health resources can help those in need",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "It's personal - don't share", 
+          emoji: "🤫",
+          description: "Sharing mental health resources can help others get support",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Only share if someone asks directly", 
+          emoji: "❓",
+          description: "Proactively sharing mental health resources is more helpful",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      situation: "You discovered useful productivity tips. Your friends are struggling with time management.",
-      emoji: "⏰",
-      approaches: [
-        { id: 1, text: "Keep your productivity secrets", isCorrect: false },
-        { id: 3, text: "Share only with best friends", isCorrect: false },
-        { id: 2, text: "Share productivity tips to help others", isCorrect: true },
+      text: "You discovered useful productivity tips. Your friends are struggling with time management. What should you do?",
+      options: [
+       
+        { 
+          id: "b", 
+          text: "Keep your productivity secrets", 
+          emoji: "🤫",
+          description: "Keeping helpful tips to yourself doesn't help others",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Share only with best friends", 
+          emoji: "👥",
+          description: "Limiting sharing to friends excludes others who could benefit",
+          isCorrect: false
+        },
+         { 
+          id: "a", 
+          text: "Share productivity tips to help others", 
+          emoji: "⏰",
+          description: "Sharing productivity tips helps others improve their lives",
+          isCorrect: true
+        },
       ]
     }
   ];
 
-  const handleSubmit = () => {
+  const handleChoice = (isCorrect) => {
     if (answered) return;
-    
-    if (!selectedApproach || helpfulContent.trim().length < 20) return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentScenarioData = scenarios[currentScenario];
-    const selectedApp = currentScenarioData.approaches.find(a => a.id === selectedApproach);
-    const isCorrect = selectedApp?.isCorrect || false;
-    
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentScenario < scenarios.length - 1) {
-        setCurrentScenario(prev => prev + 1);
-        setSelectedApproach(null);
-        setHelpfulContent("");
-        setAnswered(false);
-      } else {
+      if (isLastQuestion) {
         setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
     }, 500);
   };
 
-  const currentScenarioData = scenarios[currentScenario];
-  const selectedApp = currentScenarioData.approaches.find(a => a.id === selectedApproach);
 
-  // Log when game completes and update location state with nextGameId
-  useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Role Model Task game completed! Score: ${score}/${scenarios.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
-      
-      // Update location state with nextGameId for GameOverModal
-      if (nextGameId && window.history && window.history.replaceState) {
-        const currentState = window.history.state || {};
-        window.history.replaceState({
-          ...currentState,
-          nextGameId: nextGameId
-        }, '');
-      }
-    }
-  }, [showResult, score, gameId, nextGamePath, nextGameId, scenarios.length]);
+
+
 
   return (
     <GameShell
       title="Role Model Task"
       score={score}
-      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Game Complete!"}
+      maxScore={questions.length}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       showGameOver={showResult}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={scenarios.length}
-      currentLevel={currentScenario + 1}
-      maxScore={scenarios.length}
-      showConfetti={showResult && score === scenarios.length}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && score === questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentScenarioData.emoji}</div>
-            <div className="bg-blue-500/20 border-2 border-blue-400 rounded-lg p-4 md:p-5 mb-6">
-              <p className="text-white text-base md:text-lg leading-relaxed">{currentScenarioData.situation}</p>
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-base md:text-lg lg:text-xl mb-6 md:mb-8 text-center">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {questions[currentQuestion].options.map((option, index) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105 flex flex-col items-center justify-center text-center h-full"
+                    disabled={answered}
+                  >
+                    <span className="text-2xl md:text-3xl mb-2">{option.emoji}</span>
+                    <h3 className="font-bold text-base md:text-lg mb-1">{option.text}</h3>
+                    <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <h3 className="text-white font-bold mb-4">1. Choose Your Approach</h3>
-            <div className="space-y-3 mb-6">
-              {currentScenarioData.approaches.map(app => (
-                <button
-                  key={app.id}
-                  onClick={() => !answered && setSelectedApproach(app.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 transition-all ${
-                    selectedApproach === app.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : answered && app.isCorrect
-                      ? 'bg-green-500/50 border-green-400'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="text-white font-semibold text-base md:text-lg">{app.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <h3 className="text-white font-bold mb-2">2. Describe the Helpful Content You'd Share (min 20 chars)</h3>
-            <textarea
-              value={helpfulContent}
-              onChange={(e) => !answered && setHelpfulContent(e.target.value)}
-              disabled={answered}
-              placeholder="What helpful content would you share? How would it help others?..."
-              className="w-full h-32 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={200}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">{helpfulContent.length}/200</div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedApproach || helpfulContent.trim().length < 20 || answered}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedApproach && helpfulContent.trim().length >= 20 && !answered
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Submit Response
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">{score === scenarios.length ? "🌟" : "😔"}</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === scenarios.length ? "Perfect Role Model! 🎉" : `You got ${score} out of ${scenarios.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === scenarios.length 
-                ? "Perfect! Sharing helpful content like study tips, resources, and knowledge creates a positive impact. Being a role model means helping others succeed and grow. Your generosity makes a difference in others' lives!"
-                : "Great job! Keep learning to be a positive role model!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Share helpful content to help others - be a positive role model online!
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            <div>
+              <div className="text-4xl md:text-5xl mb-4">🎉</div>
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Quiz Completed!</h3>
+              <p className="text-white/90 text-base md:text-lg mb-2">
+                You scored <span className="font-bold text-yellow-400">{score}</span> out of <span className="font-bold">{questions.length}</span>
               </p>
+              <div className="mt-6">
+                <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-6 rounded-full inline-block font-bold">
+                  <span>+{score * 10} Points</span>
+                </div>
+              </div>
             </div>
           </div>
         )}

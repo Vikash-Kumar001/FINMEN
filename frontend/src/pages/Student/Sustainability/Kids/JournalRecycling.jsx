@@ -96,9 +96,7 @@ const JournalRecycling = () => {
     }
   }, [gameFinished, coins, gameId, stages.length]);
 
-  const handleNext = () => {
-    navigate("/student/sustainability/kids/plastic-bag-story");
-  };
+
 
   const characterCount = journalEntry.trim().length;
   const isLongEnough = characterCount >= 10;
@@ -108,8 +106,7 @@ const JournalRecycling = () => {
     <GameShell
       title="Journal of Recycling"
       subtitle={!gameFinished ? `Entry ${currentPromptIndex + 1} of ${stages.length}` : "Journal Complete!"}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
+
       showGameOver={gameFinished}
       score={coins}
       gameId={gameId}

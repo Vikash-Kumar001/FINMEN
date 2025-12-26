@@ -85,19 +85,20 @@ const PlaygroundBystander = () => {
       id: 3,
       text: "You see mean comments being posted about a classmate online. What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Report and Stand Up", 
-          emoji: "📢", 
-          description: "Report it and stand up for them",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Share the Comments", 
           emoji: "📤", 
           description: "Share the mean comments",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Report and Stand Up", 
+          emoji: "📢", 
+          description: "Report it and stand up for them",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -112,13 +113,7 @@ const PlaygroundBystander = () => {
       id: 4,
       text: "You hear kids calling someone mean names in the hallway. What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Tell Them to Stop", 
-          emoji: "🛑", 
-          description: "Tell them to stop and get help",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Join In", 
@@ -132,7 +127,14 @@ const PlaygroundBystander = () => {
           emoji: "🚶", 
           description: "Walk by without saying anything",
           isCorrect: false
-        }
+        },
+        { 
+          id: "a", 
+          text: "Tell Them to Stop", 
+          emoji: "🛑", 
+          description: "Tell them to stop and get help",
+          isCorrect: true
+        },
       ]
     },
     {

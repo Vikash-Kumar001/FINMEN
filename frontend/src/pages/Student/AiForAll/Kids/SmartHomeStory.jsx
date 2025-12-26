@@ -32,21 +32,18 @@ const SmartHomeStory = () => {
           id: "ai", 
           text: "AI / Smart System", 
           emoji: "🤖", 
-          description: "Smart home systems use AI and sensors to detect motion and turn on lights automatically",
           isCorrect: true
         },
         { 
           id: "human", 
           text: "A Human person", 
           emoji: "👤", 
-          description: "Smart systems use AI to detect motion automatically",
           isCorrect: false
         },
         { 
           id: "magic", 
           text: "Magic", 
           emoji: "✨", 
-          description: "Smart systems use AI technology, not magic",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const SmartHomeStory = () => {
           id: "friend", 
           text: "Your Friend", 
           emoji: "👫", 
-          description: "Voice assistants use AI to understand your words",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI Voice Assistant", 
           emoji: "🗣️", 
-          description: "Voice assistants like Alexa and Google Home use AI to understand your words and respond",
           isCorrect: true
         },
         { 
           id: "dj", 
           text: "A Radio DJ", 
           emoji: "📻", 
-          description: "AI voice assistants understand and respond to your commands",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const SmartHomeStory = () => {
           id: "electricity", 
           text: "Electricity Cut", 
           emoji: "⚡", 
-          description: "Smart thermostats use AI to maintain comfortable temperatures",
           isCorrect: false
         },
         { 
           id: "random", 
           text: "Random Luck", 
           emoji: "🎲", 
-          description: "Smart thermostats use AI technology, not luck",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI Temperature Sensor", 
           emoji: "🌡️", 
-          description: "Smart thermostats use AI to maintain comfortable temperatures automatically",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const SmartHomeStory = () => {
           id: "ai", 
           text: "AI Security Camera", 
           emoji: "📷", 
-          description: "AI cameras detect motion and send real-time alerts for your safety and convenience",
           isCorrect: true
         },
         { 
           id: "neighbor", 
           text: "Neighbor", 
           emoji: "👩‍🦰", 
-          description: "AI cameras detect motion and send alerts automatically",
           isCorrect: false
         },
         { 
           id: "mirror", 
           text: "Magic Mirror", 
           emoji: "🪞", 
-          description: "AI cameras use technology to detect and alert you",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const SmartHomeStory = () => {
           id: "strings", 
           text: "Invisible Strings", 
           emoji: "🧵", 
-          description: "Smart vacuums use AI sensors to map rooms",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "AI Sensors", 
           emoji: "🔍", 
-          description: "Smart vacuums use AI sensors to map rooms and clean efficiently while avoiding obstacles",
           isCorrect: true
         },
         { 
           id: "remote", 
           text: "Remote Control", 
           emoji: "🎮", 
-          description: "Smart vacuums use AI to work automatically",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const SmartHomeStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

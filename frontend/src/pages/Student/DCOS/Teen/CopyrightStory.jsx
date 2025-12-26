@@ -32,7 +32,6 @@ const CopyrightStory = () => {
           id: "yes-own", 
           text: "Yes - I created it with AI", 
           emoji: "✅", 
-          description: "Since I used AI to create it, it's mine",
           isCorrect: false
         },
         
@@ -40,14 +39,12 @@ const CopyrightStory = () => {
           id: "maybe", 
           text: "Maybe - depends on the AI", 
           emoji: "🤔", 
-          description: "It depends on the AI tool's terms",
           isCorrect: false
         },
         { 
           id: "no-credit", 
           text: "No - you should credit AI or the original", 
           emoji: "🚫", 
-          description: "You should acknowledge AI was used or credit the source",
           isCorrect: true
         },
       ]
@@ -60,21 +57,18 @@ const CopyrightStory = () => {
           id: "acceptable", 
           text: "Yes - AI art is free to use", 
           emoji: "✅", 
-          description: "AI-generated content is free for everyone",
           isCorrect: false
         },
         { 
           id: "not-acceptable", 
           text: "No - this is copyright violation", 
           emoji: "🚫", 
-          description: "Claiming others' work as your own is wrong",
           isCorrect: true
         },
         { 
           id: "gray-area", 
           text: "Gray area - AI art is complicated", 
           emoji: "🤷", 
-          description: "AI art copyright is unclear",
           isCorrect: false
         }
       ]
@@ -87,7 +81,6 @@ const CopyrightStory = () => {
           id: "ethical", 
           text: "Yes - AI is a tool like a calculator", 
           emoji: "✅", 
-          description: "Using AI is like using any other tool",
           isCorrect: false
         },
         
@@ -95,14 +88,12 @@ const CopyrightStory = () => {
           id: "depends", 
           text: "Depends on the assignment", 
           emoji: "🤔", 
-          description: "It depends on what the teacher allows",
           isCorrect: false
         },
         { 
           id: "not-ethical", 
           text: "No - you should disclose AI use", 
           emoji: "🚫", 
-          description: "You should be honest about using AI assistance",
           isCorrect: true
         },
       ]
@@ -115,21 +106,18 @@ const CopyrightStory = () => {
           id: "right", 
           text: "Yes - AI content has no owner", 
           emoji: "✅", 
-          description: "AI-generated content belongs to no one",
           isCorrect: false
         },
         { 
           id: "wrong", 
           text: "No - this is plagiarism", 
           emoji: "🚫", 
-          description: "Claiming others' work as your own is plagiarism",
           isCorrect: true
         },
         { 
           id: "unclear", 
           text: "Unclear - AI copyright is new", 
           emoji: "🤷", 
-          description: "AI copyright laws are still developing",
           isCorrect: false
         }
       ]
@@ -142,14 +130,12 @@ const CopyrightStory = () => {
           id: "not-ethical-sell", 
           text: "No - you should credit AI and be transparent", 
           emoji: "🚫", 
-          description: "You should acknowledge AI was used in creation",
           isCorrect: true
         },
         { 
           id: "ethical-sell", 
           text: "Yes - I modified it", 
           emoji: "✅", 
-          description: "Since I modified it, it's my original work",
           isCorrect: false
         },
         
@@ -157,7 +143,6 @@ const CopyrightStory = () => {
           id: "maybe-ethical", 
           text: "Maybe - if you changed it enough", 
           emoji: "🤔", 
-          description: "If you changed it significantly, it might be okay",
           isCorrect: false
         }
       ]
@@ -248,8 +233,7 @@ const CopyrightStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

@@ -31,19 +31,16 @@ const LoanTrapStory = () => {
         { 
           id: "no-unsafe", 
           text: "No - it's unsafe, don't share personal info", 
-          description: "Don't share personal information with suspicious apps",
           isCorrect: true
         },
         { 
           id: "yes-provide", 
           text: "Yes - provide all information", 
-          description: "Share all requested information to get the loan",
           isCorrect: false
         },
         { 
           id: "check-reviews", 
           text: "Check reviews first", 
-          description: "Read app reviews before sharing information",
           isCorrect: false
         }
       ]
@@ -55,19 +52,16 @@ const LoanTrapStory = () => {
         { 
           id: "share-info", 
           text: "Share the information", 
-          description: "Provide the requested information",
           isCorrect: false
         },
         { 
           id: "ask-friends", 
           text: "Ask friends first", 
-          description: "Consult friends before sharing information",
           isCorrect: false
         },
         { 
           id: "scam-passwords", 
           text: "It's a scam - never share passwords", 
-          description: "Recognize this is a scam - never share passwords",
           isCorrect: true
         }
       ]
@@ -79,19 +73,16 @@ const LoanTrapStory = () => {
         { 
           id: "yes-normal", 
           text: "Yes - it's normal", 
-          description: "Share the documents as requested",
           isCorrect: false
         },
         { 
           id: "share-some", 
           text: "Share some info only", 
-          description: "Share partial information",
           isCorrect: false
         },
         { 
           id: "no-cautious", 
           text: "No - be cautious, verify the app first", 
-          description: "Verify the app's legitimacy before sharing sensitive documents",
           isCorrect: true
         }
       ]
@@ -103,19 +94,16 @@ const LoanTrapStory = () => {
         { 
           id: "scam-documents", 
           text: "It's a scam - legitimate loans need documents", 
-          description: "Recognize that legitimate loans require proper documentation",
           isCorrect: true
         },
         { 
           id: "share-bank", 
           text: "Share bank details", 
-          description: "Provide your bank account information",
           isCorrect: false
         },
         { 
           id: "check-rating", 
           text: "Check the app rating first", 
-          description: "Review the app's rating before proceeding",
           isCorrect: false
         }
       ]
@@ -127,19 +115,16 @@ const LoanTrapStory = () => {
         { 
           id: "yes-grant", 
           text: "Yes - grant access", 
-          description: "Allow the app to access contacts and messages",
           isCorrect: false
         },
         { 
           id: "grant-limited", 
           text: "Grant limited access", 
-          description: "Allow partial access only",
           isCorrect: false
         },
         { 
           id: "no-unsafe-access", 
           text: "No - it's unsafe, legitimate apps don't need this", 
-          description: "Recognize that legitimate loan apps don't need access to contacts/messages",
           isCorrect: true
         }
       ]
@@ -230,7 +215,6 @@ const LoanTrapStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>

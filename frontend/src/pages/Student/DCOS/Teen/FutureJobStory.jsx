@@ -31,19 +31,16 @@ const FutureJobStory = () => {
         { 
           id: "job-lost", 
           text: "Job lost - negative posts affect opportunities", 
-          description: "Negative online posts can cost job opportunities",
           isCorrect: true
         },
         { 
           id: "no-impact", 
           text: "No impact - it's just social media", 
-          description: "Social media posts don't affect job opportunities",
           isCorrect: false
         },
         { 
           id: "minor-impact", 
           text: "Minor impact - they might not notice", 
-          description: "There might be a small impact but probably not",
           isCorrect: false
         }
       ]
@@ -55,19 +52,16 @@ const FutureJobStory = () => {
         { 
           id: "nothing-old", 
           text: "Nothing - old posts don't matter", 
-          description: "Old posts are not relevant anymore",
           isCorrect: false
         },
         { 
           id: "might-overlook", 
           text: "They might overlook it", 
-          description: "Employers might ignore old posts",
           isCorrect: false
         },
         { 
           id: "job-opportunity-lost", 
           text: "Job opportunity lost - digital footprint matters", 
-          description: "Your digital footprint can affect job opportunities",
           isCorrect: true
         }
       ]
@@ -79,19 +73,16 @@ const FutureJobStory = () => {
         { 
           id: "no-problem", 
           text: "No problem - everyone posts negative things", 
-          description: "Negative posts are normal and acceptable",
           isCorrect: false
         },
         { 
           id: "application-rejected", 
           text: "Job application rejected - employers check online presence", 
-          description: "Employers check social media and it affects hiring",
           isCorrect: true
         },
         { 
           id: "might-not-care", 
           text: "They might not care", 
-          description: "Employers might not pay attention to social media",
           isCorrect: false
         }
       ]
@@ -103,19 +94,16 @@ const FutureJobStory = () => {
         { 
           id: "minor-issue", 
           text: "Minor issue - easily explained", 
-          description: "You can explain it away easily",
           isCorrect: false
         },
         { 
           id: "no-big-deal", 
           text: "No big deal - it's just online", 
-          description: "Online behavior doesn't matter for jobs",
           isCorrect: false
         },
         { 
           id: "serious-impact", 
           text: "Serious impact - can cost job opportunities", 
-          description: "Unprofessional posts can seriously harm your career",
           isCorrect: true
         }
       ]
@@ -125,23 +113,21 @@ const FutureJobStory = () => {
       text: "An employer checks your digital footprint and finds concerning posts. What happens?",
       options: [
         { 
+          id: "offer-withdrawn", 
+          text: "Job offer withdrawn - online reputation matters", 
+          isCorrect: true
+        },
+        { 
           id: "ignore-focus-skills", 
           text: "They ignore it - focus on skills only", 
-          description: "Employers only care about your skills",
           isCorrect: false
         },
         { 
           id: "might-ask", 
           text: "They might ask about it", 
-          description: "They might just ask you to explain",
           isCorrect: false
         },
-        { 
-          id: "offer-withdrawn", 
-          text: "Job offer withdrawn - online reputation matters", 
-          description: "Your online reputation affects job offers",
-          isCorrect: true
-        }
+        
       ]
     }
   ];
@@ -229,8 +215,7 @@ const FutureJobStory = () => {
                     onClick={() => handleChoice(option.id)}
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

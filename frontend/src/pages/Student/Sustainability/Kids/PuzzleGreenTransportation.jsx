@@ -1,12 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getSustainabilityKidsGames } from "../../../../pages/Games/GameCategories/Sustainability/kidGamesData";
 
 const PuzzleGreenTransportation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getSustainabilityKidsGames({});
+      const currentGame = games.find(g => g.id === "sustainability-kids-24");
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state]);
   
   // Get game data from game category folder (source of truth)
   const gameId = "sustainability-kids-24";
@@ -113,15 +139,10 @@ const PuzzleGreenTransportation = () => {
     return match ? match.isCorrect : null;
   };
 
-  const handleNext = () => {
-    navigate("/student/sustainability/kids/recycling-story");
-  };
-
   return (
     <GameShell
       title="Green Transportation Puzzle"
       subtitle={gameFinished ? "Puzzle Complete!" : `Match Transport with Environmental Impact (${matches.length}/${transports.length} matched)`}
-      onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={score}
@@ -137,6 +158,8 @@ const PuzzleGreenTransportation = () => {
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
       <div className="space-y-8 max-w-4xl mx-auto">
         {!gameFinished ? (

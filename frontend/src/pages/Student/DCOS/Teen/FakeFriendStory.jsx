@@ -32,21 +32,18 @@ const FakeFriendStory = () => {
           id: "verify", 
           text: "Don't trust - verify with Sarah first", 
           emoji: "🛡️", 
-          description: "Contact Sarah directly to verify before accepting",
           isCorrect: true
         },
         { 
           id: "trust", 
           text: "Trust them since they know my friend's name", 
           emoji: "🤝", 
-          description: "Accept their friend request because they mentioned your friend",
           isCorrect: false
         },
         { 
           id: "cautious", 
           text: "Add them but don't share anything personal", 
           emoji: "🤔", 
-          description: "Accept but be careful about sharing information",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const FakeFriendStory = () => {
           id: "accept", 
           text: "Accept - we have mutual friends", 
           emoji: "✅", 
-          description: "Accept the request because of mutual friends",
           isCorrect: false
         },
         { 
           id: "verify-mutual", 
           text: "Verify with mutual friends first", 
           emoji: "🛡️", 
-          description: "Check with your mutual friends before accepting",
           isCorrect: true
         },
         { 
           id: "cautious-accept", 
           text: "Accept but be cautious", 
           emoji: "⚠️", 
-          description: "Accept but watch out for suspicious behavior",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const FakeFriendStory = () => {
           id: "help", 
           text: "Add them immediately to help", 
           emoji: "🚨", 
-          description: "Quickly accept to help your friend",
           isCorrect: false
         },
         { 
           id: "ask-questions", 
           text: "Add them but ask questions", 
           emoji: "❓", 
-          description: "Accept but ask for more details",
           isCorrect: false
         },
         { 
           id: "contact-direct", 
           text: "Contact Mike directly to verify", 
           emoji: "🛡️", 
-          description: "Reach out to Mike first to check if he's really in trouble",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const FakeFriendStory = () => {
           id: "verify-school", 
           text: "Verify they actually go to your school", 
           emoji: "🛡️", 
-          description: "Confirm they really attend your school before accepting",
           isCorrect: true
         },
         { 
           id: "accept-school", 
           text: "Accept - they go to my school", 
           emoji: "✅", 
-          description: "Accept because they claim to go to your school",
           isCorrect: false
         },
         { 
           id: "no-details", 
           text: "Accept but don't share details", 
           emoji: "🤐", 
-          description: "Accept but keep personal information private",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const FakeFriendStory = () => {
           id: "add-help", 
           text: "Add them - they want to help", 
           emoji: "📚", 
-          description: "Accept because they're offering help",
           isCorrect: false
         },
         { 
           id: "verify-identity", 
           text: "Don't add - verify their identity first", 
           emoji: "🛡️", 
-          description: "Check who they are before accepting the request",
           isCorrect: true
         },
         { 
           id: "careful", 
           text: "Add but be careful", 
           emoji: "⚠️", 
-          description: "Accept but stay alert for scams",
           isCorrect: false
         }
       ]
@@ -246,7 +231,6 @@ const FakeFriendStory = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>

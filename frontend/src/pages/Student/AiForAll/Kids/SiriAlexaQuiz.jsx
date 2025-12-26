@@ -42,8 +42,8 @@ const SiriAlexaQuiz = () => {
       text: "Does Alexa learn from your voice patterns?",
       emoji: "🗣️",
       choices: [
-        { id: 1, text: "No, it never learns", emoji: "🚫", isCorrect: false },
         { id: 2, text: "Yes, to improve answers", emoji: "💡", isCorrect: true },
+        { id: 1, text: "No, it never learns", emoji: "🚫", isCorrect: false },
         { id: 3, text: "Sometimes", emoji: "⏳", isCorrect: false }
       ]
     },
@@ -52,8 +52,8 @@ const SiriAlexaQuiz = () => {
       emoji: "🤔",
       choices: [
         { id: 1, text: "Google Assistant", emoji: "🎙️", isCorrect: false },
+        { id: 3, text: "Siri", emoji: "📱", isCorrect: false },
         { id: 2, text: "Refrigerator", emoji: "🧊", isCorrect: true },
-        { id: 3, text: "Siri", emoji: "📱", isCorrect: false }
       ]
     },
     {

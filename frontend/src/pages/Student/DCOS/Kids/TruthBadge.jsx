@@ -92,11 +92,7 @@ const TruthBadge = () => {
           emoji: "📤", 
           isCorrect: false
         },
-        { 
-          text: "Ask an adult to confirm information", 
-          emoji: "👨‍👩‍👧", 
-          isCorrect: true
-        },
+        
         { 
           text: "Make up your own facts", 
           emoji: "🤔", 
@@ -106,7 +102,12 @@ const TruthBadge = () => {
           text: "Ignore it completely", 
           emoji: "🙈", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Ask an adult to confirm information", 
+          emoji: "👨‍👩‍👧", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -146,15 +147,16 @@ const TruthBadge = () => {
           emoji: "📰", 
           isCorrect: false
         },
-        { 
-          text: "Help someone identify fake news", 
-          emoji: "🤝", 
-          isCorrect: true
-        },
+        
         { 
           text: "Ignore fake news", 
           emoji: "🙈", 
           isCorrect: false
+        },
+        { 
+          text: "Help someone identify fake news", 
+          emoji: "🤝", 
+          isCorrect: true
         },
         { 
           text: "Believe everything", 

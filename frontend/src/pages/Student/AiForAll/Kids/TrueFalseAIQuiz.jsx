@@ -31,22 +31,19 @@ const TrueFalseAIQuiz = () => {
         { 
           id: "true", 
           text: "True", 
-          emoji: "✓", 
-          description: "AI stands for Artificial Intelligence",
+          emoji: "🤖", 
           isCorrect: true
         },
         { 
           id: "false", 
           text: "False", 
-          emoji: "✗", 
-          description: "This statement is actually true",
+          emoji: "❌", 
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI definitely means Artificial Intelligence",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const TrueFalseAIQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Robots and AI are different things",
           isCorrect: false
         },
         { 
           id: "false", 
           text: "False", 
-          emoji: "✗", 
-          description: "Robots are machines, AI is intelligence - they're different",
+          emoji: "❌", 
           isCorrect: true
         },
         { 
           id: "true", 
           text: "True", 
-          emoji: "✓", 
-          description: "Robots and AI are not the same thing",
+          emoji: "📔", 
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const TrueFalseAIQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI definitely helps doctors detect diseases early",
           isCorrect: false
         },
         { 
           id: "false", 
           text: "False", 
-          emoji: "✗", 
-          description: "AI is used to help doctors find diseases early",
+          emoji: "❌", 
           isCorrect: false
         },
         { 
           id: "true", 
           text: "True", 
-          emoji: "✓", 
-          description: "AI can analyze medical data to detect diseases early",
+          emoji: "😷", 
           isCorrect: true
         }
       ]
@@ -112,22 +103,19 @@ const TrueFalseAIQuiz = () => {
         { 
           id: "false", 
           text: "False", 
-          emoji: "✗", 
-          description: "AI can make mistakes, just like humans",
+          emoji: "👱", 
           isCorrect: true
         },
         { 
           id: "true", 
           text: "True", 
-          emoji: "✓", 
-          description: "AI systems can make errors",
+          emoji: "🤖", 
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI is not perfect and can make mistakes",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const TrueFalseAIQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI definitely learns from data and experience",
           isCorrect: false
         },
         { 
           id: "false", 
           text: "False", 
-          emoji: "✗", 
-          description: "Learning from data is a key feature of AI",
+          emoji: "🤖", 
           isCorrect: false
         },
         { 
           id: "true", 
           text: "True", 
-          emoji: "✓", 
-          description: "AI uses machine learning to learn from data",
+          emoji: "📚", 
           isCorrect: true
         }
       ]
@@ -246,8 +231,7 @@ const TrueFalseAIQuiz = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

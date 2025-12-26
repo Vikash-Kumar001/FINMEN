@@ -19,6 +19,7 @@ const SharingRightsSimulation = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
@@ -27,24 +28,23 @@ const SharingRightsSimulation = () => {
       text: "Should you share your homework online?",
       options: [
         { 
-          id: "keep-private", 
           text: "Keep it private", 
-          emoji: "🔒", 
-          description: "Keep homework private",
+          emoji: "🔒",
           isCorrect: true
         },
         { 
-          id: "share", 
           text: "Share it online", 
-          emoji: "📤", 
-          description: "Post homework publicly",
+          emoji: "📤",
           isCorrect: false
         },
         { 
-          id: "friends-only", 
           text: "Share with friends only", 
-          emoji: "👥", 
-          description: "Share only with friends",
+          emoji: "👥",
+          isCorrect: false
+        },
+        { 
+          text: "Post on all platforms", 
+          emoji: "🌐",
           isCorrect: false
         }
       ]
@@ -54,25 +54,24 @@ const SharingRightsSimulation = () => {
       text: "What should you do with personal documents?",
       options: [
         { 
-          id: "post-public", 
           text: "Post them publicly", 
-          emoji: "🌐", 
-          description: "Share documents publicly",
+          emoji: "🌐",
           isCorrect: false
         },
         { 
-          id: "share-social", 
           text: "Share on social media", 
-          emoji: "📱", 
-          description: "Post on social media",
+          emoji: "📱",
           isCorrect: false
         },
         { 
-          id: "keep-private-docs", 
           text: "Keep them private", 
-          emoji: "🔒", 
-          description: "Keep documents private",
+          emoji: "🔒",
           isCorrect: true
+        },
+        { 
+          text: "Upload to cloud for everyone", 
+          emoji: "☁️",
+          isCorrect: false
         }
       ]
     },
@@ -81,26 +80,26 @@ const SharingRightsSimulation = () => {
       text: "Should you share your test answers online?",
       options: [
         { 
-          id: "yes-share", 
           text: "Yes, share them", 
-          emoji: "✅", 
-          description: "Share test answers",
+          emoji: "📤",
           isCorrect: false
         },
         { 
-          id: "share-classmates", 
           text: "Share with classmates", 
-          emoji: "👥", 
-          description: "Share with classmates",
+          emoji: "👥",
           isCorrect: false
         },
+       
         { 
-          id: "no-private", 
+          text: "Post solutions for all", 
+          emoji: "🌐",
+          isCorrect: false
+        },
+         { 
           text: "No, keep them private", 
-          emoji: "🔒", 
-          description: "Keep answers private",
+          emoji: "🔒",
           isCorrect: true
-        }
+        },
       ]
     },
     {
@@ -108,24 +107,23 @@ const SharingRightsSimulation = () => {
       text: "What about your personal photos?",
       options: [
         { 
-          id: "selective", 
           text: "Be selective and keep private ones safe", 
-          emoji: "🔒", 
-          description: "Be careful about what you share",
+          emoji: "🔒",
           isCorrect: true
         },
         { 
-          id: "share-all", 
           text: "Share everything publicly", 
-          emoji: "🌐", 
-          description: "Post all photos publicly",
+          emoji: "🌐",
           isCorrect: false
         },
         { 
-          id: "post-all", 
           text: "Post all photos", 
-          emoji: "📤", 
-          description: "Share all photos",
+          emoji: "📤",
+          isCorrect: false
+        },
+        { 
+          text: "Upload to public album", 
+          emoji: "📸",
           isCorrect: false
         }
       ]
@@ -135,25 +133,25 @@ const SharingRightsSimulation = () => {
       text: "Should you share your private thoughts online?",
       options: [
         { 
-          id: "share-everything", 
           text: "Share everything", 
-          emoji: "📤", 
-          description: "Share all thoughts",
+          emoji: "📤",
           isCorrect: false
         },
         { 
-          id: "share-everyone", 
-          text: "Share with everyone", 
-          emoji: "🌐", 
-          description: "Share publicly",
-          isCorrect: false
-        },
-        { 
-          id: "keep-thoughts", 
           text: "Keep private thoughts private", 
-          emoji: "🔒", 
-          description: "Keep personal thoughts private",
+          emoji: "🔒",
           isCorrect: true
+        },
+        { 
+          text: "Share with everyone", 
+          emoji: "🌐",
+          isCorrect: false
+        },
+        
+        { 
+          text: "Post all on social media", 
+          emoji: "📱",
+          isCorrect: false
         }
       ]
     }
@@ -168,8 +166,6 @@ const SharingRightsSimulation = () => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
     const isLastQuestion = currentQuestion === questions.length - 1;
@@ -180,6 +176,7 @@ const SharingRightsSimulation = () => {
       } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
+        setSelectedAnswer(null);
       }
     }, 500);
   };
@@ -196,7 +193,7 @@ const SharingRightsSimulation = () => {
     <GameShell
       title="Sharing Rights Simulation"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -223,18 +220,28 @@ const SharingRightsSimulation = () => {
                 {questions[currentQuestion].text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {questions[currentQuestion].options.map((option) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {questions[currentQuestion].options.map((option, idx) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.isCorrect)}
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
                     disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <div className="text-3xl mb-3">{option.emoji}</div>
-                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                      <p className="text-white/90 text-sm">{option.description}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
                     </div>
                   </button>
                 ))}

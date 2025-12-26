@@ -32,21 +32,18 @@ const WrongPredictionQuiz = () => {
           id: "no", 
           text: "No", 
           emoji: "❌", 
-          description: "AI sometimes makes wrong predictions! Dog ≠ Cat",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes", 
           emoji: "✔️", 
-          description: "Dogs and cats are different - the robot is wrong",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Dogs and cats are definitely different animals",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const WrongPredictionQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Cars and bicycles are different - the robot is wrong",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No", 
           emoji: "❌", 
-          description: "Good catch! AI can confuse similar shapes like cars and bikes",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes", 
           emoji: "✔️", 
-          description: "Cars and bicycles are different - the robot is wrong",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const WrongPredictionQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Not all birds swim - the AI made an overgeneralization",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "That's wrong", 
           emoji: "🚫", 
-          description: "Correct! Not all birds swim; AI made an overgeneralization",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "That's right", 
           emoji: "✅", 
-          description: "Not all birds can swim - the AI is wrong",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const WrongPredictionQuiz = () => {
           id: "no", 
           text: "No", 
           emoji: "❌", 
-          description: "Perfect! AI must learn differences - not all fruits are apples",
           isCorrect: true
         },
         { 
           id: "yes", 
           text: "Yes", 
           emoji: "✔️", 
-          description: "AI must learn that there are many different fruits",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI must learn that fruits come in many types",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const WrongPredictionQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI can make simple logical errors too",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes", 
           emoji: "✔️", 
-          description: "2 + 2 = 4, not 5 - the AI is wrong",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No way!", 
           emoji: "❌", 
-          description: "Exactly! AI can make simple logical errors too",
           isCorrect: true
         }
       ]
@@ -246,8 +231,7 @@ const WrongPredictionQuiz = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

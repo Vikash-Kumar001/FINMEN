@@ -19,6 +19,7 @@ const GossipChainSimulation = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
@@ -27,24 +28,23 @@ const GossipChainSimulation = () => {
       text: "A rumor spreads: 'Alex failed the exam!' What should you do?",
       options: [
         { 
-          id: "stop", 
           text: "Stop and don't share", 
           emoji: "🛑", 
-          description: "Don't spread the rumor",
           isCorrect: true
         },
         { 
-          id: "forward", 
           text: "Forward to another group", 
           emoji: "📤", 
-          description: "Share the rumor with others",
           isCorrect: false
         },
         { 
-          id: "verify", 
           text: "Ask if it's true first", 
           emoji: "❓", 
-          description: "Verify before sharing",
+          isCorrect: false
+        },
+        { 
+          text: "Share with your friends", 
+          emoji: "💬", 
           isCorrect: false
         }
       ]
@@ -54,24 +54,23 @@ const GossipChainSimulation = () => {
       text: "Someone says 'Alex cheated on the exam.' What's your response?",
       options: [
         { 
-          id: "share", 
           text: "Share with more friends", 
           emoji: "📤", 
-          description: "Spread the rumor further",
           isCorrect: false
         },
         { 
-          id: "stop-rumor", 
           text: "Stop the rumor", 
           emoji: "🛑", 
-          description: "Don't spread it",
           isCorrect: true
         },
         { 
-          id: "add-details", 
           text: "Add your own details", 
           emoji: "➕", 
-          description: "Add more to the rumor",
+          isCorrect: false
+        },
+        { 
+          text: "Tell other classmates", 
+          emoji: "🗣️", 
           isCorrect: false
         }
       ]
@@ -81,25 +80,24 @@ const GossipChainSimulation = () => {
       text: "Everyone's saying 'Alex is a cheater.' What should you do?",
       options: [
         { 
-          id: "spread", 
           text: "Spread it further", 
           emoji: "📤", 
-          description: "Continue spreading the rumor",
           isCorrect: false
         },
         { 
-          id: "silent", 
           text: "Stay silent", 
           emoji: "😐", 
-          description: "Don't say anything",
           isCorrect: false
         },
         { 
-          id: "defend", 
           text: "Defend Alex and stop rumor", 
           emoji: "🛡️", 
-          description: "Stand up and stop the rumor",
           isCorrect: true
+        },
+        { 
+          text: "Join in the discussion", 
+          emoji: "🗣️", 
+          isCorrect: false
         }
       ]
     },
@@ -107,27 +105,27 @@ const GossipChainSimulation = () => {
       id: 4,
       text: "You hear 'Alex got caught cheating!' What's the right action?",
       options: [
+       
         { 
-          id: "verify-first", 
-          text: "Stop and verify first", 
-          emoji: "✅", 
-          description: "Check if it's true before sharing",
-          isCorrect: true
-        },
-        { 
-          id: "forward-msg", 
           text: "Forward the message", 
           emoji: "📤", 
-          description: "Share the message",
           isCorrect: false
         },
         { 
-          id: "add-more", 
           text: "Add more details", 
           emoji: "➕", 
-          description: "Add information to the rumor",
           isCorrect: false
-        }
+        },
+        { 
+          text: "Tell everyone you know", 
+          emoji: "📢", 
+          isCorrect: false
+        },
+         { 
+          text: "Stop and verify first", 
+          emoji: "🔍", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -135,24 +133,23 @@ const GossipChainSimulation = () => {
       text: "The rumor says 'Alex is a known cheater now.' What do you do?",
       options: [
         { 
-          id: "keep-spreading", 
           text: "Keep spreading", 
           emoji: "📤", 
-          description: "Continue sharing the rumor",
           isCorrect: false
         },
         { 
-          id: "defend-stop", 
           text: "Defend and stop the rumor", 
           emoji: "🛡️", 
-          description: "Stand up for Alex and stop it",
           isCorrect: true
         },
         { 
-          id: "watch", 
           text: "Just watch", 
           emoji: "👀", 
-          description: "Observe without acting",
+          isCorrect: false
+        },
+        { 
+          text: "Ask for more details", 
+          emoji: "🔍", 
           isCorrect: false
         }
       ]
@@ -168,8 +165,6 @@ const GossipChainSimulation = () => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
     const isLastQuestion = currentQuestion === questions.length - 1;
@@ -180,6 +175,7 @@ const GossipChainSimulation = () => {
       } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
+        setSelectedAnswer(null);
       }
     }, 500);
   };
@@ -196,7 +192,7 @@ const GossipChainSimulation = () => {
     <GameShell
       title="Gossip Chain Simulation"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -223,18 +219,28 @@ const GossipChainSimulation = () => {
                 {questions[currentQuestion].text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {questions[currentQuestion].options.map((option) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {questions[currentQuestion].options.map((option, idx) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.isCorrect)}
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
                     disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <div className="text-3xl mb-3">{option.emoji}</div>
-                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                      <p className="text-white/90 text-sm">{option.description}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
                     </div>
                   </button>
                 ))}

@@ -172,7 +172,7 @@ const RobotPracticeGame = () => {
 
     if (isCorrect) {
       setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+      showCorrectAnswerFeedback(1, true);
     }
 
     if (currentTask < tasks.length - 1) {

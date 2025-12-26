@@ -32,7 +32,7 @@ const SpotThePattern = () => {
     if (isCorrect) {
       setScore(prev => prev + 1);
       setCoins(prev => prev + 2); // Award 2 coins per correct answer like EmojiClassifier
-      showCorrectAnswerFeedback(1, false);
+      showCorrectAnswerFeedback(1, true);
     }
     
     // Move to next pattern immediately

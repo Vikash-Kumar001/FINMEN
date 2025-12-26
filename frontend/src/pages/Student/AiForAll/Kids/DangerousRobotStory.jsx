@@ -32,21 +32,18 @@ const DangerousRobotStory = () => {
           id: "switch", 
           text: "Switch it off", 
           emoji: "⏻", 
-          description: "Switching off dangerous robots protects everyone's safety",
           isCorrect: true
         },
         { 
           id: "encourage", 
           text: "Encourage it", 
           emoji: "💪", 
-          description: "We should stop dangerous robots, not encourage them",
           isCorrect: false
         },
         { 
           id: "watch", 
           text: "Watch and see what happens", 
           emoji: "👀", 
-          description: "We should immediately stop dangerous robots",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const DangerousRobotStory = () => {
           id: "continue", 
           text: "Let it continue", 
           emoji: "😐", 
-          description: "We should stop robots from doing dangerous things",
           isCorrect: false
         },
         { 
           id: "stop", 
           text: "Stop it immediately", 
           emoji: "✋", 
-          description: "Stopping robots from dangerous actions protects safety",
           isCorrect: true
         },
         { 
           id: "help", 
           text: "Help it open the machine", 
           emoji: "🤝", 
-          description: "We should stop dangerous actions, not help them",
           isCorrect: false
         }
       ]
@@ -86,23 +80,21 @@ const DangerousRobotStory = () => {
           id: "nothing", 
           text: "Do nothing", 
           emoji: "🙄", 
-          description: "We should inform adults about suspicious robot behavior",
+          isCorrect: false
+        },
+        
+        { 
+          id: "follow", 
+          text: "Follow the robot too", 
+          emoji: "🚶", 
           isCorrect: false
         },
         { 
           id: "inform", 
           text: "Inform an adult or authority", 
           emoji: "🧑‍💼", 
-          description: "Informing adults about suspicious robot behavior protects safety",
           isCorrect: true
         },
-        { 
-          id: "follow", 
-          text: "Follow the robot too", 
-          emoji: "🚶", 
-          description: "We should inform adults, not follow dangerous robots",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -113,21 +105,18 @@ const DangerousRobotStory = () => {
           id: "access", 
           text: "Let it access", 
           emoji: "😐", 
-          description: "We should protect confidential data from robots",
           isCorrect: false
         },
         { 
           id: "restrict", 
           text: "Restrict access and report", 
           emoji: "🔒", 
-          description: "Restricting access and reporting protects confidential data",
           isCorrect: true
         },
         { 
           id: "help", 
           text: "Help it access the data", 
           emoji: "🤝", 
-          description: "We should protect data, not help robots access it",
           isCorrect: false
         }
       ]
@@ -137,24 +126,22 @@ const DangerousRobotStory = () => {
       text: "The robot malfunctions and becomes aggressive. Your move?",
       options: [
         { 
-          id: "play", 
-          text: "Try to play with it", 
-          emoji: "🎮", 
-          description: "We should power down aggressive robots safely",
-          isCorrect: false
-        },
-        { 
           id: "power", 
           text: "Power it down safely", 
           emoji: "⏻", 
-          description: "Powering down aggressive robots safely protects everyone",
           isCorrect: true
         },
+        { 
+          id: "play", 
+          text: "Try to play with it", 
+          emoji: "🎮", 
+          isCorrect: false
+        },
+        
         { 
           id: "ignore", 
           text: "Ignore the malfunction", 
           emoji: "😐", 
-          description: "We should immediately power down aggressive robots",
           isCorrect: false
         }
       ]
@@ -246,8 +233,7 @@ const DangerousRobotStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

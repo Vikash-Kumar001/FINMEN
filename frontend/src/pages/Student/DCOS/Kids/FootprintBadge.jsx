@@ -92,11 +92,7 @@ const FootprintBadge = () => {
           emoji: "📱", 
           isCorrect: false
         },
-        { 
-          text: "Avoid posting personal details", 
-          emoji: "🛑", 
-          isCorrect: true
-        },
+        
         { 
           text: "Share everything about yourself", 
           emoji: "📢", 
@@ -106,7 +102,12 @@ const FootprintBadge = () => {
           text: "Post your address and phone", 
           emoji: "🏠", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Avoid posting personal details", 
+          emoji: "🛑", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -119,15 +120,16 @@ const FootprintBadge = () => {
           emoji: "👥", 
           isCorrect: false
         },
-        { 
-          text: "Ask permission before tagging others", 
-          emoji: "👥", 
-          isCorrect: true
-        },
+        
         { 
           text: "Tag strangers", 
           emoji: "👤", 
           isCorrect: false
+        },
+        { 
+          text: "Ask permission before tagging others", 
+          emoji: "👥", 
+          isCorrect: true
         },
         { 
           text: "Tag without thinking", 

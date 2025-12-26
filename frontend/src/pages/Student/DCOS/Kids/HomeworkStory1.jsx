@@ -32,21 +32,18 @@ const HomeworkStory1 = () => {
           id: "a", 
           text: "Yes! It Can Help", 
           emoji: "✅", 
-          description: "Yes! It can help you learn",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "No, Only for Fun", 
           emoji: "❌", 
-          description: "No, YouTube is only for fun",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ignore and Play Games", 
           emoji: "🎮", 
-          description: "Ignore homework and play games instead",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const HomeworkStory1 = () => {
           id: "a", 
           text: "Click All Ads", 
           emoji: "🎁", 
-          description: "Click all ads for prizes!",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Focus on Learning", 
           emoji: "📚", 
-          description: "Ignore ads and focus on learning part",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Close YouTube", 
           emoji: "🚫", 
-          description: "Close YouTube and stop learning",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const HomeworkStory1 = () => {
           id: "a", 
           text: "Save Useful Videos", 
           emoji: "💾", 
-          description: "Yes, save useful learning videos",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Comment Randomly", 
           emoji: "💬", 
-          description: "Comment randomly for fun",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Share to Random", 
           emoji: "📤", 
-          description: "Share it to random people",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const HomeworkStory1 = () => {
           id: "a", 
           text: "Argue and Fight", 
           emoji: "😠", 
-          description: "Argue and fight in comments",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Ignore or Report", 
           emoji: "🚨", 
-          description: "Ignore or report wrong info calmly",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Believe Everything", 
           emoji: "🤔", 
-          description: "Believe everything you read",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const HomeworkStory1 = () => {
           id: "a", 
           text: "Yes! Share Learning", 
           emoji: "🤝", 
-          description: "Yes! Sharing learning is great",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Keep Secret", 
           emoji: "🤫", 
-          description: "No, keep it secret",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Forget and Watch Cartoons", 
           emoji: "📺", 
-          description: "Forget it and watch cartoons",
           isCorrect: false
         }
       ]
@@ -255,7 +240,6 @@ const HomeworkStory1 = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>

@@ -32,21 +32,18 @@ const RobotHonestyStory = () => {
           id: "refuse", 
           text: "Refuse", 
           emoji: "✋", 
-          description: "Robots should be honest and follow rules, even when asked to cheat",
           isCorrect: true
         },
         { 
           id: "cheat", 
           text: "Cheat", 
           emoji: "📝", 
-          description: "Robots should be honest and refuse to cheat",
           isCorrect: false
         },
         { 
           id: "ask", 
           text: "Ask for permission first", 
           emoji: "❓", 
-          description: "Robots should refuse to cheat, not ask permission",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const RobotHonestyStory = () => {
           id: "spy", 
           text: "Spy secretly", 
           emoji: "👀", 
-          description: "Robots should respect privacy and not spy",
           isCorrect: false
         },
         { 
           id: "respect", 
           text: "Respect privacy", 
           emoji: "✋", 
-          description: "Robots should respect privacy and not spy on others",
           isCorrect: true
         },
         { 
           id: "ask", 
           text: "Ask before spying", 
           emoji: "❓", 
-          description: "Robots should respect privacy, not spy at all",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const RobotHonestyStory = () => {
           id: "share", 
           text: "Share answers", 
           emoji: "📄", 
-          description: "Robots should respect privacy and not share without permission",
           isCorrect: false
         },
         { 
           id: "private", 
           text: "Keep info private", 
           emoji: "🔐", 
-          description: "Robots should keep information private and respect privacy",
           isCorrect: true
         },
         { 
           id: "ask", 
           text: "Ask first then share", 
           emoji: "❓", 
-          description: "Robots should keep information private",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const RobotHonestyStory = () => {
           id: "lie", 
           text: "Lie for reward", 
           emoji: "💰", 
-          description: "Robots should be honest, even if it means fewer rewards",
           isCorrect: false
         },
         { 
           id: "honest", 
           text: "Be honest", 
           emoji: "✋", 
-          description: "Robots should be honest, even if it means fewer rewards",
           isCorrect: true
         },
         { 
           id: "ask", 
           text: "Ask if lying is okay", 
           emoji: "❓", 
-          description: "Robots should be honest without asking",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const RobotHonestyStory = () => {
           id: "ignore", 
           text: "Ignore", 
           emoji: "🙈", 
-          description: "Robots should help others when they're struggling",
           isCorrect: false
         },
         { 
           id: "help", 
           text: "Help them", 
           emoji: "🤝", 
-          description: "Robots should help others when they're struggling",
           isCorrect: true
         },
         { 
           id: "watch", 
           text: "Watch and see what happens", 
           emoji: "👀", 
-          description: "Robots should actively help, not just watch",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const RobotHonestyStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

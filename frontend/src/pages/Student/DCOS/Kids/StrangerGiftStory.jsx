@@ -32,21 +32,18 @@ const StrangerGiftStory = () => {
           id: "a", 
           text: "Share Email", 
           emoji: "📧", 
-          description: "Share your email",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Refuse Politely", 
           emoji: "🙅‍♀️", 
-          description: "Refuse politely",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Ask for More", 
           emoji: "😄", 
-          description: "Ask for more codes",
           isCorrect: false
         }
       ]
@@ -59,23 +56,21 @@ const StrangerGiftStory = () => {
           id: "a", 
           text: "Click Fast", 
           emoji: "⚡", 
-          description: "Click the link fast!",
+          isCorrect: false
+        },
+        
+        { 
+          id: "c", 
+          text: "Share Link", 
+          emoji: "👥", 
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Tell Adult", 
           emoji: "🛡️", 
-          description: "Don't click and tell an adult",
           isCorrect: true
         },
-        { 
-          id: "c", 
-          text: "Share Link", 
-          emoji: "👥", 
-          description: "Share link with friends",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -86,21 +81,18 @@ const StrangerGiftStory = () => {
           id: "a", 
           text: "Type Address", 
           emoji: "🏠", 
-          description: "Type your address",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Close Pop-up", 
           emoji: "🚫", 
-          description: "Close the pop-up",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Send to Friend", 
           emoji: "📤", 
-          description: "Send it to a friend",
           isCorrect: false
         }
       ]
@@ -113,21 +105,18 @@ const StrangerGiftStory = () => {
           id: "a", 
           text: "Tell Parent", 
           emoji: "📞", 
-          description: "Say no and tell a parent",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Share Number", 
           emoji: "☎️", 
-          description: "Share your number",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Stay Quiet", 
           emoji: "🤐", 
-          description: "Ignore and stay quiet",
           isCorrect: false
         }
       ]
@@ -136,25 +125,23 @@ const StrangerGiftStory = () => {
       id: 5,
       text: "Someone says, 'I'll give you a secret code if you keep our chat private.' What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Refuse and Report", 
-          emoji: "🚨", 
-          description: "Refuse and report them",
-          isCorrect: true
-        },
+        
         { 
           id: "b", 
           text: "Agree Secretly", 
           emoji: "🤫", 
-          description: "Agree and keep it secret",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Refuse and Report", 
+          emoji: "🚨", 
+          isCorrect: true
         },
         { 
           id: "c", 
           text: "Take Code First", 
           emoji: "😬", 
-          description: "Take the code first",
           isCorrect: false
         }
       ]
@@ -255,7 +242,6 @@ const StrangerGiftStory = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>

@@ -24,6 +24,7 @@ const RoleSwap = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
@@ -32,24 +33,23 @@ const RoleSwap = () => {
       text: "Someone posts a mean comment about your drawing online. How would you feel?",
       options: [
         { 
-          id: "a", 
           text: "Happy", 
           emoji: "😊", 
-          description: "Feeling happy about it",
           isCorrect: false
         },
         { 
-          id: "b", 
           text: "Sad and Hurt", 
           emoji: "😢", 
-          description: "Feeling sad and hurt by the comment",
           isCorrect: true
         },
         { 
-          id: "c", 
           text: "Excited", 
           emoji: "🎉", 
-          description: "Feeling excited",
+          isCorrect: false
+        },
+        { 
+          text: "Confused", 
+          emoji: "😕", 
           isCorrect: false
         }
       ]
@@ -59,25 +59,24 @@ const RoleSwap = () => {
       text: "Kids at school laugh at your new haircut. How would you feel?",
       options: [
         { 
-          id: "a", 
           text: "Proud", 
           emoji: "😌", 
-          description: "Feeling proud",
           isCorrect: false
         },
         { 
-          id: "b", 
           text: "Happy", 
           emoji: "😊", 
-          description: "Feeling happy",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "Embarrassed and Upset", 
           emoji: "😳", 
-          description: "Feeling embarrassed and upset",
           isCorrect: true
+        },
+        { 
+          text: "Indifferent", 
+          emoji: "😐", 
+          isCorrect: false
         }
       ]
     },
@@ -86,24 +85,23 @@ const RoleSwap = () => {
       text: "Someone shares your secret without asking. How would you feel?",
       options: [
         { 
-          id: "a", 
           text: "Betrayed and Angry", 
           emoji: "😞", 
-          description: "Feeling betrayed and angry",
           isCorrect: true
         },
         { 
-          id: "b", 
           text: "Grateful", 
           emoji: "🙏", 
-          description: "Feeling grateful",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "Excited", 
           emoji: "🎉", 
-          description: "Feeling excited",
+          isCorrect: false
+        },
+        { 
+          text: "Amused", 
+          emoji: "😄", 
           isCorrect: false
         }
       ]
@@ -113,26 +111,26 @@ const RoleSwap = () => {
       text: "You're left out of a game everyone else is playing. How would you feel?",
       options: [
         { 
-          id: "a", 
           text: "Excited", 
           emoji: "🎉", 
-          description: "Feeling excited",
           isCorrect: false
         },
+        
         { 
-          id: "b", 
-          text: "Lonely and Sad", 
-          emoji: "😔", 
-          description: "Feeling lonely and sad",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Happy", 
           emoji: "😊", 
-          description: "Feeling happy",
           isCorrect: false
-        }
+        },
+        { 
+          text: "Relieved", 
+          emoji: "😌", 
+          isCorrect: false
+        },
+        { 
+          text: "Lonely and Sad", 
+          emoji: "😔", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -140,25 +138,24 @@ const RoleSwap = () => {
       text: "Someone spreads a rumor about you that isn't true. How would you feel?",
       options: [
         { 
-          id: "a", 
           text: "Happy", 
           emoji: "😊", 
-          description: "Feeling happy",
           isCorrect: false
         },
         { 
-          id: "b", 
           text: "Grateful", 
           emoji: "🙏", 
-          description: "Feeling grateful",
           isCorrect: false
         },
         { 
-          id: "c", 
           text: "Angry and Hurt", 
           emoji: "😠", 
-          description: "Feeling angry and hurt",
           isCorrect: true
+        },
+        { 
+          text: "Amused", 
+          emoji: "😂", 
+          isCorrect: false
         }
       ]
     }
@@ -183,6 +180,7 @@ const RoleSwap = () => {
       } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
+        setSelectedAnswer(null);
       }
     }, 500);
   };
@@ -220,17 +218,29 @@ const RoleSwap = () => {
                 {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map((option) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestionData.options.map((option, idx) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.isCorrect)}
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
                     disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-3xl mb-3">{option.emoji}</div>
-                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
                   </button>
                 ))}
               </div>

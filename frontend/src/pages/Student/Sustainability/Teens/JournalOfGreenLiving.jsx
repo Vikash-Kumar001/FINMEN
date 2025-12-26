@@ -100,18 +100,13 @@ const JournalOfGreenLiving = () => {
   const isLongEnough = characterCount >= 10;
   const currentPrompt = stages[currentPromptIndex]?.question;
 
-  const handleNext = () => {
-    // Navigate to the next appropriate page
-    // This would depend on your routing structure
-    console.log('Navigating to next page');
-  };
+
 
   return (
     <GameShell
       title="Journal of Green Living"
       subtitle={!gameFinished ? `Entry ${currentPromptIndex + 1} of ${stages.length}` : "Journal Complete!"}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
+
       showGameOver={gameFinished}
       score={coins}
       gameId={gameId}

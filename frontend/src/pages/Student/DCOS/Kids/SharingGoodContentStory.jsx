@@ -32,21 +32,18 @@ const SharingGoodContentStory = () => {
           id: "a", 
           text: "That's Boring", 
           emoji: "🙄", 
-          description: "That's boring, memes are better",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "It's Great!", 
           emoji: "🤩", 
-          description: "It's great! Learning is cool!",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Ignore It", 
           emoji: "😐", 
-          description: "Ignore it and move on",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const SharingGoodContentStory = () => {
           id: "a", 
           text: "Join Laughter", 
           emoji: "😂", 
-          description: "Join the laughter",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Say Nothing", 
           emoji: "😶", 
-          description: "Say nothing and scroll away",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Say Nice Experiment", 
           emoji: "👏", 
-          description: "Say 'Nice experiment! I learned something!'",
           isCorrect: true
         }
       ]
@@ -86,21 +80,18 @@ const SharingGoodContentStory = () => {
           id: "a", 
           text: "Try Own Experiment", 
           emoji: "🧪", 
-          description: "Try your own science experiment",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Complain", 
           emoji: "😞", 
-          description: "Complain that yours won't be good",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Forget About It", 
           emoji: "😴", 
-          description: "Forget about it",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const SharingGoodContentStory = () => {
           id: "a", 
           text: "Worried They Copied", 
           emoji: "😕", 
-          description: "Worried they copied you",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Happy You Inspired", 
           emoji: "😄", 
-          description: "Happy you inspired learning!",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Delete Post", 
           emoji: "🗑️", 
-          description: "Delete your post",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const SharingGoodContentStory = () => {
           id: "a", 
           text: "Only Jokes Get Likes", 
           emoji: "🙃", 
-          description: "Only jokes get likes",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Never Post Again", 
           emoji: "🚫", 
-          description: "Never post again",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Good Content Helps", 
           emoji: "💖", 
-          description: "Good content makes internet better!",
           isCorrect: true
         }
       ]
@@ -255,7 +240,6 @@ const SharingGoodContentStory = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>

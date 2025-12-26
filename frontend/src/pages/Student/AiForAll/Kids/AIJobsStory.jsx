@@ -32,21 +32,18 @@ const AIJobsStory = () => {
           id: "ai", 
           text: "Only AI", 
           emoji: "🤖", 
-          description: "AI and humans working together make safer and smarter decisions",
           isCorrect: false
         },
         { 
           id: "both", 
           text: "AI + Human", 
           emoji: "🧠🤝🤖", 
-          description: "AI and humans working together make safer and smarter decisions",
           isCorrect: true
         },
         { 
           id: "none", 
           text: "No one controls", 
           emoji: "❌", 
-          description: "AI and humans should work together to control factories",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const AIJobsStory = () => {
           id: "none", 
           text: "No supervision", 
           emoji: "❌", 
-          description: "AI and humans should work together to ensure safety",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "Only AI", 
           emoji: "🤖", 
-          description: "AI and human doctors working together ensure patient safety",
           isCorrect: false
         },
         { 
           id: "both", 
           text: "AI + Human Doctors", 
           emoji: "👩‍⚕️🤝🤖", 
-          description: "AI and human doctors working together ensure patient safety",
           isCorrect: true
         }
       ]
@@ -86,21 +80,18 @@ const AIJobsStory = () => {
           id: "ai", 
           text: "Only AI", 
           emoji: "🤖", 
-          description: "AI and human monitoring together prevent accidents better",
           isCorrect: false
         },
         { 
           id: "both", 
           text: "AI + Human Monitoring", 
           emoji: "👨‍✈️🤝🤖", 
-          description: "AI and human monitoring together prevent accidents better",
           isCorrect: true
         },
         { 
           id: "none", 
           text: "No one", 
           emoji: "❌", 
-          description: "AI and humans should work together to manage cars",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const AIJobsStory = () => {
           id: "none", 
           text: "No supervision", 
           emoji: "❌", 
-          description: "AI and humans should work together to ensure learning",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "Only AI", 
           emoji: "🤖", 
-          description: "AI and teachers working together ensure correct learning",
           isCorrect: false
         },
         { 
           id: "both", 
           text: "AI + Teacher", 
           emoji: "👩‍🏫🤝🤖", 
-          description: "AI and teachers working together ensure correct learning",
           isCorrect: true
         }
       ]
@@ -140,21 +128,18 @@ const AIJobsStory = () => {
           id: "ai", 
           text: "Only AI", 
           emoji: "🤖", 
-          description: "AI and human experts working together verify decisions better",
           isCorrect: false
         },
         { 
           id: "both", 
           text: "AI + Human Expert", 
           emoji: "👨‍💼🤝🤖", 
-          description: "AI and human experts working together verify decisions better",
           isCorrect: true
         },
         { 
           id: "none", 
           text: "No one", 
           emoji: "❌", 
-          description: "AI and humans should work together to verify decisions",
           isCorrect: false
         }
       ]
@@ -253,8 +238,7 @@ const AIJobsStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

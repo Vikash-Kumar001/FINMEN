@@ -234,13 +234,7 @@ const ClimateActionStory = () => {
     resetFeedback();
   };
 
-  const handleNext = () => {
-    if (nextGamePath) {
-      navigate(nextGamePath);
-    } else {
-      navigate("/games/sustainability/teens");
-    }
-  };
+
 
   const getCurrentQuestion = () => questions[currentQuestion];
 
@@ -263,8 +257,6 @@ const ClimateActionStory = () => {
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
-      onNext={handleNext}
-      nextEnabled={showResult}
       backPath="/games/sustainability/teens"
     >
       <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">

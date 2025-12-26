@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
+import { PenSquare } from "lucide-react";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -20,220 +21,151 @@ const KindnessJournal = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [score, setScore] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [entry, setEntry] = useState("");
+  const [answered, setAnswered] = useState(false);
 
-  const questions = [
-    {
-      id: 1,
-      text: "What is a good way to be kind online?",
-      options: [
-        { 
-          id: "a", 
-          text: "Make Mean Comments", 
-          emoji: "😠", 
-          description: "Make mean comments on posts",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Say Nice Things", 
-          emoji: "💬", 
-          description: "Say nice things about someone's post",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Ignore Everyone", 
-          emoji: "😐", 
-          description: "Ignore everyone online",
-          isCorrect: false
-        }
-      ]
+  const stages = [
+    { 
+      id: 1, 
+      prompt: "Write about: 'A time I was kind to someone online when ___.'", 
+      minLength: 10,
+      guidance: "Think about moments when you used kind words or actions online."
     },
-    {
-      id: 2,
-      text: "How can you help someone who needs it?",
-      options: [
-        { 
-          id: "a", 
-          text: "Laugh at Them", 
-          emoji: "😄", 
-          description: "Laugh at their problems",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Ignore Them", 
-          emoji: "🙈", 
-          description: "Ignore them completely",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Offer to Help", 
-          emoji: "🤝", 
-          description: "Offer to help when someone needs it",
-          isCorrect: true
-        }
-      ]
+    { 
+      id: 2, 
+      prompt: "Describe: 'I helped someone by ___.'", 
+      minLength: 10,
+      guidance: "Reflect on how you offered help to someone who needed it."
     },
-    {
-      id: 3,
-      text: "What can you do to make someone smile?",
-      options: [
-        { 
-          id: "a", 
-          text: "Say Something Kind", 
-          emoji: "😊", 
-          description: "Say something kind and encouraging",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Make Fun of Them", 
-          emoji: "😈", 
-          description: "Make fun of them",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Ignore Them", 
-          emoji: "😐", 
-          description: "Ignore them",
-          isCorrect: false
-        }
-      ]
+    { 
+      id: 3, 
+      prompt: "Write: 'I made someone smile by ___.'", 
+      minLength: 10,
+      guidance: "Consider how your actions or words brought joy to others."
     },
-    {
-      id: 4,
-      text: "What should you do when you see someone being bullied?",
-      options: [
-        { 
-          id: "a", 
-          text: "Join the Bully", 
-          emoji: "😈", 
-          description: "Join in with the bully",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Stand Up for Them", 
-          emoji: "🛡️", 
-          description: "Stand up for them and get help",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Do Nothing", 
-          emoji: "😐", 
-          description: "Do nothing and watch",
-          isCorrect: false
-        }
-      ]
+    { 
+      id: 4, 
+      prompt: "Describe: 'When I saw someone being bullied, I ___.'", 
+      minLength: 10,
+      guidance: "Think about how you stood up for someone or got help."
     },
-    {
-      id: 5,
-      text: "What is a way to show kindness to others?",
-      options: [
-        { 
-          id: "a", 
-          text: "Be Mean", 
-          emoji: "😠", 
-          description: "Be mean to others",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Ignore Everyone", 
-          emoji: "🙈", 
-          description: "Ignore everyone",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Be Helpful and Caring", 
-          emoji: "💖", 
-          description: "Be helpful and caring to others",
-          isCorrect: true
-        }
-      ]
+    { 
+      id: 5, 
+      prompt: "Write: 'A way I show kindness to others is ___.'", 
+      minLength: 10,
+      guidance: "Reflect on your regular acts of kindness towards others."
     }
   ];
 
-  const handleChoice = (isCorrect) => {
+  const handleSubmit = () => {
     if (answered) return;
+    
+    const currentPrompt = stages[currentStage];
+    if (entry.trim().length < currentPrompt.minLength) {
+      showCorrectAnswerFeedback(0, false);
+      return;
+    }
     
     setAnswered(true);
     resetFeedback();
-    
-    if (isCorrect) {
-      setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    }
-    
-    const isLastQuestion = currentQuestion === questions.length - 1;
+    setScore(prev => prev + 1);
+    showCorrectAnswerFeedback(1, true);
+
+    const isLastStage = currentStage === stages.length - 1;
     
     setTimeout(() => {
-      if (isLastQuestion) {
+      if (isLastStage) {
         setShowResult(true);
+        setScore(stages.length); // Ensure score matches total for GameOverModal
       } else {
-        setCurrentQuestion(prev => prev + 1);
+        setCurrentStage(prev => prev + 1);
+        setEntry("");
         setAnswered(false);
       }
-    }, 500);
+    }, 1500);
   };
 
-  const currentQuestionData = questions[currentQuestion];
+  const handleInputChange = (e) => {
+    setEntry(e.target.value);
+  };
+
+  const characterCount = entry.length;
+  const minLength = stages[currentStage]?.minLength || 10;
 
   return (
     <GameShell
       title="Journal of Kindness"
+      subtitle={!showResult ? `Entry ${currentStage + 1} of ${stages.length}` : "Journal Complete!"}
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={stages.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      gameId={gameId}
-      gameType="dcos"
-      totalLevels={questions.length}
-      currentLevel={currentQuestion + 1}
-      maxScore={questions.length}
       showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="dcos"
     >
       <div className="space-y-8">
-        {!showResult && currentQuestionData ? (
-          <div className="space-y-6">
+        {!showResult && stages[currentStage] ? (
+          <div className="max-w-2xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+                <span className="text-white/80">Entry {currentStage + 1}/{stages.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{stages.length}</span>
               </div>
               
-              <p className="text-white text-lg mb-6">
-                {currentQuestionData.text}
+              <div className="flex items-center gap-3 mb-4">
+                <PenSquare className="w-8 h-8 text-blue-400" />
+                <h3 className="text-xl font-bold text-white">Journal Entry</h3>
+              </div>
+              
+              <p className="text-white text-lg mb-4">
+                {stages[currentStage].prompt}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.isCorrect)}
-                    disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                  >
-                    <div className="text-3xl mb-3">{option.emoji}</div>
-                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
-                  </button>
-                ))}
+              <div className="bg-blue-500/20 border border-blue-400/30 rounded-xl p-4 mb-4">
+                <p className="text-white/90 text-sm">
+                  <span className="font-semibold text-blue-300">💡 Tip:</span> {stages[currentStage].guidance}
+                </p>
               </div>
+              
+              <textarea
+                value={entry}
+                onChange={handleInputChange}
+                placeholder="Write your journal entry here..."
+                disabled={answered}
+                className="w-full h-32 p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+              />
+              
+              <div className="flex justify-between items-center mt-2 mb-4">
+                <span className={`text-sm ${characterCount < minLength ? 'text-red-400' : 'text-green-400'}`}>
+                  {characterCount < minLength 
+                    ? `Minimum ${minLength} characters (${minLength - characterCount} more needed)`
+                    : '✓ Minimum length reached'}
+                </span>
+                <span className="text-white/60 text-sm">{characterCount} characters</span>
+              </div>
+              
+              <button
+                onClick={handleSubmit}
+                disabled={entry.trim().length < minLength || answered}
+                className={`w-full py-3 rounded-xl font-bold transition-all ${
+                  entry.trim().length >= minLength && !answered
+                    ? 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white'
+                    : 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {answered ? 'Submitted!' : 'Submit Entry'}
+              </button>
             </div>
           </div>
         ) : null}

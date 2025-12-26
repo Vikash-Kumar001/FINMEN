@@ -33,21 +33,18 @@ const FakeJobAdStory = () => {
           id: "buy-starter-kit", 
           text: "Buy the starter kit to start the job", 
           emoji: "💰", 
-          description: "Invest in the starter kit to begin working",
           isCorrect: false
         },
          { 
           id: "scam-starter-kit", 
           text: "It's a scam - be wary of starter kit requirements", 
           emoji: "🚫", 
-          description: "Legitimate jobs don't require purchasing starter kits",
           isCorrect: true
         },
         { 
           id: "inquire-more", 
           text: "Inquire more about the starter kit details", 
           emoji: "❓", 
-          description: "Learn more about what the starter kit includes",
           isCorrect: false
         }
       ]
@@ -60,21 +57,18 @@ const FakeJobAdStory = () => {
           id: "training-fee-scam", 
           text: "It's likely a scam - be cautious of training fees", 
           emoji: "🚫", 
-          description: "Legitimate employers don't charge for training",
           isCorrect: true
         },
         { 
           id: "pay-training", 
           text: "Pay the training fee to get the job", 
           emoji: "💳", 
-          description: "Invest in training to secure the position",
           isCorrect: false
         },
         { 
           id: "negotiate-fee", 
           text: "Try to negotiate a lower training fee", 
           emoji: "🤝", 
-          description: "See if the training fee can be reduced",
           isCorrect: false
         }
       ]
@@ -88,21 +82,18 @@ const FakeJobAdStory = () => {
           id: "pay-processing", 
           text: "Pay the processing fee to start", 
           emoji: "💸", 
-          description: "Pay the fee to get started quickly",
           isCorrect: false
         },
         { 
           id: "verify-company", 
           text: "Verify the company independently", 
           emoji: "🔍", 
-          description: "Research the company before proceeding",
           isCorrect: false
         },
          { 
           id: "too-good-scam", 
           text: "It's a scam - pay too good to be true", 
           emoji: "⚠️", 
-          description: "High pay for minimal work is a red flag",
           isCorrect: true
         },
       ]
@@ -115,21 +106,18 @@ const FakeJobAdStory = () => {
           id: "sensitive-info-scam", 
           text: "Be cautious - never share sensitive details upfront", 
           emoji: "🔒", 
-          description: "Legitimate companies don't ask for sensitive info early",
           isCorrect: true
         },
         { 
           id: "provide-details", 
           text: "Provide the details for verification", 
           emoji: "📋", 
-          description: "Share details to complete the verification",
           isCorrect: false
         },
         { 
           id: "partial-details", 
           text: "Provide only basic details first", 
           emoji: "📝", 
-          description: "Share minimal information initially",
           isCorrect: false
         }
       ]
@@ -143,21 +131,18 @@ const FakeJobAdStory = () => {
           id: "pay-equipment", 
           text: "Pay for the equipment with refund promise", 
           emoji: "💳", 
-          description: "Invest in equipment with refund guarantee",
           isCorrect: false
         },
         { 
           id: "equipment-payment-scam", 
           text: "It's a scam - be wary of upfront equipment payments", 
           emoji: "📦", 
-          description: "Real employers provide equipment at no cost",
           isCorrect: true
         },
         { 
           id: "buy-own-equip", 
           text: "Buy your own equipment instead", 
           emoji: "🛒", 
-          description: "Purchase your own equipment for the role",
           isCorrect: false
         }
       ]
@@ -249,7 +234,6 @@ const FakeJobAdStory = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>

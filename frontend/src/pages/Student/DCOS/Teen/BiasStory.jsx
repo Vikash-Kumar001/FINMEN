@@ -32,21 +32,18 @@ const BiasStory = () => {
           id: "not-biased", 
           text: "No - it's just showing results", 
           emoji: "😐", 
-          description: "AI is just showing what exists, not biased",
           isCorrect: false
         },
         { 
           id: "yes-biased", 
           text: "Yes - this is biased", 
           emoji: "⚖️", 
-          description: "This shows gender bias in AI training data",
           isCorrect: true
         },
         { 
           id: "maybe", 
           text: "Maybe - depends on the data", 
           emoji: "🤔", 
-          description: "It might be biased depending on the source",
           isCorrect: false
         }
       ]
@@ -56,24 +53,22 @@ const BiasStory = () => {
       text: "An AI job recommendation system only suggests engineering jobs to men. Is this fair?",
       options: [
         { 
-          id: "fair", 
-          text: "Yes - it's based on data", 
-          emoji: "✅", 
-          description: "If data shows more men in engineering, it's fair",
-          isCorrect: false
-        },
-        { 
           id: "unfair-biased", 
           text: "No - this is biased and unfair", 
           emoji: "⚖️", 
-          description: "This perpetuates gender stereotypes and is unfair",
           isCorrect: true
         },
+        { 
+          id: "fair", 
+          text: "Yes - it's based on data", 
+          emoji: "✅", 
+          isCorrect: false
+        },
+        
         { 
           id: "neutral", 
           text: "It's neutral - just data", 
           emoji: "😐", 
-          description: "AI is just reflecting existing data",
           isCorrect: false
         }
       ]
@@ -86,21 +81,18 @@ const BiasStory = () => {
           id: "acceptable", 
           text: "Yes - it's common usage", 
           emoji: "✅", 
-          description: "This reflects common language patterns",
           isCorrect: false
         },
         { 
           id: "not-acceptable", 
           text: "No - this reinforces stereotypes", 
           emoji: "⚖️", 
-          description: "This reinforces harmful gender stereotypes",
           isCorrect: true
         },
         { 
           id: "doesnt-matter", 
           text: "Doesn't matter - just words", 
           emoji: "🤷", 
-          description: "It's just language, not a big deal",
           isCorrect: false
         }
       ]
@@ -113,23 +105,21 @@ const BiasStory = () => {
           id: "not-biased-data", 
           text: "No - it's using objective data", 
           emoji: "📊", 
-          description: "AI uses objective criteria, not biased",
+          isCorrect: false
+        },
+        
+        { 
+          id: "maybe-data", 
+          text: "Maybe - depends on the algorithm", 
+          emoji: "🤔", 
           isCorrect: false
         },
         { 
           id: "yes-biased-hiring", 
           text: "Yes - this is clear bias", 
           emoji: "⚖️", 
-          description: "This is discriminatory and shows bias in the system",
           isCorrect: true
         },
-        { 
-          id: "maybe-data", 
-          text: "Maybe - depends on the algorithm", 
-          emoji: "🤔", 
-          description: "It depends on how the algorithm works",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -137,24 +127,22 @@ const BiasStory = () => {
       text: "An AI image generator only creates images of scientists as older white men. Is this a problem?",
       options: [
         { 
-          id: "not-problem", 
-          text: "No - it's just reflecting reality", 
-          emoji: "😐", 
-          description: "If that's what exists, it's fine",
-          isCorrect: false
-        },
-        { 
           id: "yes-problem", 
           text: "Yes - this is biased and problematic", 
           emoji: "⚖️", 
-          description: "This excludes diversity and reinforces stereotypes",
           isCorrect: true
         },
+        { 
+          id: "not-problem", 
+          text: "No - it's just reflecting reality", 
+          emoji: "😐", 
+          isCorrect: false
+        },
+        
         { 
           id: "minor-issue", 
           text: "Minor issue - not important", 
           emoji: "🤷", 
-          description: "It's a small issue that doesn't matter much",
           isCorrect: false
         }
       ]
@@ -245,8 +233,7 @@ const BiasStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

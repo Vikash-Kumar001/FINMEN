@@ -32,21 +32,18 @@ const StrangerChatStory = () => {
           id: "a", 
           text: "Don't Reply", 
           emoji: "🚫", 
-          description: "Close the chat and don't respond",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Tell Your Name", 
           emoji: "👤", 
-          description: "Share your real name with them",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ask Who They Are", 
           emoji: "❓", 
-          description: "Ask them to introduce themselves first",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const StrangerChatStory = () => {
           id: "a", 
           text: "Tell School Name", 
           emoji: "🏫", 
-          description: "Share your school name",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Make Up Fake School", 
           emoji: "🎭", 
-          description: "Tell them a fake school name",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Block and Report", 
           emoji: "🛡️", 
-          description: "Don't reply and block them",
           isCorrect: true
         }
       ]
@@ -86,21 +80,18 @@ const StrangerChatStory = () => {
           id: "a", 
           text: "Say No and Tell Adult", 
           emoji: "👨‍👩‍👧", 
-          description: "Refuse and tell a parent or teacher",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Share Your Number", 
           emoji: "📱", 
-          description: "Give them your phone number",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Give Parent's Number", 
           emoji: "🔢", 
-          description: "Share your parent's number instead",
           isCorrect: false
         }
       ]
@@ -113,21 +104,18 @@ const StrangerChatStory = () => {
           id: "a", 
           text: "Agree to Meet", 
           emoji: "🤝", 
-          description: "Say yes and arrange to meet",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Ask Where to Meet", 
           emoji: "📍", 
-          description: "Ask them for the meeting location",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Tell Parent Immediately", 
           emoji: "🚨", 
-          description: "Don't respond and tell a parent right away",
           isCorrect: true
         }
       ]
@@ -140,21 +128,18 @@ const StrangerChatStory = () => {
           id: "a", 
           text: "Refuse and Tell Adult", 
           emoji: "🛡️", 
-          description: "Say no and tell a trusted adult",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Send a Photo", 
           emoji: "📸", 
-          description: "Send them your photo",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Send Old Photo", 
           emoji: "🖼️", 
-          description: "Send an old photo instead",
           isCorrect: false
         }
       ]
@@ -255,7 +240,6 @@ const StrangerChatStory = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
                   </button>
                 ))}
               </div>

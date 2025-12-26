@@ -209,15 +209,7 @@ const PosterSaveWater = () => {
     }
   };
 
-  const handleNext = () => {
-    if (currentStage < stages.length - 1) {
-      // Move to next question
-      setCurrentStage(currentStage + 1);
-      setSelectedPoster(null);
-      setShowResult(false);
-      resetFeedback();
-    }
-  };
+
 
   const handleTryAgain = () => {
     setSelectedPoster(null);
@@ -236,8 +228,7 @@ const PosterSaveWater = () => {
       currentLevel={currentStage + 1}
       totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      nextEnabled={showResult && selectedPoster && isCorrect && !isLastStage}
+
       showGameOver={showResult && isLastStage && isCorrect}
       score={coins}
       gameId={gameId}

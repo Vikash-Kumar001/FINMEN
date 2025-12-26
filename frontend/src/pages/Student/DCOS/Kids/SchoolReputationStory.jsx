@@ -32,21 +32,18 @@ const SchoolReputationStory = () => {
           id: "a", 
           text: "Post It", 
           emoji: "🚫", 
-          description: "Post it anyway",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Talk to Teacher", 
           emoji: "💬", 
-          description: "Talk to a teacher instead",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Tell Friends", 
           emoji: "📣", 
-          description: "Tell your friends to post it too",
           isCorrect: false
         }
       ]
@@ -59,23 +56,21 @@ const SchoolReputationStory = () => {
           id: "a", 
           text: "Share It", 
           emoji: "😅", 
-          description: "Share it—it's just a joke",
+          isCorrect: false
+        },
+        
+        { 
+          id: "c", 
+          text: "Tag Teacher", 
+          emoji: "🏷️", 
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Say No", 
           emoji: "🙅‍♀️", 
-          description: "Say no, that's disrespectful",
           isCorrect: true
         },
-        { 
-          id: "c", 
-          text: "Tag Teacher", 
-          emoji: "🏷️", 
-          description: "Tag the teacher for fun",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -86,21 +81,18 @@ const SchoolReputationStory = () => {
           id: "a", 
           text: "Yes, Post It", 
           emoji: "🤳", 
-          description: "Yes, so everyone sees how bad it is",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "No, Don't Post", 
           emoji: "🚫", 
-          description: "No, it could hurt the school's image",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Share in Group", 
           emoji: "💬", 
-          description: "Only share it in group chat",
           isCorrect: false
         }
       ]
@@ -113,21 +105,18 @@ const SchoolReputationStory = () => {
           id: "a", 
           text: "Say Positive", 
           emoji: "😊", 
-          description: "Say something positive and honest",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Complain", 
           emoji: "😒", 
-          description: "Complain about boring classes",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ignore", 
           emoji: "🤷‍♀️", 
-          description: "Ignore them",
           isCorrect: false
         }
       ]
@@ -140,23 +129,21 @@ const SchoolReputationStory = () => {
           id: "a", 
           text: "Laugh and Comment", 
           emoji: "😆", 
-          description: "Laugh and comment 😂",
+          isCorrect: false
+        },
+        
+        { 
+          id: "c", 
+          text: "Share It", 
+          emoji: "🔁", 
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Tell to Delete", 
           emoji: "🧹", 
-          description: "Tell them it's not right and delete it",
           isCorrect: true
         },
-        { 
-          id: "c", 
-          text: "Share It", 
-          emoji: "🔁", 
-          description: "Share it for fun",
-          isCorrect: false
-        }
       ]
     }
   ];
@@ -255,7 +242,6 @@ const SchoolReputationStory = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>

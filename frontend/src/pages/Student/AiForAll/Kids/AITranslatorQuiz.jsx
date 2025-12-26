@@ -32,21 +32,18 @@ const AITranslatorQuiz = () => {
           id: "yes", 
           text: "Yes, it uses AI 🤖", 
           emoji: "✅", 
-          description: "Google Translate uses AI to understand and translate languages automatically",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No, it doesn't ❌", 
           emoji: "❌", 
-          description: "Google Translate actually uses AI to translate languages",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Google Translate definitely uses AI technology",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const AITranslatorQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI learns from huge amounts of text data",
           isCorrect: false
         },
         { 
           id: "reading", 
           text: "Reading lots of text data 📖", 
           emoji: "🧠", 
-          description: "AI learns from huge amounts of text data to understand meaning and grammar",
           isCorrect: true
         },
         { 
           id: "guessing", 
           text: "Random guessing 🎯", 
           emoji: "🎲", 
-          description: "AI doesn't guess - it learns from text data",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const AITranslatorQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "AI translators improve as they get more data and feedback",
           isCorrect: false
         },
         { 
           id: "no", 
           text: "No, they stay the same ⚙️", 
           emoji: "🛑", 
-          description: "AI translators improve as they get more data",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes, they keep learning 🧩", 
           emoji: "🚀", 
-          description: "AI translators improve as they get more data and feedback from users",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const AITranslatorQuiz = () => {
           id: "report", 
           text: "Report or correct it 📝", 
           emoji: "✅", 
-          description: "User feedback helps AI systems improve accuracy and learn better translations",
           isCorrect: true
         },
         { 
           id: "ignore", 
           text: "Ignore it 😐", 
           emoji: "❌", 
-          description: "Reporting mistakes helps AI improve",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "Reporting mistakes helps AI learn and improve",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const AITranslatorQuiz = () => {
           id: "maybe", 
           text: "Maybe", 
           emoji: "🤔", 
-          description: "A paper dictionary is definitely not an AI translator",
           isCorrect: false
         },
         { 
           id: "google", 
           text: "Google Translate 🌐", 
           emoji: "🤖", 
-          description: "Google Translate is an AI translator",
           isCorrect: false
         },
         { 
           id: "dictionary", 
           text: "Paper Dictionary 📘", 
           emoji: "📖", 
-          description: "A paper dictionary isn't AI - it's static, not dynamic like AI translators",
           isCorrect: true
         }
       ]
@@ -246,8 +231,7 @@ const AITranslatorQuiz = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

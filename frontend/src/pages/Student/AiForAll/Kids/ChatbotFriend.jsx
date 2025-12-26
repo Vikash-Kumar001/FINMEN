@@ -67,7 +67,7 @@ const ChatbotFriend = () => {
       isCorrect = true;
       setScore(prev => prev + 1);
       setBotReply(currentChat.reply);
-      showCorrectAnswerFeedback(1, false);
+      showCorrectAnswerFeedback(1, true);
     } else {
       setBotReply("Hmm, I didn't understand that. Try typing again!");
     }

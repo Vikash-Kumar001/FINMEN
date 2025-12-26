@@ -92,11 +92,7 @@ const RespectHeroBadge = () => {
           emoji: "🗣️", 
           isCorrect: false
         },
-        { 
-          text: "Avoided interrupting others in class", 
-          emoji: "🙋‍♀️", 
-          isCorrect: true
-        },
+        
         { 
           text: "Talk over everyone", 
           emoji: "📢", 
@@ -106,7 +102,12 @@ const RespectHeroBadge = () => {
           text: "Never let others speak", 
           emoji: "🚫", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Avoided interrupting others in class", 
+          emoji: "🙋‍♀️", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -146,15 +147,16 @@ const RespectHeroBadge = () => {
           emoji: "🙈", 
           isCorrect: false
         },
-        { 
-          text: "Appreciated others' efforts", 
-          emoji: "🌟", 
-          isCorrect: true
-        },
+        
         { 
           text: "Make fun of them", 
           emoji: "😄", 
           isCorrect: false
+        },
+        { 
+          text: "Appreciated others' efforts", 
+          emoji: "🌟", 
+          isCorrect: true
         },
         { 
           text: "Put them down", 

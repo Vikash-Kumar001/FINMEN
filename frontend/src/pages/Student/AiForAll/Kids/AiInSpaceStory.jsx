@@ -32,21 +32,18 @@ const AiInSpaceStory = () => {
           id: "humans", 
           text: "Humans control the robot", 
           emoji: "🧑‍🚀", 
-          description: "Humans control robots in space to ensure safe exploration",
           isCorrect: true
         },
         { 
           id: "robot", 
           text: "The robot controls humans", 
           emoji: "🤖", 
-          description: "Humans control robots, not the other way around",
           isCorrect: false
         },
         { 
           id: "none", 
           text: "No one controls it, it acts alone", 
           emoji: "🌌", 
-          description: "Robots in space are controlled by humans",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const AiInSpaceStory = () => {
           id: "no", 
           text: "No, AI cannot assist", 
           emoji: "❌", 
-          description: "AI can assist humans in space communication",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes, AI assists humans", 
           emoji: "🧠🛰️", 
-          description: "AI satellites assist humans in space communication",
           isCorrect: true
         },
         { 
           id: "alone", 
           text: "AI controls communication alone", 
           emoji: "⚠️", 
-          description: "AI assists humans, but humans control communication",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const AiInSpaceStory = () => {
           id: "no", 
           text: "No, AI cannot help", 
           emoji: "❌", 
-          description: "AI can help detect asteroids and space debris",
           isCorrect: false
         },
         { 
           id: "debris", 
           text: "AI becomes the debris itself", 
           emoji: "⚠️", 
-          description: "AI helps detect debris, it doesn't become debris",
           isCorrect: false
         },
         { 
           id: "yes", 
           text: "Yes, as a helper", 
           emoji: "🧠🛸", 
-          description: "AI helps detect asteroids and space debris as a helper",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const AiInSpaceStory = () => {
           id: "ai", 
           text: "Yes, AI helps safely", 
           emoji: "🧠🔬", 
-          description: "AI robots assist astronauts in performing experiments safely",
           isCorrect: true
         },
         { 
           id: "no", 
           text: "No, AI cannot help", 
           emoji: "❌", 
-          description: "AI can help astronauts with experiments",
           isCorrect: false
         },
         { 
           id: "replace", 
           text: "AI replaces humans entirely", 
           emoji: "⚠️", 
-          description: "AI assists humans, it doesn't replace them",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const AiInSpaceStory = () => {
           id: "no", 
           text: "No, humans do it alone", 
           emoji: "❌", 
-          description: "AI will help humans explore planets",
           isCorrect: false
         },
         { 
           id: "ai", 
           text: "Yes, AI will assist", 
           emoji: "🧠🌍", 
-          description: "AI will assist humans in exploring other planets",
           isCorrect: true
         },
         { 
           id: "replace", 
           text: "AI replaces humans completely", 
           emoji: "⚠️", 
-          description: "AI assists humans, it doesn't replace them",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const AiInSpaceStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

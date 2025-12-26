@@ -32,21 +32,18 @@ const RobotEmotionStory = () => {
           id: "comfort", 
           text: "Comfort the robot kindly", 
           emoji: "💖", 
-          description: "Even though robots don't feel emotions, showing kindness builds empathy and good habits",
           isCorrect: true
         },
         { 
           id: "laugh", 
           text: "Laugh at the robot", 
           emoji: "😂", 
-          description: "Showing kindness to robots builds empathy, even if they don't feel emotions",
           isCorrect: false
         },
         { 
           id: "ignore", 
           text: "Ignore it - robots don't have feelings", 
           emoji: "😐", 
-          description: "Showing kindness builds empathy, even to robots",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const RobotEmotionStory = () => {
           id: "yell", 
           text: "Yell at the robot", 
           emoji: "😡", 
-          description: "Staying calm and solving problems teaches patience",
           isCorrect: false
         },
         { 
           id: "fix", 
           text: "Calmly fix the error", 
           emoji: "🛠️", 
-          description: "Staying calm and solving problems teaches patience and logical thinking",
           isCorrect: true
         },
         { 
           id: "throw", 
           text: "Throw it away", 
           emoji: "🗑️", 
-          description: "Staying calm and fixing errors is the best approach",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const RobotEmotionStory = () => {
           id: "complain", 
           text: "Complain it's not advanced enough", 
           emoji: "😒", 
-          description: "Gratitude is always the best response",
           isCorrect: false
         },
         { 
           id: "break", 
           text: "Break it for fun", 
           emoji: "💥", 
-          description: "Gratitude shows respect and kindness",
           isCorrect: false
         },
         { 
           id: "thank", 
           text: "Say thank you", 
           emoji: "🙏", 
-          description: "Gratitude is always the best response — it shows respect and kindness",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const RobotEmotionStory = () => {
           id: "applaud", 
           text: "Applaud the robot and the man", 
           emoji: "👏", 
-          description: "Recognizing good acts motivates both humans and AI to do better",
           isCorrect: true
         },
         { 
           id: "say", 
           text: "Say robots shouldn't help humans", 
           emoji: "🚫", 
-          description: "Recognizing good acts is important",
           isCorrect: false
         },
         { 
           id: "walk", 
           text: "Just walk away silently", 
           emoji: "🚶‍♀️", 
-          description: "Recognizing good acts motivates both humans and AI",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const RobotEmotionStory = () => {
           id: "recycle", 
           text: "Recycle it safely", 
           emoji: "🧩", 
-          description: "Recycling electronics protects the planet and shows responsibility",
           isCorrect: true
         },
         { 
           id: "trash", 
           text: "Throw it in the trash", 
           emoji: "🗑️", 
-          description: "Recycling electronics protects the planet",
           isCorrect: false
         },
         { 
           id: "leave", 
           text: "Leave it lying outside", 
           emoji: "🌧️", 
-          description: "Recycling electronics shows responsibility",
           isCorrect: false
         }
       ]
@@ -246,8 +231,7 @@ const RobotEmotionStory = () => {
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <h3 className="font-bold text-xl">{option.text}</h3>
                   </button>
                 ))}
               </div>

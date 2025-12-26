@@ -32,21 +32,18 @@ const ChatTrickStory = () => {
           id: "a", 
           text: "Refuse and Block", 
           emoji: "🚫", 
-          description: "Refuse and block the stranger",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Give Address", 
           emoji: "🏠", 
-          description: "Give them your address",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Ask Friend", 
           emoji: "🤔", 
-          description: "Ask your friend what to do",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const ChatTrickStory = () => {
           id: "a", 
           text: "Send Photo", 
           emoji: "📤", 
-          description: "Send the photo quickly",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Say No and Report", 
           emoji: "🚨", 
-          description: "Say no and report them",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Ignore", 
           emoji: "💤", 
-          description: "Ignore them but stay online",
           isCorrect: false
         }
       ]
@@ -86,21 +80,18 @@ const ChatTrickStory = () => {
           id: "a", 
           text: "Play Quietly", 
           emoji: "🤫", 
-          description: "Play quietly",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Ask What Game", 
           emoji: "❓", 
-          description: "Ask them what the game is",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Tell Adult", 
           emoji: "👨‍👩‍👧", 
-          description: "Leave and tell a trusted adult",
           isCorrect: true
         }
       ]
@@ -113,21 +104,18 @@ const ChatTrickStory = () => {
           id: "a", 
           text: "Share Number", 
           emoji: "📱", 
-          description: "Share your number",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Say No and Block", 
           emoji: "🚫", 
-          description: "Say no and block them",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Say Maybe Later", 
           emoji: "🤷‍♀️", 
-          description: "Say maybe later",
           isCorrect: false
         }
       ]
@@ -140,21 +128,18 @@ const ChatTrickStory = () => {
           id: "a", 
           text: "Click Quickly", 
           emoji: "🖱️", 
-          description: "Click quickly before it disappears",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Send to Friends", 
           emoji: "📤", 
-          description: "Send it to your friends",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Don't Click", 
           emoji: "⚠️", 
-          description: "Don't click — it could be fake",
           isCorrect: true
         }
       ]
@@ -255,7 +240,6 @@ const ChatTrickStory = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>

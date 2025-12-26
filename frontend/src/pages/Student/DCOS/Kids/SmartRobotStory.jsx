@@ -32,21 +32,18 @@ const SmartRobotStory = () => {
           id: "a", 
           text: "Copy Answer", 
           emoji: "📋", 
-          description: "Copy the robot's answer",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "Read and Understand", 
           emoji: "🧠", 
-          description: "Read and understand before writing",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Submit Without Check", 
           emoji: "🚫", 
-          description: "Submit without checking",
           isCorrect: false
         }
       ]
@@ -59,21 +56,18 @@ const SmartRobotStory = () => {
           id: "a", 
           text: "Ask to Explain", 
           emoji: "❓", 
-          description: "Ask the robot to explain",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Copy Answers", 
           emoji: "🙄", 
-          description: "Ignore and copy answers",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Complain", 
           emoji: "😡", 
-          description: "Complain that it's too hard",
           isCorrect: false
         }
       ]
@@ -82,27 +76,25 @@ const SmartRobotStory = () => {
       id: 3,
       text: "The robot suggests a cool science project idea. You like it but want to make it unique. What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Add Creativity", 
-          emoji: "🎨", 
-          description: "Add your own creativity",
-          isCorrect: true
-        },
+       
         { 
           id: "b", 
           text: "Copy Project", 
           emoji: "🧾", 
-          description: "Just copy the robot's project",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Do Nothing", 
           emoji: "😴", 
-          description: "Do nothing",
           isCorrect: false
-        }
+        },
+         { 
+          id: "a", 
+          text: "Add Creativity", 
+          emoji: "🎨", 
+          isCorrect: true
+        },
       ]
     },
     {
@@ -113,21 +105,18 @@ const SmartRobotStory = () => {
           id: "a", 
           text: "Edit in Own Words", 
           emoji: "🗣️", 
-          description: "Edit it in your own words",
           isCorrect: true
         },
         { 
           id: "b", 
           text: "Submit As Is", 
           emoji: "📄", 
-          description: "Submit as it is",
           isCorrect: false
         },
         { 
           id: "c", 
           text: "Complain", 
           emoji: "😕", 
-          description: "Complain about grammar",
           isCorrect: false
         }
       ]
@@ -136,25 +125,23 @@ const SmartRobotStory = () => {
       id: 5,
       text: "After finishing your work, the robot gives feedback that you improved a lot! What should you do?",
       options: [
-        { 
-          id: "a", 
-          text: "Say Thanks", 
-          emoji: "😊", 
-          description: "Say thanks and keep learning",
-          isCorrect: true
-        },
+       
         { 
           id: "b", 
           text: "Ignore Feedback", 
           emoji: "🙃", 
-          description: "Ignore the feedback",
           isCorrect: false
+        },
+         { 
+          id: "a", 
+          text: "Say Thanks", 
+          emoji: "😊", 
+          isCorrect: true
         },
         { 
           id: "c", 
           text: "Ask Robot to Do All", 
           emoji: "🤷‍♂️", 
-          description: "Ask robot to do all work",
           isCorrect: false
         }
       ]
@@ -255,7 +242,6 @@ const SmartRobotStory = () => {
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>

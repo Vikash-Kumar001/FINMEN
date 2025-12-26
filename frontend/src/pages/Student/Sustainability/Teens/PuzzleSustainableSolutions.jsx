@@ -1,12 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getSustainabilityTeenGames } from "../../../../pages/Games/GameCategories/Sustainability/teenGamesData";
 
 const PuzzleSustainableSolutions = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getSustainabilityTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
   
   // Get game data from game category folder (source of truth)
   const gameId = "sustainability-teens-4";
@@ -113,16 +139,12 @@ const PuzzleSustainableSolutions = () => {
     return match ? match.isCorrect : null;
   };
 
-  const handleNext = () => {
-    navigate("/student/sustainability/teens/climate-change-story");
-  };
-
   return (
     <GameShell
       title="Sustainable Solutions Puzzle"
       subtitle={gameFinished ? "Puzzle Complete!" : `Match Problems with Solutions (${matches.length}/${problems.length} matched)`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
       showGameOver={gameFinished}
       score={score}
       gameId={gameId}

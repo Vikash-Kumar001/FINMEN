@@ -296,8 +296,14 @@ const BadgeZeroWasteChampion = () => {
                 
                 <button
                   onClick={() => {
-                    if (nextGamePath) {
-                      window.location.href = nextGamePath;
+                    // Let GameShell handle navigation via GameOverModal
+                    if (window.history && window.history.replaceState) {
+                      const currentState = window.history.state || {};
+                      window.history.replaceState({
+                        ...currentState,
+                        nextGamePath: nextGamePath,
+                        nextGameId: nextGameId
+                      }, '');
                     }
                   }}
                   className="bg-gradient-to-br from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all mb-4"

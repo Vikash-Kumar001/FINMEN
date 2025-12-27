@@ -7,6 +7,7 @@ import {
   getSubscriptionHistory,
   getSubscriptionTransactions,
   updateAutoRenewSettings,
+  cancelPendingPayment,
   cancelSubscription,
   handleRazorpayWebhook,
 } from '../controllers/userSubscriptionController.js';
@@ -19,6 +20,7 @@ router.post('/webhook', express.json(), handleRazorpayWebhook);
 // Protected routes
 router.post('/create-payment', requireAuth, createSubscriptionPayment);
 router.post('/verify-payment', requireAuth, verifySubscriptionPayment);
+router.post('/cancel-payment', requireAuth, cancelPendingPayment);
 router.get('/current', requireAuth, getCurrentSubscription);
 router.get('/history', requireAuth, getSubscriptionHistory);
 router.get('/transactions', requireAuth, getSubscriptionTransactions);

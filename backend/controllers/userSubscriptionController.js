@@ -192,6 +192,7 @@ export const createSubscriptionPayment = async (req, res) => {
       planType,
       context: requestedContext,
       mode: requestedMode,
+      amount: customAmount, // Optional custom amount for special plans like parent_dashboard
     } = req.body;
 
     const user = req.user;
@@ -248,7 +249,8 @@ export const createSubscriptionPayment = async (req, res) => {
       }
     }
 
-    const amount = isFirstYear ? planConfig.firstYearAmount : planConfig.renewalAmount;
+    // Use custom amount if provided, otherwise calculate from plan config
+    const amount = customAmount !== undefined ? customAmount : (isFirstYear ? planConfig.firstYearAmount : planConfig.renewalAmount);
 
     if (amount === 0) {
       // Free plan - activate immediately
@@ -924,6 +926,116 @@ export const updateAutoRenewSettings = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to update auto-renew settings',
+      error: error.message,
+    });
+  }
+};
+
+// Cancel pending payment when user closes payment window
+export const cancelPendingPayment = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { subscriptionId } = req.body;
+
+    if (!subscriptionId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Subscription ID is required',
+      });
+    }
+
+    const subscription = await UserSubscription.findOne({
+      _id: subscriptionId,
+      userId,
+    });
+
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: 'Subscription not found',
+      });
+    }
+
+    // Update pending transactions to cancelled
+    let hasPendingTransactions = false;
+    let updatedTransactions = false;
+    
+    if (subscription.transactions && subscription.transactions.length > 0) {
+      subscription.transactions.forEach((tx, index) => {
+        if (tx.status === 'pending') {
+          hasPendingTransactions = true;
+          // Update transaction status
+          subscription.transactions[index].status = 'cancelled';
+          updatedTransactions = true;
+        }
+      });
+      
+      // Mark the transactions array as modified so Mongoose saves it
+      if (updatedTransactions) {
+        subscription.markModified('transactions');
+      }
+    }
+
+    // Update subscription status if it's pending or if we cancelled transactions
+    if (subscription.status === 'pending') {
+      subscription.status = 'cancelled';
+      subscription.cancelledAt = new Date();
+    } else if (hasPendingTransactions && !subscription.cancelledAt) {
+      // If subscription is not pending but has pending transactions, just mark cancelledAt
+      subscription.cancelledAt = new Date();
+    }
+
+    await subscription.save();
+
+    // Also cancel any other pending transactions in other subscriptions for this user
+    // This handles cases where there might be multiple pending subscriptions
+    const allSubscriptions = await UserSubscription.find({ userId });
+    let totalCancelled = 0;
+    
+    for (const sub of allSubscriptions) {
+      if (sub._id.toString() === subscriptionId.toString()) continue; // Already handled above
+      
+      let hasPending = false;
+      if (sub.transactions && sub.transactions.length > 0) {
+        sub.transactions.forEach((tx, index) => {
+          if (tx.status === 'pending') {
+            hasPending = true;
+            sub.transactions[index].status = 'cancelled';
+            totalCancelled++;
+          }
+        });
+        
+        if (hasPending) {
+          sub.markModified('transactions');
+          if (sub.status === 'pending') {
+            sub.status = 'cancelled';
+            sub.cancelledAt = new Date();
+          }
+          await sub.save();
+        }
+      }
+    }
+
+    // Emit real-time update
+    const io = req.app.get('io');
+    if (io) {
+      const subscriptionData = subscription.toObject ? subscription.toObject() : subscription;
+      io.to(userId.toString()).emit('subscription:cancelled', {
+        userId: userId.toString(),
+        subscription: subscriptionData,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Payment cancelled successfully',
+      subscription,
+    });
+  } catch (error) {
+    console.error('Cancel pending payment error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to cancel pending payment',
       error: error.message,
     });
   }

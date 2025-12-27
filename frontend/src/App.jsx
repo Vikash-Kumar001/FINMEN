@@ -367,7 +367,6 @@ const App = () => {
       if (pathname === "/parent/profile") return "Parent Profile";
       if (pathname === "/parent/notifications") return "Notifications";
       if (pathname === "/parent/parent-progress" || pathname === "/parent/progress") return "Progress";
-      if (pathname === "/parent/upgrade/checkout") return "Checkout";
       
       // Seller routes
       if (pathname === "/seller/dashboard") return "Seller Dashboard";
@@ -1021,14 +1020,6 @@ const App = () => {
             element={
               <ProtectedRoute roles={["student"]}>
                 <PaymentPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/parent/upgrade/checkout"
-            element={
-              <ProtectedRoute roles={["parent"]} requireApproved={true}>
-                <SubscriptionCheckout />
               </ProtectedRoute>
             }
           />

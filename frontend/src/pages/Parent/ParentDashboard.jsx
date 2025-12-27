@@ -1099,77 +1099,77 @@ export const AchievementsCard = ({ achievements }) => {
 export const HealCoinsCard = ({ healCoins }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+      className="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
     >
-      <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-        <Coins className="w-6 h-6 text-green-600" />
+      <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <Coins className="w-5 h-5 text-emerald-600" />
         HealCoins Activity
       </h3>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
-          <DollarSign className="w-6 h-6 text-green-600 mb-2" />
-          <p className="text-3xl font-black text-green-900">{healCoins?.currentBalance || 0}</p>
-          <p className="text-sm font-semibold text-gray-600">Current Balance</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
+          <DollarSign className="w-5 h-5 text-emerald-600 mb-2" />
+          <p className="text-2xl font-bold text-emerald-700">{healCoins?.currentBalance || 0}</p>
+          <p className="text-xs font-medium text-slate-600">Current Balance</p>
         </div>
-        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100">
-          <ArrowUp className="w-6 h-6 text-blue-600 mb-2" />
-          <p className="text-3xl font-black text-blue-900">{healCoins?.weeklyEarned || 0}</p>
-          <p className="text-sm font-semibold text-gray-600">Weekly Earned</p>
+        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <ArrowUp className="w-5 h-5 text-blue-600 mb-2" />
+          <p className="text-2xl font-bold text-blue-700">{healCoins?.weeklyEarned || 0}</p>
+          <p className="text-xs font-medium text-slate-600">Weekly Earned</p>
         </div>
-        <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-4 border border-red-100">
-          <ArrowDown className="w-6 h-6 text-red-600 mb-2" />
-          <p className="text-3xl font-black text-red-900">{healCoins?.weeklySpent || 0}</p>
-          <p className="text-sm font-semibold text-gray-600">Weekly Spent</p>
+        <div className="bg-rose-50 rounded-lg p-4 border border-rose-200">
+          <ArrowDown className="w-5 h-5 text-rose-600 mb-2" />
+          <p className="text-2xl font-bold text-rose-700">{healCoins?.weeklySpent || 0}</p>
+          <p className="text-xs font-medium text-slate-600">Weekly Spent</p>
         </div>
       </div>
 
       {/* Recent Transactions */}
       <div>
-        <h4 className="text-lg font-bold text-gray-800 mb-3">Recent Transactions</h4>
-        <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
+        <h4 className="text-sm font-bold text-slate-800 mb-3">Recent Transactions</h4>
+        <div className="space-y-2 max-h-64 overflow-y-auto">
           {healCoins?.recentTransactions && healCoins.recentTransactions.length > 0 ? (
             healCoins.recentTransactions.map((transaction, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                className={`flex items-center justify-between p-3 rounded-xl ${
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.02 }}
+                className={`flex items-center justify-between p-2.5 rounded-lg border ${
                   transaction.type === 'credit'
-                    ? 'bg-green-50 border border-green-100'
-                    : 'bg-red-50 border border-red-100'
+                    ? 'bg-emerald-50 border-emerald-200'
+                    : 'bg-rose-50 border-rose-200'
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                   {transaction.type === 'credit' ? (
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                      <ArrowUp className="w-4 h-4 text-white" />
-            </div>
-          ) : (
-                    <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                      <ArrowDown className="w-4 h-4 text-white" />
+                    <div className="w-7 h-7 bg-emerald-100 rounded-full flex items-center justify-center">
+                      <ArrowUp className="w-3.5 h-3.5 text-emerald-600" />
+                    </div>
+                  ) : (
+                    <div className="w-7 h-7 bg-rose-100 rounded-full flex items-center justify-center">
+                      <ArrowDown className="w-3.5 h-3.5 text-rose-600" />
                     </div>
                   )}
                   <div>
-                    <p className="font-semibold text-gray-900">{transaction.description}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="font-semibold text-sm text-slate-900">{transaction.description}</p>
+                    <p className="text-xs text-slate-600">
                       {new Date(transaction.date).toLocaleString()}
                     </p>
                   </div>
                 </div>
-                <span className={`font-black text-lg ${
-                  transaction.type === 'credit' ? 'text-green-700' : 'text-red-700'
+                <span className={`font-bold text-sm ${
+                  transaction.type === 'credit' ? 'text-emerald-700' : 'text-rose-700'
                 }`}>
                   {transaction.type === 'credit' ? '+' : '-'}{Math.abs(transaction.amount)}
                 </span>
               </motion.div>
             ))
           ) : (
-            <p className="text-center text-gray-500 py-8">No transactions this week</p>
+            <p className="text-center text-slate-500 py-6 text-sm">No transactions this week</p>
           )}
         </div>
       </div>
@@ -1933,63 +1933,63 @@ export const WalletRewardsCard = ({ walletRewards }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+      className="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
     >
-      <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-        <Award className="w-6 h-6 text-purple-600" />
-              Wallet & Rewards
-            </h3>
+      <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <Award className="w-5 h-5 text-indigo-600" />
+        Wallet & Rewards
+      </h3>
 
       {/* Current HealCoins */}
-      <div className="mb-6">
-        <p className="flex justify-center text-4xl font-black text-purple-600 mb-1">{currentHealCoins}</p>
-        <p className="flex justify-center text-lg font-semibold text-gray-600">Current HealCoins</p>
-            </div>
+      <div className="mb-4">
+        <p className="flex justify-center text-3xl font-bold text-indigo-600 mb-1">{currentHealCoins}</p>
+        <p className="flex justify-center text-sm font-medium text-slate-600">Current HealCoins</p>
+      </div>
             
       {/* Recent Redemptions */}
-            <div className="mb-6">
-        <h4 className="text-lg font-bold text-gray-800 mb-3">Recent Redemptions</h4>
-              <div className="space-y-3">
+      <div className="mb-4">
+        <h4 className="text-sm font-bold text-slate-800 mb-3">Recent Redemptions</h4>
+        <div className="space-y-2">
           {recentRedemptions && recentRedemptions.length > 0 ? (
             recentRedemptions.map((redemption, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.03 }}
+                className="flex items-center justify-between p-3 bg-indigo-50 rounded-lg border border-indigo-200"
               >
                 <div className="flex-1">
-                  <p className="font-bold text-gray-900">{redemption.item}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="font-semibold text-sm text-slate-900">{redemption.item}</p>
+                  <p className="text-xs text-slate-600">
                     {new Date(redemption.date).toLocaleDateString()}
                   </p>
-                    </div>
-                    <div className="text-right">
-                  <p className="text-sm font-bold text-purple-600">-{redemption.coins} coins</p>
-                  <p className="text-sm font-bold text-green-600">₹{redemption.value} value</p>
-                    </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-indigo-600">-{redemption.coins} coins</p>
+                  <p className="text-xs font-medium text-emerald-600">₹{redemption.value} value</p>
+                </div>
               </motion.div>
             ))
           ) : (
-            <div className="text-center py-8">
-              <Award className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-              <p className="text-gray-500">No recent redemptions</p>
-                  </div>
-          )}
-              </div>
+            <div className="text-center py-6">
+              <Award className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+              <p className="text-sm text-slate-500">No recent redemptions</p>
             </div>
+          )}
+        </div>
+      </div>
 
       {/* Total Value Saved */}
       <motion.div
-        whileHover={{ scale: 1.02 }}
-        className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100"
+        whileHover={{ scale: 1.01 }}
+        className="bg-emerald-50 rounded-lg p-4 border border-emerald-200"
       >
-        <p className="flex justify-center text-3xl font-black text-green-600 mb-1">₹{totalValueSaved}</p>
-        <p className="flex justify-center text-sm font-semibold text-green-700">Total Value Saved This Month</p>
-        </motion.div>
+        <p className="flex justify-center text-2xl font-bold text-emerald-600 mb-1">₹{totalValueSaved}</p>
+        <p className="flex justify-center text-xs font-medium text-emerald-700">Total Value Saved This Month</p>
+      </motion.div>
     </motion.div>
   );
 };

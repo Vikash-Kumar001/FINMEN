@@ -36,13 +36,190 @@ const ParentOverview = () => {
   const [recentActivities, setRecentActivities] = useState([]);
   const [parentProfile, setParentProfile] = useState(null);
   const [showAddChildModal, setShowAddChildModal] = useState(false);
+  const [modalView, setModalView] = useState("link"); // "link" or "create"
   const [childLinkingCode, setChildLinkingCode] = useState("");
   const [addingChild, setAddingChild] = useState(false);
   const [paymentData, setPaymentData] = useState(null);
+  
+  // Create child form state
+  const [childFormData, setChildFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    dateOfBirth: "",
+    gender: "",
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [creatingChild, setCreatingChild] = useState(false);
 
   useEffect(() => {
     fetchOverviewData();
   }, []);
+
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (showAddChildModal) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [showAddChildModal]);
+
+  const formatRelativeTime = (date) => {
+    if (!date) return "just now";
+    const value = new Date(date).getTime();
+    if (Number.isNaN(value)) {
+      return "just now";
+    }
+    const diff = Date.now() - value;
+    const seconds = Math.floor(diff / 1000);
+    if (seconds < 60) return "just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} min${minutes > 1 ? "s" : ""} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
+    const weeks = Math.floor(days / 7);
+    if (weeks < 4) return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
+    const months = Math.floor(days / 30);
+    return `${months} month${months > 1 ? "s" : ""} ago`;
+  };
+
+  const fetchRecentActivities = async (childrenData) => {
+    try {
+      if (!childrenData || childrenData.length === 0) {
+        setRecentActivities([]);
+        return;
+      }
+
+      const activities = [];
+      const childIds = childrenData.map(child => child._id);
+      const childMap = new Map(childrenData.map(child => [child._id.toString(), child.name]));
+
+      // Fetch activities from all children in parallel
+      const activityPromises = childIds.map(async (childId) => {
+        try {
+          const [analyticsRes, transactionsRes] = await Promise.all([
+            api.get(`/api/parent/child/${childId}/analytics?startDate=${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()}`).catch(() => ({ data: { activityTimeline: [] } })),
+            api.get(`/api/parent/child/${childId}/transactions?limit=10&page=1`).catch(() => ({ data: { transactions: [] } }))
+          ]);
+
+          const activityTimeline = analyticsRes.data?.activityTimeline || [];
+          const transactions = transactionsRes.data?.transactions || [];
+          const childName = childMap.get(childId.toString()) || "Child";
+
+          // Process activity timeline
+          activityTimeline.forEach((log) => {
+            let icon = "🎯";
+            let action = "";
+
+            const activityType = log.type || log.activityType || "";
+            const activityTitle = log.title || log.action || "";
+            const activityDescription = log.description || "";
+            const activityDetails = log.details || {};
+
+            // Extract actual activity name from various possible fields
+            const actualActivityName = 
+              activityTitle || 
+              activityDescription || 
+              activityDetails?.gameName || 
+              activityDetails?.activityName || 
+              activityDetails?.name ||
+              activityDetails?.title ||
+              "";
+
+            if (activityType.includes("game") || activityType.includes("mission") || activityTitle.toLowerCase().includes("mission")) {
+              icon = "🎯";
+              if (actualActivityName) {
+                action = `${childName} completed ${actualActivityName}`;
+              } else {
+                action = `${childName} completed a mission`;
+              }
+            } else if (activityType.includes("lesson") || activityType.includes("learning")) {
+              icon = "📚";
+              if (actualActivityName) {
+                action = `${childName} completed ${actualActivityName}`;
+              } else {
+                action = `${childName} completed a lesson`;
+              }
+            } else if (activityType.includes("achievement") || activityType.includes("badge")) {
+              icon = "🏆";
+              if (actualActivityName) {
+                action = `${childName} achieved ${actualActivityName}`;
+              } else {
+                action = `${childName} achieved a new badge`;
+              }
+            } else if (activityType.includes("quiz")) {
+              icon = "✅";
+              if (actualActivityName) {
+                action = `${childName} completed ${actualActivityName}`;
+              } else {
+                action = `${childName} completed a quiz`;
+              }
+            } else {
+              icon = "📝";
+              if (actualActivityName) {
+                action = `${childName} ${actualActivityName}`;
+              } else if (activityType) {
+                // Use activity type if no name available
+                action = `${childName} ${activityType.replace(/_/g, " ")}`;
+              } else {
+                action = `${childName} completed an activity`;
+              }
+            }
+
+            activities.push({
+              action,
+              time: formatRelativeTime(log.timestamp || log.createdAt),
+              icon,
+              child: childName,
+              timestamp: new Date(log.timestamp || log.createdAt).getTime(),
+            });
+          });
+
+          // Process transactions (HealCoins earned)
+          transactions.forEach((transaction) => {
+            if (transaction.type === "credit" && transaction.amount > 0) {
+              activities.push({
+                action: `${childName} earned ${transaction.amount} HealCoins`,
+                time: formatRelativeTime(transaction.createdAt),
+                icon: "🪙",
+                child: childName,
+                timestamp: new Date(transaction.createdAt).getTime(),
+              });
+            }
+          });
+        } catch (error) {
+          console.error(`Error fetching activities for child ${childId}:`, error);
+        }
+      });
+
+      await Promise.all(activityPromises);
+
+      // Sort by timestamp (most recent first) and limit to 3
+      const sortedActivities = activities
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .slice(0, 3);
+
+      setRecentActivities(sortedActivities);
+    } catch (error) {
+      console.error("Error fetching recent activities:", error);
+      setRecentActivities([]);
+    }
+  };
 
   const fetchOverviewData = async () => {
     try {
@@ -71,12 +248,8 @@ const ParentOverview = () => {
         avgProgress
       });
 
-      // Mock recent activities
-      setRecentActivities([
-        { action: "Sarah completed Math Mission", time: "5 mins ago", icon: "🎯", child: "Sarah" },
-        { action: "John earned 50 HealCoins", time: "15 mins ago", icon: "🪙", child: "John" },
-        { action: "Sarah achieved new badge", time: "1 hour ago", icon: "🏆", child: "Sarah" },
-      ]);
+      // Fetch recent activities from all children
+      await fetchRecentActivities(childrenData);
     } catch (error) {
       console.error("Error fetching overview data:", error);
       toast.error("Failed to load overview data");
@@ -215,36 +388,169 @@ const ParentOverview = () => {
     }
   };
 
+  const handleCreateChild = async (e) => {
+    e.preventDefault();
+    
+    if (childFormData.password !== childFormData.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (childFormData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    try {
+      setCreatingChild(true);
+      const response = await api.post("/api/parent/create-child", {
+        fullName: childFormData.fullName.trim(),
+        email: childFormData.email.trim(),
+        password: childFormData.password,
+        dateOfBirth: childFormData.dateOfBirth,
+        gender: childFormData.gender,
+      });
+
+      // Check if payment is required
+      if (response.data?.requiresPayment) {
+        // Initialize Razorpay payment
+        await initializeRazorpayPaymentForChildCreation(
+          response.data.orderId,
+          response.data.keyId,
+          response.data.amount,
+          response.data.childCreationIntentId
+        );
+        return;
+      }
+
+      if (response.data.success) {
+        toast.success(response.data.message || "Child account created successfully!");
+        setShowAddChildModal(false);
+        setModalView("link");
+        setChildFormData({
+          fullName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          dateOfBirth: "",
+          gender: "",
+        });
+        fetchOverviewData();
+      }
+    } catch (error) {
+      console.error("Error creating child:", error);
+      toast.error(error.response?.data?.message || "Failed to create child account");
+    } finally {
+      setCreatingChild(false);
+    }
+  };
+
+  const initializeRazorpayPaymentForChildCreation = async (orderId, keyId, amount, childCreationIntentId) => {
+    try {
+      const Razorpay = await loadRazorpay();
+      if (!Razorpay) {
+        throw new Error("Payment gateway not available right now.");
+      }
+
+      const options = {
+        key: keyId,
+        amount: amount * 100, // Convert to paise
+        currency: "INR",
+        name: "Wise Student",
+        description: "Create Child Account - Student + Parent Premium Pro Plan",
+        order_id: orderId,
+        handler: async (response) => {
+          try {
+            // Verify and confirm payment
+            const confirmResponse = await api.post("/api/parent/create-child/confirm-payment", {
+              childCreationIntentId,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+
+            if (confirmResponse.data.success) {
+              toast.success(confirmResponse.data.message || "Child account created successfully!");
+              setShowAddChildModal(false);
+              setModalView("link");
+              setChildFormData({
+                fullName: "",
+                email: "",
+                password: "",
+                confirmPassword: "",
+                dateOfBirth: "",
+                gender: "",
+              });
+              fetchOverviewData();
+            } else {
+              toast.error(confirmResponse.data.message || "Payment verification failed");
+            }
+          } catch (error) {
+            console.error("Payment confirmation error:", error);
+            toast.error(error.response?.data?.message || "Failed to confirm payment");
+          } finally {
+            setCreatingChild(false);
+          }
+        },
+        prefill: {
+          name: parentProfile?.name || "",
+          email: parentProfile?.email || "",
+        },
+        theme: {
+          color: "#6366f1",
+        },
+        modal: {
+          ondismiss: () => {
+            setCreatingChild(false);
+          },
+        },
+      };
+
+      const razorpayInstance = new Razorpay(options);
+      razorpayInstance.on("payment.failed", (response) => {
+        console.error("Payment failed:", response);
+        toast.error(`Payment failed: ${response.error.description || "Unknown error"}`);
+        setCreatingChild(false);
+      });
+
+      razorpayInstance.open();
+    } catch (error) {
+      console.error("Razorpay initialization error:", error);
+      toast.error("Failed to initialize payment gateway");
+      setCreatingChild(false);
+    }
+  };
+
   const StatCard = ({ title, value, icon: Icon, color, trend }) => (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -5, scale: 1.02 }}
-      className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6"
+      whileHover={{ y: -2 }}
+      className="bg-white rounded-lg shadow-sm border border-slate-200 p-4"
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
-          <Icon className="w-8 h-8 text-white" />
+      <div className="flex items-center justify-between mb-3">
+        <div className={`p-2.5 rounded-lg bg-indigo-50`}>
+          <Icon className="w-5 h-5 text-indigo-600" />
         </div>
         {trend && (
-          <div className="flex items-center gap-1 text-green-600">
-            <TrendingUp className="w-4 h-4" />
-            <span className="text-sm font-bold">{trend}</span>
+          <div className="flex items-center gap-1 text-emerald-600">
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span className="text-xs font-semibold">{trend}</span>
           </div>
         )}
       </div>
-      <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-      <p className="text-3xl font-black text-gray-900">{value}</p>
+      <p className="text-xs font-medium text-slate-500 mb-1 uppercase tracking-wide">{title}</p>
+      <p className="text-2xl font-bold text-slate-900">{value}</p>
     </motion.div>
   );
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+      <div className="flex items-center justify-center min-h-screen bg-slate-50">
         <motion.div
-          animate={{ rotate: 360, scale: [1, 1.2, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="w-20 h-20 border-4 border-purple-500 border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full"
         />
       </div>
     );
@@ -252,107 +558,307 @@ const ParentOverview = () => {
 
   if (children.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center bg-white rounded-3xl p-12 shadow-2xl max-w-md"
+          className="text-center bg-white rounded-xl p-8 shadow-sm border border-slate-200 max-w-md"
         >
-          <Users className="w-20 h-20 text-purple-500 mx-auto mb-4" />
-          <h2 className="text-3xl font-black text-gray-900 mb-4">
+          <Users className="w-16 h-16 text-indigo-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-slate-900 mb-3">
             No Children Linked Yet
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-slate-600 mb-6 text-sm">
             Start by linking your child's account to monitor their progress
           </p>
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => setShowAddChildModal(true)}
-            className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:shadow-xl transition-all flex items-center gap-2 mx-auto"
+            className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-all flex items-center gap-2 mx-auto"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
             Link Child Account
           </motion.button>
         </motion.div>
 
         {/* Add Child Modal */}
         {showAddChildModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl"
+              className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl"
             >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">Link Child Account</h3>
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-lg font-bold text-slate-900">
+                  {modalView === "link" ? "Link Child Account" : "Create Child Account"}
+                </h3>
                 <button
                   onClick={() => {
                     setShowAddChildModal(false);
+                    setModalView("link");
                     setChildLinkingCode("");
                     setPaymentData(null);
+                    setChildFormData({
+                      fullName: "",
+                      email: "",
+                      password: "",
+                      confirmPassword: "",
+                      dateOfBirth: "",
+                      gender: "",
+                    });
                   }}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-all"
+                  className="p-2 hover:bg-slate-100 rounded-lg transition"
                 >
-                  <X className="w-5 h-5 text-gray-600" />
+                  <X className="w-5 h-5 text-slate-500" />
                 </button>
               </div>
-              
-              {paymentData ? (
-                <div className="space-y-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                    <p className="text-sm text-blue-800 mb-2">
-                      To link <strong>{paymentData.childName}</strong>, payment of ₹{paymentData.amount} is required.
-                    </p>
-                    <p className="text-xs text-blue-600">
-                      {paymentData.childPlanType === 'free' 
-                        ? 'This will upgrade to Student + Parent Premium Pro Plan.'
-                        : 'This will add parent dashboard access to the existing plan.'}
-                    </p>
-                  </div>
-                  <p className="text-sm text-gray-600 text-center">
-                    Payment window will open shortly...
+
+              {modalView === "link" ? (
+                <>
+                  <p className="text-sm text-slate-600 mb-4">
+                    Enter your child's secret linking code to link their account
                   </p>
-                </div>
+                  {paymentData ? (
+                    <div className="mb-4">
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-3">
+                        <p className="text-sm text-amber-800 font-medium mb-1">
+                          Payment Required
+                        </p>
+                        <p className="text-xs text-amber-700">
+                          {paymentData.childPlanType === 'free' 
+                            ? `To link ${paymentData.childName}, you need to upgrade to Student + Parent Premium Pro Plan (₹${paymentData.amount}).`
+                            : `To link ${paymentData.childName}, you need to pay ₹${paymentData.amount} for parent dashboard access.`}
+                        </p>
+                      </div>
+                      <p className="text-sm text-slate-600 text-center">
+                        Razorpay payment window will open shortly...
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        type="text"
+                        placeholder="e.g. ST-ABC123 or SST-XYZ789"
+                        value={childLinkingCode}
+                        onChange={(e) => setChildLinkingCode(e.target.value.toUpperCase())}
+                        onKeyPress={(e) => e.key === "Enter" && !addingChild && handleAddChild()}
+                        className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none mb-4 uppercase tracking-wider text-sm"
+                        disabled={addingChild}
+                      />
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => {
+                            setShowAddChildModal(false);
+                            setChildLinkingCode("");
+                            setPaymentData(null);
+                          }}
+                          disabled={addingChild}
+                          className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg font-medium hover:bg-slate-200 transition disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleAddChild}
+                          disabled={addingChild || !childLinkingCode.trim()}
+                          className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                          {addingChild ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              {paymentData ? "Processing Payment..." : "Linking..."}
+                            </>
+                          ) : (
+                            "Link Child"
+                          )}
+                        </button>
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-slate-200">
+                        <p className="text-xs text-center text-slate-600 mb-2">
+                          Doesn't have an account?
+                        </p>
+                        <button
+                          onClick={() => setModalView("create")}
+                          disabled={addingChild}
+                          className="w-full px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition disabled:opacity-50"
+                        >
+                          Create Child Account
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </>
               ) : (
                 <>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Enter child's secret linking code
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="ST-XXXXXX"
-                      value={childLinkingCode}
-                      onChange={(e) => setChildLinkingCode(e.target.value.toUpperCase())}
-                      onKeyPress={(e) => e.key === "Enter" && !addingChild && handleAddChild()}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none uppercase"
-                      disabled={addingChild}
-                    />
-                    <p className="text-xs text-gray-500 mt-2">
-                      Ask your child for their secret linking code (e.g., ST-ABC123)
-                    </p>
-                  </div>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => {
-                        setShowAddChildModal(false);
-                        setChildLinkingCode("");
-                        setPaymentData(null);
-                      }}
-                      disabled={addingChild}
-                      className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleAddChild}
-                      disabled={addingChild || !childLinkingCode.trim()}
-                      className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                    >
-                      {addingChild ? "Linking..." : "Link Child"}
-                    </button>
-                  </div>
+                  <p className="text-sm text-slate-600 mb-5">
+                    Create a new account for your child
+                  </p>
+                  <form onSubmit={handleCreateChild} className="space-y-3">
+                    {/* Full Name and Date of Birth - Side by side */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={childFormData.fullName}
+                          onChange={(e) => setChildFormData({ ...childFormData, fullName: e.target.value })}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-sm"
+                          placeholder="Enter child's full name"
+                          disabled={creatingChild}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                          Date of Birth *
+                        </label>
+                        <input
+                          type="date"
+                          required
+                          value={childFormData.dateOfBirth}
+                          onChange={(e) => setChildFormData({ ...childFormData, dateOfBirth: e.target.value })}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-sm"
+                          max={new Date().toISOString().split('T')[0]}
+                          disabled={creatingChild}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Email and Gender - Side by side */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                          Email *
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          value={childFormData.email}
+                          onChange={(e) => setChildFormData({ ...childFormData, email: e.target.value.toLowerCase() })}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-sm"
+                          placeholder="Enter child's email"
+                          disabled={creatingChild}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                          Gender *
+                        </label>
+                        <select
+                          required
+                          value={childFormData.gender}
+                          onChange={(e) => setChildFormData({ ...childFormData, gender: e.target.value })}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-sm bg-white"
+                          disabled={creatingChild}
+                        >
+                          <option value="">Select gender</option>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="non_binary">Non-binary</option>
+                          <option value="prefer_not_to_say">Prefer not to say</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Password and Confirm Password - Side by side */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                          Password *
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            required
+                            value={childFormData.password}
+                            onChange={(e) => setChildFormData({ ...childFormData, password: e.target.value })}
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none pr-10 text-sm"
+                            placeholder="Min 6 characters"
+                            minLength={6}
+                            disabled={creatingChild}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 text-xs"
+                            disabled={creatingChild}
+                          >
+                            {showPassword ? "Hide" : "Show"}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                          Confirm Password *
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showConfirmPassword ? "text" : "password"}
+                            required
+                            value={childFormData.confirmPassword}
+                            onChange={(e) => setChildFormData({ ...childFormData, confirmPassword: e.target.value })}
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none pr-10 text-sm"
+                            placeholder="Confirm password"
+                            disabled={creatingChild}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 text-xs"
+                            disabled={creatingChild}
+                          >
+                            {showConfirmPassword ? "Hide" : "Show"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {childFormData.password && childFormData.confirmPassword && childFormData.password !== childFormData.confirmPassword && (
+                      <p className="text-xs text-red-600">Passwords do not match</p>
+                    )}
+
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setModalView("link");
+                          setChildFormData({
+                            fullName: "",
+                            email: "",
+                            password: "",
+                            confirmPassword: "",
+                            dateOfBirth: "",
+                            gender: "",
+                          });
+                        }}
+                        disabled={creatingChild}
+                        className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg font-medium hover:bg-slate-200 transition disabled:opacity-50"
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={creatingChild || childFormData.password !== childFormData.confirmPassword || !childFormData.fullName || !childFormData.email || !childFormData.dateOfBirth || !childFormData.gender || childFormData.password.length < 6}
+                        className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {creatingChild ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            Creating...
+                          </>
+                        ) : (
+                          "Create Account"
+                        )}
+                      </button>
+                    </div>
+                  </form>
                 </>
               )}
             </motion.div>
@@ -363,78 +869,76 @@ const ParentOverview = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 pb-12">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white py-12 px-6">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between"
-          >
-            <div>
-              <h1 className="text-4xl font-black mb-2">
-                Welcome back, {parentProfile?.name || "Parent"}! 👋
-              </h1>
-              <p className="text-lg text-white/90">
-                Here's what's happening with your children today
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm text-white/80">Today's Date</p>
-                <p className="text-xl font-bold">
-                  {new Date().toLocaleDateString("en-US", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+    <div className="min-h-screen bg-slate-50 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-xl border border-slate-200 shadow-sm mb-6"
+        >
+          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-6 py-6 rounded-t-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-white mb-1">
+                  Welcome back, {parentProfile?.name?.split(" ")[0] || "Parent"}!
+                </h1>
+                <p className="text-sm text-white/80">
+                  Here's what's happening with your children today
                 </p>
               </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowAddChildModal(true)}
-                className="px-6 py-3 bg-white/20 backdrop-blur-md text-white rounded-xl font-bold hover:bg-white/30 transition-all flex items-center gap-2 border-2 border-white/30"
-              >
-                <Plus className="w-5 h-5" />
-                Link Child
-              </motion.button>
+              <div className="flex items-center gap-3">
+                <div className="text-right hidden sm:block">
+                  <p className="text-xs text-white/80">
+                    {new Date().toLocaleDateString("en-US", {
+                      weekday: "long",
+                    })}
+                  </p>
+                  <p className="text-sm font-semibold">
+                    {new Date().toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowAddChildModal(true)}
+                  className="px-4 py-2 bg-white/20 backdrop-blur text-white rounded-lg font-medium hover:bg-white/30 transition flex items-center gap-2 text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  Link Child
+                </motion.button>
+              </div>
             </div>
-          </motion.div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 -mt-8">
+          </div>
+        </motion.div>
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatCard
             title="Total Children"
             value={stats.totalChildren || 0}
             icon={Users}
-            color="from-purple-500 to-pink-600"
             trend="+1"
           />
           <StatCard
             title="Total XP Earned"
             value={stats.totalXP || 0}
             icon={Zap}
-            color="from-blue-500 to-cyan-600"
             trend="+12%"
           />
           <StatCard
             title="Total HealCoins"
             value={stats.totalCoins || 0}
             icon={Coins}
-            color="from-yellow-500 to-amber-600"
             trend="+8%"
           />
           <StatCard
             title="Avg Progress"
             value={`${stats.avgProgress || 0}%`}
             icon={Target}
-            color="from-green-500 to-emerald-600"
             trend="+5%"
           />
         </div>
@@ -444,18 +948,18 @@ const ParentOverview = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* My Children */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6"
+              className="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
             >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                  <Users className="w-7 h-7 text-purple-600" />
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-indigo-600" />
                   My Children
                 </h2>
                 <button
                   onClick={() => navigate("/parent/children")}
-                  className="text-purple-600 hover:text-purple-700 font-semibold flex items-center gap-2"
+                  className="text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1.5 text-sm"
                 >
                   View All <ArrowRight className="w-4 h-4" />
                 </button>
@@ -469,55 +973,55 @@ const ParentOverview = () => {
                 return (
                 <motion.div
                   key={child._id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: idx * 0.1 }}
-                  whileHover={{ scale: 1.03, y: -5 }}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  whileHover={{ y: -2 }}
                   onClick={() => navigate(`/parent/child/${child._id}/analytics`)}
-                  className="p-5 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 cursor-pointer hover:shadow-xl transition-all"
+                  className="p-4 rounded-lg bg-slate-50 border border-slate-200 cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all"
                 >
-                    <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center gap-3 mb-3">
                       <img
                         src={child.avatar || "/avatars/avatar1.png"}
                         alt={child.name}
-                        className="w-16 h-16 rounded-full border-3 border-purple-300 shadow-lg"
+                        className="w-12 h-12 rounded-lg border-2 border-slate-200"
                       />
                       <div className="flex-1">
-                        <h3 className="text-lg font-bold text-gray-900">
+                        <h3 className="text-base font-semibold text-slate-900">
                           {child.name}
                         </h3>
-                        <p className="text-sm text-gray-600">{child.grade || "Student"}</p>
+                        <p className="text-xs text-slate-600">{child.grade || "Student"}</p>
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="bg-blue-100 rounded-lg p-2 text-center">
-                        <p className="text-lg font-black text-blue-700">
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      <div className="bg-blue-50 rounded-md p-2 text-center">
+                        <p className="text-base font-bold text-blue-700">
                           {child.level || 1}
                         </p>
                         <p className="text-xs text-blue-600">Level</p>
                       </div>
-                      <div className="bg-amber-100 rounded-lg p-2 text-center">
-                        <p className="text-lg font-black text-amber-700">
+                      <div className="bg-amber-50 rounded-md p-2 text-center">
+                        <p className="text-base font-bold text-amber-700">
                           {child.xp || 0}
                         </p>
                         <p className="text-xs text-amber-600">XP</p>
                       </div>
-                      <div className="bg-green-100 rounded-lg p-2 text-center">
-                        <p className="text-lg font-black text-green-700">
+                      <div className="bg-emerald-50 rounded-md p-2 text-center">
+                        <p className="text-base font-bold text-emerald-700">
                           {child.healCoins || 0}
                         </p>
-                        <p className="text-xs text-green-600">Coins</p>
+                        <p className="text-xs text-emerald-600">Coins</p>
                       </div>
                     </div>
-                    <div className="flex gap-2 mt-4">
+                    <div className="flex gap-2">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/parent/child/${child._id}/analytics`);
                         }}
-                        className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                        className="flex-1 px-3 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition text-sm flex items-center justify-center gap-1.5"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-3.5 h-3.5" />
                         View Progress
                       </button>
                       <button
@@ -525,11 +1029,11 @@ const ParentOverview = () => {
                           e.stopPropagation();
                           navigate(`/parent/child/${child._id}/chat`);
                         }}
-                        className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                        className="flex-1 px-3 py-2 bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-700 transition text-sm flex items-center justify-center gap-1.5"
                         title="Chat with teacher"
                       >
-                        <MessageSquare className="w-4 h-4" />
-                        <span className="hidden sm:inline">Teacher Chat</span>
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Chat</span>
                       </button>
                     </div>
                   </motion.div>
@@ -540,33 +1044,43 @@ const ParentOverview = () => {
 
             {/* Recent Activity */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6"
+              transition={{ delay: 0.1 }}
+              className="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
             >
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3 mb-6">
-                <Activity className="w-7 h-7 text-green-600" />
+              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-5">
+                <Activity className="w-5 h-5 text-indigo-600" />
                 Recent Activity
               </h2>
-              <div className="space-y-3">
-                {recentActivities.map((activity, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200"
-                  >
-                    <span className="text-3xl">{activity.icon}</span>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">{activity.action}</p>
-                      <p className="text-sm text-gray-600">
-                        {activity.child} • {activity.time}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
+              <div className="space-y-2">
+                {recentActivities.length > 0 ? (
+                  recentActivities.map((activity, idx) => (
+                    <motion.div
+                      key={`${activity.child}-${activity.timestamp}-${idx}`}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200"
+                    >
+                      <span className="text-2xl">{activity.icon}</span>
+                      <div className="flex-1">
+                        <p className="font-medium text-slate-900 text-sm">{activity.action}</p>
+                        <p className="text-xs text-slate-600">
+                          {activity.child} • {activity.time}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Activity className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                    <p className="text-sm text-slate-600">No recent activity</p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Activities from your children will appear here
+                    </p>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
@@ -575,51 +1089,51 @@ const ParentOverview = () => {
           <div className="space-y-6">
             {/* Quick Actions */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg border-2 border-purple-200 p-6"
+              className="bg-white rounded-xl border border-slate-200 shadow-sm p-5"
             >
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Star className="w-6 h-6 text-purple-600" />
+              <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <Star className="w-4 h-4 text-indigo-600" />
                 Quick Actions
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <motion.button
-                  whileHover={{ scale: 1.03, x: 3 }}
+                  whileHover={{ x: 2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate("/parent/children")}
-                  className="w-full flex items-center gap-3 p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border border-gray-200"
+                  className="w-full flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition border border-slate-200"
                 >
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
-                    <Users className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <Users className="w-4 h-4 text-indigo-600" />
                   </div>
-                  <span className="font-semibold text-gray-900 text-left">
+                  <span className="font-medium text-slate-900 text-sm">
                     Manage Children
                   </span>
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.03, x: 3 }}
+                  whileHover={{ x: 2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate("/parent/messages")}
-                  className="w-full flex items-center gap-3 p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border border-gray-200"
+                  className="w-full flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition border border-slate-200"
                 >
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Mail className="w-4 h-4 text-blue-600" />
                   </div>
-                  <span className="font-semibold text-gray-900 text-left">
+                  <span className="font-medium text-slate-900 text-sm">
                     Messages
                   </span>
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.03, x: 3 }}
+                  whileHover={{ x: 2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate("/parent/settings")}
-                  className="w-full flex items-center gap-3 p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border border-gray-200"
+                  className="w-full flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition border border-slate-200"
                 >
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                    <Settings className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <Settings className="w-4 h-4 text-emerald-600" />
                   </div>
-                  <span className="font-semibold text-gray-900 text-left">
+                  <span className="font-medium text-slate-900 text-sm">
                     Settings
                   </span>
                 </motion.button>
@@ -628,146 +1142,332 @@ const ParentOverview = () => {
 
             {/* Quick Insights */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6"
+              className="bg-white rounded-xl border border-slate-200 shadow-sm p-5"
             >
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <BarChart3 className="w-6 h-6 text-blue-600" />
+              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-5">
+                <BarChart3 className="w-5 h-5 text-indigo-600" />
                 Quick Insights
-              </h3>
-              <div className="space-y-4">
-                <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold text-gray-700">
+              </h2>
+              <div className="space-y-2">
+                <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium text-slate-700">
                       Active Today
                     </span>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
                   </div>
-                  <p className="text-2xl font-black text-green-600">
+                  <p className="text-xl font-bold text-emerald-600">
                     {children.filter((c) => c.lastActive).length}/{children.length}
                   </p>
                 </div>
-                <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold text-gray-700">
+                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium text-slate-700">
                       Avg Engagement
                     </span>
-                    <Activity className="w-5 h-5 text-blue-600" />
+                    <Activity className="w-4 h-4 text-blue-600" />
                   </div>
-                  <p className="text-2xl font-black text-blue-600">
+                  <p className="text-xl font-bold text-blue-600">
                     {Math.round(stats.avgProgress || 0)}%
                   </p>
                 </div>
+                <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium text-slate-700">
+                      Total XP
+                    </span>
+                    <Zap className="w-4 h-4 text-indigo-600" />
+                  </div>
+                  <p className="text-xl font-bold text-indigo-600">
+                    {stats.totalXP || 0}
+                  </p>
+                </div>
               </div>
-            </motion.div>
-
-            {/* Messages Preview */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  <Mail className="w-6 h-6 text-purple-600" />
-                  Messages
-                </h3>
-              </div>
-              <div className="text-center py-8 text-gray-400">
-                <MessageSquare className="w-12 h-12 mx-auto mb-2" />
-                <p className="text-sm">No new messages</p>
-              </div>
-              <button
-                onClick={() => navigate("/parent/messages")}
-                className="w-full mt-4 text-purple-600 hover:text-purple-700 font-semibold text-sm flex items-center justify-center gap-2"
-              >
-                View All Messages <ArrowRight className="w-4 h-4" />
-              </button>
             </motion.div>
           </div>
         </div>
       </div>
 
-      {/* Add Child Modal */}
+      {/* Add Child Modal - Always available */}
       {showAddChildModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl"
+            className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl"
           >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">Link Child Account</h3>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-slate-900">
+                {modalView === "link" ? "Link Child Account" : "Create Child Account"}
+              </h3>
               <button
                 onClick={() => {
                   setShowAddChildModal(false);
+                  setModalView("link");
                   setChildLinkingCode("");
                   setPaymentData(null);
+                  setChildFormData({
+                    fullName: "",
+                    email: "",
+                    password: "",
+                    confirmPassword: "",
+                    dateOfBirth: "",
+                    gender: "",
+                  });
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-all"
+                className="p-2 hover:bg-slate-100 rounded-lg transition"
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-5 h-5 text-slate-500" />
               </button>
             </div>
-            
-            {paymentData ? (
-              <div className="space-y-4">
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                  <p className="text-sm text-blue-800 mb-2">
-                    To link <strong>{paymentData.childName}</strong>, payment of ₹{paymentData.amount} is required.
-                  </p>
-                  <p className="text-xs text-blue-600">
-                    {paymentData.childPlanType === 'free' 
-                      ? 'This will upgrade to Student + Parent Premium Pro Plan.'
-                      : 'This will add parent dashboard access to the existing plan.'}
-                  </p>
-                </div>
-                <p className="text-sm text-gray-600 text-center">
-                  Payment window will open shortly...
+
+            {modalView === "link" ? (
+              <>
+                <p className="text-sm text-slate-600 mb-4">
+                  Enter your child's secret linking code to link their account
                 </p>
-              </div>
+                {paymentData ? (
+                  <div className="mb-4">
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-3">
+                      <p className="text-sm text-amber-800 font-medium mb-1">
+                        Payment Required
+                      </p>
+                      <p className="text-xs text-amber-700">
+                        {paymentData.childPlanType === 'free' 
+                          ? `To link ${paymentData.childName}, you need to upgrade to Student + Parent Premium Pro Plan (₹${paymentData.amount}).`
+                          : `To link ${paymentData.childName}, you need to pay ₹${paymentData.amount} for parent dashboard access.`}
+                      </p>
+                    </div>
+                    <p className="text-sm text-slate-600 text-center">
+                      Razorpay payment window will open shortly...
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      placeholder="e.g. ST-ABC123 or SST-XYZ789"
+                      value={childLinkingCode}
+                      onChange={(e) => setChildLinkingCode(e.target.value.toUpperCase())}
+                      onKeyPress={(e) => e.key === "Enter" && !addingChild && handleAddChild()}
+                      className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none mb-4 uppercase tracking-wider text-sm"
+                      disabled={addingChild}
+                    />
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          setShowAddChildModal(false);
+                          setChildLinkingCode("");
+                          setPaymentData(null);
+                        }}
+                        disabled={addingChild}
+                        className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg font-medium hover:bg-slate-200 transition disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleAddChild}
+                        disabled={addingChild || !childLinkingCode.trim()}
+                        className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {addingChild ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            {paymentData ? "Processing Payment..." : "Linking..."}
+                          </>
+                        ) : (
+                          "Link Child"
+                        )}
+                      </button>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-slate-200">
+                      <p className="text-xs text-center text-slate-600 mb-2">
+                        Doesn't have an account?
+                      </p>
+                      <button
+                        onClick={() => setModalView("create")}
+                        disabled={addingChild}
+                        className="w-full px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition disabled:opacity-50"
+                      >
+                        Create Child Account
+                      </button>
+                    </div>
+                  </>
+                )}
+              </>
             ) : (
               <>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Enter child's secret linking code
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="ST-XXXXXX"
-                    value={childLinkingCode}
-                    onChange={(e) => setChildLinkingCode(e.target.value.toUpperCase())}
-                    onKeyPress={(e) => e.key === "Enter" && !addingChild && handleAddChild()}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none uppercase"
-                    disabled={addingChild}
-                  />
-                  <p className="text-xs text-gray-500 mt-2">
-                    Ask your child for their secret linking code (e.g., ST-ABC123)
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setShowAddChildModal(false);
-                      setChildLinkingCode("");
-                      setPaymentData(null);
-                    }}
-                    disabled={addingChild}
-                    className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleAddChild}
-                    disabled={addingChild || !childLinkingCode.trim()}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {addingChild ? "Linking..." : "Link Child"}
-                  </button>
-                </div>
+                <p className="text-sm text-slate-600 mb-5">
+                  Create a new account for your child
+                </p>
+                <form onSubmit={handleCreateChild} className="space-y-3">
+                  {/* Full Name and Date of Birth - Side by side */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                        Full Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={childFormData.fullName}
+                        onChange={(e) => setChildFormData({ ...childFormData, fullName: e.target.value })}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-sm"
+                        placeholder="Enter child's full name"
+                        disabled={creatingChild}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                        Date of Birth *
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={childFormData.dateOfBirth}
+                        onChange={(e) => setChildFormData({ ...childFormData, dateOfBirth: e.target.value })}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-sm"
+                        max={new Date().toISOString().split('T')[0]}
+                        disabled={creatingChild}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email and Gender - Side by side */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                        Email *
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={childFormData.email}
+                        onChange={(e) => setChildFormData({ ...childFormData, email: e.target.value.toLowerCase() })}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-sm"
+                        placeholder="Enter child's email"
+                        disabled={creatingChild}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                        Gender *
+                      </label>
+                      <select
+                        required
+                        value={childFormData.gender}
+                        onChange={(e) => setChildFormData({ ...childFormData, gender: e.target.value })}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-sm bg-white"
+                        disabled={creatingChild}
+                      >
+                        <option value="">Select gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="non_binary">Non-binary</option>
+                        <option value="prefer_not_to_say">Prefer not to say</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Password and Confirm Password - Side by side */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                        Password *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          required
+                          value={childFormData.password}
+                          onChange={(e) => setChildFormData({ ...childFormData, password: e.target.value })}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none pr-10 text-sm"
+                          placeholder="Min 6 characters"
+                          minLength={6}
+                          disabled={creatingChild}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 text-xs"
+                          disabled={creatingChild}
+                        >
+                          {showPassword ? "Hide" : "Show"}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                        Confirm Password *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          required
+                          value={childFormData.confirmPassword}
+                          onChange={(e) => setChildFormData({ ...childFormData, confirmPassword: e.target.value })}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none pr-10 text-sm"
+                          placeholder="Confirm password"
+                          disabled={creatingChild}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 text-xs"
+                          disabled={creatingChild}
+                        >
+                          {showConfirmPassword ? "Hide" : "Show"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {childFormData.password && childFormData.confirmPassword && childFormData.password !== childFormData.confirmPassword && (
+                    <p className="text-xs text-red-600">Passwords do not match</p>
+                  )}
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setModalView("link");
+                        setChildFormData({
+                          fullName: "",
+                          email: "",
+                          password: "",
+                          confirmPassword: "",
+                          dateOfBirth: "",
+                          gender: "",
+                        });
+                      }}
+                      disabled={creatingChild}
+                      className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg font-medium hover:bg-slate-200 transition disabled:opacity-50"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={creatingChild || childFormData.password !== childFormData.confirmPassword || !childFormData.fullName || !childFormData.email || !childFormData.dateOfBirth || !childFormData.gender || childFormData.password.length < 6}
+                      className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {creatingChild ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Creating...
+                        </>
+                      ) : (
+                        "Create Account"
+                      )}
+                    </button>
+                  </div>
+                </form>
               </>
             )}
           </motion.div>

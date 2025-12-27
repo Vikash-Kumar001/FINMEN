@@ -1,13 +1,34 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { motion as Motion } from 'framer-motion';
 import {
-  Crown, RefreshCw, Users, Shield, HeartHandshake, TrendingUp, BarChart3, Calendar, CalendarClock, CheckCircle2, Sparkles, ArrowRight, Loader2, Star, MessageCircleHeart, LineChart, ShieldCheck, Zap, Heart, CreditCard, Clock, AlertCircle, Receipt, Download, ExternalLink
+  Crown, RefreshCw, Users, Shield, HeartHandshake, TrendingUp, BarChart3, Calendar, CalendarClock, Sparkles, ArrowRight, Loader2, Star, MessageCircleHeart, LineChart, ShieldCheck, Zap, Heart, CreditCard, Clock, AlertCircle, Receipt, Download, X, CheckCircle
 } from 'lucide-react';
 import { useSubscription } from '../../context/SubscriptionContext';
 import { useNavigate } from 'react-router-dom';
 import { useSocket } from '../../context/SocketContext';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../../hooks/useAuth';
+
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(window.Razorpay);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => {
+      resolve(window.Razorpay);
+    };
+    script.onerror = () => {
+      resolve(null);
+    };
+    document.body.appendChild(script);
+  });
+};
 
 const PARENT_PLAN = {
   planType: 'student_parent_premium_pro',
@@ -60,6 +81,37 @@ const PARENT_PLAN = {
   ],
 };
 
+const PARENT_DASHBOARD_PLAN = {
+  planType: 'parent_dashboard',
+  name: 'Parent Dashboard Plan',
+  tagline: 'Parent dashboard access for existing premium plans',
+  renewalPrice: 1000,
+  billingFrequency: 'per year',
+  highlights: [
+    'Parent dashboard access',
+    'Monitor your child\'s progress',
+    'Real-time insights and updates',
+    'Family progress tracking',
+  ],
+  features: [
+    {
+      title: 'Parent Dashboard',
+      icon: Users,
+      description: 'Access to parent dashboard to monitor your child\'s academic and emotional progress.'
+    },
+    {
+      title: 'Progress Tracking',
+      icon: LineChart,
+      description: 'Track your child\'s learning journey and achievements in real-time.'
+    },
+    {
+      title: 'Family Insights',
+      icon: HeartHandshake,
+      description: 'Get insights into your child\'s wellbeing and academic performance.'
+    },
+  ],
+};
+
 const AUTO_RENEW_METHODS = [
   { value: 'card', label: 'Credit / Debit Card' },
   { value: 'upi', label: 'UPI AutoPay' },
@@ -71,12 +123,16 @@ const ParentUpgrade = () => {
   const navigate = useNavigate();
   const { subscription, refreshSubscription } = useSubscription();
   const socket = useSocket();
+  const { user } = useAuth();
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [remainingTime, setRemainingTime] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [transactionSummary, setTransactionSummary] = useState(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [subscriptionId, setSubscriptionId] = useState(null);
+  const [showPlanSelection, setShowPlanSelection] = useState(false);
   const autoRenewSettings = subscription?.autoRenewSettings || null;
   const [autoRenewForm, setAutoRenewForm] = useState({
     enabled: autoRenewSettings?.enabled ?? subscription?.autoRenew ?? false,
@@ -94,6 +150,25 @@ const ParentUpgrade = () => {
     autoRenewSettings?.method,
     subscription?.autoRenew,
   ]);
+
+  // Prevent background scrolling when plan selection modal is open
+  useEffect(() => {
+    if (showPlanSelection) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [showPlanSelection]);
 
   const isPremium = subscription?.planType === PARENT_PLAN.planType && subscription?.status === 'active';
   const currencyFormatter = useMemo(
@@ -258,30 +333,165 @@ const ParentUpgrade = () => {
     refunded: 'bg-blue-100 text-blue-700 border border-blue-200',
   };
 
+  const fetchHistory = useCallback(async () => {
+    try {
+      setHistoryLoading(true);
+      const response = await api.get('/api/subscription/history');
+      if (response.data.success) {
+        setHistory(response.data.subscriptions || []);
+      }
+    } catch (error) {
+      console.error('Error fetching subscription history:', error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  const fetchTransactions = useCallback(async () => {
+    try {
+      setTransactionsLoading(true);
+      const response = await api.get('/api/subscription/transactions');
+      if (response.data.success) {
+        setTransactions(response.data.transactions || []);
+        setTransactionSummary(response.data.summary || null);
+      }
+    } catch (error) {
+      console.error('Error fetching subscription transactions:', error);
+    } finally {
+      setTransactionsLoading(false);
+    }
+  }, []);
+
+  const initializeRazorpayPayment = useCallback(
+    async (orderId, keyId, amount, currentSubscriptionId) => {
+      try {
+        const Razorpay = await loadRazorpay();
+        if (!Razorpay) {
+          throw new Error('Payment gateway not available right now.');
+        }
+
+        const options = {
+          key: keyId,
+          amount: Math.round(amount * 100), // Convert to paise
+          currency: 'INR',
+          name: 'Wise Student',
+          description: `Subscription: ${PARENT_PLAN.name}`,
+          order_id: orderId,
+          handler: async function (response) {
+            // Payment successful
+            setPaymentLoading(true);
+            try {
+              const verifyResponse = await api.post('/api/subscription/verify-payment', {
+                subscriptionId: currentSubscriptionId,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpaySignature: response.razorpay_signature,
+              });
+
+              if (verifyResponse.data.success) {
+                toast.success('Payment successful! Your subscription is now active.');
+                await refreshSubscription();
+                fetchHistory();
+                fetchTransactions();
+
+                if (socket?.socket) {
+                  socket.socket.emit('subscription:activated', {
+                    subscription: verifyResponse.data.subscription,
+                  });
+                }
+              } else {
+                throw new Error(verifyResponse.data.message || 'Failed to activate subscription');
+              }
+            } catch (verifyError) {
+              console.error('Subscription activation error:', verifyError);
+              toast.error('Payment succeeded but subscription activation failed. Please contact support.');
+            } finally {
+              setPaymentLoading(false);
+            }
+          },
+          prefill: {
+            name: user?.name || user?.fullName || '',
+            email: user?.email || '',
+            contact: user?.phone || '',
+          },
+          theme: {
+            color: '#6366f1',
+          },
+          modal: {
+            ondismiss: async function () {
+              setPaymentLoading(false);
+              
+              // Update backend to mark payment as cancelled
+              if (currentSubscriptionId) {
+                try {
+                  await api.post('/api/subscription/cancel-payment', {
+                    subscriptionId: currentSubscriptionId,
+                  });
+                  // Refresh transactions and history after cancellation
+                  fetchTransactions();
+                  fetchHistory();
+                  await refreshSubscription();
+                } catch (error) {
+                  console.error('Error cancelling payment:', error);
+                }
+              }
+            },
+          },
+        };
+
+        const razorpayInstance = new Razorpay(options);
+        razorpayInstance.open();
+        setPaymentLoading(true);
+      } catch (error) {
+        console.error('Razorpay initialization error:', error);
+        toast.error(error.message || 'Unable to initialize payment.');
+        setPaymentLoading(false);
+      }
+    },
+    [socket, refreshSubscription, user, fetchHistory, fetchTransactions],
+  );
+
   const handlePlanCheckout = useCallback(
-    (mode = 'purchase') => {
+    async (mode = 'purchase', selectedPlanType = PARENT_PLAN.planType) => {
       const normalizedMode = mode === 'renew' ? 'renew' : 'purchase';
-      const nextIsFirstYear = normalizedMode === 'renew' ? false : !hasParentPlanHistory;
-      const amount =
-        normalizedMode === 'renew' || !nextIsFirstYear
+      
+      // Determine amount based on selected plan
+      let amount;
+      if (selectedPlanType === 'parent_dashboard') {
+        amount = PARENT_DASHBOARD_PLAN.renewalPrice;
+      } else {
+        const nextIsFirstYear = normalizedMode === 'renew' ? false : !hasParentPlanHistory;
+        amount = normalizedMode === 'renew' || !nextIsFirstYear
           ? PARENT_PLAN.renewalPrice
           : PARENT_PLAN.firstYearPrice;
+      }
 
-      navigate(
-        `/parent/upgrade/checkout?plan=${PARENT_PLAN.planType}&firstYear=${nextIsFirstYear ? '1' : '0'}&context=parent&mode=${normalizedMode}`,
-        {
-          state: {
-            planType: PARENT_PLAN.planType,
-            planName: PARENT_PLAN.name,
-            amount,
-            isFirstYear: nextIsFirstYear,
-            context: 'parent',
-            mode: normalizedMode,
-          },
-        },
-      );
+      try {
+        setPaymentLoading(true);
+        setShowPlanSelection(false);
+        
+        const response = await api.post('/api/subscription/create-payment', {
+          planType: selectedPlanType === 'parent_dashboard' ? PARENT_PLAN.planType : selectedPlanType,
+          context: 'parent',
+          mode: normalizedMode,
+          amount: selectedPlanType === 'parent_dashboard' ? PARENT_DASHBOARD_PLAN.renewalPrice : undefined,
+        });
+
+        if (response.data.success) {
+          const currentSubscriptionId = response.data.subscriptionId;
+          const responseAmount = response.data.amount || amount; // Use backend amount if provided
+          setSubscriptionId(currentSubscriptionId);
+          await initializeRazorpayPayment(response.data.orderId, response.data.keyId, responseAmount, currentSubscriptionId);
+        } else {
+          throw new Error(response.data.message || 'Failed to initialize payment');
+        }
+      } catch (error) {
+        console.error('Payment initialization error:', error);
+        toast.error(error.response?.data?.message || error.message || 'Failed to initialize payment');
+        setPaymentLoading(false);
+      }
     },
-    [navigate, hasParentPlanHistory],
+    [hasParentPlanHistory, initializeRazorpayPayment],
   );
 
   const planStatus = subscription?.status || (isPremium ? 'active' : 'free');
@@ -292,36 +502,6 @@ const ParentUpgrade = () => {
     : 'Free Plan';
   const purchasedBy =
     subscription?.purchasedBy || subscription?.latestTransaction?.initiatedBy || null;
-
-  const timelineIconForStatus = (status) => {
-    switch (status) {
-      case 'completed':
-      case 'active':
-        return CheckCircle2;
-      case 'pending':
-        return Clock;
-      case 'failed':
-      case 'cancelled':
-        return AlertCircle;
-      default:
-        return RefreshCw;
-    }
-  };
-
-  const timelineAccentForStatus = (status) => {
-    switch (status) {
-      case 'completed':
-      case 'active':
-        return 'text-emerald-600 bg-emerald-50 border border-emerald-100';
-      case 'pending':
-        return 'text-amber-600 bg-amber-50 border border-amber-100';
-      case 'failed':
-      case 'cancelled':
-        return 'text-rose-600 bg-rose-50 border border-rose-100';
-      default:
-        return 'text-indigo-600 bg-indigo-50 border border-indigo-100';
-    }
-  };
 
   const modeLabel = (mode) => {
     switch (mode) {
@@ -384,35 +564,6 @@ const ParentUpgrade = () => {
       nextRenewalDate,
     ],
   );
-
-  const fetchHistory = useCallback(async () => {
-    try {
-      setHistoryLoading(true);
-      const response = await api.get('/api/subscription/history');
-      if (response.data.success) {
-        setHistory(response.data.subscriptions || []);
-      }
-    } catch (error) {
-      console.error('Error fetching subscription history:', error);
-    } finally {
-      setHistoryLoading(false);
-    }
-  }, []);
-
-  const fetchTransactions = useCallback(async () => {
-    try {
-      setTransactionsLoading(true);
-      const response = await api.get('/api/subscription/transactions');
-      if (response.data.success) {
-        setTransactions(response.data.transactions || []);
-        setTransactionSummary(response.data.summary || null);
-      }
-    } catch (error) {
-      console.error('Error fetching subscription transactions:', error);
-    } finally {
-      setTransactionsLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
     fetchHistory();
@@ -496,20 +647,6 @@ const ParentUpgrade = () => {
     return () => clearInterval(interval);
   }, [subscription?.endDate]);
 
-  const timelineItems = useMemo(() => {
-    if (!transactions?.length) return [];
-    return transactions
-      .slice(0, 8)
-      .map((tx) => ({
-        status: tx.status,
-        date: tx.paymentDate || tx.createdAt,
-        planName: tx.planName,
-        amount: tx.amount,
-        mode: tx.mode,
-        initiatedBy: tx.initiatedBy,
-      }));
-  }, [transactions]);
-
   const displayedTransactions = useMemo(() => transactions.slice(0, 8), [transactions]);
 
   const trustIndicators = [
@@ -520,203 +657,174 @@ const ParentUpgrade = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-10 px-4 sm:px-6">
-      <div className="max-w-7xl mx-auto space-y-12">
+    <div className="min-h-screen bg-slate-50 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <Motion.section
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 overflow-hidden"
+          className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden"
         >
-          <div className="grid lg:grid-cols-[1.8fr_1fr] gap-10 p-8 sm:p-12">
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 font-semibold px-4 py-2 rounded-full">
-                <Sparkles className="w-4 h-4" />
-                Family Plan Control Centre
-              </div>
+          <div className="grid lg:grid-cols-[1.8fr_1fr] gap-8 p-6 lg:p-8">
+            <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-3xl sm:text-5xl font-black text-gray-900 leading-tight">
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
                   {PARENT_PLAN.name}
                 </h1>
-                <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${statusBadgeClass}`}>
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wide ${statusBadgeClass}`}>
                   <ShieldCheck className="w-3 h-3" />
                   {planStatusLabel}
                 </span>
               </div>
-              <p className="text-base sm:text-lg text-gray-600 max-w-3xl">
-                Give your family a realtime command centre for wellbeing, academics and growth. Monitor progress, surface risks early and access premium parent-child experiences without leaving the dashboard.
+              <p className="text-sm text-slate-600 max-w-2xl">
+                Monitor your child's progress, track wellbeing, and access premium insights all in one place.
               </p>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="bg-white border border-purple-100 rounded-2xl p-4 shadow-sm flex gap-3">
-                  <CalendarClock className="w-9 h-9 text-purple-600" />
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex gap-3">
+                  <CalendarClock className="w-6 h-6 text-indigo-600 shrink-0" />
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-purple-500 font-semibold">Next renewal</p>
-                    <p className="text-lg font-semibold text-gray-900">
+                    <p className="text-xs font-medium text-slate-500 mb-1">Next renewal</p>
+                    <p className="text-base font-semibold text-slate-900">
                       {isPremium && nextRenewalDate
                         ? formatShortDate(nextRenewalDate)
-                        : 'Activate to unlock'}
+                        : 'Not scheduled'}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      {remainingTime?.formatted || (isPremium ? 'Auto-renews annually' : 'Premium dashboard locked')}
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {remainingTime?.formatted || (isPremium ? 'Auto-renews annually' : 'Activate plan')}
                     </p>
                   </div>
                 </div>
-                <div className="bg-white border border-purple-100 rounded-2xl p-4 shadow-sm flex gap-3">
-                  <CreditCard className="w-9 h-9 text-purple-600" />
+                <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 flex gap-3">
+                  <CreditCard className="w-6 h-6 text-indigo-600 shrink-0" />
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-purple-500 font-semibold">Last payment</p>
-                    <p className="text-lg font-semibold text-gray-900">
-                      {lastPaymentDate ? formatShortDate(lastPaymentDate) : 'Awaiting payment'}
+                    <p className="text-xs font-medium text-slate-500 mb-1">Last payment</p>
+                    <p className="text-base font-semibold text-slate-900">
+                      {lastPaymentDate ? formatShortDate(lastPaymentDate) : 'No payments yet'}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       {transactionSummary?.totalSpend
-                        ? `${currencyFormatter.format(transactionSummary.totalSpend)} lifetime spend`
-                        : 'No premium payments yet'}
+                        ? `${currencyFormatter.format(transactionSummary.totalSpend)} total`
+                        : 'Activate to start'}
                     </p>
                   </div>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-3 items-stretch">
+              <div className="flex flex-wrap gap-3">
                 {canUpgrade && (
                   <button
                     onClick={() => handlePlanCheckout('purchase')}
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl transition"
+                    disabled={paymentLoading}
+                    className="inline-flex items-center gap-2 bg-indigo-600 text-white font-medium px-5 py-2.5 rounded-lg shadow-sm hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Renew Student + Parent Premium Pro Plan
-                    <ArrowRight className="w-5 h-5" />
+                    {paymentLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        Activate Premium Plan
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
                   </button>
                 )}
                 {subscription?.planType === PARENT_PLAN.planType && (
                   <button
-                    onClick={() => handlePlanCheckout('renew')}
-                    disabled={!canRenew}
-                    className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold transition ${
-                      canRenew
-                        ? 'bg-white border border-purple-200 text-purple-700 hover:bg-purple-50'
-                        : 'bg-white border border-gray-200 text-gray-400 cursor-not-allowed'
+                    onClick={() => setShowPlanSelection(true)}
+                    disabled={!canRenew || paymentLoading}
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition ${
+                      canRenew && !paymentLoading
+                        ? 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                        : 'bg-white border border-slate-200 text-slate-400 cursor-not-allowed'
                     }`}
                     title={!canRenew ? renewDisabledReason : undefined}
                   >
-                    Renew for {currencyFormatter.format(PARENT_PLAN.renewalPrice)}
+                    Renew Plan
                     <RefreshCw className="w-4 h-4" />
                   </button>
                 )}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-white border border-purple-100 text-gray-700 font-semibold px-5 py-4 rounded-2xl shadow-sm min-w-[260px]">
-                  <div className="flex-1 space-y-1">
-                    <p className="text-xs uppercase tracking-wide text-purple-500 font-semibold">
-                      Auto debit
-                    </p>
-                    <p className="text-sm text-gray-900 font-semibold">{autoRenewStatusText}</p>
-                    <p className="text-xs text-gray-500">
-                      Method: {selectedAutoRenewMethod?.label}
-                    </p>
-                    {autoRenewUpdatedAt && (
-                      <p className="text-[11px] text-gray-400">Updated {autoRenewUpdatedAt}</p>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <select
-                      value={autoRenewForm.method}
-                      onChange={handleAutoRenewMethodChange}
-                      disabled={autoRenewUpdating}
-                      className="w-full border border-purple-100 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition"
-                    >
-                      {AUTO_RENEW_METHODS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      onClick={handleAutoRenewToggle}
-                      disabled={autoRenewUpdating}
-                      className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition border ${
-                        autoRenewForm.enabled
-                          ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
-                          : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200'
-                      } ${autoRenewUpdating ? 'opacity-70 cursor-wait' : ''}`}
-                    >
-                      {autoRenewUpdating ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <RefreshCw className="w-4 h-4" />
-                      )}
-                      {autoRenewForm.enabled ? 'Disable auto debit' : 'Enable auto debit'}
-                    </button>
-                  </div>
-                </div>
               </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-white border border-purple-100 rounded-2xl p-4 flex gap-3">
-                  <Users className="w-10 h-10 text-purple-600" />
-                  <div>
-                    <p className="text-sm font-semibold text-purple-700">Primary purchaser</p>
-                    <p className="text-sm text-gray-700">
-                      {purchasedBy?.name || 'Select parent or student during checkout'}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {purchasedBy?.role
-                        ? `Initiated by ${purchasedBy.role}`
-                        : 'Both parents and students can trigger the upgrade.'}
-                    </p>
+              
+              {/* Auto Renew Settings */}
+              {isPremium && (
+                <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-slate-500 mb-1">Auto Renewal</p>
+                      <p className="text-sm text-slate-900 font-medium">{autoRenewStatusText}</p>
+                      <p className="text-xs text-slate-600 mt-0.5">
+                        Method: {selectedAutoRenewMethod?.label}
+                      </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <select
+                        value={autoRenewForm.method}
+                        onChange={handleAutoRenewMethodChange}
+                        disabled={autoRenewUpdating}
+                        className="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+                      >
+                        {AUTO_RENEW_METHODS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={handleAutoRenewToggle}
+                        disabled={autoRenewUpdating}
+                        className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+                          autoRenewForm.enabled
+                            ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        } ${autoRenewUpdating ? 'opacity-70 cursor-wait' : ''}`}
+                      >
+                        {autoRenewUpdating ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <RefreshCw className="w-4 h-4" />
+                        )}
+                        {autoRenewForm.enabled ? 'Disable' : 'Enable'}
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="bg-white border border-purple-100 rounded-2xl p-4 flex gap-3">
-                  <HeartHandshake className="w-10 h-10 text-pink-500" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">Dedicated partner success</p>
-                    <p className="text-xs text-gray-600">
-                      Premium onboarding, quarterly growth reviews and access to counsellor-led circles included.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              )}
               {!canRenew && subscription?.planType === PARENT_PLAN.planType && renewDisabledReason && (
-                <p className="text-xs text-amber-600 flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  {renewDisabledReason}
-                </p>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
+                  <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-700">{renewDisabledReason}</p>
+                </div>
               )}
             </div>
-            <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-700 text-white rounded-2xl p-6 space-y-6 shadow-inner">
+            <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white rounded-lg p-6 space-y-5">
               <div>
-                <p className="text-xs uppercase tracking-wide text-white/80">Plan investment</p>
-                <h3 className="text-3xl font-black mt-2">{currencyFormatter.format(planInvestmentPrice)}</h3>
-                <p className="text-sm text-white/80">
+                <p className="text-xs font-medium text-white/80 mb-1">Plan Investment</p>
+                <h3 className="text-3xl font-bold mt-1">{currencyFormatter.format(planInvestmentPrice)}</h3>
+                <p className="text-sm text-white/80 mt-1">
                   {planInvestmentLabel}
                 </p>
               </div>
-              <div className="grid gap-3">
-                <div className="bg-white/10 border border-white/10 rounded-xl p-4 flex gap-3">
-                  <CreditCard className="w-5 h-5 text-white" />
+              <div className="space-y-3">
+                <div className="bg-white/10 border border-white/20 rounded-lg p-3 flex gap-3">
+                  <CreditCard className="w-4 h-4 text-white shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold">Annual renewal {currencyFormatter.format(PARENT_PLAN.renewalPrice)}</p>
-                    <p className="text-xs text-white/70">Unlock continued analytics, wellbeing alerts and parent labs.</p>
+                    <p className="text-sm font-medium">Annual renewal {currencyFormatter.format(PARENT_PLAN.renewalPrice)}</p>
+                    <p className="text-xs text-white/70">Continue premium access</p>
                   </div>
                 </div>
-                <div className="bg-white/10 border border-white/10 rounded-xl p-4 flex gap-3">
-                  <Receipt className="w-5 h-5 text-white" />
+                <div className="bg-white/10 border border-white/20 rounded-lg p-3 flex gap-3">
+                  <Receipt className="w-4 h-4 text-white shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold">GST compliant receipts</p>
-                    <p className="text-xs text-white/70">Instant invoices, download-ready and auto-emailed to guardians.</p>
+                    <p className="text-sm font-medium">GST compliant receipts</p>
+                    <p className="text-xs text-white/70">Instant invoices available</p>
                   </div>
                 </div>
-                <div className="bg-white/10 border border-white/10 rounded-xl p-4 flex gap-3">
-                  <Shield className="w-5 h-5 text-white" />
+                <div className="bg-white/10 border border-white/20 rounded-lg p-3 flex gap-3">
+                  <Shield className="w-4 h-4 text-white shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold">Enterprise-grade security</p>
-                    <p className="text-xs text-white/70">ISO-ready infrastructure, consent-based sharing & SOC monitoring.</p>
+                    <p className="text-sm font-medium">Secure payments</p>
+                    <p className="text-xs text-white/70">Razorpay · UPI · Netbanking</p>
                   </div>
-                </div>
-              </div>
-              <div className="border-t border-white/20 pt-4 text-xs text-white/70 flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <Crown className="w-4 h-4" />
-                  Includes exclusive parent wellbeing labs, AI nudges and 24x7 support.
-                </div>
-                <div className="flex items-center gap-2">
-                  <Heart className="w-4 h-4" />
-                  Billing is processed securely via Razorpay · UPI · Netbanking.
                 </div>
               </div>
             </div>
@@ -724,121 +832,135 @@ const ParentUpgrade = () => {
         </Motion.section>
 
         <Motion.section
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.05 }}
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4"
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
         >
           {summaryCards.map(({ title, value, description, icon, tone }) => {
             const IconComponent = icon;
             return (
               <Motion.div
                 key={title}
-                whileHover={{ scale: 1.02, y: -4 }}
-                className={`rounded-2xl p-5 bg-white shadow-lg border ${tone}`}
+                whileHover={{ y: -2 }}
+                className={`rounded-lg p-4 bg-white shadow-sm border ${tone}`}
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <IconComponent className="w-8 h-8" />
-                  <div>
-                    <p className="text-xs uppercase tracking-wide font-semibold text-gray-500">
+                <div className="flex items-start gap-3 mb-2">
+                  <IconComponent className="w-5 h-5 shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-slate-500 mb-1">
                       {title}
                     </p>
-                    <p className="text-xl font-bold text-gray-900">{value}</p>
+                    <p className="text-lg font-bold text-slate-900">{value}</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
+                <p className="text-xs text-slate-600">{description}</p>
               </Motion.div>
             );
           })}
         </Motion.section>
 
         <Motion.section
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 lg:p-8"
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
         >
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
             <div>
-              <h2 className="text-2xl font-black text-gray-900">Payment audit trail</h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Live transactions with roles, receipts and compliance-ready metadata.
+              <h2 className="text-lg font-bold text-slate-900">Payment History</h2>
+              <p className="text-xs text-slate-600 mt-1">
+                View all transactions and receipts
               </p>
             </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => handlePlanCheckout(isPremium ? 'renew' : 'purchase')}
-                className="inline-flex items-center gap-2 bg-purple-600 text-white font-semibold px-4 py-2 rounded-xl shadow-sm hover:bg-purple-700 transition"
-              >
-                {isPremium ? 'Renew plan' : 'Activate now'}
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                if (isPremium) {
+                  setShowPlanSelection(true);
+                } else {
+                  handlePlanCheckout('purchase');
+                }
+              }}
+              disabled={paymentLoading}
+              className="inline-flex items-center gap-2 bg-indigo-600 text-white font-medium px-4 py-2 rounded-lg shadow-sm hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            >
+              {paymentLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  {isPremium ? 'Renew plan' : 'Activate now'}
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
           </div>
-          <div className="overflow-hidden border border-gray-100 rounded-2xl">
+          <div className="overflow-hidden border border-slate-200 rounded-lg">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-100">
-                <thead className="bg-gray-50">
-                  <tr className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    <th className="px-5 py-3">Date</th>
-                    <th className="px-5 py-3">Type</th>
-                    <th className="px-5 py-3">Initiated By</th>
-                    <th className="px-5 py-3">Amount</th>
-                    <th className="px-5 py-3">Status</th>
-                    <th className="px-5 py-3">Receipt</th>
+              <table className="min-w-full divide-y divide-slate-200">
+                <thead className="bg-slate-50">
+                  <tr className="text-left text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                    <th className="px-4 py-3">Date</th>
+                    <th className="px-4 py-3">Type</th>
+                    <th className="px-4 py-3">Initiated By</th>
+                    <th className="px-4 py-3">Amount</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Receipt</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 bg-white">
+                <tbody className="divide-y divide-slate-200 bg-white">
                   {transactionsLoading
                     ? Array.from({ length: 4 }).map((_, idx) => (
                         <tr key={`skeleton-${idx}`}>
-                          <td className="px-5 py-4">
-                            <div className="h-3 w-32 bg-gray-100 rounded animate-pulse" />
+                          <td className="px-4 py-3">
+                            <div className="h-3 w-28 bg-slate-100 rounded animate-pulse" />
                           </td>
-                          <td className="px-5 py-4">
-                            <div className="h-3 w-24 bg-gray-100 rounded animate-pulse" />
+                          <td className="px-4 py-3">
+                            <div className="h-3 w-20 bg-slate-100 rounded animate-pulse" />
                           </td>
-                          <td className="px-5 py-4">
-                            <div className="h-3 w-28 bg-gray-100 rounded animate-pulse" />
+                          <td className="px-4 py-3">
+                            <div className="h-3 w-24 bg-slate-100 rounded animate-pulse" />
                           </td>
-                          <td className="px-5 py-4">
-                            <div className="h-3 w-16 bg-gray-100 rounded animate-pulse" />
+                          <td className="px-4 py-3">
+                            <div className="h-3 w-16 bg-slate-100 rounded animate-pulse" />
                           </td>
-                          <td className="px-5 py-4">
-                            <div className="h-3 w-20 bg-gray-100 rounded animate-pulse" />
+                          <td className="px-4 py-3">
+                            <div className="h-3 w-18 bg-slate-100 rounded animate-pulse" />
                           </td>
-                          <td className="px-5 py-4">
-                            <div className="h-3 w-16 bg-gray-100 rounded animate-pulse" />
+                          <td className="px-4 py-3">
+                            <div className="h-3 w-14 bg-slate-100 rounded animate-pulse" />
                           </td>
                         </tr>
                       ))
                     : displayedTransactions.map((row) => (
-                        <tr key={row.transactionId} className="text-sm text-gray-700">
-                          <td className="px-5 py-4 whitespace-nowrap">
+                        <tr key={row.transactionId} className="text-sm text-slate-700 hover:bg-slate-50">
+                          <td className="px-4 py-3 whitespace-nowrap">
                             {formatDateTime(row.paymentDate || row.createdAt)}
                           </td>
-                          <td className="px-5 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold">
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-medium">
                               <CreditCard className="w-3 h-3" />
                               {modeLabel(row.mode)}
                             </span>
                           </td>
-                          <td className="px-5 py-4">
+                          <td className="px-4 py-3">
                             <div className="flex flex-col">
-                              <span className="font-semibold">
+                              <span className="font-medium text-slate-900">
                                 {row.initiatedBy?.name || '—'}
                               </span>
-                              <span className="text-xs text-gray-500">
-                                {row.initiatedBy?.role ? row.initiatedBy.role : 'Role not captured'}
+                              <span className="text-xs text-slate-500">
+                                {row.initiatedBy?.role || '—'}
                               </span>
                             </div>
                           </td>
-                          <td className="px-5 py-4 whitespace-nowrap font-semibold">
+                          <td className="px-4 py-3 whitespace-nowrap font-semibold text-slate-900">
                             {currencyFormatter.format(row.amount || 0)}
                           </td>
-                          <td className="px-5 py-4 whitespace-nowrap">
+                          <td className="px-4 py-3 whitespace-nowrap">
                             <span
-                              className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                              className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ${
                                 statusTone[row.status] ||
                                 'bg-slate-100 text-slate-700 border border-slate-200'
                               }`}
@@ -846,25 +968,25 @@ const ParentUpgrade = () => {
                               {row.status?.toUpperCase()}
                             </span>
                           </td>
-                          <td className="px-5 py-4 whitespace-nowrap">
+                          <td className="px-4 py-3 whitespace-nowrap">
                             {row.receiptUrl ? (
                               <button
                                 type="button"
                                 onClick={() => window.open(row.receiptUrl, '_blank', 'noopener')}
-                                className="inline-flex items-center gap-1 text-xs font-semibold text-purple-600 hover:text-purple-800"
+                                className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700"
                               >
                                 <Download className="w-3 h-3" />
                                 Download
                               </button>
                             ) : (
-                              <span className="text-xs text-gray-400">Pending</span>
+                              <span className="text-xs text-slate-400">Pending</span>
                             )}
                           </td>
                         </tr>
                       ))}
                   {!transactionsLoading && displayedTransactions.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-5 py-8 text-center text-sm text-gray-500">
+                      <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-500">
                         No payment activity yet. Activate the premium plan to generate receipts.
                       </td>
                     </tr>
@@ -875,75 +997,11 @@ const ParentUpgrade = () => {
           </div>
         </Motion.section>
 
-        <Motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 lg:p-8"
-        >
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
-            <div>
-              <h2 className="text-2xl font-black text-gray-900">Lifecycle timeline</h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Every premium event with who triggered it and when it went live.
-              </p>
-            </div>
-            <button
-              onClick={fetchHistory}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 hover:text-purple-800"
-            >
-              Refresh history
-              <ExternalLink className="w-4 h-4" />
-            </button>
-          </div>
-          <div className="space-y-4">
-            {timelineItems.length === 0 && !transactionsLoading && (
-              <div className="bg-gray-50 border border-dashed border-gray-200 rounded-2xl p-6 text-sm text-gray-500 text-center">
-                No premium activity recorded yet. Your timeline will populate as soon as payments are initiated.
-              </div>
-            )}
-
-            {timelineItems.map((item, index) => {
-              const Icon = timelineIconForStatus(item.status);
-              const accent = timelineAccentForStatus(item.status);
-              return (
-                <div
-                  key={`${item.status}-${item.date}-${index}`}
-                  className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white border border-gray-100 rounded-2xl p-5 shadow-sm"
-                >
-                  <div className="flex items-center gap-4">
-                    <span className={`p-3 rounded-xl ${accent}`}>
-                      <Icon className="w-5 h-5" />
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {modeLabel(item.mode)} · {item.planName}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Triggered by {item.initiatedBy?.name || '—'} (
-                        {item.initiatedBy?.role || 'role not captured'})
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col md:items-end">
-                    <p className="text-sm font-semibold text-gray-900">
-                      {item.amount ? currencyFormatter.format(item.amount) : '—'}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {formatDateTime(item.date)}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </Motion.section>
-
         {/* Trust Indicators */}
         <Motion.section
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          transition={{ delay: 0.3 }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
         >
           {trustIndicators.map(({ icon, title, description }) => {
@@ -951,14 +1009,14 @@ const ParentUpgrade = () => {
             return (
               <Motion.div
                 key={title}
-                whileHover={{ scale: 1.03, y: -4 }}
-                className="bg-white rounded-2xl border border-white/40 shadow-lg p-5"
+                whileHover={{ y: -2 }}
+                className="bg-white rounded-lg border border-slate-200 shadow-sm p-4"
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <IconComponent className="w-8 h-8 text-purple-600" />
-                  <h4 className="text-sm font-semibold text-gray-900">{title}</h4>
+                <div className="flex items-center gap-2.5 mb-2">
+                  <IconComponent className="w-5 h-5 text-indigo-600 shrink-0" />
+                  <h4 className="text-sm font-semibold text-slate-900">{title}</h4>
                 </div>
-                <p className="text-xs text-gray-600 leading-relaxed">{description}</p>
+                <p className="text-xs text-slate-600">{description}</p>
               </Motion.div>
             );
           })}
@@ -967,50 +1025,52 @@ const ParentUpgrade = () => {
         {/* Plan Features */}
         <Motion.section
           id="plan-features"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 lg:p-8"
+          transition={{ delay: 0.4 }}
+          className="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
         >
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-3xl font-black text-gray-900">Everything parents need, in one premium experience</h2>
-              <p className="text-sm text-gray-600 mt-2">
-                Thoughtfully designed to balance academic excellence, emotional resilience and confident parenting.
+              <h2 className="text-xl font-bold text-slate-900">Plan Features</h2>
+              <p className="text-xs text-slate-600 mt-1">
+                Everything you need to track your child's progress and wellbeing
               </p>
             </div>
-            <div className="bg-purple-50 border border-purple-100 rounded-2xl px-5 py-4">
-              <p className="text-sm font-semibold text-purple-700">Family coverage</p>
-              <p className="text-lg text-purple-600">Child + Parent/Guardian (1) </p>
+            <div className="bg-indigo-50 border border-indigo-100 rounded-lg px-4 py-2">
+              <p className="text-xs font-medium text-indigo-700">Family coverage</p>
+              <p className="text-sm font-semibold text-indigo-900">Child + Parent/Guardian</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {PARENT_PLAN.features.map(({ title, description, icon }) => {
               const IconComponent = icon;
               return (
                 <Motion.div
                   key={title}
-                  whileHover={{ scale: 1.02, y: -4 }}
-                  className="border border-gray-100 rounded-2xl p-5 shadow-sm hover:border-purple-200 transition"
+                  whileHover={{ y: -2 }}
+                  className="border border-slate-200 rounded-lg p-4 hover:border-indigo-300 transition"
                 >
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="p-3 bg-purple-50 text-purple-600 rounded-xl">
-                      <IconComponent className="w-5 h-5" />
+                  <div className="flex items-start gap-3 mb-2">
+                    <span className="p-2 bg-indigo-100 text-indigo-600 rounded-lg shrink-0">
+                      <IconComponent className="w-4 h-4" />
                     </span>
-                    <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-slate-900 mb-1">{title}</h4>
+                      <p className="text-xs text-slate-600">{description}</p>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
                 </Motion.div>
               );
             })}
           </div>
 
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {PARENT_PLAN.extras.map(({ title, description }) => (
-              <div key={title} className="bg-gray-50 border border-gray-100 rounded-2xl p-5">
-                <h5 className="text-sm font-semibold text-gray-900 mb-2">{title}</h5>
-                <p className="text-xs text-gray-600 leading-relaxed">{description}</p>
+              <div key={title} className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                <h5 className="text-sm font-semibold text-slate-900 mb-1.5">{title}</h5>
+                <p className="text-xs text-slate-600">{description}</p>
               </div>
             ))}
           </div>
@@ -1018,129 +1078,54 @@ const ParentUpgrade = () => {
 
         {/* Outcomes / Benefits */}
         <Motion.section
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-5"
+          transition={{ delay: 0.5 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4"
         >
           {[ 
             {
               title: 'Proactive Wellbeing Alerts',
               description: 'Early signals when emotional health or motivation shifts, so you can intervene with confidence.',
               icon: Sparkles,
-              accent: 'from-pink-500/10 to-orange-400/10',
             },
             {
               title: '360° Progress Lens',
               description: 'Academic mastery, life-skills and social-emotional growth tracked in one intuitive space.',
               icon: TrendingUp,
-              accent: 'from-purple-500/10 to-indigo-400/10',
             },
             {
               title: 'Shared Family Journeys',
               description: 'Collaborative reflections, weekend family missions and conversation starters for meaningful bonding.',
               icon: HeartHandshake,
-              accent: 'from-emerald-500/10 to-teal-400/10',
             },
-          ].map(({ title, description, icon, accent }) => {
+          ].map(({ title, description, icon }) => {
             const IconComponent = icon;
             return (
               <Motion.div
                 key={title}
-                whileHover={{ scale: 1.02, y: -4 }}
-                className={`bg-gradient-to-br ${accent} border border-white rounded-3xl p-6 shadow-lg backdrop-blur`}
+                whileHover={{ y: -2 }}
+                className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm"
               >
-                <div className="flex items-center gap-3 mb-3 text-purple-600">
-                  <IconComponent className="w-6 h-6" />
-                  <h4 className="text-lg font-bold text-gray-900">{title}</h4>
+                <div className="flex items-center gap-2.5 mb-2">
+                  <IconComponent className="w-5 h-5 text-indigo-600 shrink-0" />
+                  <h4 className="text-sm font-semibold text-slate-900">{title}</h4>
                 </div>
-                <p className="text-sm text-gray-700 leading-relaxed">{description}</p>
+                <p className="text-xs text-slate-600">{description}</p>
               </Motion.div>
             );
           })}
         </Motion.section>
 
-        {/* Subscription Timeline */}
-        <Motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.35 }}
-          className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 lg:p-8"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div>
-              <h3 className="text-2xl font-black text-gray-900">Family subscription timeline</h3>
-              <p className="text-sm text-gray-600">Stay on top of upgrades, renewals and billing milestones in real time.</p>
-            </div>
-            <button
-              onClick={fetchHistory}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600"
-            >
-              <RefreshCw className={`w-4 h-4 ${historyLoading ? 'animate-spin' : ''}`} />
-              Refresh timeline
-            </button>
-          </div>
-
-          {historyLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
-            </div>
-          ) : timelineItems.length ? (
-            <div className="space-y-5">
-              {timelineItems.map((item, index) => (
-                <div key={index} className="flex items-start gap-4">
-                  <div className="relative">
-                    <div className={`w-11 h-11 rounded-full flex items-center justify-center shadow-md ${
-                      item.status === 'active'
-                        ? 'bg-emerald-100 text-emerald-600'
-                        : item.status === 'pending'
-                          ? 'bg-amber-100 text-amber-600'
-                          : 'bg-gray-100 text-gray-500'
-                    }`}>
-                      <Crown className="w-5 h-5" />
-                    </div>
-                    {index !== timelineItems.length - 1 && (
-                      <div className="absolute left-1/2 top-11 -translate-x-1/2 w-px h-12 bg-gray-200" />
-                    )}
-                  </div>
-                  <div className="flex-1 border border-gray-100 rounded-2xl p-5 bg-white">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">{item.planName || 'Subscription'}</p>
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Status: {item.status?.toUpperCase()}</p>
-                      </div>
-                      <div className="text-right">
-                        {item.date && (
-                          <p className="text-sm text-gray-600 flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-purple-500" />
-                            {formatShortDate(item.date)}
-                          </p>
-                        )}
-                        {item.amount && (
-                          <p className="text-sm font-semibold text-gray-900">₹{item.amount.toLocaleString()}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16 bg-gray-50 rounded-2xl">
-              <Star className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm text-gray-500">No subscription events recorded yet. Complete your family upgrade to populate this view.</p>
-            </div>
-          )}
-        </Motion.section>
-
         {/* FAQ */}
         <Motion.section
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 lg:p-8"
+          transition={{ delay: 0.6 }}
+          className="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <h2 className="text-lg font-bold text-slate-900 mb-5">Frequently Asked Questions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[ 
               {
                 q: 'Can both guardians access the dashboard simultaneously?',
@@ -1161,13 +1146,13 @@ const ParentUpgrade = () => {
             ].map(({ q, a }, idx) => (
               <Motion.div
                 key={q}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.45 + idx * 0.05 }}
-                className="bg-gray-50 rounded-2xl p-5 border border-gray-100"
+                transition={{ delay: 0.65 + idx * 0.05 }}
+                className="bg-slate-50 rounded-lg p-4 border border-slate-200"
               >
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">{q}</h4>
-                <p className="text-sm text-gray-600 leading-relaxed">{a}</p>
+                <h4 className="text-sm font-semibold text-slate-900 mb-2">{q}</h4>
+                <p className="text-xs text-slate-600">{a}</p>
               </Motion.div>
             ))}
           </div>
@@ -1175,19 +1160,160 @@ const ParentUpgrade = () => {
 
         {/* CTA */}
         <Motion.section
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.45 }}
-          className="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 rounded-3xl p-8 sm:p-10 text-white shadow-2xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
+          transition={{ delay: 0.7 }}
+          className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl p-6 text-white shadow-sm"
         >
-          <div className="space-y-3">
-            <h3 className="text-3xl font-black">Ready to lead your family’s growth journey?</h3>
-            <p className="text-sm text-white/80 max-w-2xl">
-              Join thousands of engaged parents using Student + Parent Premium Pro Plan for insight-rich conversations, proactive wellbeing and confident decision making.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-bold mb-1">Ready to get started?</h3>
+              <p className="text-sm text-white/80">
+                Join thousands of parents using Premium Pro Plan for better insights and wellbeing tracking.
+              </p>
+            </div>
+            {canUpgrade && (
+              <button
+                onClick={() => handlePlanCheckout('purchase')}
+                disabled={paymentLoading}
+                className="inline-flex items-center gap-2 bg-white text-indigo-600 font-medium px-5 py-2.5 rounded-lg shadow-sm hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+              >
+                {paymentLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    Activate Now
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </Motion.section>
       </div>
+
+      {/* Plan Selection Modal */}
+      {showPlanSelection && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+          >
+            {/* Colorful Header */}
+            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-6 py-5 rounded-t-xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 backdrop-blur rounded-lg">
+                  <Crown className="w-5 h-5 text-white" />
+                </div>
+                <h2 className="text-xl font-bold text-white">Select Renewal Plan</h2>
+              </div>
+              <button
+                onClick={() => setShowPlanSelection(false)}
+                className="p-2 hover:bg-white/20 rounded-lg transition"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
+
+            <div className="p-6 bg-gradient-to-br from-slate-50 to-indigo-50/30">
+              <p className="text-sm text-slate-700 mb-6 font-medium">Choose the plan you want to renew:</p>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Student + Parent Premium Pro Plan */}
+                <Motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="relative border-2 border-indigo-300 rounded-xl p-6 hover:border-indigo-500 hover:shadow-lg transition-all cursor-pointer bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50"
+                  onClick={() => handlePlanCheckout('renew', PARENT_PLAN.planType)}
+                >
+                  <div className="absolute top-3 right-3">
+                    <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                      Premium
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-slate-900">{PARENT_PLAN.name}</h3>
+                    <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg">
+                      <Crown className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-700 mb-4 font-medium">{PARENT_PLAN.tagline}</p>
+                  <div className="mb-4">
+                    <span className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                      {currencyFormatter.format(PARENT_PLAN.renewalPrice)}
+                    </span>
+                    <span className="text-sm text-slate-600 ml-1">/year</span>
+                  </div>
+                  <ul className="space-y-2 mb-5">
+                    {PARENT_PLAN.features.slice(0, 3).map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm text-slate-700">
+                        <div className="p-0.5 bg-indigo-100 rounded-full mt-0.5">
+                          <CheckCircle className="w-3.5 h-3.5 text-indigo-600 flex-shrink-0" />
+                        </div>
+                        <span className="font-medium">{feature.title}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-semibold py-3 rounded-lg hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition-all text-sm shadow-md hover:shadow-lg"
+                  >
+                    Renew This Plan
+                  </button>
+                </Motion.div>
+
+                {/* Parent Dashboard Plan */}
+                <Motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="relative border-2 border-emerald-300 rounded-xl p-6 hover:border-emerald-500 hover:shadow-lg transition-all cursor-pointer bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50"
+                  onClick={() => handlePlanCheckout('renew', 'parent_dashboard')}
+                >
+                  <div className="absolute top-3 right-3">
+                    <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                      Standard
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-slate-900">{PARENT_DASHBOARD_PLAN.name}</h3>
+                    <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg">
+                      <Users className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-700 mb-4 font-medium">{PARENT_DASHBOARD_PLAN.tagline}</p>
+                  <div className="mb-4">
+                    <span className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                      {currencyFormatter.format(PARENT_DASHBOARD_PLAN.renewalPrice)}
+                    </span>
+                    <span className="text-sm text-slate-600 ml-1">/year</span>
+                  </div>
+                  <ul className="space-y-2 mb-5">
+                    {PARENT_DASHBOARD_PLAN.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm text-slate-700">
+                        <div className="p-0.5 bg-emerald-100 rounded-full mt-0.5">
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                        </div>
+                        <span className="font-medium">{feature.title}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold py-3 rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all text-sm shadow-md hover:shadow-lg"
+                  >
+                    Renew This Plan
+                  </button>
+                </Motion.div>
+              </div>
+            </div>
+          </Motion.div>
+        </div>
+      )}
     </div>
   );
 };

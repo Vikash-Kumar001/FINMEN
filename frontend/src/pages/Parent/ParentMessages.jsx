@@ -101,67 +101,66 @@ const ParentMessages = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+      <div className="flex items-center justify-center min-h-screen bg-slate-50">
         <motion.div
-          animate={{ rotate: 360, scale: [1, 1.2, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="w-20 h-20 border-4 border-purple-500 border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full"
         />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 pb-12">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white py-8 px-6">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between"
-          >
-            <div>
-            <h1 className="text-4xl font-black mb-2 flex items-center gap-3">
-              <Mail className="w-10 h-10" />
-              {parentProfile?.name || "Parent"}'s Messages
-            </h1>
-            <p className="text-lg text-white/90">
-              Stay connected with your child's school and teachers
-            </p>
+    <div className="min-h-screen bg-slate-50 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-xl border border-slate-200 shadow-sm mb-6"
+        >
+          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-6 py-6 rounded-t-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
+                  <Mail className="w-6 h-6" />
+                  Messages
+                </h1>
+                <p className="text-sm text-white/80">
+                  Stay connected with your child's school and teachers
+                </p>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowComposeModal(true)}
+                className="px-4 py-2 bg-white/20 backdrop-blur text-white rounded-lg font-medium hover:bg-white/30 transition flex items-center gap-2 text-sm"
+              >
+                <Send className="w-4 h-4" />
+                Compose
+              </motion.button>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowComposeModal(true)}
-              className="px-6 py-3 bg-white/20 backdrop-blur-md text-white rounded-xl font-bold hover:bg-white/30 transition-all flex items-center gap-2 border-2 border-white/30"
-            >
-              <Send className="w-5 h-5" />
-              Compose
-            </motion.button>
-          </motion.div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 -mt-4">
+          </div>
+        </motion.div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Messages List */}
           <div className="lg:col-span-1">
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6"
+              className="bg-white rounded-xl border border-slate-200 shadow-sm p-4"
             >
               {/* Search and Filter */}
-              <div className="mb-6 space-y-4">
+              <div className="mb-4 space-y-3">
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                   <input
                     type="text"
                     placeholder="Search messages..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none"
+                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none text-sm"
                   />
                 </div>
 
@@ -169,30 +168,30 @@ const ParentMessages = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setFilterStatus("all")}
-                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
                       filterStatus === "all"
-                        ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-md"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                     }`}
                   >
                     All
                   </button>
                   <button
                     onClick={() => setFilterStatus("unread")}
-                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
                       filterStatus === "unread"
-                        ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-md"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                     }`}
                   >
                     Unread
                   </button>
                   <button
                     onClick={() => setFilterStatus("read")}
-                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
                       filterStatus === "read"
-                        ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-md"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                     }`}
                   >
                     Read
@@ -201,16 +200,16 @@ const ParentMessages = () => {
               </div>
 
               {/* Message Stats */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border-2 border-purple-200">
-                  <p className="text-sm text-purple-600 font-semibold mb-1">Total</p>
-                  <p className="text-3xl font-black text-purple-700">
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200">
+                  <p className="text-xs text-indigo-600 font-medium mb-1">Total</p>
+                  <p className="text-xl font-bold text-indigo-700">
                     {messages.length}
                   </p>
                 </div>
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border-2 border-blue-200">
-                  <p className="text-sm text-blue-600 font-semibold mb-1">Unread</p>
-                  <p className="text-3xl font-black text-blue-700">
+                <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                  <p className="text-xs text-blue-600 font-medium mb-1">Unread</p>
+                  <p className="text-xl font-bold text-blue-700">
                     {messages.filter((m) => !m.read).length}
                   </p>
                 </div>
@@ -219,48 +218,48 @@ const ParentMessages = () => {
               {/* Messages List */}
               <div className="space-y-2 max-h-[600px] overflow-y-auto">
                 {filteredMessages.length === 0 ? (
-                  <div className="text-center py-12 text-gray-400">
-                    <MessageSquare className="w-16 h-16 mx-auto mb-3" />
-                    <p className="font-semibold">No messages found</p>
+                  <div className="text-center py-8 text-slate-400">
+                    <MessageSquare className="w-12 h-12 mx-auto mb-2" />
+                    <p className="text-sm font-medium">No messages found</p>
                   </div>
                 ) : (
                   filteredMessages.map((message, idx) => (
                     <motion.div
                       key={message._id || idx}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      whileHover={{ scale: 1.02, x: 5 }}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.02 }}
+                      whileHover={{ y: -1 }}
                       onClick={() => handleMessageClick(message)}
-                      className={`p-4 rounded-xl cursor-pointer transition-all border-2 ${
+                      className={`p-3 rounded-lg cursor-pointer transition-all border ${
                         selectedMessage?._id === message._id
-                          ? "bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 shadow-md"
+                          ? "bg-indigo-50 border-indigo-300 shadow-sm"
                           : message.read
-                          ? "bg-gray-50 border-gray-200 hover:border-purple-300"
-                          : "bg-white border-purple-200 hover:border-purple-400 shadow-sm"
+                          ? "bg-slate-50 border-slate-200 hover:border-indigo-300"
+                          : "bg-white border-indigo-200 hover:border-indigo-400 shadow-sm"
                       }`}
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-2.5">
                         <div
-                          className={`w-3 h-3 rounded-full mt-1.5 flex-shrink-0 ${
-                            message.read ? "bg-gray-300" : "bg-purple-500 animate-pulse"
+                          className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                            message.read ? "bg-slate-300" : "bg-indigo-500"
                           }`}
                         />
                         <div className="flex-1 min-w-0">
                           <p
-                            className={`font-bold text-sm truncate ${
-                              message.read ? "text-gray-700" : "text-gray-900"
+                            className={`font-semibold text-sm truncate mb-0.5 ${
+                              message.read ? "text-slate-700" : "text-slate-900"
                             }`}
                           >
                             {message.subject || "No Subject"}
                           </p>
-                          <p className="text-xs text-gray-600 mb-1">
+                          <p className="text-xs text-slate-600 mb-1">
                             From: {message.sender || "Unknown"}
                           </p>
-                          <p className="text-xs text-gray-500 line-clamp-2">
+                          <p className="text-xs text-slate-500 line-clamp-2 mb-1.5">
                             {message.message}
                           </p>
-                          <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                          <p className="text-xs text-slate-400 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {message.time || "Just now"}
                           </p>
@@ -276,46 +275,46 @@ const ParentMessages = () => {
           {/* Message Detail */}
           <div className="lg:col-span-2">
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-8 min-h-[700px]"
+              className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 min-h-[600px]"
             >
               {selectedMessage ? (
                 <>
                   {/* Message Header */}
-                  <div className="border-b-2 border-gray-100 pb-6 mb-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <h2 className="text-2xl font-black text-gray-900">
+                  <div className="border-b border-slate-200 pb-4 mb-5">
+                    <div className="flex items-start justify-between mb-3">
+                      <h2 className="text-lg font-bold text-slate-900">
                         {selectedMessage.subject || "No Subject"}
                       </h2>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1.5">
                         <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="p-2 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition-all"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition"
                         >
-                          <Star className="w-5 h-5" />
+                          <Star className="w-4 h-4" />
                         </motion.button>
                         <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition"
                         >
-                          <Trash2 className="w-5 h-5" />
+                          <Trash2 className="w-4 h-4" />
                         </motion.button>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-3 text-sm text-slate-600">
                       <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold">
+                        <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-semibold text-sm">
                           {selectedMessage.sender?.charAt(0) || "?"}
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">
+                          <p className="font-medium text-slate-900 text-sm">
                             {selectedMessage.sender || "Unknown Sender"}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-slate-500">
                             {selectedMessage.time || "Just now"}
                           </p>
                         </div>
@@ -324,31 +323,31 @@ const ParentMessages = () => {
                   </div>
 
                   {/* Message Body */}
-                  <div className="mb-8">
-                    <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-wrap">
+                  <div className="mb-6">
+                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
                       {selectedMessage.message}
                     </p>
                   </div>
 
                   {/* Reply Section */}
-                  <div className="border-t-2 border-gray-100 pt-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <Send className="w-5 h-5 text-purple-600" />
+                  <div className="border-t border-slate-200 pt-5">
+                    <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                      <Send className="w-4 h-4 text-indigo-600" />
                       Reply
                     </h3>
                     <textarea
                       placeholder="Type your reply here..."
-                      rows={6}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none resize-none"
+                      rows={5}
+                      className="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none resize-none text-sm"
                     />
-                    <div className="flex justify-end gap-3 mt-4">
-                      <button className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all">
+                    <div className="flex justify-end gap-2 mt-3">
+                      <button className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-medium hover:bg-slate-200 transition text-sm">
                         Save Draft
                       </button>
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center gap-2"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition flex items-center gap-2 text-sm"
                       >
                         <Send className="w-4 h-4" />
                         Send Reply
@@ -357,12 +356,12 @@ const ParentMessages = () => {
                   </div>
                 </>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full text-center py-20">
-                  <Inbox className="w-24 h-24 text-gray-300 mb-6" />
-                  <h3 className="text-2xl font-bold text-gray-600 mb-2">
+                <div className="flex flex-col items-center justify-center h-full text-center py-16">
+                  <Inbox className="w-16 h-16 text-slate-300 mb-4" />
+                  <h3 className="text-lg font-semibold text-slate-600 mb-1">
                     No message selected
                   </h3>
-                  <p className="text-gray-500">
+                  <p className="text-sm text-slate-500">
                     Select a message from the list to view its contents
                   </p>
                 </div>
@@ -374,25 +373,25 @@ const ParentMessages = () => {
 
       {/* Compose Modal */}
       {showComposeModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-xl p-6 max-w-2xl w-full shadow-xl max-h-[90vh] overflow-y-auto"
           >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">Compose Message</h3>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-slate-900">Compose Message</h3>
               <button
                 onClick={() => setShowComposeModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-all"
+                className="p-2 hover:bg-slate-100 rounded-lg transition"
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-5 h-5 text-slate-500" />
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   To:
                 </label>
                 <select
@@ -400,7 +399,7 @@ const ParentMessages = () => {
                   onChange={(e) =>
                     setComposeData({ ...composeData, recipient: e.target.value })
                   }
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 outline-none"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-sm bg-white"
                 >
                   <option value="school">School Administration</option>
                   <option value="teacher">Child's Teacher</option>
@@ -409,7 +408,7 @@ const ParentMessages = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   Subject:
                 </label>
                 <input
@@ -419,12 +418,12 @@ const ParentMessages = () => {
                   onChange={(e) =>
                     setComposeData({ ...composeData, subject: e.target.value })
                   }
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none text-sm"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   Message:
                 </label>
                 <textarea
@@ -434,21 +433,21 @@ const ParentMessages = () => {
                     setComposeData({ ...composeData, message: e.target.value })
                   }
                   rows={8}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none resize-none"
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none resize-none text-sm"
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3 mt-5 pt-4 border-t border-slate-200">
               <button
                 onClick={() => setShowComposeModal(false)}
-                className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all"
+                className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-lg font-medium hover:bg-slate-200 transition"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSendMessage}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition flex items-center justify-center gap-2"
               >
                 <Send className="w-4 h-4" />
                 Send Message

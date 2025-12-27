@@ -5,7 +5,8 @@ import {
   ArrowLeft, BarChart3, BookOpen, Heart, Wallet,
   TrendingUp, Activity, Target, Award, Zap, 
   Coins, Flame, Brain, Gamepad2, ArrowRight,
-  Eye, Trophy
+  Eye, Trophy, RefreshCw, Download, Filter,
+  Lightbulb, AlertCircle, CheckCircle, X
 } from 'lucide-react';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
@@ -16,35 +17,112 @@ const ParentChildAnalytics = () => {
   const { childId } = useParams();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [dateRange, setDateRange] = useState({
+    startDate: '',
+    endDate: ''
+  });
 
-  const fetchChildAnalytics = useCallback(async () => {
+  const fetchChildAnalytics = useCallback(async (showToast = false) => {
     try {
       setLoading(true);
-      const analyticsRes = await api.get(`/api/parent/child/${childId}/analytics`);
-      console.log('Analytics response:', analyticsRes.data);
-      console.log('ChildCard data:', analyticsRes.data.childCard);
+      const params = new URLSearchParams();
+      if (dateRange.startDate) params.append('startDate', dateRange.startDate);
+      if (dateRange.endDate) params.append('endDate', dateRange.endDate);
+      
+      const url = `/api/parent/child/${childId}/analytics${params.toString() ? `?${params.toString()}` : ''}`;
+      const analyticsRes = await api.get(url);
       setAnalytics(analyticsRes.data);
+      if (showToast) {
+        toast.success('Analytics refreshed');
+      }
     } catch (error) {
       console.error('Error fetching analytics:', error);
       toast.error('Failed to load analytics');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }, [childId]);
+  }, [childId, dateRange]);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchChildAnalytics(true);
+  };
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const response = await api.post(`/api/parent/child/${childId}/report`, {
+        format: 'json',
+        type: 'analytics'
+      });
+      
+      // Create a JSON report file with all analytics data
+      const reportData = {
+        ...response.data.reportData,
+        analytics: {
+          snapshotKPIs: analytics?.snapshotKPIs,
+          overallMastery: analytics?.overallMastery,
+          digitalTwinData: analytics?.digitalTwinData,
+          skillsDistribution: analytics?.skillsDistribution,
+          weeklyEngagement: analytics?.weeklyEngagement,
+          moodSummary: analytics?.moodSummary,
+          homeSupportPlan: analytics?.homeSupportPlan
+        }
+      };
+      
+      const jsonString = JSON.stringify(reportData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `analytics-report-${childId}-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('Report downloaded successfully');
+    } catch (error) {
+      console.error('Error exporting report:', error);
+      if (error.response?.status === 404) {
+        toast.error('Child not found or access denied');
+      } else {
+        toast.error('Failed to export report');
+      }
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const clearFilters = () => {
+    setDateRange({ startDate: '', endDate: '' });
+  };
 
   useEffect(() => {
     if (childId) {
       fetchChildAnalytics();
     }
-  }, [childId, fetchChildAnalytics]);
+  }, [childId]);
+
+  useEffect(() => {
+    if (childId && (dateRange.startDate || dateRange.endDate)) {
+      const timeoutId = setTimeout(() => {
+        fetchChildAnalytics();
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [dateRange, childId]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full"
+          className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full"
         />
       </div>
     );
@@ -52,12 +130,12 @@ const ParentChildAnalytics = () => {
 
   if (!analytics) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Failed to load analytics</p>
+          <p className="text-slate-600 mb-4">Failed to load analytics</p>
           <button
             onClick={() => navigate('/parent/children')}
-            className="text-purple-600 hover:text-purple-700 font-semibold"
+            className="text-indigo-600 hover:text-indigo-700 font-medium"
           >
             Back to Children
           </button>
@@ -81,51 +159,119 @@ const ParentChildAnalytics = () => {
 
   const QuickAccessCard = ({ title, description, icon: Icon, color, onClick }) => (
     <motion.div
-      whileHover={{ scale: 1.03, y: -5 }}
+      whileHover={{ y: -2 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-100 hover:border-purple-300 cursor-pointer transition-all"
+      className="bg-white rounded-lg p-4 shadow-sm border border-slate-200 hover:border-indigo-300 cursor-pointer transition-all"
     >
-      <div className={`w-14 h-14 bg-gradient-to-br ${color} rounded-xl flex items-center justify-center mb-4`}>
-        <Icon className="w-8 h-8 text-white" />
+      <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mb-3">
+        <Icon className="w-5 h-5 text-indigo-600" />
       </div>
-      <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
-      <p className="text-sm text-gray-600 mb-4">{description}</p>
+      <h3 className="text-base font-semibold text-slate-900 mb-1.5">{title}</h3>
+      <p className="text-xs text-slate-600 mb-3">{description}</p>
       <div className="flex items-center justify-between">
-        <span className="text-purple-600 font-semibold text-sm">View Details</span>
-        <ArrowRight className="w-5 h-5 text-purple-600" />
+        <span className="text-indigo-600 font-medium text-xs">View Details</span>
+        <ArrowRight className="w-4 h-4 text-indigo-600" />
       </div>
     </motion.div>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 pb-12">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white py-8 px-6">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
+    <div className="min-h-screen bg-slate-50 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-xl border border-slate-200 shadow-sm mb-6"
+        >
+          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-6 py-6 rounded-t-xl">
             <button
               onClick={() => navigate('/parent/children')}
-              className="flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-4"
+              className="flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-4 text-sm"
             >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="font-semibold">Back to My Children</span>
+              <ArrowLeft className="w-4 h-4" />
+              <span className="font-medium">Back to My Children</span>
             </button>
-            <h1 className="text-4xl font-black mb-2 flex items-center gap-3">
-              <BarChart3 className="w-10 h-10" />
-              {childCard?.name || "Child"}'s Analytics Dashboard
-            </h1>
-            <p className="text-lg text-white/90">
-              Comprehensive overview of learning progress and development
-            </p>
-          </motion.div>
-        </div>
-      </div>
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
+                  <BarChart3 className="w-6 h-6" />
+                  {childCard?.name || "Child"}'s Analytics
+                </h1>
+                <p className="text-sm text-white/80">
+                  Comprehensive overview of learning progress and development
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  title="Filters"
+                >
+                  <Filter className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleRefresh}
+                  disabled={refreshing || loading}
+                  className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+                  title="Refresh"
+                >
+                  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                </button>
+                <button
+                  onClick={handleExport}
+                  disabled={exporting || loading}
+                  className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+                  title="Export Report"
+                >
+                  <Download className={`w-4 h-4 ${exporting ? 'animate-pulse' : ''}`} />
+                </button>
+              </div>
+            </div>
+          </div>
 
-      <div className="max-w-7xl mx-auto px-6 -mt-4">
+          {/* Filters */}
+          {showFilters && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="px-6 py-4 bg-slate-50 border-t border-slate-200"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-slate-700">Date Range Filter</h3>
+                <button
+                  onClick={clearFilters}
+                  className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1"
+                >
+                  <X className="w-3 h-3" />
+                  Clear
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Start Date</label>
+                  <input
+                    type="date"
+                    value={dateRange.startDate}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">End Date</label>
+                  <input
+                    type="date"
+                    value={dateRange.endDate}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
         {/* Child Info Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -151,18 +297,67 @@ const ParentChildAnalytics = () => {
           />
         </motion.div>
 
+        {/* Actionable Insights */}
+        {analytics?.homeSupportPlan && analytics.homeSupportPlan.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Lightbulb className="w-5 h-5 text-amber-600" />
+                Actionable Insights & Recommendations
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {analytics.homeSupportPlan.slice(0, 3).map((insight, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className={`p-4 rounded-lg border ${
+                    insight.priority === 'high'
+                      ? 'bg-rose-50 border-rose-200'
+                      : insight.priority === 'medium'
+                      ? 'bg-amber-50 border-amber-200'
+                      : 'bg-blue-50 border-blue-200'
+                  }`}
+                >
+                  <div className="flex items-start gap-2 mb-2">
+                    {insight.priority === 'high' ? (
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                    ) : (
+                      <CheckCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                    )}
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-sm text-slate-900 mb-1">{insight.title}</h3>
+                      <p className="text-xs text-slate-600 mb-2">{insight.description}</p>
+                      <p className="text-xs font-medium text-slate-700 bg-white/50 rounded px-2 py-1 inline-block">
+                        {insight.actionable}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {/* Quick Access Navigation Cards */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-8"
+          transition={{ delay: 0.15 }}
+          className="mb-6"
         >
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Target className="w-7 h-7 text-purple-600" />
+          <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <Target className="w-5 h-5 text-indigo-600" />
             Detailed Analytics
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <QuickAccessCard
               title="Learning Progress"
               description="Detailed progress reports, achievements, and activity timeline"
@@ -189,16 +384,16 @@ const ParentChildAnalytics = () => {
 
         {/* Growth Charts */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mb-8"
+          transition={{ delay: 0.2 }}
+          className="mb-6"
         >
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <TrendingUp className="w-7 h-7 text-green-600" />
+          <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-indigo-600" />
             Growth & Development Charts
           </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <DigitalTwinGrowthCard digitalTwinData={digitalTwinData} />
             <SkillsDistributionCard skillsDistribution={skillsDistribution} />
           </div>
@@ -206,33 +401,33 @@ const ParentChildAnalytics = () => {
 
         {/* Weekly Engagement Overview */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-8"
+          transition={{ delay: 0.3 }}
+          className="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
         >
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Activity className="w-7 h-7 text-blue-600" />
+          <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <Activity className="w-5 h-5 text-indigo-600" />
             Weekly Engagement Summary
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-blue-200">
-              <Gamepad2 className="w-10 h-10 text-blue-600 mb-3" />
-              <p className="text-sm font-semibold text-gray-700 mb-1">Games Played</p>
-              <p className="text-4xl font-black text-blue-600">{weeklyEngagement?.gameSessions || 0}</p>
-              <p className="text-xs text-gray-600 mt-2">{weeklyEngagement?.gamesMinutes || 0} minutes</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+              <Gamepad2 className="w-6 h-6 text-blue-600 mb-2" />
+              <p className="text-xs font-medium text-slate-700 mb-1">Games Played</p>
+              <p className="text-2xl font-bold text-blue-600">{weeklyEngagement?.gameSessions || 0}</p>
+              <p className="text-xs text-slate-600 mt-1">{weeklyEngagement?.gamesMinutes || 0} minutes</p>
             </div>
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
-              <BookOpen className="w-10 h-10 text-green-600 mb-3" />
-              <p className="text-sm font-semibold text-gray-700 mb-1">Lessons Completed</p>
-              <p className="text-4xl font-black text-green-600">{weeklyEngagement?.lessonSessions || 0}</p>
-              <p className="text-xs text-gray-600 mt-2">{weeklyEngagement?.lessonsMinutes || 0} minutes</p>
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+              <BookOpen className="w-6 h-6 text-emerald-600 mb-2" />
+              <p className="text-xs font-medium text-slate-700 mb-1">Lessons Completed</p>
+              <p className="text-2xl font-bold text-emerald-600">{weeklyEngagement?.lessonSessions || 0}</p>
+              <p className="text-xs text-slate-600 mt-1">{weeklyEngagement?.lessonsMinutes || 0} minutes</p>
             </div>
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200">
-              <Activity className="w-10 h-10 text-purple-600 mb-3" />
-              <p className="text-sm font-semibold text-gray-700 mb-1">Total Time</p>
-              <p className="text-4xl font-black text-purple-600">{weeklyEngagement?.totalMinutes || 0}</p>
-              <p className="text-xs text-gray-600 mt-2">minutes this week</p>
+            <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4">
+              <Activity className="w-6 h-6 text-indigo-600 mb-2" />
+              <p className="text-xs font-medium text-slate-700 mb-1">Total Time</p>
+              <p className="text-2xl font-bold text-indigo-600">{weeklyEngagement?.totalMinutes || 0}</p>
+              <p className="text-xs text-slate-600 mt-1">minutes this week</p>
             </div>
           </div>
         </motion.div>
@@ -240,47 +435,47 @@ const ParentChildAnalytics = () => {
         {/* Recent Achievements Preview */}
         {recentAchievements && recentAchievements.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-8"
+            transition={{ delay: 0.4 }}
+            className="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <Trophy className="w-7 h-7 text-yellow-600" />
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-indigo-600" />
                 Recent Achievements
               </h2>
               <button
                 onClick={() => navigate(`/parent/child/${childId}/progress`)}
-                className="text-purple-600 hover:text-purple-700 font-semibold flex items-center gap-2"
+                className="text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1.5 text-sm"
               >
                 View All <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {recentAchievements.slice(0, 6).map((achievement, idx) => (
                 <motion.div
                   key={idx}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: idx * 0.05 }}
-                  whileHover={{ scale: 1.05 }}
-                  className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl p-4 border-2 border-yellow-200"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.03 }}
+                  whileHover={{ y: -2 }}
+                  className="rounded-lg border border-amber-200 bg-amber-50 p-3"
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-lg flex items-center justify-center">
+                  <div className="flex items-center gap-2.5 mb-2">
+                    <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
                       {achievement.type === 'badge' ? (
-                        <Award className="w-6 h-6 text-white" />
+                        <Award className="w-4 h-4 text-white" />
                       ) : (
-                        <Trophy className="w-6 h-6 text-white" />
+                        <Trophy className="w-4 h-4 text-white" />
                       )}
                     </div>
-                    <div className="flex-1">
-                      <p className="font-bold text-gray-900 text-sm">{achievement.game}</p>
-                      <p className="text-xs text-gray-600">{achievement.category}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-900 text-sm truncate">{achievement.game}</p>
+                      <p className="text-xs text-slate-600 truncate">{achievement.category}</p>
                     </div>
                   </div>
-                  <p className="text-xs text-yellow-700 font-semibold">{achievement.achievement}</p>
+                  <p className="text-xs text-amber-700 font-medium">{achievement.achievement}</p>
                 </motion.div>
               ))}
             </div>

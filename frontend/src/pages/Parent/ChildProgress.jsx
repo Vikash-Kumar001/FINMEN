@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeft, BookOpen, Trophy, Activity, Target,
-  TrendingUp, Star, Award, Zap, Brain, Gamepad2
+  TrendingUp, Star, Award, Zap, Brain, Gamepad2,
+  RefreshCw, Download, Filter, X, ChevronDown, ChevronUp, Clock
 } from 'lucide-react';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
@@ -19,7 +20,94 @@ const ChildProgress = () => {
   const { childId } = useParams();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [parentProfile, setParentProfile] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [dateRange, setDateRange] = useState({
+    startDate: '',
+    endDate: ''
+  });
+  const [selectedPillar, setSelectedPillar] = useState('all');
+  const [activityFilter, setActivityFilter] = useState('all');
+
+  const fetchChildAnalytics = useCallback(async (showToast = false) => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (dateRange.startDate) params.append('startDate', dateRange.startDate);
+      if (dateRange.endDate) params.append('endDate', dateRange.endDate);
+      
+      const url = `/api/parent/child/${childId}/analytics${params.toString() ? `?${params.toString()}` : ''}`;
+      const [analyticsRes, profileRes] = await Promise.all([
+        api.get(url),
+        api.get("/api/user/profile").catch(() => ({ data: null }))
+      ]);
+      setAnalytics(analyticsRes.data);
+      setParentProfile(profileRes.data);
+      if (showToast) {
+        toast.success('Progress data refreshed');
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+      toast.error('Failed to load progress data');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [childId, dateRange]);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchChildAnalytics(true);
+  };
+
+  const handleExport = async () => {
+    try {
+      toast.loading('Generating progress report...');
+      const response = await api.post(`/api/parent/child/${childId}/report`, {
+        format: 'json',
+        type: 'progress'
+      });
+      
+      // Create a JSON report file
+      const reportData = {
+        ...response.data.reportData,
+        analytics: {
+          overallMastery: analytics?.overallMastery,
+          detailedProgressReport: analytics?.detailedProgressReport,
+          recentAchievements: analytics?.recentAchievements,
+          activityTimeline: analytics?.activityTimeline
+        }
+      };
+      
+      const jsonString = JSON.stringify(reportData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `progress-report-${childId}-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.dismiss();
+      toast.success('Progress report downloaded successfully');
+    } catch (error) {
+      console.error('Error exporting report:', error);
+      toast.dismiss();
+      if (error.response?.status === 404) {
+        toast.error('Child not found or access denied');
+      } else {
+        toast.error('Failed to export report');
+      }
+    }
+  };
+
+  const clearFilters = () => {
+    setDateRange({ startDate: '', endDate: '' });
+    setSelectedPillar('all');
+    setActivityFilter('all');
+  };
 
   useEffect(() => {
     if (childId) {
@@ -27,30 +115,50 @@ const ChildProgress = () => {
     }
   }, [childId]);
 
-  const fetchChildAnalytics = async () => {
-    try {
-      setLoading(true);
-      const [analyticsRes, profileRes] = await Promise.all([
-        api.get(`/api/parent/child/${childId}/analytics`),
-        api.get("/api/user/profile").catch(() => ({ data: null }))
-      ]);
-      setAnalytics(analyticsRes.data);
-      setParentProfile(profileRes.data);
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-      toast.error('Failed to load progress data');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (childId && (dateRange.startDate || dateRange.endDate)) {
+      const timeoutId = setTimeout(() => {
+        fetchChildAnalytics();
+      }, 500);
+      return () => clearTimeout(timeoutId);
     }
+  }, [dateRange, childId]);
+
+  // Filter activities based on selected filter
+  const getFilteredActivities = () => {
+    if (!analytics?.activityTimeline) return [];
+    let filtered = [...analytics.activityTimeline];
+    
+    if (activityFilter !== 'all') {
+      filtered = filtered.filter(activity => activity.type === activityFilter);
+    }
+    
+    if (selectedPillar !== 'all') {
+      filtered = filtered.filter(activity => 
+        activity.category?.toLowerCase().includes(selectedPillar.toLowerCase()) ||
+        activity.details?.category?.toLowerCase().includes(selectedPillar.toLowerCase())
+      );
+    }
+    
+    return filtered;
+  };
+
+  // Filter achievements based on selected pillar
+  const getFilteredAchievements = () => {
+    if (!analytics?.recentAchievements) return [];
+    if (selectedPillar === 'all') return analytics.recentAchievements;
+    return analytics.recentAchievements.filter(achievement =>
+      achievement.category?.toLowerCase().includes(selectedPillar.toLowerCase())
+    );
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full"
+          className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full"
         />
       </div>
     );
@@ -58,12 +166,12 @@ const ChildProgress = () => {
 
   if (!analytics) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Failed to load progress data</p>
+          <p className="text-slate-600 mb-4">Failed to load progress data</p>
           <button
             onClick={() => navigate(`/parent/child/${childId}/analytics`)}
-            className="text-purple-600 hover:text-purple-700 font-semibold"
+            className="text-indigo-600 hover:text-indigo-700 font-medium"
           >
             Back to Analytics
           </button>
@@ -81,76 +189,167 @@ const ChildProgress = () => {
   } = analytics;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 pb-12">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 text-white py-8 px-6">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
+    <div className="min-h-screen bg-slate-50 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-xl border border-slate-200 shadow-sm mb-6"
+        >
+          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-6 py-6 rounded-t-xl">
             <button
               onClick={() => navigate(`/parent/child/${childId}/analytics`)}
-              className="flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-4"
+              className="flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-4 text-sm"
             >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="font-semibold">Back to Analytics Overview</span>
+              <ArrowLeft className="w-4 h-4" />
+              <span className="font-medium">Back to Analytics Overview</span>
             </button>
-            <h1 className="text-4xl font-black mb-2 flex items-center gap-3">
-              <BookOpen className="w-10 h-10" />
-              Learning Progress & Development
-            </h1>
-            <p className="text-lg text-white/90">
-              Detailed insights into {childCard?.name || "your child"}'s learning journey
-            </p>
-          </motion.div>
-        </div>
-      </div>
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
+                  <BookOpen className="w-6 h-6" />
+                  Learning Progress & Development
+                </h1>
+                <p className="text-sm text-white/80">
+                  Detailed insights into {analytics?.childCard?.name || analytics?.childName || "your child"}'s learning journey
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  title="Filters"
+                >
+                  <Filter className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleRefresh}
+                  disabled={refreshing || loading}
+                  className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+                  title="Refresh"
+                >
+                  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                </button>
+                <button
+                  onClick={handleExport}
+                  className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  title="Export Report"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
 
-      <div className="max-w-7xl mx-auto px-6 -mt-4">
+          {/* Filters */}
+          {showFilters && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="px-6 py-4 bg-slate-50 border-t border-slate-200"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-slate-700">Filters</h3>
+                <button
+                  onClick={clearFilters}
+                  className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1"
+                >
+                  <X className="w-3 h-3" />
+                  Clear All
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Start Date</label>
+                  <input
+                    type="date"
+                    value={dateRange.startDate}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">End Date</label>
+                  <input
+                    type="date"
+                    value={dateRange.endDate}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Pillar/Category</label>
+                  <select
+                    value={selectedPillar}
+                    onChange={(e) => setSelectedPillar(e.target.value)}
+                    className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="all">All Pillars</option>
+                    {analytics?.overallMastery?.byPillar && Object.keys(analytics.overallMastery.byPillar).map(pillar => (
+                      <option key={pillar} value={pillar.toLowerCase()}>{pillar}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Activity Type</label>
+                  <select
+                    value={activityFilter}
+                    onChange={(e) => setActivityFilter(e.target.value)}
+                    className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="all">All Activities</option>
+                    <option value="game">Games</option>
+                    <option value="lesson">Lessons</option>
+                    <option value="quiz">Quizzes</option>
+                    <option value="mood">Mood Logs</option>
+                  </select>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
         {/* Overall Mastery */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-8 mb-6"
+          className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6"
         >
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Target className="w-7 h-7 text-purple-600" />
+          <h2 className="text-lg font-bold text-slate-900 mb-5 flex items-center gap-2">
+            <Target className="w-5 h-5 text-indigo-600" />
             Overall Mastery by Pillar
           </h2>
-          <div className="space-y-4">
-            {overallMastery?.byPillar && Object.entries(overallMastery.byPillar).map(([pillar, percentage], idx) => {
-              const colors = [
-                'from-blue-500 to-cyan-600',
-                'from-green-500 to-emerald-600',
-                'from-purple-500 to-pink-600',
-                'from-amber-500 to-orange-600',
-                'from-red-500 to-rose-600',
-                'from-indigo-500 to-violet-600'
+          <div className="space-y-3">
+            {analytics?.overallMastery?.byPillar && Object.entries(analytics.overallMastery.byPillar).map(([pillar, percentage], idx) => {
+              const colorClasses = [
+                'bg-blue-600',
+                'bg-emerald-600',
+                'bg-indigo-600',
+                'bg-amber-600',
+                'bg-rose-600',
+                'bg-purple-600'
               ];
               return (
                 <motion.div
                   key={pillar}
-                  initial={{ opacity: 0, x: -20 }}
+                  initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  whileHover={{ scale: 1.01 }}
+                  transition={{ delay: idx * 0.03 }}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-bold text-gray-700">{pillar}</span>
-                    <span className="text-xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm font-semibold text-slate-700 capitalize">{pillar}</span>
+                    <span className="text-base font-bold text-slate-900">
                       {percentage}%
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
+                  <div className="w-full bg-slate-200 rounded-full h-2">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${percentage}%` }}
-                      transition={{ duration: 1, delay: idx * 0.05 + 0.3 }}
-                      className={`bg-gradient-to-r ${colors[idx % colors.length]} h-3 rounded-full shadow-lg relative`}
-                    >
-                      <div className="absolute inset-0 bg-white/20 animate-pulse rounded-full" />
-                    </motion.div>
+                      transition={{ duration: 0.8, delay: idx * 0.03 + 0.2 }}
+                      className={`${colorClasses[idx % colorClasses.length]} h-2 rounded-full`}
+                    />
                   </div>
                 </motion.div>
               );
@@ -160,34 +359,71 @@ const ChildProgress = () => {
 
         {/* Detailed Progress Report */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="mb-6"
         >
-          <DetailedProgressReportCard progressReport={detailedProgressReport} />
+          <DetailedProgressReportCard progressReport={analytics?.detailedProgressReport} />
         </motion.div>
 
         {/* Recent Achievements */}
-        {recentAchievements && recentAchievements.length > 0 && (
+        {analytics?.recentAchievements && analytics.recentAchievements.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="mb-6"
           >
-            <AchievementsCard achievements={recentAchievements} />
+            <AchievementsCard achievements={getFilteredAchievements()} />
           </motion.div>
         )}
 
         {/* Activity Timeline */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <ActivityTimelineCard activityTimeline={activityTimeline || []} />
+          <ActivityTimelineCard activityTimeline={getFilteredActivities()} />
         </motion.div>
+
+        {/* Progress Summary Stats */}
+        {analytics?.detailedProgressReport && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
+          >
+            <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-indigo-600" />
+              Progress Summary
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <Gamepad2 className="w-6 h-6 text-blue-600 mb-2" />
+                <p className="text-xs font-medium text-slate-700 mb-1">Games Completed</p>
+                <p className="text-2xl font-bold text-blue-600">{analytics.detailedProgressReport.gamesCompleted || 0}</p>
+              </div>
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                <Zap className="w-6 h-6 text-emerald-600 mb-2" />
+                <p className="text-xs font-medium text-slate-700 mb-1">HealCoins Earned</p>
+                <p className="text-2xl font-bold text-emerald-600">{(analytics.detailedProgressReport.weeklyCoins || 0) + (analytics.detailedProgressReport.monthlyCoins || 0)}</p>
+              </div>
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <Clock className="w-6 h-6 text-amber-600 mb-2" />
+                <p className="text-xs font-medium text-slate-700 mb-1">Time Spent</p>
+                <p className="text-2xl font-bold text-amber-600">{analytics.detailedProgressReport.timeSpent || 0}m</p>
+              </div>
+              <div className="rounded-lg border border-purple-200 bg-purple-50 p-4">
+                <Target className="w-6 h-6 text-purple-600 mb-2" />
+                <p className="text-xs font-medium text-slate-700 mb-1">Overall Mastery</p>
+                <p className="text-2xl font-bold text-purple-600">{analytics?.overallMastery?.percentage || 0}%</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );

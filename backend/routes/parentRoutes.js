@@ -1127,10 +1127,17 @@ router.get("/child/:childId/analytics", async (req, res) => {
     }
 
     // Verify the child belongs to this parent
+    // Handle childEmail as both string and array
+    const childEmailArray = Array.isArray(req.user.childEmail) 
+      ? req.user.childEmail 
+      : req.user.childEmail 
+        ? [req.user.childEmail]
+        : [];
+    
     const child = await User.findOne({
       _id: childId,
       $or: [
-        { email: req.user.childEmail },
+        ...(childEmailArray.length > 0 ? [{ email: { $in: childEmailArray } }] : []),
         { _id: { $in: req.user.linkedIds?.childIds || [] } },
         { guardianEmail: req.user.email }
       ],
@@ -1190,11 +1197,34 @@ router.get("/child/:childId/analytics", async (req, res) => {
     const teachers = child.linkedIds?.teacherIds || [];
     const primaryTeacher = teachers.length > 0 ? teachers[0] : null;
 
+    // Handle date range filtering
+    const startDate = req.query.startDate ? new Date(req.query.startDate) : null;
+    const endDate = req.query.endDate ? new Date(req.query.endDate) : null;
+    
+    // Default to last 7 days if no date range provided
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // Determine date range for queries
+    const dateFilter = {};
+    if (startDate || endDate) {
+      dateFilter.createdAt = {};
+      if (startDate) {
+        dateFilter.createdAt.$gte = startDate;
+      } else {
+        dateFilter.createdAt.$gte = sevenDaysAgo; // Default to 7 days if no start date
+      }
+      if (endDate) {
+        const endDateWithTime = new Date(endDate);
+        endDateWithTime.setHours(23, 59, 59, 999);
+        dateFilter.createdAt.$lte = endDateWithTime;
+      }
+    } else {
+      dateFilter.createdAt = { $gte: sevenDaysAgo };
+    }
 
     // Fetch all required data in parallel
     const [
@@ -1211,19 +1241,19 @@ router.get("/child/:childId/analytics", async (req, res) => {
       Wallet.findOne({ userId: childId }),
       Transaction.find({ 
         userId: childId,
-        createdAt: { $gte: sevenDaysAgo }
-      }).sort({ createdAt: -1 }).limit(10),
+        ...dateFilter
+      }).sort({ createdAt: -1 }).limit(50), // Increased limit for better filtering
       MoodLog.find({ 
         userId: childId,
-        createdAt: { $gte: sevenDaysAgo }
-      }).sort({ createdAt: -1 }).limit(7),
+        ...dateFilter
+      }).sort({ createdAt: -1 }).limit(30),
       ActivityLog.find({
         userId: childId,
-        createdAt: { $gte: sevenDaysAgo }
+        ...dateFilter
       }).sort({ createdAt: -1 }),
       Notification.find({
         userId: parentId,
-        createdAt: { $gte: sevenDaysAgo }
+        ...dateFilter
       }).sort({ createdAt: -1 }).limit(10)
     ]);
 
@@ -1930,6 +1960,96 @@ router.get("/child", async (req, res) => {
   }
 });
 
+// Get child wallet transactions with pagination and filtering
+router.get("/child/:childId/transactions", async (req, res) => {
+  try {
+    const { childId } = req.params;
+    const parentId = req.user._id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const type = req.query.type; // 'credit' or 'debit'
+    const startDate = req.query.startDate ? new Date(req.query.startDate) : null;
+    const endDate = req.query.endDate ? new Date(req.query.endDate) : null;
+
+    // Verify the child belongs to this parent (same logic as analytics endpoint)
+    // Handle childEmail as both string and array - MongoDB handles both cases with $in
+    const childEmailArray = Array.isArray(req.user.childEmail) 
+      ? req.user.childEmail 
+      : req.user.childEmail 
+        ? [req.user.childEmail]
+        : [];
+    
+    const child = await User.findOne({
+      _id: childId,
+      $or: [
+        ...(childEmailArray.length > 0 ? [{ email: { $in: childEmailArray } }] : []),
+        { _id: { $in: req.user.linkedIds?.childIds || [] } },
+        { guardianEmail: req.user.email }
+      ],
+      role: { $in: ['student', 'school_student'] }
+    });
+
+    if (!child) {
+      console.log('Child verification failed:', {
+        childId,
+        parentId: req.user._id,
+        parentEmail: req.user.email,
+        parentChildEmail: req.user.childEmail,
+        parentLinkedIds: req.user.linkedIds,
+        childEmailIsArray: Array.isArray(req.user.childEmail)
+      });
+      return res.status(404).json({ message: "Child not found or access denied" });
+    }
+
+    // Build query
+    const query = { userId: childId };
+    
+    if (type && (type === 'credit' || type === 'debit')) {
+      query.type = type;
+    }
+    
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) query.createdAt.$gte = startDate;
+      if (endDate) {
+        endDate.setHours(23, 59, 59, 999); // End of day
+        query.createdAt.$lte = endDate;
+      }
+    }
+
+    // Get total count for pagination
+    const totalCount = await Transaction.countDocuments(query);
+
+    // Fetch paginated transactions
+    const transactions = await Transaction.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    res.json({
+      transactions,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        limit,
+        hasNextPage,
+        hasPrevPage
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching child transactions:", error);
+    res.status(500).json({ message: "Failed to fetch transactions" });
+  }
+});
+
 // Get detailed progress for a specific child
 router.get("/child/:childId/progress", async (req, res) => {
   try {
@@ -1965,28 +2085,80 @@ router.get("/child/:childId/progress", async (req, res) => {
 router.post("/child/:childId/report", async (req, res) => {
   try {
     const { childId } = req.params;
-    const { format = "pdf" } = req.body;
+    const { format = "pdf", type = "progress" } = req.body;
     const parentId = req.user._id;
 
-    // Verify the child belongs to this parent
+    // Verify the child belongs to this parent (same logic as analytics endpoint)
+    const childEmailArray = Array.isArray(req.user.childEmail) 
+      ? req.user.childEmail 
+      : req.user.childEmail 
+        ? [req.user.childEmail]
+        : [];
+    
     const child = await User.findOne({
       _id: childId,
-      guardianEmail: req.user.email,
+      $or: [
+        ...(childEmailArray.length > 0 ? [{ email: { $in: childEmailArray } }] : []),
+        { _id: { $in: req.user.linkedIds?.childIds || [] } },
+        { guardianEmail: req.user.email }
+      ],
       role: { $in: ['student', 'school_student'] }
     });
 
     if (!child) {
+      console.log('Child verification failed for report:', {
+        childId,
+        parentId: req.user._id,
+        parentEmail: req.user.email,
+        parentChildEmail: req.user.childEmail,
+        parentLinkedIds: req.user.linkedIds
+      });
       return res.status(404).json({ message: "Child not found or access denied" });
     }
 
+    // Fetch comprehensive analytics data for the report
+    const [
+      userProgress,
+      gameProgress,
+      wallet,
+      transactions,
+      moodLogs,
+      activityLogs
+    ] = await Promise.all([
+      UserProgress.findOne({ userId: childId }),
+      UnifiedGameProgress.find({ userId: childId }),
+      Wallet.findOne({ userId: childId }),
+      Transaction.find({ userId: childId }).sort({ createdAt: -1 }).limit(50),
+      MoodLog.find({ userId: childId }).sort({ createdAt: -1 }).limit(30),
+      ActivityLog.find({ userId: childId }).sort({ createdAt: -1 }).limit(100)
+    ]);
+
     const progress = await ChildProgress.findOne({ parentId, childId });
     
-    // Generate report data
+    // Generate comprehensive report data
     const reportData = {
-      child: child.toObject(),
+      child: {
+        name: child.name,
+        email: child.email,
+        avatar: child.avatar,
+        level: userProgress?.level || 1,
+        xp: userProgress?.xp || 0,
+        streak: userProgress?.streak || 0
+      },
       progress: progress || {},
+      wallet: {
+        balance: wallet?.balance || 0
+      },
+      statistics: {
+        gamesCompleted: gameProgress?.filter(g => g.completed).length || 0,
+        totalGames: gameProgress?.length || 0,
+        transactions: transactions?.length || 0,
+        moodEntries: moodLogs?.length || 0,
+        activities: activityLogs?.length || 0
+      },
       generatedAt: new Date(),
       format,
+      type
     };
 
     // Update the progress record with report generation info
@@ -1999,11 +2171,23 @@ router.post("/child/:childId/report", async (req, res) => {
       await progress.save();
     }
 
-    res.json({
-      message: "Report generated successfully",
-      reportData,
-      downloadUrl: `/api/parent/child/${childId}/download-report?format=${format}`,
-    });
+    // For PDF format, return JSON data (frontend can generate PDF client-side or we can use a PDF library)
+    // For now, return JSON and let frontend handle it
+    if (format === 'pdf') {
+      // Set headers for JSON response (frontend will handle PDF generation)
+      res.setHeader('Content-Type', 'application/json');
+      res.json({
+        message: "Report generated successfully",
+        reportData,
+        downloadUrl: `/api/parent/child/${childId}/download-report?format=${format}`,
+      });
+    } else {
+      res.json({
+        message: "Report generated successfully",
+        reportData,
+        downloadUrl: `/api/parent/child/${childId}/download-report?format=${format}`,
+      });
+    }
   } catch (error) {
     console.error("Error generating report:", error);
     res.status(500).json({ message: "Failed to generate report" });

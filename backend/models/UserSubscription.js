@@ -103,7 +103,7 @@ const userSubscriptionSchema = new mongoose.Schema({
     },
     status: {
       type: String,
-      enum: ['pending', 'completed', 'failed', 'refunded'],
+      enum: ['pending', 'completed', 'failed', 'refunded', 'cancelled'],
       default: 'pending',
     },
     mode: {

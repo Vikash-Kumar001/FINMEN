@@ -261,9 +261,21 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
           color: '#6366f1',
         },
         modal: {
-          ondismiss: function () {
+          ondismiss: async function () {
             setLoading(false);
             setPaymentError('Payment was cancelled');
+            
+            // Update backend to mark payment as cancelled
+            if (subscriptionId) {
+              try {
+                await api.post('/api/subscription/cancel-payment', {
+                  subscriptionId,
+                });
+              } catch (error) {
+                console.error('Error cancelling payment:', error);
+                // Don't show error to user as they already closed the window
+              }
+            }
           },
         },
       };

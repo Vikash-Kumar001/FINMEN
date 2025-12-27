@@ -43,6 +43,18 @@ const Avatar = ({
     }
   }, [user?.id, user?._id]);
 
+  // Prevent background scrolling when modals are open
+  useEffect(() => {
+    if (customizing || showOptions) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [customizing, showOptions]);
+
   const fetchAvatarData = async () => {
     try {
       setLoading(true);

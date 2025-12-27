@@ -51,20 +51,20 @@ const QuizOnCultures = () => {
         {
           id: "a",
           text: "China",
-          emoji: "🇨🇳",
+          emoji: "🧱",
           isCorrect: false
         },
         
         {
           id: "c",
           text: "Thailand",
-          emoji: "🇹🇭",
+          emoji: "🏖️",
           isCorrect: false
         },
         {
           id: "b",
           text: "Japan",
-          emoji: "🇯🇵",
+          emoji: "🗼",
           isCorrect: true
         },
       ]
@@ -83,7 +83,7 @@ const QuizOnCultures = () => {
         {
           id: "a",
           text: "Cinco de Mayo",
-          emoji: "🇲🇽",
+          emoji: "©️",
           isCorrect: false
         },
         
@@ -134,7 +134,7 @@ const QuizOnCultures = () => {
         {
           id: "b",
           text: "Sari",
-          emoji: "🇮🇳",
+          emoji: "🥻",
           isCorrect: false
         },
         {

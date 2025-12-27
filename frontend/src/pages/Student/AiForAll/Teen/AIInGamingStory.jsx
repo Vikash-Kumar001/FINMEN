@@ -61,21 +61,20 @@ const AIInGamingStory = () => {
           id: "ai", 
           text: "Artificial Intelligence", 
           emoji: "🤖", 
-          description: "Modern games use sophisticated AI that can learn from your playing style and adapt strategies",
+         
           isCorrect: true
         },
         { 
           id: "human", 
           text: "Another human player online", 
           emoji: "👤", 
-          description: "While humans can play online, the strategic enemies are controlled by AI systems",
+       
           isCorrect: false
         },
         { 
           id: "developer", 
           text: "The game developer controlling them", 
           emoji: "👨‍💻", 
-          description: "Developers create the AI systems, but the AI itself makes decisions in real-time",
           isCorrect: false
         }
       ]
@@ -88,21 +87,18 @@ const AIInGamingStory = () => {
           id: "npc", 
           text: "Non-Player Characters (NPCs)", 
           emoji: "👥", 
-          description: "NPCs like shopkeepers, quest givers, and townspeople are usually controlled by AI",
           isCorrect: false
         },
         { 
           id: "environment", 
           text: "Weather and environmental effects", 
           emoji: "🌦️", 
-          description: "Dynamic weather and environmental changes are often controlled by AI systems",
           isCorrect: false
         },
         { 
           id: "player", 
           text: "Human player characters", 
           emoji: "🎮", 
-          description: "Human players control their own characters, not AI",
           isCorrect: true
         }
       ]
@@ -115,21 +111,18 @@ const AIInGamingStory = () => {
           id: "predictable", 
           text: "It follows predictable patterns", 
           emoji: "🔁", 
-          description: "Older AI was more predictable, making it easier to exploit",
           isCorrect: false
         },
         { 
           id: "adaptive", 
           text: "It adapts to your play style", 
           emoji: "🔄", 
-          description: "Modern AI can learn from your actions and adjust difficulty accordingly",
           isCorrect: true
         },
         { 
           id: "simple", 
           text: "It uses simpler algorithms", 
           emoji: "⚙️", 
-          description: "Modern AI uses more complex algorithms than older games",
           isCorrect: false
         }
       ]
@@ -142,21 +135,18 @@ const AIInGamingStory = () => {
           id: "opponents", 
           text: "Opponent drivers", 
           emoji: "🏎️", 
-          description: "AI controls opponent racers to provide challenging competition",
           isCorrect: true
         },
         { 
           id: "track", 
           text: "The physical track layout", 
           emoji: "🛣️", 
-          description: "Track layouts are designed by developers, not controlled by AI in real-time",
           isCorrect: false
         },
         { 
           id: "playercar", 
           text: "Your car's steering", 
           emoji: "🚗", 
-          description: "Players control their own vehicles, not AI",
           isCorrect: false
         }
       ]
@@ -169,21 +159,18 @@ const AIInGamingStory = () => {
           id: "cost", 
           text: "It's cheaper than hiring actors", 
           emoji: "💰", 
-          description: "While cost is a factor, the main reasons are availability and consistency",
           isCorrect: false
         },
         { 
           id: "availability", 
           text: "AI is always available and consistent", 
           emoji: "24/7", 
-          description: "AI opponents can play anytime without needing to schedule human players",
           isCorrect: true
         },
         { 
           id: "simple", 
           text: "AI is simpler to program", 
           emoji: "💻", 
-          description: "Modern game AI is actually quite complex to develop",
           isCorrect: false
         }
       ]

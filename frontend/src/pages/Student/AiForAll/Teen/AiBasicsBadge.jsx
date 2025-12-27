@@ -29,11 +29,7 @@ const AiBasicsBadge = () => {
       title: "AI Fundamentals",
       question: "What is the primary goal of Artificial Intelligence?",
       options: [
-        { 
-          text: "To create machines that can perform tasks requiring human intelligence", 
-          emoji: "🤖", 
-          isCorrect: true
-        },
+        
         { 
           text: "To replace all human workers", 
           emoji: "👥", 
@@ -48,7 +44,12 @@ const AiBasicsBadge = () => {
           text: "To control the internet", 
           emoji: "🌐", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "To create machines that can perform tasks requiring human intelligence", 
+          emoji: "🤖", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Exactly! AI aims to create systems that can perform tasks requiring human-like intelligence!",
@@ -91,15 +92,16 @@ const AiBasicsBadge = () => {
       title: "Neural Networks",
       question: "What is the primary inspiration behind artificial neural networks?",
       options: [
-        { 
-          text: "Human Brain Structure", 
-          emoji: "🧠", 
-          isCorrect: true
-        },
+        
         { 
           text: "Computer Processors", 
           emoji: "💻", 
           isCorrect: false
+        },
+        { 
+          text: "Human Brain Structure", 
+          emoji: "🧠", 
+          isCorrect: true
         },
         { 
           text: "Telephone Networks", 
@@ -133,15 +135,16 @@ const AiBasicsBadge = () => {
           isCorrect: false
         },
         { 
+          text: "Manual Data Entry", 
+          emoji: "📝", 
+          isCorrect: true
+        },
+        { 
           text: "Predictive Analytics", 
           emoji: "🔮", 
           isCorrect: false
         },
-        { 
-          text: "Manual Data Entry", 
-          emoji: "📝", 
-          isCorrect: true
-        }
+        
       ],
       feedback: {
         correct: "Exactly! Manual data entry is repetitive work, not a core AI application!",

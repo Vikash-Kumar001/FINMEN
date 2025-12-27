@@ -47,8 +47,8 @@ const CostStory = () => {
       text: "What happens if a business sells products below cost?",
       options: [
         { id: "a", text: "Makes more profit", correct: false, emoji: "📈" },
+        { id: "c", text: "Nothing happens", correct: false, emoji: "🤷" },
         { id: "b", text: "Loses money on each sale", correct: true, emoji: "📉" },
-        { id: "c", text: "Nothing happens", correct: false, emoji: "🤷" }
       ]
     },
     {
@@ -56,17 +56,17 @@ const CostStory = () => {
       text: "What is a fixed cost in business?",
       options: [
         { id: "a", text: "Costs that change with production", correct: false, emoji: "🔄" },
+        { id: "c", text: "Expenses that stay the same regardless of production", correct: true, emoji: "🔒" },
         { id: "b", text: "Money earned from sales", correct: false, emoji: "💰" },
-        { id: "c", text: "Expenses that stay the same regardless of production", correct: true, emoji: "🔒" }
       ]
     },
     {
       id: 5,
       text: "How can businesses reduce costs effectively?",
       options: [
+        { id: "c", text: "Find better suppliers and streamline processes", correct: true, emoji: "🚢" },
         { id: "a", text: "Lower product quality", correct: false, emoji: "📉" },
         { id: "b", text: "Charge more to customers", correct: false, emoji: "💸" },
-        { id: "c", text: "Find better suppliers and streamline processes", correct: true, emoji: "✅" }
       ]
     }
   ];

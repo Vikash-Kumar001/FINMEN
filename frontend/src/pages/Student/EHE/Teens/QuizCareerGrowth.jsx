@@ -59,7 +59,7 @@ const QuizCareerGrowth = () => {
         {
           id: "b",
           text: "Makes you overqualified",
-          emoji: "ing",
+          emoji: "💼",
           isCorrect: false
         },
         {
@@ -103,7 +103,7 @@ const QuizCareerGrowth = () => {
         {
           id: "a",
           text: "Builds experience and confidence",
-          emoji: "🏗️",
+          emoji: "🎊",
           isCorrect: true
         },
         {

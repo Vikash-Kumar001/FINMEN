@@ -44,9 +44,9 @@ const ReflexTeenHabits = () => {
       question: "Which choice supports hydration?",
       options: [
         { text: "Skip Meals", emoji: "🍽️", isCorrect: false },
-        { text: "Drink Water", emoji: "💧", isCorrect: true },
         { text: "Ignore Health", emoji: "❌", isCorrect: false },
-        { text: "Procrastinate", emoji: "⏰", isCorrect: false }
+        { text: "Procrastinate", emoji: "⏰", isCorrect: false },
+        { text: "Drink Water", emoji: "💧", isCorrect: true },
       ]
     },
     {
@@ -74,8 +74,8 @@ const ReflexTeenHabits = () => {
       question: "What's essential for maintaining energy?",
       options: [
         { text: "All Nighter", emoji: "🌙", isCorrect: false },
-        { text: "Drink Water", emoji: "💧", isCorrect: true },
         { text: "Procrastinate", emoji: "⏰", isCorrect: false },
+        { text: "Drink Water", emoji: "💧", isCorrect: true },
         { text: "Skip Meals", emoji: "🍽️", isCorrect: false }
       ]
     }

@@ -65,7 +65,7 @@ const ReflexPreventiveCare = () => {
       options: [
         { text: "Skip Brushing", emoji: "🚷", isCorrect: false },
         { text: "Regular Cleanings", emoji: "🦷", isCorrect: true },
-        { text: "Only Pain Relief", emoji: " đau", isCorrect: false },
+        { text: "Only Pain Relief", emoji: "🥲", isCorrect: false },
         { text: "Avoid Dentist", emoji: "👻", isCorrect: false }
       ]
     },

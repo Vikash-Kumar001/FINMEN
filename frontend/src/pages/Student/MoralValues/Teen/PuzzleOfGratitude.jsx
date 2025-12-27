@@ -22,28 +22,28 @@ const PuzzleOfGratitude = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const leftItems = [
-    { id: 1, name: "Thanks", emoji: "🙏", description: "Showing appreciation" },
-    { id: 2, name: "Say Thank You", emoji: "🤝", description: "When helped" },
-    { id: 3, name: "Say 'Wow, thanks!'", emoji: "🎁", description: "For a gift" },
-    { id: 4, name: "Appreciate teammates", emoji: "🏅", description: "Team success" },
-    { id: 5, name: "Say thanks to parents", emoji: "👨‍👩‍👧", description: "At home" },
+    { id: 1, name: "Write Thank You Note", emoji: "📝", description: "Expressing gratitude in writing" },
+    { id: 2, name: "Help Someone", emoji: "🤝", description: "Returning a favor" },
+    { id: 3, name: "Smile Appreciatively", emoji: "😊", description: "Showing grateful expression" },
+    { id: 4, name: "Publicly Acknowledge", emoji: "📢", description: "Recognizing in front of others" },
+    { id: 5, name: "Give a Gift", emoji: "🎁", description: "Showing appreciation through giving" },
   ];
 
-  // Right items with correct matches in different positions: Q1: pos 1, Q2: pos 2, Q3: pos 3, Q4: pos 1, Q5: pos 2
+  // Right items with correct matches in different positions: manually shuffled to avoid direct positional matching
   const rightItems = [
-    { id: 1, name: "Smile", emoji: "😊", description: "Positive feeling" },
-    { id: 2, name: "Happy Helper", emoji: "😄", description: "Feels appreciated" },
-    { id: 3, name: "Giver feels happy", emoji: "😊", description: "Positive response" },
-    { id: 5, name: "Parents feel loved", emoji: "💖", description: "Grateful child" },
-    { id: 4, name: "Team feels valued", emoji: "🤗", description: "Appreciated" },
+    { id: 7, name: "Creates goodwill", emoji: "💝", description: "Positive relationship building" },
+    { id: 6, name: "Person feels valued", emoji: "😊", description: "Recipient appreciates recognition" },
+    { id: 8, name: "Encourages kindness", emoji: "🤗", description: "Promotes more helpful behavior" },
+    { id: 10, name: "Motivates future help", emoji: "💪", description: "Inspires continued support" },
+    { id: 9, name: "Builds stronger bonds", emoji: "💞", description: "Deepens relationships" },
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 3 }, // Thanks → Giver feels happy
-    { leftId: 2, rightId: 2 }, // Say Thank You → Happy Helper
-    { leftId: 3, rightId: 1 }, // Say 'Wow, thanks!' → Smile
-    { leftId: 4, rightId: 4 }, // Appreciate teammates → Team feels valued
-    { leftId: 5, rightId: 5 }  // Say thanks to parents → Parents feel loved
+    { leftId: 1, rightId: 6 }, // Write Thank You Note → Person feels valued
+    { leftId: 2, rightId: 8 }, // Help Someone → Encourages kindness
+    { leftId: 3, rightId: 7 }, // Smile Appreciatively → Creates goodwill
+    { leftId: 4, rightId: 9 }, // Publicly Acknowledge → Builds stronger bonds
+    { leftId: 5, rightId: 10 }  // Give a Gift → Motivates future help
   ];
 
   const isRightItemMatched = (itemId) => {

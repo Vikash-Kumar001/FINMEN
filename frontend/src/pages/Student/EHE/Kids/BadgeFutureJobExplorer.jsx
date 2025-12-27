@@ -134,16 +134,17 @@ const BadgeFutureJobExplorer = () => {
           emoji: "⛵", 
           isCorrect: false
         },
+        
+        { 
+          text: "Flies commercial planes", 
+          emoji: "✈️", 
+          isCorrect: false
+        },
         { 
           text: "Operates unmanned aircraft", 
           emoji: "🚁", 
           isCorrect: true
         },
-        { 
-          text: "Flies commercial planes", 
-          emoji: "✈️", 
-          isCorrect: false
-        }
       ],
       feedback: {
         correct: "Exactly! Drone Pilots control flying robots!",
@@ -156,6 +157,11 @@ const BadgeFutureJobExplorer = () => {
       question: "Why is it important to explore future careers?",
       options: [
         { 
+          text: "To prepare for changing job markets", 
+          emoji: "📈", 
+          isCorrect: true
+        },
+        { 
           text: "To avoid all changes", 
           emoji: "🔒", 
           isCorrect: false
@@ -165,11 +171,7 @@ const BadgeFutureJobExplorer = () => {
           emoji: "🕰️", 
           isCorrect: false
         },
-        { 
-          text: "To prepare for changing job markets", 
-          emoji: "📈", 
-          isCorrect: true
-        },
+        
         { 
           text: "To copy what others are doing", 
           emoji: "📋", 

@@ -28,21 +28,18 @@ const RobotHelperStory = () => {
           id: "a",
           text: "Robotics Engineer",
           emoji: "🔧",
-          description: "Exactly! Robotics engineers design and build robots!",
           isCorrect: true
         },
         {
           id: "b",
           text: "Farmer",
           emoji: "🌾",
-          description: "Farmers grow crops, not build robots!",
           isCorrect: false
         },
         {
           id: "c",
           text: "Chef",
           emoji: "👨‍🍳",
-          description: "Chefs cook food, not build robots!",
           isCorrect: false
         }
       ]
@@ -56,21 +53,19 @@ const RobotHelperStory = () => {
           id: "b",
           text: "Only play with toys",
           emoji: "🎮",
-          description: "Robotics engineering is serious work, not just play!",
           isCorrect: false
         },
         {
           id: "a",
           text: "Design and build robots",
           emoji: "⚙️",
-          description: "Correct! They design and build robots for various uses!",
           isCorrect: true
         },
         {
           id: "c",
           text: "Drive buses",
           emoji: "🚌",
-          description: "Bus drivers transport people, not build robots!",
+         
           isCorrect: false
         }
       ]
@@ -84,21 +79,21 @@ const RobotHelperStory = () => {
           id: "b",
           text: "Only at the beach",
           emoji: "🏖️",
-          description: "That's not where robotics engineers typically work!",
+         
           isCorrect: false
         },
         {
           id: "c",
           text: "In restaurants",
           emoji: "🍽️",
-          description: "Restaurants employ chefs and servers, not robotics engineers!",
+         
           isCorrect: false
         },
         {
           id: "a",
           text: "Factories, labs, tech companies",
           emoji: "🏢",
-          description: "Perfect! They work in various technical environments!",
+         
           isCorrect: true
         },
       ]
@@ -111,21 +106,18 @@ const RobotHelperStory = () => {
           id: "a",
           text: "Math, science, problem-solving",
           emoji: "🧮",
-          description: "Exactly! Strong technical and analytical skills are essential!",
           isCorrect: true
         },
         {
           id: "b",
           text: "Only singing",
           emoji: "🎤",
-          description: "Singing is great, but robotics engineers need technical skills!",
           isCorrect: false
         },
         {
           id: "c",
           text: "Only dancing",
           emoji: "💃",
-          description: "Dancing is fun, but robotics engineers need technical skills!",
           isCorrect: false
         }
       ]
@@ -139,21 +131,18 @@ const RobotHelperStory = () => {
           id: "b",
           text: "They take long breaks",
           emoji: "😴",
-          description: "Robots actually work continuously without breaks!",
           isCorrect: false
         },
         {
           id: "a",
           text: "They work fast and accurately",
           emoji: "⚡",
-          description: "Perfect! Robots increase efficiency and precision!",
           isCorrect: true
         },
         {
           id: "c",
           text: "They make mistakes often",
           emoji: "❌",
-          description: "Robots are designed to minimize errors!",
           isCorrect: false
         }
       ]

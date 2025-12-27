@@ -22,28 +22,28 @@ const PuzzleOfFairness1 = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const leftItems = [
-    { id: 1, name: "Equality", emoji: "⚖️", description: "Equal treatment" },
+    { id: 1, name: "Equality", emoji: "⚖️", description: "Same rights and opportunities" },
     { id: 2, name: "Bullying", emoji: "👊", description: "Harmful behavior" },
     { id: 3, name: "Cheating", emoji: "📝", description: "Dishonest act" },
-    { id: 4, name: "Sharing", emoji: "🤲", description: "Dividing equally" },
-    { id: 5, name: "Favoritism", emoji: "⭐", description: "Unfair preference" },
+    { id: 4, name: "Cooperation", emoji: "🤝", description: "Working together" },
+    { id: 5, name: "Favoritism", emoji: "⭐", description: "Showing preference" },
   ];
 
   // Right items with clearer, more intuitive meanings
   const rightItems = [
-    { id: 1, name: "Balanced Treatment", emoji: "⚖️", description: "Treating everyone the same" },
-    { id: 5, name: "Biased Preference", emoji: "🎭", description: "Showing favor to some over others" },
-    { id: 2, name: "Harm to Others", emoji: "😢", description: "Causing pain or suffering" },
-    { id: 3, name: "Unfair Advantage", emoji: "⚠️", description: "Getting ahead through wrong means" },
-    { id: 4, name: "Generous Sharing", emoji: "🤲", description: "Giving to others willingly" },
+    { id: 7, name: "Harm to Others", emoji: "😢", description: "Causing pain or suffering" },
+    { id: 10, name: "Biased Preference", emoji: "🎭", description: "Showing favor to some over others" },
+    { id: 9, name: "Teamwork Success", emoji: "🤝", description: "Achieving together" },
+    { id: 8, name: "Unfair Advantage", emoji: "⚠️", description: "Getting ahead through wrong means" },
+    { id: 6, name: "Equal Rights", emoji: "⚖️", description: "Same opportunities for everyone" },
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 4 }, // Equality → Generous Sharing
-    { leftId: 2, rightId: 2 }, // Bullying → Harm to Others
-    { leftId: 3, rightId: 3 }, // Cheating → Unfair Advantage
-    { leftId: 4, rightId: 1 }, // Sharing → Balanced Treatment
-    { leftId: 5, rightId: 5 }  // Favoritism → Biased Preference
+    { leftId: 1, rightId: 6 }, // Equality → Equal Rights
+    { leftId: 2, rightId: 7 }, // Bullying → Harm to Others
+    { leftId: 3, rightId: 8 }, // Cheating → Unfair Advantage
+    { leftId: 4, rightId: 9 }, // Cooperation → Teamwork Success
+    { leftId: 5, rightId: 10 }  // Favoritism → Biased Preference
   ];
 
   const isRightItemMatched = (itemId) => {

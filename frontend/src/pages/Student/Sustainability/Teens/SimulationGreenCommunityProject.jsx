@@ -82,8 +82,8 @@ const SimulationGreenCommunityProject = () => {
       options: [
         { id: "a", text: "Quick fixes only", emoji: "⚡", isCorrect: false },
         { id: "b", text: "Ignore maintenance", emoji: "🔧", isCorrect: false },
+        { id: "d", text: "High cost materials", emoji: "💰", isCorrect: false },
         { id: "c", text: "Long-term impact and maintenance", emoji: "🌱", isCorrect: true },
-        { id: "d", text: "High cost materials", emoji: "💰", isCorrect: false }
       ]
     },
     {

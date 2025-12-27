@@ -54,7 +54,7 @@ const BiasInDataQuiz = () => {
     {
       id: 1,
       text: "If AI is only trained on city photos, will it work well in villages?",
-      emoji: "🏙️🌾",
+      emoji: "🏙️",
       options: [
         { 
           id: 1, 
@@ -80,7 +80,7 @@ const BiasInDataQuiz = () => {
     {
       id: 2,
       text: "If a voice AI is trained only on male voices, can it understand female voices well?",
-      emoji: "🎙️👩‍🦰",
+      emoji: "🎙️👩",
       options: [
         { 
           id: 1, 
@@ -106,18 +106,18 @@ const BiasInDataQuiz = () => {
     {
       id: 3,
       text: "An AI trained mostly on English text may struggle with Hindi. True or False?",
-      emoji: "🇬🇧🇮🇳",
+      emoji: "🎃",
       options: [
         { 
           id: 1, 
           text: "True", 
-          emoji: "✅",
+          emoji: "❓",
           isCorrect: true
         },
         { 
           id: 2, 
           text: "False", 
-          emoji: "❌",
+          emoji: "❓",
           isCorrect: false
         },
         { 

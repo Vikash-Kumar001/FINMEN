@@ -22,9 +22,9 @@ const DebateGirlsLeaders = () => {
       id: 1,
       text: "Should girls lead nations?",
       options: [
-        { id: "b", text: "No, men are natural leaders" },
-        { id: "a", text: "Yes, leadership has no gender" },
-        { id: "c", text: "Only in certain areas" }
+        { id: "b", text: "No, men are natural leaders", emoji: "♂️" },
+        { id: "a", text: "Yes, leadership has no gender", emoji: "👑" },
+        { id: "c", text: "Only in certain areas", emoji: "🎯" }
       ],
       correctAnswer: "a",
       explanation: "Leadership is a skill that can be developed by anyone regardless of gender. Many successful female leaders have demonstrated exceptional leadership abilities."
@@ -33,9 +33,9 @@ const DebateGirlsLeaders = () => {
       id: 2,
       text: "What qualities make a good leader?",
       options: [
-        { id: "a", text: "Communication skills, empathy, and decision-making abilities" },
-        { id: "b", text: "Being male and authoritative" },
-        { id: "c", text: "Following traditional gender roles" }
+        { id: "a", text: "Communication skills, empathy, and decision-making abilities", emoji: "🤝" },
+        { id: "b", text: "Being male and authoritative", emoji: "♂️" },
+        { id: "c", text: "Following traditional gender roles", emoji: "🎭" }
       ],
       correctAnswer: "a",
       explanation: "Good leaders possess qualities like communication skills, empathy, decision-making abilities, and integrity - traits that are not determined by gender."
@@ -44,9 +44,9 @@ const DebateGirlsLeaders = () => {
       id: 3,
       text: "How does gender diversity in leadership benefit organizations?",
       options: [
-        { id: "b", text: "It creates confusion and conflict" },
-        { id: "c", text: "It doesn't make a difference" },
-        { id: "a", text: "It brings diverse perspectives and improves decision-making" },
+        { id: "b", text: "It creates confusion and conflict", emoji: "😵" },
+        { id: "c", text: "It doesn't make a difference", emoji: "🤷" },
+        { id: "a", text: "It brings diverse perspectives and improves decision-making", emoji: "🧠" },
       ],
       correctAnswer: "a",
       explanation: "Gender diversity in leadership brings different perspectives, experiences, and problem-solving approaches, which leads to better decision-making and innovation."
@@ -55,9 +55,9 @@ const DebateGirlsLeaders = () => {
       id: 4,
       text: "Why is it important to encourage girls to pursue leadership roles?",
       options: [
-        { id: "b", text: "To replace male leaders" },
-        { id: "a", text: "To ensure equal representation and opportunities for all" },
-        { id: "c", text: "To fulfill a quota requirement" }
+        { id: "b", text: "To replace male leaders", emoji: "⚔️" },
+        { id: "a", text: "To ensure equal representation and opportunities for all", emoji: "⚖️" },
+        { id: "c", text: "To fulfill a quota requirement", emoji: "📋" }
       ],
       correctAnswer: "a",
       explanation: "Encouraging girls to pursue leadership roles ensures equal representation and opportunities, creating a more inclusive and equitable society."
@@ -66,9 +66,9 @@ const DebateGirlsLeaders = () => {
       id: 5,
       text: "What is a barrier to girls becoming leaders?",
       options: [
-        { id: "a", text: "Gender stereotypes and lack of role models" },
-        { id: "b", text: "Girls lack leadership abilities" },
-        { id: "c", text: "Leadership is not important for girls" }
+        { id: "a", text: "Gender stereotypes and lack of role models", emoji: "🚫" },
+        { id: "b", text: "Girls lack leadership abilities", emoji: "❌" },
+        { id: "c", text: "Leadership is not important for girls", emoji: "❓" }
       ],
       correctAnswer: "a",
       explanation: "Gender stereotypes and lack of female role models can discourage girls from pursuing leadership roles, but these are societal barriers rather than inherent limitations."
@@ -151,13 +151,6 @@ const DebateGirlsLeaders = () => {
               const showCorrect = showFeedback && isCorrect;
               const showIncorrect = showFeedback && isSelected && !isCorrect;
               
-              // Add emojis for each option like in the reference game
-              const optionEmojis = {
-                a: "✅",
-                b: "❌",
-                c: "⚠️"
-              };
-              
               return (
                 <button
                   key={option.id}
@@ -168,7 +161,7 @@ const DebateGirlsLeaders = () => {
                   }`}
                 >
                   <div className="flex items-center">
-                    <div className="text-2xl mr-4">{optionEmojis[option.id] || '❓'}</div>
+                    <div className="text-2xl mr-4">{option.emoji || '❓'}</div>
                     <div>
                       <h3 className="font-bold text-xl mb-1">{option.text}</h3>
                     </div>

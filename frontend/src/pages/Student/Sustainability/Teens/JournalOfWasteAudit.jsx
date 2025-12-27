@@ -59,11 +59,11 @@ const JournalOfWasteAudit = () => {
   }, [gameFinished, coins, gameId, nextGamePath, nextGameId]);
 
   const stages = [
-    { question: 'Write: "Today I generated waste from ___."', minLength: 15 },
-    { question: 'Write: "I can reduce waste by ___."', minLength: 15 },
-    { question: 'Write: "My waste reduction goal is ___."', minLength: 15 },
-    { question: 'Write: "I will track my waste by ___."', minLength: 15 },
-    { question: 'Write: "Reducing waste makes me feel ___."', minLength: 15 }
+    { question: 'Write: "Today I generated waste from ___."', minLength: 10 },
+    { question: 'Write: "I can reduce waste by ___."', minLength: 10 },
+    { question: 'Write: "My waste reduction goal is ___."', minLength: 10 },
+    { question: 'Write: "I will track my waste by ___."', minLength: 10 },
+    { question: 'Write: "Reducing waste makes me feel ___."', minLength: 10 }
   ];
 
   const handleJournalSubmit = () => {

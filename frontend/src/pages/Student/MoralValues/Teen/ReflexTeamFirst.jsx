@@ -29,57 +29,57 @@ const ReflexTeamFirst = () => {
   const questions = [
     {
       id: 1,
-      question: "Serve Others 🤝",
-      correctAnswer: "Serve Others",
+      question: "You're leading a project and have a great idea, but a team member suggests an alternative that could work better. What do you do?",
+      correctAnswer: "Consider the team member's idea",
       options: [
-        { text: "Serve Others", isCorrect: true, emoji: "🤝" },
-        { text: "Me First", isCorrect: false, emoji: "🚫" },
-        { text: "Selfish", isCorrect: false, emoji: "😏" },
-        { text: "Ignore Team", isCorrect: false, emoji: "🙄" }
+        { text: "Stick with your own idea", isCorrect: false, emoji: "🚫" },
+        { text: "Consider the team member's idea", isCorrect: true, emoji: "🤝" },
+        { text: "Ask for input from others", isCorrect: false, emoji: "💬" },
+        { text: "Defer to the most experienced member", isCorrect: false, emoji: "👨‍💼" }
       ]
     },
     {
       id: 2,
-      question: "Help the Group 💪",
-      correctAnswer: "Serve Others",
+      question: "The team is struggling to meet a deadline and everyone is stressed. What's your approach?",
+      correctAnswer: "Offer help where needed",
       options: [
-        { text: "Me First", isCorrect: false, emoji: "🚫" },
-        { text: "Serve Others", isCorrect: true, emoji: "🤝" },
-        { text: "Selfish", isCorrect: false, emoji: "😏" },
-        { text: "Ignore Team", isCorrect: false, emoji: "🙄" }
+        { text: "Offer help where needed", isCorrect: true, emoji: "🤝" },
+        { text: "Focus on your assigned tasks only", isCorrect: false, emoji: "✅" },
+        { text: "Complain about the workload", isCorrect: false, emoji: "😤" },
+        { text: "Ask for deadline extension", isCorrect: false, emoji: "⏰" }
       ]
     },
     {
       id: 3,
-      question: "Support a Teammate 💬",
-      correctAnswer: "Serve Others",
+      question: "A teammate is falling behind on their part of the project. How do you respond?",
+      correctAnswer: "Offer support and resources",
       options: [
-        { text: "Selfish", isCorrect: false, emoji: "😏" },
-        { text: "Ignore Team", isCorrect: false, emoji: "🙄" },
-        { text: "Serve Others", isCorrect: true, emoji: "🤝" },
-        { text: "Me First", isCorrect: false, emoji: "🚫" }
+        { text: "Report to the supervisor", isCorrect: false, emoji: "📋" },
+        { text: "Take over their tasks", isCorrect: false, emoji: "🏃‍♂️" },
+        { text: "Focus on your own work", isCorrect: false, emoji: "🔍" },
+        { text: "Offer support and resources", isCorrect: true, emoji: "🤝" },
       ]
     },
     {
       id: 4,
-      question: "Me First 🙋‍♂️",
-      correctAnswer: "Me First",
+      question: "There's an opportunity for individual recognition that would benefit you but might disadvantage the team. What do you do?",
+      correctAnswer: "Consider the team impact",
       options: [
-        { text: "Me First", isCorrect: true, emoji: "🚫" },
-        { text: "Serve Others", isCorrect: false, emoji: "🤝" },
-        { text: "Selfish", isCorrect: false, emoji: "😏" },
-        { text: "Ignore Team", isCorrect: false, emoji: "🙄" }
+        { text: "Take the opportunity immediately", isCorrect: false, emoji: "🏃‍♂️" },
+        { text: "Ask team for advice", isCorrect: false, emoji: "❓" },
+        { text: "Consider the team impact", isCorrect: true, emoji: "🤝" },
+        { text: "Decline the opportunity", isCorrect: false, emoji: "❌" }
       ]
     },
     {
       id: 5,
-      question: "Encourage Teamwork 🌟",
-      correctAnswer: "Serve Others",
+      question: "Your personal goals conflict with the team's objectives. How do you handle this?",
+      correctAnswer: "Seek a compromise that benefits both",
       options: [
-        { text: "Selfish", isCorrect: false, emoji: "😏" },
-        { text: "Ignore Team", isCorrect: false, emoji: "🙄" },
-        { text: "Me First", isCorrect: false, emoji: "🚫" },
-        { text: "Serve Others", isCorrect: true, emoji: "🤝" }
+        { text: "Seek a compromise that benefits both", isCorrect: true, emoji: "🤝" },
+        { text: "Prioritize your personal goals", isCorrect: false, emoji: "🎯" },
+        { text: "Abandon your personal goals", isCorrect: false, emoji: "❌" },
+        { text: "Try to change team objectives", isCorrect: false, emoji: "🔄" }
       ]
     }
   ];
@@ -98,6 +98,8 @@ const ReflexTeamFirst = () => {
   const handleTimeUp = useCallback(() => {
     if (currentRoundRef.current < TOTAL_ROUNDS) {
       setCurrentRound(prev => prev + 1);
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     } else {
       setGameState("finished");
     }
@@ -163,12 +165,12 @@ const ReflexTeamFirst = () => {
   };
 
   const finalScore = score;
-  const currentQuestion = questions[currentRound - 1];
+  const currentQuestion = currentRound > 0 ? questions[currentRound - 1] : null;
 
   return (
     <GameShell
-      title="Reflex: Team First"
-      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Serve others or me first?` : "Serve others or me first?"}
+      title="Reflex: Team First Decisions"
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Team-first or self-first decisions?` : "Team-first or self-first decisions?"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -186,13 +188,13 @@ const ReflexTeamFirst = () => {
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
             <div className="text-5xl mb-6">🤝</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <h3 className="text-2xl font-bold text-white mb-4">Team-First Challenge!</h3>
             <p className="text-white/90 text-lg mb-6">
-              Tap "Serve Others" for team actions, "Me First" for selfish ones!<br />
+              Choose the most team-oriented response for each scenario!<br />
               You have {ROUND_TIME} seconds for each question.
             </p>
             <p className="text-white/80 mb-6">
-              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+              You have {TOTAL_ROUNDS} challenging questions with {ROUND_TIME} seconds each!
             </p>
             <button
               onClick={startGame}
@@ -234,6 +236,28 @@ const ReflexTeamFirst = () => {
                   </button>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+        
+        {gameState === "finished" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-6xl mb-6">🏆</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Team-First Challenge Complete!</h3>
+            <p className="text-xl text-white/90 mb-2">Your Score: {score} out of {TOTAL_ROUNDS}</p>
+            <p className="text-lg text-white/80 mb-6">
+              {score === TOTAL_ROUNDS ? "Perfect! You truly understand team-first values!" : 
+               score >= TOTAL_ROUNDS/2 ? "Good job! You value team collaboration!" : 
+               "Keep practicing team-first decision making!"}
+            </p>
+            
+            <div className="flex justify-center gap-4 mt-6">
+              <button
+                onClick={startGame}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-6 rounded-full font-bold transition-all"
+              >
+                Play Again
+              </button>
             </div>
           </div>
         )}

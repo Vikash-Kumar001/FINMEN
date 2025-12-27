@@ -56,7 +56,7 @@ const SimulationPeerTestSubstance = () => {
         {
           id: "a",
           text: "Try it just this once",
-          emoji: "윙IgnoreCase",
+          emoji: "🧪",
           isCorrect: false
         },
         {

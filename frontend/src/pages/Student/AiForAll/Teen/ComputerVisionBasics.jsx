@@ -134,12 +134,7 @@ const ComputerVisionBasics = () => {
       text: "What helps computer vision improve?",
       emoji: "📈",
       options: [
-        { 
-          id: 1, 
-          text: "Training with labeled images", 
-          emoji: "📚", 
-          isCorrect: true
-        },
+       
         { 
           id: 2, 
           text: "More RAM memory", 
@@ -151,7 +146,13 @@ const ComputerVisionBasics = () => {
           text: "Faster internet", 
           emoji: "🌐", 
           isCorrect: false
-        }
+        },
+         { 
+          id: 1, 
+          text: "Training with labeled images", 
+          emoji: "📚", 
+          isCorrect: true
+        },
       ],
       explanation: "Training with labeled images! Like humans learn to recognize objects through experience, computer vision systems improve by studying thousands or millions of labeled examples. This supervised learning approach teaches AI to distinguish between different objects, scenes, and visual concepts."
     },
@@ -160,17 +161,18 @@ const ComputerVisionBasics = () => {
       text: "Why is computer vision important?",
       emoji: "🌟",
       options: [
-        { 
-          id: 1, 
-          text: "Enables autonomous vehicles", 
-          emoji: "🚗", 
-          isCorrect: true
-        },
+        
         { 
           id: 2, 
           text: "Makes computers heavier", 
           emoji: "🏋️", 
           isCorrect: false
+        },
+        { 
+          id: 1, 
+          text: "Enables autonomous vehicles", 
+          emoji: "🚗", 
+          isCorrect: true
         },
         { 
           id: 3, 

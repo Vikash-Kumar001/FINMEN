@@ -52,9 +52,9 @@ const QuizOnFoodGroups = () => {
       text: "Which food group helps build strong bones?",
       emoji: "🦴",
       options: [
-        { id: "a", text: "Dairy (Milk, Cheese)", emoji: "🥛", isCorrect: false },
+        { id: "a", text: "Dairy (Milk, Cheese)", emoji: "🥛", isCorrect: true },
         { id: "b", text: "Chips", emoji: "🥔", isCorrect: false },
-        { id: "c", text: "Cookies", emoji: "🍪", isCorrect: true }
+        { id: "c", text: "Cookies", emoji: "🍪", isCorrect: false }
       ]
     },
     {

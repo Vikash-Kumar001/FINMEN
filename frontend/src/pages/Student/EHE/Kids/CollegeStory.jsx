@@ -97,6 +97,12 @@ const CollegeStory = () => {
       text: "What should students do in college to succeed?",
       options: [
         {
+          id: "a",
+          text: "Attend classes and study regularly",
+          emoji: "📖",
+          isCorrect: true
+        },
+        {
           id: "c",
           text: "Skip all classes",
           emoji: "🚫",
@@ -108,12 +114,7 @@ const CollegeStory = () => {
           emoji: "📋",
           isCorrect: false
         },
-        {
-          id: "a",
-          text: "Attend classes and study regularly",
-          emoji: "📖",
-          isCorrect: true
-        }
+        
       ]
     },
     {
@@ -126,18 +127,19 @@ const CollegeStory = () => {
           emoji: "💰",
           isCorrect: false
         },
+         {
+          id: "a",
+          text: "By building knowledge and networks",
+          emoji: "🤝",
+          isCorrect: true
+        },
         {
           id: "c",
           text: "By doing all work for students",
           emoji: "🤖",
           isCorrect: false
         },
-        {
-          id: "a",
-          text: "By building knowledge and networks",
-          emoji: "🤝",
-          isCorrect: true
-        }
+       
       ]
     }
   ];

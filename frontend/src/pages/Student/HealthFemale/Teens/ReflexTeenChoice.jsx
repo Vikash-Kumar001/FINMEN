@@ -34,8 +34,8 @@ const ReflexTeenChoice = () => {
       question: "Which activity promotes physical health?",
       options: [
         { text: "Alcohol", emoji: "🍺", isCorrect: false },
-        { text: "Sports", emoji: "⚽", isCorrect: true },
         { text: "Smoking", emoji: "🚬", isCorrect: false },
+        { text: "Sports", emoji: "⚽", isCorrect: true },
         { text: "Gambling", emoji: "🎰", isCorrect: false }
       ]
     },
@@ -43,8 +43,8 @@ const ReflexTeenChoice = () => {
       id: 2,
       question: "Which choice supports academic success?",
       options: [
-        { text: "Drugs", emoji: "💊", isCorrect: false },
         { text: "Study", emoji: "📚", isCorrect: true },
+        { text: "Drugs", emoji: "💊", isCorrect: false },
         { text: "Alcohol", emoji: "🍺", isCorrect: false },
         { text: "Gambling", emoji: "🎰", isCorrect: false }
       ]
@@ -53,10 +53,10 @@ const ReflexTeenChoice = () => {
       id: 3,
       question: "Which hobby enhances creativity?",
       options: [
-        { text: "Music", emoji: "🎵", isCorrect: true },
         { text: "Smoking", emoji: "🚬", isCorrect: false },
         { text: "Alcohol", emoji: "🍺", isCorrect: false },
-        { text: "Drugs", emoji: "💊", isCorrect: false }
+        { text: "Drugs", emoji: "💊", isCorrect: false },
+        { text: "Music", emoji: "🎵", isCorrect: true },
       ]
     },
     {
@@ -64,8 +64,8 @@ const ReflexTeenChoice = () => {
       question: "Which activity develops artistic skills?",
       options: [
         { text: "Gambling", emoji: "🎰", isCorrect: false },
-        { text: "Art", emoji: "🎨", isCorrect: true },
         { text: "Smoking", emoji: "🚬", isCorrect: false },
+        { text: "Art", emoji: "🎨", isCorrect: true },
         { text: "Alcohol", emoji: "🍺", isCorrect: false }
       ]
     },
@@ -73,8 +73,8 @@ const ReflexTeenChoice = () => {
       id: 5,
       question: "Which choice builds healthy habits?",
       options: [
-        { text: "Smoking", emoji: "🚬", isCorrect: false },
         { text: "Sports", emoji: "⚽", isCorrect: true },
+        { text: "Smoking", emoji: "🚬", isCorrect: false },
         { text: "Drugs", emoji: "💊", isCorrect: false },
         { text: "Gambling", emoji: "🎰", isCorrect: false }
       ]

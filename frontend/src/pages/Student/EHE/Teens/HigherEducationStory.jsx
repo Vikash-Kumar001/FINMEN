@@ -13,8 +13,8 @@ const HigherEducationStory = () => {
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 1; // 1 coin per correct answer
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5; // Total coins for completing all questions
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -26,47 +26,47 @@ const HigherEducationStory = () => {
   const questions = [
     {
       id: 1,
-      text: "Teen wants to be a doctor. What must she study?",
+      text: "A teen wants to become a doctor. What must she do first?",
       options: [
-        { id: "a", text: "Art classes only", correct: false },
-        { id: "b", text: "Medicine in college", correct: true },
-        { id: "c", text: "Skip education", correct: false }
+        { id: "b", text: "Take art classes only", correct: false, emoji: "🎨" },
+        { id: "a", text: "Study medicine in college", correct: true, emoji: "🎓" },
+        { id: "c", text: "Skip education", correct: false, emoji: "🚫" }
       ]
     },
     {
       id: 2,
-      text: "Why is higher education important for some careers?",
+      text: "Why is higher education important for certain careers?",
       options: [
-        { id: "a", text: "Not important at all", correct: false },
-        { id: "b", text: "Provides specialized knowledge and credentials", correct: true },
-        { id: "c", text: "Only for wealthy families", correct: false }
+        { id: "a", text: "Provides specialized knowledge and credentials", correct: true, emoji: "📚" },
+        { id: "b", text: "Not important at all", correct: false, emoji: "🤷" },
+        { id: "c", text: "Only for wealthy families", correct: false, emoji: "💰" }
       ]
     },
     {
       id: 3,
       text: "What should students consider when choosing higher education?",
       options: [
-        { id: "a", text: "Only tuition fees", correct: false },
-        { id: "b", text: "Career goals, costs, and program quality", correct: true },
-        { id: "c", text: "Peer choices only", correct: false }
+        { id: "b", text: "Only tuition fees", correct: false, emoji: "💸" },
+        { id: "a", text: "Career goals, costs, and program quality", correct: true, emoji: "💰" },
+        { id: "c", text: "Peer choices only", correct: false, emoji: "👥" }
       ]
     },
     {
       id: 4,
-      text: "What is a benefit of higher education?",
+      text: "What is a major benefit of higher education?",
       options: [
-        { id: "a", text: "No benefits", correct: false },
-        { id: "b", text: "Expanded career opportunities", correct: true },
-        { id: "c", text: "Reduced earning potential", correct: false }
+        { id: "b", text: "No benefits", correct: false, emoji: "❌" },
+        { id: "c", text: "Reduced earning potential", correct: false, emoji: "📉" },
+        { id: "a", text: "Expanded career opportunities", correct: true, emoji: "📈" },
       ]
     },
     {
       id: 5,
-      text: "How can students finance higher education?",
+      text: "How can students finance their higher education?",
       options: [
-        { id: "a", text: "Borrow from friends only", correct: false },
-        { id: "b", text: "Scholarships, loans, and part-time work", correct: true },
-        { id: "c", text: "Avoid all funding", correct: false }
+        { id: "a", text: "Scholarships, loans, and part-time work", correct: true, emoji: "💼" },
+        { id: "b", text: "Borrow from friends only", correct: false, emoji: "🤝" },
+        { id: "c", text: "Avoid all funding", correct: false, emoji: "❓" }
       ]
     }
   ];
@@ -75,10 +75,10 @@ const HigherEducationStory = () => {
     resetFeedback();
     
     if (option.correct) {
-      const newCoins = coins + coinsPerLevel;
+      const newCoins = coins + 1; // Give 1 coin per correct answer instead of coinsPerLevel
       setCoins(newCoins);
       setFinalScore(finalScore + 1);
-      showCorrectAnswerFeedback(newCoins);
+      showCorrectAnswerFeedback(1, true);
     }
     
     setTimeout(() => {
@@ -135,8 +135,8 @@ const HigherEducationStory = () => {
                     className="bg-white/5 hover:bg-white/15 backdrop-blur-sm border border-white/10 hover:border-white/30 rounded-xl md:rounded-2xl p-4 text-left transition-all duration-200 text-white hover:text-white"
                   >
                     <div className="flex items-center">
-                      <span className="bg-white/10 w-6 h-6 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        {option.id}
+                      <span className="text-2xl mr-3 flex-shrink-0">
+                        {option.emoji}
                       </span>
                       <span className="font-medium">{option.text}</span>
                     </div>

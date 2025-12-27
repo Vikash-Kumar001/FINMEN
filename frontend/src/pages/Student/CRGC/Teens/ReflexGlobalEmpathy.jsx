@@ -64,8 +64,9 @@ const ReflexGlobalEmpathy = () => {
       options: [
         { text: "Stay silent to avoid confrontation", isCorrect: false },
         { text: "Join in the discriminatory behavior", isCorrect: false },
+        
+        { text: "Record it for social media without intervening", isCorrect: false },
         { text: "Stand up against discrimination and support those being targeted", isCorrect: true },
-        { text: "Record it for social media without intervening", isCorrect: false }
       ],
       feedback: {
         correct: "Perfect! Standing up against discrimination promotes justice and inclusion!",
@@ -78,9 +79,10 @@ const ReflexGlobalEmpathy = () => {
       emoji: "📰",
       correctAnswer: "Verify facts and share accurate information from reliable sources",
       options: [
+           { text: "Verify facts and share accurate information from reliable sources", isCorrect: true },
         { text: "Share it immediately to get likes", isCorrect: false },
         { text: "Ignore it completely", isCorrect: false },
-        { text: "Verify facts and share accurate information from reliable sources", isCorrect: true },
+     
         { text: "Create counter-misinformation without checking facts", isCorrect: false }
       ],
       feedback: {

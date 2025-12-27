@@ -32,10 +32,10 @@ const ReflexJusticeSymbols = () => {
       question: "⚖️ Scales of Justice",
       correctAnswer: "Justice",
       options: [
-        { text: "Justice", isCorrect: true, emoji: "✓" },
-        { text: "Not Justice", isCorrect: false, emoji: "✗" },
-        { text: "Uncertain", isCorrect: false, emoji: "🤷" },
-        { text: "Maybe", isCorrect: false, emoji: "🤔" }
+        { text: "Justice", isCorrect: true, emoji: "⚖️" },
+        { text: "Peace", isCorrect: false, emoji: "🕊️" },
+        { text: "Authority", isCorrect: false, emoji: "👑" },
+        { text: "Balance", isCorrect: false, emoji: "⚖️" }
       ]
     },
     {
@@ -43,10 +43,10 @@ const ReflexJusticeSymbols = () => {
       question: "💣 Bomb",
       correctAnswer: "Not Justice",
       options: [
-        { text: "Justice", isCorrect: false, emoji: "✓" },
-        { text: "Not Justice", isCorrect: true, emoji: "✗" },
-        { text: "Uncertain", isCorrect: false, emoji: "🤷" },
-        { text: "Maybe", isCorrect: false, emoji: "🤔" }
+        { text: "Justice", isCorrect: false, emoji: "⚖️" },
+        { text: "Violence", isCorrect: true, emoji: "💥" },
+        { text: "War", isCorrect: false, emoji: "⚔️" },
+        { text: "Chaos", isCorrect: false, emoji: "🌪️" }
       ]
     },
     {
@@ -54,10 +54,10 @@ const ReflexJusticeSymbols = () => {
       question: "🔨 Judge's Gavel",
       correctAnswer: "Justice",
       options: [
-        { text: "Uncertain", isCorrect: false, emoji: "🤷" },
-        { text: "Maybe", isCorrect: false, emoji: "🤔" },
-        { text: "Justice", isCorrect: true, emoji: "✓" },
-        { text: "Not Justice", isCorrect: false, emoji: "✗" }
+        { text: "Order", isCorrect: false, emoji: "🛒" },
+        { text: "Authority", isCorrect: false, emoji: "👑" },
+        { text: "Justice", isCorrect: true, emoji: "⚖️" },
+        { text: "Decision", isCorrect: false, emoji: "✅" }
       ]
     },
     {
@@ -65,21 +65,22 @@ const ReflexJusticeSymbols = () => {
       question: "👩‍⚖️ Judge",
       correctAnswer: "Justice",
       options: [
-        { text: "Justice", isCorrect: true, emoji: "✓" },
-        { text: "Not Justice", isCorrect: false, emoji: "✗" },
-        { text: "Uncertain", isCorrect: false, emoji: "🤷" },
-        { text: "Maybe", isCorrect: false, emoji: "🤔" }
+        { text: "Authority", isCorrect: false, emoji: "👑" },
+        { text: "Justice", isCorrect: true, emoji: "⚖️" },
+        { text: "Law", isCorrect: false, emoji: "📜" },
+        { text: "Power", isCorrect: false, emoji: "⚡" }
       ]
     },
     {
       id: 5,
       question: "🕊️ Peace Dove",
-      correctAnswer: "Justice",
+      correctAnswer: "Not Justice",
       options: [
-        { text: "Uncertain", isCorrect: false, emoji: "🤷" },
-        { text: "Maybe", isCorrect: false, emoji: "🤔" },
-        { text: "Not Justice", isCorrect: false, emoji: "✗" },
-        { text: "Justice", isCorrect: true, emoji: "✓" }
+        { text: "Justice", isCorrect: false, emoji: "⚖️" },
+        
+        { text: "Harmony", isCorrect: false, emoji: "☯️" },
+        { text: "Tolerance", isCorrect: false, emoji: "🤝" },
+        { text: "Peace", isCorrect: true, emoji: "🕊️" },
       ]
     }
   ];
@@ -98,6 +99,8 @@ const ReflexJusticeSymbols = () => {
   const handleTimeUp = useCallback(() => {
     if (currentRoundRef.current < TOTAL_ROUNDS) {
       setCurrentRound(prev => prev + 1);
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     } else {
       setGameState("finished");
     }
@@ -168,7 +171,7 @@ const ReflexJusticeSymbols = () => {
   return (
     <GameShell
       title="Reflex: Justice Symbols"
-      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Tap if it's a justice symbol!` : "Tap if it's a justice symbol!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Identify justice symbols!` : "Identify justice symbols!"}
       currentLevel={currentRound}
       totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
@@ -181,18 +184,19 @@ const ReflexJusticeSymbols = () => {
       gameType="moral"
       maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      onNext={startGame}>
       <div className="text-center text-white space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
             <div className="text-5xl mb-6">⚖️</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <h3 className="text-2xl font-bold text-white mb-4">Justice Challenge!</h3>
             <p className="text-white/90 text-lg mb-6">
-              Identify justice symbols quickly!<br />
+              Distinguish justice symbols from similar concepts!<br />
               You have {ROUND_TIME} seconds for each question.
             </p>
             <p className="text-white/80 mb-6">
-              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+              You have {TOTAL_ROUNDS} challenging questions with {ROUND_TIME} seconds each!
             </p>
             <button
               onClick={startGame}
@@ -234,6 +238,28 @@ const ReflexJusticeSymbols = () => {
                   </button>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+        
+        {gameState === "finished" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-6xl mb-6">🏆</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Justice Challenge Complete!</h3>
+            <p className="text-xl text-white/90 mb-2">Your Score: {score} out of {TOTAL_ROUNDS}</p>
+            <p className="text-lg text-white/80 mb-6">
+              {score === TOTAL_ROUNDS ? "Perfect! You're a true justice expert!" : 
+               score >= TOTAL_ROUNDS/2 ? "Good job! You understand justice concepts well!" : 
+               "Keep learning about justice symbols and concepts!"}
+            </p>
+            
+            <div className="flex justify-center gap-4 mt-6">
+              <button
+                onClick={startGame}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-6 rounded-full font-bold transition-all"
+              >
+                Play Again
+              </button>
             </div>
           </div>
         )}

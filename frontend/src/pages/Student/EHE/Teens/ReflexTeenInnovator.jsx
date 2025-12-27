@@ -42,8 +42,8 @@ const ReflexTeenInnovator = () => {
       emoji: "🧩",
       correctAnswer: "Innovative approach",
       options: [
-        { text: "Ignore Issues", isCorrect: false },
         { text: "Innovative approach", isCorrect: true },
+        { text: "Ignore Issues", isCorrect: false },
         { text: "Stick to Old Ways", isCorrect: false },
         { text: "Copy Others", isCorrect: false }
       ]
@@ -54,9 +54,9 @@ const ReflexTeenInnovator = () => {
       emoji: "🧪",
       correctAnswer: "Innovative approach",
       options: [
-        { text: "Innovative approach", isCorrect: true },
         { text: "Stick to Old Ways", isCorrect: false },
         { text: "Copy Others", isCorrect: false },
+        { text: "Innovative approach", isCorrect: true },
         { text: "Follow the Crowd", isCorrect: false }
       ]
     },
@@ -67,9 +67,9 @@ const ReflexTeenInnovator = () => {
       correctAnswer: "Innovative approach",
       options: [
         { text: "Follow the Crowd", isCorrect: false },
-        { text: "Innovative approach", isCorrect: true },
         { text: "Ignore Issues", isCorrect: false },
-        { text: "Stick to Old Ways", isCorrect: false }
+        { text: "Stick to Old Ways", isCorrect: false },
+        { text: "Innovative approach", isCorrect: true },
       ]
     },
     {
@@ -78,8 +78,8 @@ const ReflexTeenInnovator = () => {
       emoji: "🔬",
       correctAnswer: "Innovative approach",
       options: [
-        { text: "Copy Others", isCorrect: false },
         { text: "Innovative approach", isCorrect: true },
+        { text: "Copy Others", isCorrect: false },
         { text: "Ignore Issues", isCorrect: false },
         { text: "Stick to Old Ways", isCorrect: false }
       ]

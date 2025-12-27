@@ -33,13 +33,14 @@ const BadgeCultureFriendKid = () => {
           text: "Making fun of traditional foods", 
           isCorrect: false
         },
-        { 
-          text: "Learning about cultural holidays and celebrations", 
-          isCorrect: true
-        },
+        
         { 
           text: "Avoiding people who look different", 
           isCorrect: false
+        },
+        { 
+          text: "Learning about cultural holidays and celebrations", 
+          isCorrect: true
         },
         { 
           text: "Judging people by their appearance", 
@@ -114,10 +115,7 @@ const BadgeCultureFriendKid = () => {
           text: "Join in with the exclusion to fit in", 
           isCorrect: false
         },
-        { 
-          text: "Include them in conversations and be patient", 
-          isCorrect: true
-        },
+        
         { 
           text: "Tell them to speak 'properly'", 
           isCorrect: false
@@ -125,7 +123,11 @@ const BadgeCultureFriendKid = () => {
         { 
           text: "Ignore the situation", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Include them in conversations and be patient", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Including them and being patient shows kindness and helps create an inclusive environment for everyone!",

@@ -22,28 +22,28 @@ const FeelingsPuzzleMatch = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const leftItems = [
-    { id: 1, name: "Smile", emoji: "😊", description: "Facial expression" },
-    { id: 2, name: "Tears", emoji: "😢", description: "Water from eyes" },
-    { id: 3, name: "Frown", emoji: "😠", description: "Angry face" },
-    { id: 4, name: "Shaking", emoji: "😨", description: "Trembling" },
-    { id: 5, name: "Laughing", emoji: "😆", description: "Big smile" },
+    { id: 1, name: "Grimace", emoji: "😬", description: "Pained expression" },
+    { id: 2, name: "Wiping tears", emoji: "😢", description: "Emotional release" },
+    { id: 3, name: "Scowl", emoji: "😠", description: "Intense disapproval" },
+    { id: 4, name: "Shivering", emoji: "😨", description: "Physical response to fear" },
+    { id: 5, name: "Belly laugh", emoji: "🤣", description: "Overwhelming joy" },
   ];
 
-  // Right items with correct matches in different positions: Q1: pos 1, Q2: pos 2, Q3: pos 3, Q4: pos 1, Q5: pos 2
+  // Right items with correct matches in different positions: manually shuffled to avoid direct positional matching
   const rightItems = [
-    { id: 3, name: "Angry", emoji: "😡", description: "Mad feeling" },
-    { id: 2, name: "Sad", emoji: "😔", description: "Unhappy feeling" },
-    { id: 1, name: "Happy", emoji: "😄", description: "Joyful feeling" },
-    { id: 5, name: "Excited", emoji: "🤩", description: "Thrilled feeling" },
-    { id: 4, name: "Scared", emoji: "😰", description: "Afraid feeling" },
+    { id: 10, name: "Euphoria", emoji: "😍", description: "Extreme happiness" },
+    { id: 6, name: "Embarrassment", emoji: "😰", description: "Self-conscious feeling" },
+    { id: 7, name: "Sorrow", emoji: "😔", description: "Deep sadness" },
+    { id: 8, name: "Fury", emoji: "😡", description: "Intense anger" },
+    { id: 9, name: "Anxiety", emoji: "😰", description: "Worried feeling" },
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Smile → Happy
-    { leftId: 2, rightId: 2 }, // Tears → Sad
-    { leftId: 3, rightId: 3 }, // Frown → Angry
-    { leftId: 4, rightId: 4 }, // Shaking → Scared
-    { leftId: 5, rightId: 5 }  // Laughing → Excited
+    { leftId: 1, rightId: 6 }, // Grimace → Embarrassment
+    { leftId: 2, rightId: 7 }, // Wiping tears → Sorrow
+    { leftId: 3, rightId: 8 }, // Scowl → Fury
+    { leftId: 4, rightId: 9 }, // Shivering → Anxiety
+    { leftId: 5, rightId: 10 }  // Belly laugh → Euphoria
   ];
 
   const isRightItemMatched = (itemId) => {
@@ -228,7 +228,7 @@ const FeelingsPuzzleMatch = () => {
                 <div className="text-5xl mb-4">🎉</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You correctly matched {finalScore} out of {leftItems.length} emotions!
+                  You correctly matched {finalScore} out of {leftItems.length} expressions to their emotions!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{coins} Coins</span>

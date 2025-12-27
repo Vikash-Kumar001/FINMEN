@@ -43,8 +43,8 @@ const ReflexTeenAlert = () => {
       id: 2,
       question: "How should you handle medical instructions?",
       options: [
-        { text: "Ignore Instructions", emoji: "🙈", isCorrect: false },
         { text: "Follow Prescription", emoji: "📋", isCorrect: true },
+        { text: "Ignore Instructions", emoji: "🙈", isCorrect: false },
         { text: "Skip Dose", emoji: "❌", isCorrect: false },
         { text: "Disregard Changes", emoji: "🤔", isCorrect: false }
       ]
@@ -53,10 +53,10 @@ const ReflexTeenAlert = () => {
       id: 3,
       question: "What's important for treatment effectiveness?",
       options: [
-        { text: "Complete Treatment", emoji: "✅", isCorrect: true },
         { text: "Stop Early", emoji: "🛑", isCorrect: false },
         { text: "Skip Dose", emoji: "❌", isCorrect: false },
-        { text: "Ignore Instructions", emoji: "🙈", isCorrect: false }
+        { text: "Ignore Instructions", emoji: "🙈", isCorrect: false },
+        { text: "Complete Treatment", emoji: "✅", isCorrect: true },
       ]
     },
     {
@@ -73,8 +73,8 @@ const ReflexTeenAlert = () => {
       id: 5,
       question: "What's the best approach to medication?",
       options: [
-        { text: "Stop Early", emoji: "🛑", isCorrect: false },
         { text: "Follow Prescription", emoji: "📋", isCorrect: true },
+        { text: "Stop Early", emoji: "🛑", isCorrect: false },
         { text: "Skip Dose", emoji: "❌", isCorrect: false },
         { text: "Disregard Changes", emoji: "🤔", isCorrect: false }
       ]

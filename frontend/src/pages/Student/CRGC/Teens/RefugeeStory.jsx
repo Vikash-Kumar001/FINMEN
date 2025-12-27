@@ -77,18 +77,19 @@ const RefugeeStory = () => {
           emoji: "😈",
           isCorrect: false
         },
+        
+        {
+          id: "c",
+          text: "Record it to post online",
+          emoji: "📱",
+          isCorrect: false
+        },
         {
           id: "b",
           text: "Stand up for her and tell the others to stop",
           emoji: "✋",
           isCorrect: true
         },
-        {
-          id: "c",
-          text: "Record it to post online",
-          emoji: "📱",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -119,12 +120,7 @@ const RefugeeStory = () => {
       id: 5,
       text: "The refugee girl shares that she misses her home country. How should you respond?",
       options: [
-        {
-          id: "a",
-          text: "Listen with empathy and ask her to tell you about it",
-          emoji: "👂",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Tell her to forget about her old life",
@@ -136,7 +132,13 @@ const RefugeeStory = () => {
           text: "Compare her country negatively to yours",
           emoji: "😒",
           isCorrect: false
-        }
+        },
+         {
+          id: "a",
+          text: "Listen with empathy and ask her to tell you about it",
+          emoji: "👂",
+          isCorrect: true
+        },
       ]
     }
   ];

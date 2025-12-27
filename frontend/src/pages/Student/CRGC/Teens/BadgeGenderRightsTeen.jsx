@@ -60,13 +60,14 @@ const BadgeGenderRightsTeen = () => {
           text: "To make everyone the same", 
           isCorrect: false
         },
-        { 
-          text: "To ensure everyone can reach their full potential", 
-          isCorrect: true
-        },
+        
         { 
           text: "To eliminate competition", 
           isCorrect: false
+        },
+        { 
+          text: "To ensure everyone can reach their full potential", 
+          isCorrect: true
         },
         { 
           text: "To reduce choices", 
@@ -84,13 +85,14 @@ const BadgeGenderRightsTeen = () => {
       question: "What is an example of using inclusive language regarding gender?",
       options: [
         { 
-          text: "Using 'guys' to address a mixed-gender group", 
-          isCorrect: false
-        },
-        { 
           text: "Using 'everyone' or 'folks' instead of gendered terms", 
           isCorrect: true
         },
+        { 
+          text: "Using 'guys' to address a mixed-gender group", 
+          isCorrect: false
+        },
+        
         { 
           text: "Referring to professionals by assumed gender", 
           isCorrect: false
@@ -114,10 +116,7 @@ const BadgeGenderRightsTeen = () => {
           text: "To give one gender more power", 
           isCorrect: false
         },
-        { 
-          text: "To ensure equal rights and opportunities for all genders", 
-          isCorrect: true
-        },
+        
         { 
           text: "To eliminate gender differences", 
           isCorrect: false
@@ -125,7 +124,11 @@ const BadgeGenderRightsTeen = () => {
         { 
           text: "To reverse traditional roles", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "To ensure equal rights and opportunities for all genders", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Gender equality movements work to ensure that all people have the same rights and opportunities regardless of gender.",

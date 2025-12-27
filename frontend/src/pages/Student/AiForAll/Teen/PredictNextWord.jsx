@@ -107,7 +107,7 @@ const PredictNextWord = () => {
     {
       id: 3,
       text: "Complete the sentence: The capital of France is ___",
-      emoji: "🇫🇷",
+      emoji: "🌆",
       options: [
         { 
           id: 1, 
@@ -118,13 +118,13 @@ const PredictNextWord = () => {
         { 
           id: 2, 
           text: "London", 
-          emoji: "🇬🇧", 
+          emoji: "🕰️", 
           isCorrect: false
         },
         { 
           id: 3, 
           text: "Berlin", 
-          emoji: "🇩🇪", 
+          emoji: "🧱", 
           isCorrect: false
         }
       ],

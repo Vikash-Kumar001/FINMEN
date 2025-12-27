@@ -32,7 +32,7 @@ const DebateTalkingAboutPeriods = () => {
         {
           id: "a",
           text: "Yes, with respect and education",
-          emoji: "✅",
+          emoji: "🎓",
           correct: true
         },
         {
@@ -78,23 +78,30 @@ const DebateTalkingAboutPeriods = () => {
           correct: false
         },
         {
+          id: "a",
+          text: "Reduces stigma and improves health outcomes",
+          emoji: "🌟",
+          correct: true
+        },
+        {
           id: "c",
           text: "Encourages excessive focus on the topic",
           emoji: "📢",
           correct: false
         },
-        {
-          id: "a",
-          text: "Reduces stigma and improves health outcomes",
-          emoji: "🌟",
-          correct: true
-        }
+        
       ]
     },
     {
       id: 4,
       text: "How can parents contribute to healthy period discussions?",
       options: [
+        {
+          id: "a",
+          text: "Start age-appropriate conversations early",
+          emoji: "👨‍👩‍👧",
+          correct: true
+        },
         {
           id: "b",
           text: "Wait until puberty begins to mention anything",
@@ -107,12 +114,7 @@ const DebateTalkingAboutPeriods = () => {
           emoji: "🏫",
           correct: false
         },
-        {
-          id: "a",
-          text: "Start age-appropriate conversations early",
-          emoji: "👨‍👩‍👧",
-          correct: true
-        }
+        
       ]
     },
     {

@@ -114,13 +114,14 @@ const BadgeYoungLeaderKid = () => {
           text: "Let everyone argue until they figure it out", 
           isCorrect: false
         },
-        { 
-          text: "Listen to all ideas and help the group find a solution", 
-          isCorrect: true
-        },
+       
         { 
           text: "Impose your idea without discussion", 
           isCorrect: false
+        },
+         { 
+          text: "Listen to all ideas and help the group find a solution", 
+          isCorrect: true
         },
         { 
           text: "Quit the project", 
@@ -141,10 +142,7 @@ const BadgeYoungLeaderKid = () => {
           text: "To boss other kids around", 
           isCorrect: false
         },
-        { 
-          text: "To help create positive changes in their communities", 
-          isCorrect: true
-        },
+        
         { 
           text: "To avoid doing group work", 
           isCorrect: false
@@ -152,7 +150,11 @@ const BadgeYoungLeaderKid = () => {
         { 
           text: "To get special treatment", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "To help create positive changes in their communities", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Leadership skills help kids become active, responsible citizens who can make positive differences in their communities!",

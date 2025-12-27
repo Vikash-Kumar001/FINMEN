@@ -116,7 +116,7 @@ const QuizOnGrowth = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={finalScore}
-      gameId="health-female-kids-81"
+      gameId="health-female-kids-22"
       gameType="health-female"
       totalLevels={90}
       currentLevel={81}

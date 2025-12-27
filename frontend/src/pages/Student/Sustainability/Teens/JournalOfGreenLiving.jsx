@@ -59,11 +59,11 @@ const JournalOfGreenLiving = () => {
   }, [gameFinished, coins, gameId, nextGamePath, nextGameId]);
 
   const stages = [
-    { question: 'Write: "One way I reduced my carbon footprint today was ___."', minLength: 15 },
-    { question: 'Write: "A sustainable habit I want to develop is ___."', minLength: 15 },
-    { question: 'Write: "How can I encourage others to live more sustainably? ___."', minLength: 15 },
-    { question: 'Write: "My biggest environmental concern is ___."', minLength: 15 },
-    { question: 'Write: "I feel motivated to act because ___."', minLength: 15 }
+    { question: 'Write: "One way I reduced my carbon footprint today was ___."', minLength: 10 },
+    { question: 'Write: "A sustainable habit I want to develop is ___."', minLength: 10 },
+    { question: 'Write: "How can I encourage others to live more sustainably? ___."', minLength: 10 },
+    { question: 'Write: "My biggest environmental concern is ___."', minLength: 10 },
+    { question: 'Write: "I feel motivated to act because ___."', minLength: 10 }
   ];
 
   const handleJournalSubmit = () => {

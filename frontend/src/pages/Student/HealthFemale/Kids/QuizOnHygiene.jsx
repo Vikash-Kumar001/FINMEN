@@ -111,13 +111,7 @@ const QuizOnHygiene = () => {
       text: "Why do we wear clean underwear every day?",
       emoji: "🩲",
       options: [
-        {
-          id: "a",
-          text: "To stop germs and odors",
-          emoji: "🩲",
-          // description: "Exactly! It keeps your private parts healthy.",
-          isCorrect: false
-        },
+        
         {
           id: "b",
           text: "Because it looks nice",
@@ -130,8 +124,15 @@ const QuizOnHygiene = () => {
           text: "We don't need to",
           emoji: "🚫",
           // description: "You should change it daily!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "To stop germs and odors",
+          emoji: "🩲",
+          // description: "Exactly! It keeps your private parts healthy.",
           isCorrect: true
-        }
+        },
       ]
     },
     {
@@ -144,7 +145,7 @@ const QuizOnHygiene = () => {
           text: "Wash your hands",
           emoji: "👐",
           // description: "Yes! Always wash hands after the toilet.",
-          isCorrect: false
+          isCorrect: true
         },
         {
           id: "b",
@@ -158,7 +159,7 @@ const QuizOnHygiene = () => {
           text: "Touch your face",
           emoji: "🤦‍♀️",
           // description: "Yuck! Wash your hands first.",
-          isCorrect: true
+          isCorrect: false
         }
       ]
     }

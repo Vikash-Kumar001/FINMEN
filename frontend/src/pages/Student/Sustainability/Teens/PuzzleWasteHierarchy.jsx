@@ -9,6 +9,9 @@ const PuzzleWasteHierarchy = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
+  // Get game data from game category folder (source of truth)
+  const gameId = "sustainability-teens-14";
+  
   // Find next game path and ID if not provided in location.state
   const { nextGamePath, nextGameId } = useMemo(() => {
     if (location.state?.nextGamePath) {
@@ -33,9 +36,6 @@ const PuzzleWasteHierarchy = () => {
     }
     return { nextGamePath: null, nextGameId: null };
   }, [location.state, gameId]);
-  
-  // Get game data from game category folder (source of truth)
-  const gameId = "sustainability-teens-14";
   const gameData = getGameDataById(gameId);
   
   // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP

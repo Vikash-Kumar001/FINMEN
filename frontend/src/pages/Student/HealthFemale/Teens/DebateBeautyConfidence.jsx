@@ -41,9 +41,9 @@ const DebateBeautyConfidence = () => {
       id: 3,
       text: "What role do talents and skills play in confidence?",
       options: [
+        { id: "b", text: "They create genuine, earned self-assurance", correct: true, emoji: "🎯" },
         { id: "a", text: "They are less important than looks", correct: false, emoji: "🖼️" },
         { id: "c", text: "They don't contribute to confidence", correct: false, emoji: "❌" },
-        { id: "b", text: "They create genuine, earned self-assurance", correct: true, emoji: "🎯" }
       ]
     },
     {
@@ -60,8 +60,8 @@ const DebateBeautyConfidence = () => {
       text: "How should society value individuals?",
       options: [
         { id: "a", text: "Primarily for their physical appearance", correct: false, emoji: "✨" },
+        { id: "c", text: "For their contributions, kindness, and character", correct: true, emoji: "🌟" },
         { id: "b", text: "Equally for appearance and character", correct: false, emoji: "⚖️" },
-        { id: "c", text: "For their contributions, kindness, and character", correct: true, emoji: "🌟" }
       ]
     }
   ];

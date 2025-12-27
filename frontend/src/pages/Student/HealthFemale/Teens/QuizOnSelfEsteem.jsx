@@ -114,7 +114,7 @@ const QuizOnSelfEsteem = () => {
         {
           id: "c",
           text: "They are unnecessary for self-worth",
-          emoji: "-alone",
+          emoji: "😔",
           isCorrect: false
         }
       ]

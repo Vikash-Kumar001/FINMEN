@@ -60,10 +60,7 @@ const BadgeCompassionLeader = () => {
           text: "Tell them their problems aren't important", 
           isCorrect: false
         },
-        { 
-          text: "Offer practical support and emotional encouragement", 
-          isCorrect: true
-        },
+        
         { 
           text: "Avoid them to prevent getting involved", 
           isCorrect: false
@@ -71,7 +68,11 @@ const BadgeCompassionLeader = () => {
         { 
           text: "Share their struggles with others", 
           isCorrect: false
-        }
+        },
+        { 
+          text: "Offer practical support and emotional encouragement", 
+          isCorrect: true
+        },
       ],
       feedback: {
         correct: "Offering both practical help and emotional support shows genuine care and compassion.",
@@ -84,13 +85,14 @@ const BadgeCompassionLeader = () => {
       question: "How should you respond when you witness someone being treated unfairly?",
       options: [
         { 
-          text: "Stay silent to avoid conflict", 
-          isCorrect: false
-        },
-        { 
           text: "Speak up or seek help from an authority figure", 
           isCorrect: true
         },
+        { 
+          text: "Stay silent to avoid conflict", 
+          isCorrect: false
+        },
+        
         { 
           text: "Join in with the unfair treatment", 
           isCorrect: false
@@ -114,13 +116,14 @@ const BadgeCompassionLeader = () => {
           text: "It looks good on college applications", 
           isCorrect: false
         },
-        { 
-          text: "It creates positive change and builds stronger communities", 
-          isCorrect: true
-        },
+       
         { 
           text: "It's a requirement for graduation", 
           isCorrect: false
+        },
+         { 
+          text: "It creates positive change and builds stronger communities", 
+          isCorrect: true
         },
         { 
           text: "It's easier than finding a job", 

@@ -73,12 +73,7 @@ const QuizOnPuberty = () => {
       text: "What hormone triggers puberty in girls?",
       emoji: "💊",
       options: [
-        {
-          id: "a",
-          text: "Estrogen",
-          emoji: "💊",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Testosterone",
@@ -90,7 +85,13 @@ const QuizOnPuberty = () => {
           text: "Insulin",
           emoji: "💉",
           isCorrect: false
-        }
+        },
+         {
+          id: "a",
+          text: "Estrogen",
+          emoji: "💊",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -98,17 +99,18 @@ const QuizOnPuberty = () => {
       text: "Which physical change happens last during female puberty?",
       emoji: "📏",
       options: [
-        {
-          id: "a",
-          text: "Menstruation",
-          emoji: "🩸",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Breast development",
           emoji: "🤱",
           isCorrect: false
+        },
+         {
+          id: "a",
+          text: "Menstruation",
+          emoji: "🩸",
+          isCorrect: true
         },
         {
           id: "c",

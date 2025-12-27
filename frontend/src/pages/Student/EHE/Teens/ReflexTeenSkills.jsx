@@ -30,9 +30,9 @@ const ReflexTeenSkills = () => {
       emoji: "👑",
       correctAnswer: "Positive skill",
       options: [
-        { text: "Positive skill", isCorrect: true },
         { text: "Bullying", isCorrect: false },
         { text: "Cheating", isCorrect: false },
+        { text: "Positive skill", isCorrect: true },
         { text: "Giving Up", isCorrect: false }
       ]
     },
@@ -66,8 +66,8 @@ const ReflexTeenSkills = () => {
       emoji: "🧩",
       correctAnswer: "Positive skill",
       options: [
-        { text: "Giving Up", isCorrect: false },
         { text: "Positive skill", isCorrect: true },
+        { text: "Giving Up", isCorrect: false },
         { text: "Cheating", isCorrect: false },
         { text: "Lying", isCorrect: false }
       ]
@@ -79,9 +79,9 @@ const ReflexTeenSkills = () => {
       correctAnswer: "Positive skill",
       options: [
         { text: "Bullying", isCorrect: false },
-        { text: "Positive skill", isCorrect: true },
         { text: "Cheating", isCorrect: false },
-        { text: "Giving Up", isCorrect: false }
+        { text: "Giving Up", isCorrect: false },
+        { text: "Positive skill", isCorrect: true },
       ]
     }
   ];

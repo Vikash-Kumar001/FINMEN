@@ -72,6 +72,12 @@ const HygieneConfidenceDebate = () => {
       text: "How does daily hygiene help teen confidence?",
       options: [
         {
+          id: "c",
+          text: "Feel fresh and ready for anything",
+          emoji: "✨",
+          correct: true
+        },
+        {
           id: "a",
           text: "Makes no difference",
           emoji: "😐",
@@ -83,12 +89,7 @@ const HygieneConfidenceDebate = () => {
           emoji: "💅",
           correct: false
         },
-        {
-          id: "c",
-          text: "Feel fresh and ready for anything",
-          emoji: "✨",
-          correct: true
-        }
+        
       ]
     },
     {
@@ -102,17 +103,18 @@ const HygieneConfidenceDebate = () => {
           correct: false
         },
         {
+          id: "b",
+          text: "Makes others comfortable around you",
+          emoji: "🤝",
+          correct: true
+        },
+        {
           id: "c",
           text: "Only matters for dating",
           emoji: "💕",
           correct: false
         },
-        {
-          id: "b",
-          text: "Makes others comfortable around you",
-          emoji: "🤝",
-          correct: true
-        }
+        
       ]
     },
     {

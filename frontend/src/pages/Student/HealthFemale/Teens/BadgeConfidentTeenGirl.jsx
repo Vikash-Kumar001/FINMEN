@@ -93,15 +93,16 @@ const BadgeConfidentTeenGirl = () => {
       question: "What's the best approach to achieve your dreams?",
       options: [
         { 
-          text: "Expect instant success", 
-          emoji: "✨", 
-          isCorrect: false
-        },
-        { 
           text: "Make a realistic plan", 
           emoji: "📝", 
           isCorrect: true
         },
+        { 
+          text: "Expect instant success", 
+          emoji: "✨", 
+          isCorrect: false
+        },
+        
         { 
           text: "Rely only on luck", 
           emoji: "🍀", 
@@ -128,15 +129,16 @@ const BadgeConfidentTeenGirl = () => {
           emoji: "🛑", 
           isCorrect: false
         },
-        { 
-          text: "Learn from mistakes", 
-          emoji: "🧠", 
-          isCorrect: true
-        },
+        
         { 
           text: "Blame circumstances", 
           emoji: "🤷", 
           isCorrect: false
+        },
+        { 
+          text: "Learn from mistakes", 
+          emoji: "🧠", 
+          isCorrect: true
         },
         { 
           text: "Compare yourself to others", 
@@ -155,15 +157,16 @@ const BadgeConfidentTeenGirl = () => {
       question: "What should you say to yourself when feeling nervous?",
       options: [
         { 
-          text: "I'm not good enough", 
-          emoji: "😞", 
-          isCorrect: false
-        },
-        { 
           text: "I can handle this", 
           emoji: "🌟", 
           isCorrect: true
         },
+        { 
+          text: "I'm not good enough", 
+          emoji: "😞", 
+          isCorrect: false
+        },
+        
         { 
           text: "Everyone will judge me", 
           emoji: "👀", 

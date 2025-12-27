@@ -87,7 +87,7 @@ const QuizOnMoneyUse = () => {
     {
       id: 2,
       text: "Which of these is a need?",
-      emoji: " essentials",
+      emoji: " 😊",
       options: [
         {
           id: "c",

@@ -23,87 +23,127 @@ const ReflexCalmAction = () => {
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [gameState, setGameState] = useState("ready");
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const currentRoundRef = useRef(null);
 
   const questions = [
     {
       id: 1,
-      question: "Take a deep breath 🌬️",
+      question: "Someone cuts in line in front of you 🚶",
       correctAnswer: "Take Deep Breath",
       options: [
+        { text: "Confront Aggressively", isCorrect: false, emoji: "😠" },
         { text: "Take Deep Breath", isCorrect: true, emoji: "🌬️" },
-        { text: "Shout Back", isCorrect: false, emoji: "😡" },
-        { text: "Stay Angry", isCorrect: false, emoji: "🔥" },
-        { text: "Yell", isCorrect: false, emoji: "🗣️" }
+        { text: "Start a Fight", isCorrect: false, emoji: "⚔️" },
+        { text: "Scream Loudly", isCorrect: false, emoji: "😱" }
       ]
     },
     {
       id: 2,
-      question: "Count to ten 🔟",
+      question: "Your friend says something hurtful to you 💔",
       correctAnswer: "Take Deep Breath",
       options: [
-        { text: "Shout Back", isCorrect: false, emoji: "😡" },
-        { text: "Take Deep Breath", isCorrect: true, emoji: "🌬️" },
-        { text: "Stay Angry", isCorrect: false, emoji: "🔥" },
-        { text: "Yell", isCorrect: false, emoji: "🗣️" }
+        { text: "Walk Away Calmly", isCorrect: true, emoji: "🚶‍♀️" },
+        { text: "Yell Back Immediately", isCorrect: false, emoji: "🗣️" },
+        { text: "Cry Loudly", isCorrect: false, emoji: "😭" },
+        { text: "Ignore Completely", isCorrect: false, emoji: "🔇" }
       ]
     },
     {
       id: 3,
-      question: "Walk away quietly 🚶‍♀️",
+      question: "You feel overwhelmed with school pressure 📚",
       correctAnswer: "Take Deep Breath",
       options: [
-        { text: "Stay Angry", isCorrect: false, emoji: "🔥" },
-        { text: "Yell", isCorrect: false, emoji: "🗣️" },
+        { text: "Throw Books Away", isCorrect: false, emoji: "🧹" },
+        { text: "Scream in Class", isCorrect: false, emoji: "🔊" },
         { text: "Take Deep Breath", isCorrect: true, emoji: "🌬️" },
-        { text: "Shout Back", isCorrect: false, emoji: "😡" }
+        { text: "Run Away from School", isCorrect: false, emoji: "🏃‍♂️" }
       ]
     },
     {
       id: 4,
-      question: "Yell at your friend 😡",
-      correctAnswer: "Shout Back",
+      question: "A group is bullying another student 👥",
+      correctAnswer: "Help Calmly",
       options: [
-        { text: "Shout Back", isCorrect: true, emoji: "😡" },
-        { text: "Take Deep Breath", isCorrect: false, emoji: "🌬️" },
-        { text: "Stay Angry", isCorrect: false, emoji: "🔥" },
-        { text: "Yell", isCorrect: false, emoji: "🗣️" }
+        { text: "Tell a Teacher", isCorrect: true, emoji: "👩‍🏫" },
+        { text: "Join the Bullies", isCorrect: false, emoji: "😈" },
+        { text: "Fight the Bullies", isCorrect: false, emoji: "👊" },
+        { text: "Pretend Not to See", isCorrect: false, emoji: "🙈" }
       ]
     },
     {
       id: 5,
-      question: "Listen before speaking 👂",
-      correctAnswer: "Take Deep Breath",
+      question: "Your parents are arguing loudly at home 🏠",
+      correctAnswer: "Stay Calm",
       options: [
-        { text: "Stay Angry", isCorrect: false, emoji: "🔥" },
-        { text: "Yell", isCorrect: false, emoji: "🗣️" },
-        { text: "Shout Back", isCorrect: false, emoji: "😡" },
-        { text: "Take Deep Breath", isCorrect: true, emoji: "🌬️" }
+        { text: "Yell at Them", isCorrect: false, emoji: "🗣️" },
+        { text: "Leave the House", isCorrect: false, emoji: "🚪" },
+        { text: "Cry Loudly", isCorrect: false, emoji: "😭" },
+        { text: "Stay Calm & Distract", isCorrect: true, emoji: "🧘" },
       ]
     }
   ];
 
   useEffect(() => {
-    currentRoundRef.current = currentRound;
-  }, [currentRound]);
+    currentRoundRef.current = currentQuestion + 1;
+  }, [currentQuestion]);
 
   useEffect(() => {
-    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+    if (gameState === "playing" && currentQuestion >= 0 && currentQuestion < questions.length) {
       setTimeLeft(ROUND_TIME);
       setAnswered(false);
     }
-  }, [currentRound, gameState]);
+  }, [currentQuestion, gameState]);
+
+  // Timer logic
+  useEffect(() => {
+    let timer = null;
+    
+    if (gameState === "playing" && !answered && timeLeft > 0 && currentQuestion < questions.length) {
+      timer = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [gameState, answered, timeLeft, currentQuestion]);
+
+  const handleTimeUp = () => {
+    setAnswered(true);
+    resetFeedback();
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
+  };
 
 
 
-
-
-  const handleChoice = (isCorrect) => {
+  const handleChoice = (option) => {
     if (answered) return;
     
     setAnswered(true);
     resetFeedback();
     
-    if (isCorrect) {
+    if (option.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
@@ -121,13 +161,21 @@ const ReflexCalmAction = () => {
     }, 500);
   };
 
-
+  const startGame = () => {
+    setGameState("playing");
+    setScore(0);
+    setCurrentQuestion(0);
+    setShowResult(false);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
+  };
 
   return (
     <GameShell
       title="Reflex: Calm Action"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      subtitle={gameState === "ready" ? "Get Ready to Stay Calm!" : !showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -135,19 +183,38 @@ const ReflexCalmAction = () => {
       gameId={gameId}
       gameType="moral"
       totalLevels={questions.length}
-      currentLevel={currentQuestion + 1}
+      currentLevel={gameState === "ready" ? 0 : currentQuestion + 1}
       maxScore={questions.length}
-      showConfetti={showResult && score >= 3}
+      showConfetti={showResult && score >= 4}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        {!showResult && questions[currentQuestion] ? (
+        {gameState === "ready" ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-6xl mb-6">🧘‍♀️</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Calm Action Reflex</h3>
+            <p className="text-white/90 text-lg mb-6">
+              You'll be shown challenging scenarios. Choose the calmest, most thoughtful response in {ROUND_TIME} seconds!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        ) : !showResult && questions[currentQuestion] ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+                <div className="flex gap-4">
+                  <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+                  <span className={`font-mono font-bold ${timeLeft <= 3 ? 'text-red-400 animate-pulse' : 'text-yellow-400'}`}>
+                    {timeLeft}s
+                  </span>
+                </div>
               </div>
               
               <p className="text-white text-lg mb-6">
@@ -160,7 +227,7 @@ const ReflexCalmAction = () => {
                     key={idx}
                     onClick={() => {
                       setSelectedAnswer(idx);
-                      handleChoice(option.isCorrect);
+                      handleChoice(option);
                     }}
                     disabled={answered}
                     className={`p-6 rounded-2xl text-left transition-all transform ${
@@ -184,19 +251,19 @@ const ReflexCalmAction = () => {
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {score >= 3 ? (
+            {score >= 4 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You got {score} out of {questions.length} questions correct!
-                  You understand how to stay calm in difficult situations!
+                  You got {score} out of {questions.length} scenarios right!
+                  You know how to respond thoughtfully in difficult situations!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Taking deep breaths and staying calm helps in difficult situations!
+                  Lesson: Staying calm and thoughtful helps in challenging situations!
                 </p>
               </div>
             ) : (
@@ -204,23 +271,17 @@ const ReflexCalmAction = () => {
                 <div className="text-5xl mb-4">😔</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You got {score} out of {questions.length} questions correct.
-                  Remember to stay calm in difficult situations!
+                  You got {score} out of {questions.length} scenarios right.
+                  Remember to stay calm and think before reacting!
                 </p>
                 <button
-                  onClick={() => {
-                    setShowResult(false);
-                    setCurrentQuestion(0);
-                    setScore(0);
-                    setAnswered(false);
-                    resetFeedback();
-                  }}
+                  onClick={startGame}
                   className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Remember to take deep breaths and stay calm in difficult situations!
+                  Tip: Take a moment to think and stay calm before responding to challenging situations!
                 </p>
               </div>
             )}

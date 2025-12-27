@@ -59,6 +59,12 @@ const SimulationTimeBalance = () => {
           emoji: "🥳",
           isCorrect: false
         },
+         {
+          id: "d",
+          text: "Attend the party but reschedule study time for later",
+          emoji: "🎉",
+          isCorrect: true
+        },
         {
           id: "b",
           text: "Decline the party to stick to study schedule",
@@ -71,12 +77,7 @@ const SimulationTimeBalance = () => {
           emoji: "👥",
           isCorrect: false
         },
-        {
-          id: "d",
-          text: "Attend the party but reschedule study time for later",
-          emoji: "🎉",
-          isCorrect: true
-        }
+       
       ]
     },
     {
@@ -84,6 +85,12 @@ const SimulationTimeBalance = () => {
       title: "Weekend Plans",
       description: "You have a full weekend with family time, study group, and personal projects. How do you organize?",
       options: [
+        {
+          id: "d",
+          text: "Prioritize tasks and allocate time blocks for each activity",
+          emoji: "⏰",
+          isCorrect: true
+        },
         {
           id: "a",
           text: "Do whatever feels most appealing at the moment",
@@ -102,12 +109,7 @@ const SimulationTimeBalance = () => {
           emoji: "👨‍👩‍👧",
           isCorrect: false
         },
-        {
-          id: "d",
-          text: "Prioritize tasks and allocate time blocks for each activity",
-          emoji: "⏰",
-          isCorrect: true
-        }
+        
       ]
     },
     {
@@ -122,6 +124,12 @@ const SimulationTimeBalance = () => {
           isCorrect: false
         },
         {
+          id: "d",
+          text: "Finish the current episode and go to sleep 30 minutes late",
+          emoji: "📺",
+          isCorrect: true
+        },
+        {
           id: "b",
           text: "Stop the movie immediately and go to sleep",
           emoji: "😴",
@@ -133,12 +141,7 @@ const SimulationTimeBalance = () => {
           emoji: "⏰",
           isCorrect: false
         },
-        {
-          id: "d",
-          text: "Finish the current episode and go to sleep 30 minutes late",
-          emoji: "📺",
-          isCorrect: true
-        }
+        
       ]
     },
     {

@@ -121,7 +121,7 @@ const QuizOnRules = () => {
     {
       id: 5,
       text: "What is a civic duty?",
-      emoji: " handshake",
+      emoji: "🤝",
       options: [
         {
           id: "a",

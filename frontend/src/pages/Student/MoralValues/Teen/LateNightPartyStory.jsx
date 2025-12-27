@@ -156,9 +156,9 @@ const LateNightPartyStory = () => {
         },
         { 
           id: "quick2", 
-          text: "Go for one drink only", 
+          text: "Go for one snack only", 
           emoji: "🥤", 
-          description: "Have one drink then leave quickly",
+          description: "Have one snack then leave quickly",
           isCorrect: false
         },
         

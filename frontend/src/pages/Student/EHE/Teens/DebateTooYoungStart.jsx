@@ -48,7 +48,7 @@ const DebateTooYoungStart = () => {
       options: [
         { id: "b", text: "More willingness to take calculated risks", correct: true, emoji: "🎲" },
         { id: "a", text: "Less energy", correct: false, emoji: "😴" },
-        { id: "c", text: "Fewer ideas", correct: false, emoji: "EmptyEntries" }
+        { id: "c", text: "Fewer ideas", correct: false, emoji: "💡" }
       ]
     },
     {
@@ -56,7 +56,7 @@ const DebateTooYoungStart = () => {
       text: "What challenge do young entrepreneurs face?",
       options: [
         { id: "a", text: "Too much experience", correct: false, emoji: "📚" },
-        { id: "c", text: "Overabundance of resources", correct: false, emoji: " Overflow" },
+        { id: "c", text: "Overabundance of resources", correct: false, emoji: " ⏳" },
         { id: "b", text: "Limited access to capital", correct: true, emoji: "🔒" },
       ]
     },

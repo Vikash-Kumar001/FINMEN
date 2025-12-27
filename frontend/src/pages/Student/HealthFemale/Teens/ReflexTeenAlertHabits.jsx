@@ -34,8 +34,8 @@ const ReflexTeenAlertHabits = () => {
       question: "What's the key to building good habits?",
       options: [
         { text: "Skipping Habits", emoji: "❌", isCorrect: false },
-        { text: "Consistency", emoji: "🔄", isCorrect: true },
         { text: "Occasional Effort", emoji: "⏱️", isCorrect: false },
+        { text: "Consistency", emoji: "🔄", isCorrect: true },
         { text: "Random Actions", emoji: "🔀", isCorrect: false }
       ]
     },
@@ -43,8 +43,8 @@ const ReflexTeenAlertHabits = () => {
       id: 2,
       question: "How should you approach daily routines?",
       options: [
-        { text: "Occasional Effort", emoji: "⏱️", isCorrect: false },
         { text: "Daily Practice", emoji: "📅", isCorrect: true },
+        { text: "Occasional Effort", emoji: "⏱️", isCorrect: false },
         { text: "Skipping Habits", emoji: "❌", isCorrect: false },
         { text: "Distraction", emoji: "📱", isCorrect: false }
       ]
@@ -53,10 +53,10 @@ const ReflexTeenAlertHabits = () => {
       id: 3,
       question: "What helps maintain focus on goals?",
       options: [
-        { text: "Mindful Routine", emoji: "🧘", isCorrect: true },
         { text: "Random Actions", emoji: "🔀", isCorrect: false },
         { text: "Skipping Habits", emoji: "❌", isCorrect: false },
-        { text: "Occasional Effort", emoji: "⏱️", isCorrect: false }
+        { text: "Occasional Effort", emoji: "⏱️", isCorrect: false },
+        { text: "Mindful Routine", emoji: "🧘", isCorrect: true },
       ]
     },
     {
@@ -64,8 +64,8 @@ const ReflexTeenAlertHabits = () => {
       question: "What's essential for long-term success?",
       options: [
         { text: "Distraction", emoji: "📱", isCorrect: false },
-        { text: "Goal Focus", emoji: "🎯", isCorrect: true },
         { text: "Skipping Habits", emoji: "❌", isCorrect: false },
+        { text: "Goal Focus", emoji: "🎯", isCorrect: true },
         { text: "Random Actions", emoji: "🔀", isCorrect: false }
       ]
     },

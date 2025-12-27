@@ -22,8 +22,8 @@ const PuzzleOfLeaders = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const leftItems = [
-    { id: 1, name: "Mahatma Gandhi", emoji: "🕉️", description: "Indian independence leader" }, // Matches with "Non-violence and truth" (rightId: 6)
-    { id: 2, name: "Mother Teresa", emoji: "💒", description: "Humanitarian nun" }, // Matches with "Service and compassion" (rightId: 7)
+    { id: 1, name: "Marie Curie", emoji: "🔬", description: "Scientist and researcher" }, // Matches with "Dedication and discovery" (rightId: 6)
+    { id: 2, name: "Abraham Lincoln", emoji: "🏛️", description: "US President" }, // Matches with "Equality and freedom" (rightId: 7)
     { id: 3, name: "Dr. A.P.J. Abdul Kalam", emoji: "🚀", description: "Indian scientist" }, // Matches with "Vision and hard work" (rightId: 8)
     { id: 4, name: "Nelson Mandela", emoji: "✊", description: "South African leader" }, // Matches with "Forgiveness and equality" (rightId: 9)
     { id: 5, name: "Martin Luther King Jr.", emoji: "🕊️", description: "Civil rights leader" }, // Matches with "Peace and justice" (rightId: 10)
@@ -31,18 +31,18 @@ const PuzzleOfLeaders = () => {
 
   // Right items with correct matches in different positions: manually shuffled to avoid direct positional matching
   const rightItems = [
-    { id: 6, name: "Forgiveness and equality", emoji: "🤝", description: "Unity and justice" }, // Mandela's value (originally id: 4)
-    { id: 7, name: "Service and compassion", emoji: "💖", description: "Helping others" }, // Mother Teresa's value (originally id: 2)
+    { id: 7, name: "Equality and freedom", emoji: "🗽", description: "Universal rights" }, // Abraham Lincoln's value (originally id: 2)
+    { id: 6, name: "Dedication and discovery", emoji: "🔍", description: "Scientific pursuit" }, // Marie Curie's value (originally id: 1)
     { id: 8, name: "Peace and justice", emoji: "⚖️", description: "Fair treatment" }, // MLK's value (originally id: 5)
-    { id: 9, name: "Non-violence and truth", emoji: "🕊️", description: "Peaceful methods" }, // Gandhi's value (originally id: 1)
+    { id: 9, name: "Forgiveness and equality", emoji: "🤝", description: "Unity and justice" }, // Mandela's value (originally id: 4)
     { id: 10, name: "Vision and hard work", emoji: "🔭", description: "Dreams and effort" }, // Kalam's value (originally id: 3)
   ];
 
   const correctMatches = [
-    { leftId: 1, rightId: 9 }, // Gandhi → Non-violence and truth (id: 1 → 9, now at pos 4)
-    { leftId: 2, rightId: 7 }, // Mother Teresa → Service and compassion (id: 2 → 7, pos 2)
+    { leftId: 1, rightId: 6 }, // Marie Curie → Dedication and discovery (id: 1 → 6, now at pos 1)
+    { leftId: 2, rightId: 7 }, // Abraham Lincoln → Equality and freedom (id: 2 → 7, pos 2)
     { leftId: 3, rightId: 10 }, // Kalam → Vision and hard work (id: 3 → 10, now at pos 5)
-    { leftId: 4, rightId: 6 }, // Mandela → Forgiveness and equality (id: 4 → 6, now at pos 1)
+    { leftId: 4, rightId: 9 }, // Mandela → Forgiveness and equality (id: 4 → 9, now at pos 4)
     { leftId: 5, rightId: 8 }  // MLK → Peace and justice (id: 5 → 8, now at pos 3)
   ];
 

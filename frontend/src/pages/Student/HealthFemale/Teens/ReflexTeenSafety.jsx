@@ -33,8 +33,8 @@ const ReflexTeenSafety = () => {
       id: 1,
       question: "What should you do if you feel unsafe?",
       options: [
-        { text: "Use Substances", emoji: "❌", isCorrect: false },
         { text: "Seek Help", emoji: "🆘", isCorrect: true },
+        { text: "Use Substances", emoji: "❌", isCorrect: false },
         { text: "Ignore Danger", emoji: "🙈", isCorrect: false },
         { text: "Stay in Danger", emoji: "⚠️", isCorrect: false }
       ]
@@ -44,8 +44,8 @@ const ReflexTeenSafety = () => {
       question: "Who should you contact in an emergency?",
       options: [
         { text: "Ignore Danger", emoji: "🙈", isCorrect: false },
-        { text: "Call Trusted Adult", emoji: "📞", isCorrect: true },
         { text: "Use Substances", emoji: "❌", isCorrect: false },
+        { text: "Call Trusted Adult", emoji: "📞", isCorrect: true },
         { text: "Risk Safety", emoji: "❗", isCorrect: false }
       ]
     },
@@ -53,8 +53,8 @@ const ReflexTeenSafety = () => {
       id: 3,
       question: "What's the best response to a threatening situation?",
       options: [
-        { text: "Leave Situation", emoji: "🚪", isCorrect: true },
         { text: "Stay in Danger", emoji: "⚠️", isCorrect: false },
+        { text: "Leave Situation", emoji: "🚪", isCorrect: true },
         { text: "Use Substances", emoji: "❌", isCorrect: false },
         { text: "Ignore Danger", emoji: "🙈", isCorrect: false }
       ]
@@ -64,9 +64,9 @@ const ReflexTeenSafety = () => {
       question: "How should you prioritize your wellbeing?",
       options: [
         { text: "Risk Safety", emoji: "❗", isCorrect: false },
-        { text: "Make Safe Choice", emoji: "✅", isCorrect: true },
         { text: "Stay in Danger", emoji: "⚠️", isCorrect: false },
-        { text: "Use Substances", emoji: "❌", isCorrect: false }
+        { text: "Use Substances", emoji: "❌", isCorrect: false },
+        { text: "Make Safe Choice", emoji: "✅", isCorrect: true },
       ]
     },
     {

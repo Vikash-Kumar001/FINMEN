@@ -88,7 +88,10 @@ const BadgePeerProtectorTeen = () => {
           text: "Share the posts to get more attention", 
           isCorrect: false
         },
-        
+         { 
+          text: "Report it to a trusted adult or authority figure", 
+          isCorrect: true
+        },
         { 
           text: "Ignore it since it's just online", 
           isCorrect: false
@@ -96,7 +99,8 @@ const BadgePeerProtectorTeen = () => {
         { 
           text: "Encourage the bully to continue", 
           isCorrect: false
-        }
+        },
+       
       ],
       feedback: {
         correct: "Reporting cyberbullying helps protect victims and ensures appropriate action is taken.",

@@ -65,7 +65,7 @@ const AIBiasRoleplayy = () => {
         { 
           id: 2, 
           text: "Correct it to include everyone", 
-          emoji: "✅",
+          emoji: "🤦‍♂️",
           isCorrect: true
         },
         { 
@@ -88,18 +88,19 @@ const AIBiasRoleplayy = () => {
           emoji: "🙈",
           isCorrect: false
         },
-        { 
-          id: 2, 
-          text: "Ensure all neighborhoods are considered", 
-          emoji: "✅", 
-          isCorrect: true
-        },
+        
         { 
           id: 3, 
           text: "Only select top students", 
           emoji: "🏆", 
           isCorrect: false
-        }
+        },
+        { 
+          id: 2, 
+          text: "Ensure all neighborhoods are considered", 
+          emoji: "👯‍♀️", 
+          isCorrect: true
+        },
       ],
       explanation: "Ensure all neighborhoods are considered! Educational opportunities should be accessible to all students regardless of their geographic location. Addressing this bias requires examining the AI's selection criteria and ensuring diverse representation from different communities to create a fair admissions process."
     },
@@ -112,7 +113,7 @@ const AIBiasRoleplayy = () => {
         { 
           id: 1, 
           text: "Include all genders equally", 
-          emoji: "✅", 
+          emoji: "👩‍🏫", 
           isCorrect: true
         },
         { 
@@ -141,18 +142,19 @@ const AIBiasRoleplayy = () => {
           emoji: "🙈", 
           isCorrect: false
         },
-        { 
-          id: 2, 
-          text: "Adjust AI to be fair to everyone", 
-          emoji: "✅", 
-          isCorrect: true
-        },
+        
         { 
           id: 3, 
           text: "Replace human loan officers", 
           emoji: "🤖", 
           isCorrect: false
-        }
+        },
+        { 
+          id: 2, 
+          text: "Adjust AI to be fair to everyone", 
+          emoji: "👽", 
+          isCorrect: true
+        },
       ],
       explanation: "Adjust AI to be fair to everyone! Financial AI systems must evaluate creditworthiness based on relevant financial factors rather than demographic characteristics. Addressing lending bias requires auditing algorithms, using fair data sources, and implementing oversight to ensure equal access to financial services regardless of background."
     },
@@ -171,7 +173,7 @@ const AIBiasRoleplayy = () => {
         { 
           id: 2, 
           text: "Prevents unfair treatment", 
-          emoji: "✅", 
+          emoji: "⚖️", 
           isCorrect: true
         },
         { 

@@ -101,36 +101,38 @@ const GenderStory = () => {
           emoji: "🤝",
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Explain that anyone can be a leader regardless of gender",
-          emoji: "💡",
-          isCorrect: true
-        },
+       
         {
           id: "c",
           text: "Change the subject",
           emoji: "🤷",
           isCorrect: false
-        }
+        },
+         {
+          id: "b",
+          text: "Explain that anyone can be a leader regardless of gender",
+          emoji: "💡",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 5,
       text: "During class, the teacher asks for volunteers. Only boys raise their hands. What do you do?",
       options: [
+         {
+          id: "b",
+          text: "Encourage girls to raise their hands too",
+          emoji: "🙋",
+          isCorrect: true
+        },
         {
           id: "a",
           text: "Wait for the teacher to call on boys only",
           emoji: "⏱️",
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Encourage girls to raise their hands too",
-          emoji: "🙋",
-          isCorrect: true
-        },
+       
         {
           id: "c",
           text: "Do nothing",
